@@ -25,37 +25,11 @@
     --green-bg:#5cb88a20;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Montserrat',sans-serif;
-    min-height:100vh;
-  }
-  h1,h2,h3,.display{
-    font-family:'Cormorant Garamond',serif;
-    font-weight:600;
-    letter-spacing:.02em;
-  }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Montserrat',sans-serif; min-height:100vh; }
+  h1,h2,h3,.display{ font-family:'Cormorant Garamond',serif; font-weight:600; letter-spacing:.02em; }
   .hidden{display:none !important;}
-  #loginScreen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:radial-gradient(circle at 50% 20%, #1a160c, #0a0a0a 70%);
-    padding:20px;
-  }
-  .login-box{
-    background:var(--bg-card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:48px 40px;
-    width:100%;
-    max-width:380px;
-    text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
-  }
+  #loginScreen{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 20%, #1a160c, #0a0a0a 70%); padding:20px; }
+  .login-box{ background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:48px 40px; width:100%; max-width:380px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.5); }
   .login-box .brand{ font-size:30px; color:var(--gold); margin:0 0 4px; }
   .login-box .sub{ color:var(--text-dim); font-size:13px; margin-bottom:32px; letter-spacing:.05em; text-transform:uppercase; }
   .field{ text-align:left; margin-bottom:16px; }
@@ -77,7 +51,7 @@
   .topbar .brand{ color:var(--gold); font-size:22px; margin:0; }
   .topbar .user-info{ display:flex; align-items:center; gap:12px; font-size:13px; color:var(--text-dim); }
   .pill{ background:var(--gold-soft); color:var(--gold); padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
-  main{ padding:24px 28px 60px; max-width:1400px; margin:0 auto; }
+  main{ padding:24px 28px 60px; max-width:1600px; margin:0 auto; }
   .summary-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:26px; }
   .summary-card{ background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
   .summary-card .label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); margin-bottom:8px; }
@@ -90,8 +64,8 @@
   .chip{ background:transparent; border:1px solid var(--border); color:var(--text-dim); padding:7px 14px; border-radius:999px; font-size:12px; cursor:pointer; font-family:inherit; }
   .chip.active{ border-color:var(--gold); color:var(--gold); background:var(--gold-soft); }
   .spacer{ flex:1; }
-  .table-wrap{ background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .table-wrap{ background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; min-width:1200px; }
   thead th{ text-align:left; padding:14px 16px; color:var(--text-dim); font-size:11px; text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); white-space:nowrap; }
   tbody td{ padding:14px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
   tbody tr:last-child td{ border-bottom:none; }
@@ -151,7 +125,7 @@
   .flag-label{ font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.03em; }
   .flag-sub{ font-size:10px; opacity:.8; }
   @media (max-width:900px){ .summary-grid{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:768px){ main{ padding:16px; } .table-wrap{ overflow-x:auto; } table{ min-width:760px; } }
+  @media (max-width:768px){ main{ padding:16px; } }
   @media (max-width:480px){ .summary-grid{ grid-template-columns:1fr; } .login-box{ padding:36px 24px; } }
 </style>
 </head>
@@ -282,9 +256,9 @@ function renderTable(){ const tbody = document.getElementById('clientTableBody')
 function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 function proximaSextaStr(fromDate){ const d = fromDate ? new Date(fromDate) : new Date(); d.setHours(0,0,0,0); const dia = d.getDay(); const diff = dia === 5 ? 7 : (5 - dia + 7) % 7 || 7; d.setDate(d.getDate() + diff); return d.toISOString().split('T')[0]; }
 function fmtDateBR(str){ if(!str) return '—'; const [y,m,d] = str.split('-'); return `${d}/${m}`; }
-function renderOfertaFlag(c){ const ultima = c.ofertaRelampago?.ultimaData || null; const proxima = c.ofertaRelampago?.proximaData || proximaSextaStr(); const hoje = new Date(); hoje.setHours(0,0,0,0); const seg = new Date(hoje); seg.setDate(hoje.getDate() - ((hoje.getDay() + 6) % 7)); const ultimaDt = ultima ? new Date(ultima) : null; const feitoSemana = ultimaDt && ultimaDt >= seg; const proximaDt = new Date(proxima); const atrasada = !feitoSemana && proximaDt < hoje; let cls, label, sub; if(feitoSemana){ cls='done'; label='✓ Feito'; sub=fmtDateBR(ultima); } else if(atrasada){ cls='hot'; label='⚠ Atrasada'; sub=`Era ${fmtDateBR(proxima)}`; } else { cls=''; label='⚡ Marcar feito'; sub=`Próx: ${fmtDateBR(proxima)}`; } return `<button class="flag-btn ${cls}" onclick="window.__marcarOferta('${c.id}','${escapeHtml(c.nome)}')""><span class="flag-label">${label}</span><span class="flag-sub">${sub}</span></button>`; }
+function renderOfertaFlag(c){ const ultima = c.ofertaRelampago?.ultimaData || null; const proxima = c.ofertaRelampago?.proximaData || proximaSextaStr(); const hoje = new Date(); hoje.setHours(0,0,0,0); const seg = new Date(hoje); seg.setDate(hoje.getDate() - ((hoje.getDay() + 6) % 7)); const ultimaDt = ultima ? new Date(ultima) : null; const feitoSemana = ultimaDt && ultimaDt >= seg; const proximaDt = new Date(proxima); const atrasada = !feitoSemana && proximaDt < hoje; let cls, label, sub; if(feitoSemana){ cls='done'; label='✓ Feito'; sub=fmtDateBR(ultima); } else if(atrasada){ cls='hot'; label='⚠ Atrasada'; sub=`Era ${fmtDateBR(proxima)}`; } else { cls=''; label='⚡ Marcar feito'; sub=`Próx: ${fmtDateBR(proxima)}`; } return `<button class="flag-btn ${cls}" onclick="window.__marcarOferta('${c.id}','${escapeHtml(c.nome)}')"><span class="flag-label">${label}</span><span class="flag-sub">${sub}</span></button>`; }
 window.__marcarOferta = async (id, nome) => { const hoje = new Date(); const hojeStr = hoje.toISOString().split('T')[0]; const proxima = proximaSextaStr(hoje); try{ await updateDoc(doc(db, "clientes", id), { ofertaRelampago: { ultimaData: hojeStr, proximaData: proxima }, ultimaEdicaoPor: currentUserName, ultimaEdicaoEm: serverTimestamp() }); await registrarHistorico(id, nome, 'edição', `Oferta Relâmpago marcada como feita em ${fmtDateBR(hojeStr)} por ${currentUserName}. Próxima: ${fmtDateBR(proxima)}.`); showToast('⚡ Oferta Relâmpago marcada!'); }catch(err){ console.error(err); showToast('Erro ao salvar.'); } };
-function renderDevolucaoFlag(c){ const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`; const diaAtual = hoje.getDate(); const mes2d = String(hoje.getMonth()+1).padStart(2,'0'); const feitoMes = c.notaDevolucao?.mesReferencia === mesAtual; let cls, label, sub; if(feitoMes){ cls='done'; label='✓ Feito'; sub=`Dia 30/${mes2d}`; } else if(diaAtual >= 30){ cls='hot'; label='🔴 Fazer hoje!'; sub=`Dia 30/${mes2d}`; } else if(diaAtual >= 27){ cls='warn'; label='⚠ Chegando'; sub=`Dia 30/${mes2d}`; } else { cls=''; label='📋 Marcar feito'; sub=`Dia 30/${mes2d}`; } return `<button class="flag-btn ${cls}" onclick="window.__marcarDevolucao('${c.id}','${escapeHtml(c.nome)}')""><span class="flag-label">${label}</span><span class="flag-sub">${sub}</span></button>`; }
+function renderDevolucaoFlag(c){ const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`; const diaAtual = hoje.getDate(); const mes2d = String(hoje.getMonth()+1).padStart(2,'0'); const feitoMes = c.notaDevolucao?.mesReferencia === mesAtual; let cls, label, sub; if(feitoMes){ cls='done'; label='✓ Feito'; sub=`Dia 30/${mes2d}`; } else if(diaAtual >= 30){ cls='hot'; label='🔴 Fazer hoje!'; sub=`Dia 30/${mes2d}`; } else if(diaAtual >= 27){ cls='warn'; label='⚠ Chegando'; sub=`Dia 30/${mes2d}`; } else { cls=''; label='📋 Marcar feito'; sub=`Dia 30/${mes2d}`; } return `<button class="flag-btn ${cls}" onclick="window.__marcarDevolucao('${c.id}','${escapeHtml(c.nome)}')"><span class="flag-label">${label}</span><span class="flag-sub">${sub}</span></button>`; }
 window.__marcarDevolucao = async (id, nome) => { const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`; const mesLabel = hoje.toLocaleString('pt-BR', { month:'long', year:'numeric' }); try{ await updateDoc(doc(db, "clientes", id), { notaDevolucao: { mesReferencia: mesAtual }, ultimaEdicaoPor: currentUserName, ultimaEdicaoEm: serverTimestamp() }); await registrarHistorico(id, nome, 'edição', `Nota de Devolução marcada como feita em ${mesLabel} por ${currentUserName}.`); showToast('📋 Nota de Devolução marcada!'); }catch(err){ console.error(err); showToast('Erro ao salvar.'); } };
 document.getElementById('searchInput').addEventListener('input', (e)=>{ termoBusca = e.target.value; renderTable(); });
 document.querySelectorAll('.chip[data-mp]').forEach(chip=>{ chip.addEventListener('click', ()=>{ document.querySelectorAll('.chip[data-mp]').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); filtroMarketplace = chip.dataset.mp; renderTable(); }); });
