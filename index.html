@@ -169,8 +169,42 @@ textarea{resize:vertical;min-height:70px;}
 #toast{position:fixed;bottom:24px;right:24px;z-index:100;background:var(--bg-card);border:1px solid var(--gold-dim);color:var(--text);padding:13px 20px;border-radius:10px;font-size:13px;box-shadow:0 10px 40px rgba(0,0,0,.5);transform:translateY(20px);opacity:0;transition:all .25s;max-width:320px;}
 #toast.show{transform:translateY(0);opacity:1;}
 .checklist-frame{width:100%;height:78vh;border:1px solid var(--border);border-radius:12px;background:#0a0a0a;}
+.calc-mp-selector{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.calc-mp-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:10px 18px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:all .15s;}
+.calc-mp-btn:hover{border-color:var(--gold-dim);}
+.calc-mp-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.calc-mp-btn svg{flex:none;}
+.calc-mode-selector{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+.calc-mode-btn{flex:1;min-width:200px;background:#0e0e0e;border:1px solid var(--border);color:var(--text-dim);padding:14px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:600;font-size:14px;transition:all .15s;}
+.calc-mode-btn:hover{border-color:var(--gold-dim);}
+.calc-mode-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+.calc-inputs{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;}
+.calc-badge-head{margin-bottom:18px;font-size:13px;color:var(--text-dim);}
+.calc-toggles-title{font-size:11px;font-weight:700;color:var(--text-dim);margin:18px 0 12px;text-transform:uppercase;letter-spacing:.05em;}
+.calc-toggles{display:flex;gap:8px;flex-wrap:wrap;}
+.calc-toggle{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;transition:all .15s;}
+.calc-toggle.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.calc-mltipo{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;}
+.calc-mltipo.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.calc-result{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;min-height:300px;}
+.calc-result-empty{color:var(--text-dim);text-align:center;padding:60px 20px;font-size:14px;}
+.calc-big{text-align:center;padding:20px 0;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.calc-big .cb-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:8px;}
+.calc-big .cb-value{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;line-height:1;}
+.calc-big.pos .cb-value{color:var(--green);}
+.calc-big.neg .cb-value{color:var(--red);}
+.calc-big.price .cb-value{color:var(--gold);}
+.calc-breakdown{display:flex;flex-direction:column;gap:9px;}
+.calc-line{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.calc-line .cl-label{color:var(--text-dim);}
+.calc-line .cl-val{font-weight:600;}
+.calc-line.subtract .cl-val{color:var(--red);}
+.calc-line.total{border-top:1px solid var(--border);padding-top:12px;margin-top:6px;font-size:15px;}
+.calc-line.total .cl-label{color:var(--text);font-weight:600;}
+.calc-margin-badge{display:inline-block;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:700;margin-top:4px;}
 @media(max-width:1200px){.summary-grid{grid-template-columns:repeat(3,1fr);}.commission-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr);}.perf-cards{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr);}.perf-cards{grid-template-columns:repeat(2,1fr);}.calc-grid{grid-template-columns:1fr;}}
 @media(max-width:768px){main{padding:16px;}.topbar{padding:12px 16px;}}
 @media(max-width:480px){.summary-grid{grid-template-columns:1fr;}.login-box{padding:36px 22px;}.commission-grid{grid-template-columns:1fr;}.perf-cards{grid-template-columns:1fr;}}
 </style>
@@ -224,6 +258,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="tab-btn active" data-tab="clientes">👥 Clientes</button>
       <button class="tab-btn" data-tab="desempenho">📊 Desempenho</button>
       <button class="tab-btn" data-tab="contratos">🤝 Contratos Novos</button>
+      <button class="tab-btn" data-tab="calculadora">🧮 Calculadora</button>
       <button class="tab-btn" data-tab="checklist">✅ Checklist Shopee</button>
     </div>
     <div class="tab-pane active" id="tab-clientes">
@@ -273,6 +308,44 @@ textarea{resize:vertical;min-height:70px;}
       <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
       <div class="contratos-section"><h3>✅ Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
       <div class="contratos-section"><h3>❌ Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
+    </div>
+    <div class="tab-pane" id="tab-calculadora">
+      <div class="calc-mp-selector">
+        <button class="calc-mp-btn active" data-cmp="shopee">Shopee</button>
+        <button class="calc-mp-btn" data-cmp="ml">Mercado Livre</button>
+        <button class="calc-mp-btn" data-cmp="tiktok">TikTok Shop</button>
+        <button class="calc-mp-btn" data-cmp="shein">Shein</button>
+      </div>
+      <div class="calc-mode-selector">
+        <button class="calc-mode-btn active" data-mode="venda">💰 Tenho o valor de venda</button>
+        <button class="calc-mode-btn" data-mode="quanto">🎯 Quero saber quanto vender</button>
+      </div>
+      <div class="calc-grid">
+        <div class="calc-inputs">
+          <div class="calc-badge-head" id="calcBadgeHead"></div>
+          <div class="field"><label>Custo do Produto (R$)</label><input type="number" step="0.01" id="calcCusto" placeholder="0,00"></div>
+          <div class="field" id="calcVendaField"><label>Preço de Venda (R$)</label><input type="number" step="0.01" id="calcVenda" placeholder="0,00"></div>
+          <div class="field hidden" id="calcMargemField"><label>Margem de Lucro Desejada (% sobre a venda)</label><input type="number" step="0.1" id="calcMargem" placeholder="Ex: 20"></div>
+          <div class="field hidden" id="calcPesoField"><label>Peso do Produto (kg) — frete ML</label><input type="number" step="0.01" id="calcPeso" placeholder="Ex: 0.5"></div>
+          <div class="field hidden" id="calcMlTipoField"><label>Tipo de Anúncio ML</label>
+            <div class="chip-toggle-group">
+              <button type="button" class="calc-mltipo on" data-tipo="classico">Clássico (14%)</button>
+              <button type="button" class="calc-mltipo" data-tipo="premium">Premium (17%)</button>
+            </div>
+          </div>
+          <div class="field"><label>Imposto (%) — opcional</label><input type="number" step="0.01" id="calcImposto" placeholder="Ex: 6"></div>
+          <div class="calc-toggles-title">Extras (liga/desliga)</div>
+          <div class="calc-toggles">
+            <button type="button" class="calc-toggle" data-t="cupom">🎟️ Cupom 3%</button>
+            <button type="button" class="calc-toggle" data-t="relampago">⚡ Relâmpago 5%</button>
+            <button type="button" class="calc-toggle" data-t="ads">📢 Ads 10%</button>
+          </div>
+          <button class="btn btn-gold" id="calcBtn" style="margin-top:20px;">Calcular</button>
+        </div>
+        <div class="calc-result" id="calcResult">
+          <div class="calc-result-empty">Preencha os dados e clique em <b>Calcular</b> para ver o resultado.</div>
+        </div>
+      </div>
     </div>
     <div class="tab-pane" id="tab-checklist">
       <iframe class="checklist-frame" src="https://lbmarketplacee.github.io/lbchecklistshopee/" title="Checklist Shopee"></iframe>
@@ -442,6 +515,101 @@ document.getElementById('cancelDeleteModal').addEventListener('click',()=>{delMo
 document.getElementById('confirmDeleteBtn').addEventListener('click',async()=>{if(!delPend)return;try{await log(delPend.id,delPend.nome,'exclusão',`Excluído por ${currentUser}.`);await deleteDoc(doc(db,"clientes",delPend.id));showToast('Cliente excluído.');}catch{showToast('Erro.');}delModalOverlay.classList.add('hidden');delPend=null;});
 let toastT=null;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
+/* ================= CALCULADORA INTERNA LB ================= */
+const ML_FRETE=[
+{max:0.3,v:[6.46,7.49,8.86,14.82,17.22,19.74,22.14,25.14]},
+{max:0.5,v:[6.80,7.60,8.97,15.90,18.54,21.18,23.82,27.06]},
+{max:1,v:[6.91,7.71,9.09,16.62,19.38,22.14,24.90,28.38]},
+{max:1.5,v:[7.03,7.83,9.20,16.98,19.74,22.62,25.38,29.58]},
+{max:2,v:[7.14,7.94,9.31,17.34,20.22,23.10,25.98,29.58]},
+{max:3,v:[7.26,9.09,9.77,18.90,22.02,25.26,28.38,31.50]},
+{max:4,v:[7.37,9.31,10.23,20.46,23.82,27.18,30.66,34.02]},
+{max:5,v:[7.49,9.54,11.14,22.14,25.86,29.58,33.30,36.90]},
+{max:6,v:[7.60,9.77,11.37,30.54,34.26,39.18,42.90,47.70]},
+{max:7,v:[7.71,10.00,11.60,32.46,37.26,43.26,48.06,52.86]},
+{max:8,v:[7.83,10.23,11.83,34.62,40.38,46.14,51.90,57.66]},
+{max:9,v:[7.94,10.46,12.06,35.58,41.46,47.46,53.34,59.22]},
+{max:11,v:[8.06,10.91,12.51,49.50,57.66,65.94,74.10,82.38]},
+{max:13,v:[8.17,11.37,12.97,50.58,59.10,67.50,75.90,84.30]},
+{max:15,v:[8.29,11.60,13.20,54.06,62.94,71.94,80.94,89.94]},
+{max:17,v:[8.40,11.83,13.43,58.26,67.26,76.26,84.90,94.38]},
+{max:20,v:[8.51,12.06,13.66,65.70,76.62,87.54,98.46,109.38]},
+{max:999,v:[8.74,12.51,13.89,76.86,90.06,101.70,114.42,127.14]}
+];
+function faixaPrecoIdx(p){if(p<19)return 0;if(p<49)return 1;if(p<79)return 2;if(p<100)return 3;if(p<120)return 4;if(p<150)return 5;if(p<200)return 6;return 7;}
+function freteML(peso,preco){if(preco<19)return 0;const row=ML_FRETE.find(r=>peso<=r.max)||ML_FRETE[ML_FRETE.length-1];return row.v[faixaPrecoIdx(preco)];}
+function taxaComissao(mp,preco,mlTipo){
+  if(mp==='shopee'){if(preco<80)return{com:0.20,fix:4};if(preco<100)return{com:0.14,fix:16};if(preco<200)return{com:0.14,fix:20};return{com:0.14,fix:26};}
+  if(mp==='ml'){return{com:mlTipo==='premium'?0.17:0.14,fix:0};}
+  if(mp==='tiktok'){return preco<50?{com:0.10,fix:4}:{com:0.06,fix:6};}
+  if(mp==='shein'){return{com:0.20,fix:4};}
+  return{com:0,fix:0};
+}
+let calcMp='shopee',calcMode='venda',calcMlTipo='classico';
+let calcToggles={cupom:false,relampago:false,ads:false};
+function calcRefreshFields(){
+  document.getElementById('calcVendaField').classList.toggle('hidden',calcMode!=='venda');
+  document.getElementById('calcMargemField').classList.toggle('hidden',calcMode!=='quanto');
+  document.getElementById('calcPesoField').classList.toggle('hidden',calcMp!=='ml');
+  document.getElementById('calcMlTipoField').classList.toggle('hidden',calcMp!=='ml');
+  const nomes={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok Shop',shein:'Shein'};
+  const taxasTxt={shopee:'20% até R$79,99 (+R$4) · 14% acima (+R$16/20/26)',ml:'14% Clássico ou 17% Premium + frete por peso',tiktok:'10% até R$49,99 (+R$4) · 6% acima (+R$6)',shein:'20% + R$4 por item'};
+  document.getElementById('calcBadgeHead').innerHTML=`<span class="mp-badge ${MP_C[calcMp]}">${MP_ICON[calcMp]}${nomes[calcMp]}</span> <span style="margin-left:6px">${taxasTxt[calcMp]}</span>`;
+}
+document.querySelectorAll('.calc-mp-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mp-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');calcMp=b.dataset.cmp;calcRefreshFields();}));
+document.querySelectorAll('.calc-mode-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mode-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');calcMode=b.dataset.mode;calcRefreshFields();}));
+document.querySelectorAll('.calc-mltipo').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mltipo').forEach(x=>x.classList.remove('on'));b.classList.add('on');calcMlTipo=b.dataset.tipo;}));
+document.querySelectorAll('.calc-toggle').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');calcToggles[b.dataset.t]=b.classList.contains('on');}));
+function calcDetalhado(preco,custo,imposto,peso){
+  const t=taxaComissao(calcMp,preco,calcMlTipo);
+  const comissao=preco*t.com+t.fix;
+  const frete=calcMp==='ml'?freteML(peso,preco):0;
+  const cup=calcToggles.cupom?preco*0.03:0;
+  const rel=calcToggles.relampago?preco*0.05:0;
+  const ad=calcToggles.ads?preco*0.10:0;
+  const imp=preco*(imposto/100);
+  const lucro=preco-comissao-frete-cup-rel-ad-imp-custo;
+  return{comissao,comPct:t.com*100,comFix:t.fix,frete,cup,rel,ad,imp,lucro,margem:preco>0?lucro/preco*100:0};
+}
+document.getElementById('calcBtn').addEventListener('click',()=>{
+  const custo=parseFloat(document.getElementById('calcCusto').value)||0;
+  const imposto=parseFloat(document.getElementById('calcImposto').value)||0;
+  const peso=parseFloat(document.getElementById('calcPeso').value)||0;
+  const res=document.getElementById('calcResult');
+  if(calcMp==='ml'&&!peso){res.innerHTML='<div class="calc-result-empty" style="color:var(--amber)">⚠ Informe o peso do produto para calcular o frete do Mercado Livre.</div>';return;}
+  let preco;
+  if(calcMode==='venda'){
+    preco=parseFloat(document.getElementById('calcVenda').value)||0;
+    if(!preco){res.innerHTML='<div class="calc-result-empty" style="color:var(--amber)">⚠ Informe o preço de venda.</div>';return;}
+  }else{
+    const margem=parseFloat(document.getElementById('calcMargem').value)||0;
+    if(margem>=100){res.innerHTML='<div class="calc-result-empty" style="color:var(--red)">⚠ Margem deve ser menor que 100%.</div>';return;}
+    let lo=custo,hi=custo*30+2000;
+    for(let i=0;i<120;i++){const mid=(lo+hi)/2;const d=calcDetalhado(mid,custo,imposto,peso);if(d.margem<margem)lo=mid;else hi=mid;}
+    preco=(lo+hi)/2;
+  }
+  const d=calcDetalhado(preco,custo,imposto,peso);
+  let bigHtml='';
+  if(calcMode==='quanto'){
+    bigHtml=`<div class="calc-big price"><div class="cb-label">Preço de Venda Sugerido</div><div class="cb-value">${fmtR(preco)}</div></div>`;
+  }
+  const lucroCls=d.lucro>=0?'pos':'neg';
+  const margemCor=d.margem>=15?'var(--green)':d.margem>=0?'var(--amber)':'var(--red)';
+  bigHtml+=`<div class="calc-big ${lucroCls}"><div class="cb-label">Lucro Líquido</div><div class="cb-value">${fmtR(d.lucro)}</div><div class="calc-margin-badge" style="background:${margemCor}22;color:${margemCor}">Margem: ${d.margem.toFixed(1)}%</div></div>`;
+  let br=`<div class="calc-breakdown">`;
+  br+=`<div class="calc-line"><span class="cl-label">Preço de Venda</span><span class="cl-val">${fmtR(preco)}</span></div>`;
+  br+=`<div class="calc-line subtract"><span class="cl-label">Comissão (${d.comPct}%${d.comFix?' + '+fmtR(d.comFix):''})</span><span class="cl-val">- ${fmtR(d.comissao)}</span></div>`;
+  if(calcMp==='ml')br+=`<div class="calc-line subtract"><span class="cl-label">Frete ML (peso ${peso}kg)</span><span class="cl-val">- ${fmtR(d.frete)}</span></div>`;
+  if(d.cup>0)br+=`<div class="calc-line subtract"><span class="cl-label">Cupom 3%</span><span class="cl-val">- ${fmtR(d.cup)}</span></div>`;
+  if(d.rel>0)br+=`<div class="calc-line subtract"><span class="cl-label">Relâmpago 5%</span><span class="cl-val">- ${fmtR(d.rel)}</span></div>`;
+  if(d.ad>0)br+=`<div class="calc-line subtract"><span class="cl-label">Ads 10%</span><span class="cl-val">- ${fmtR(d.ad)}</span></div>`;
+  if(d.imp>0)br+=`<div class="calc-line subtract"><span class="cl-label">Imposto ${imposto}%</span><span class="cl-val">- ${fmtR(d.imp)}</span></div>`;
+  br+=`<div class="calc-line subtract"><span class="cl-label">Custo do Produto</span><span class="cl-val">- ${fmtR(custo)}</span></div>`;
+  br+=`<div class="calc-line total"><span class="cl-label">= Lucro Líquido</span><span class="cl-val" style="color:${d.lucro>=0?'var(--green)':'var(--red)'}">${fmtR(d.lucro)}</span></div>`;
+  br+=`</div>`;
+  res.innerHTML=bigHtml+br;
+});
+calcRefreshFields();
 </script>
 </body>
 </html>
