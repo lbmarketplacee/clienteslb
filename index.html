@@ -317,14 +317,14 @@ textarea{resize:vertical;min-height:70px;}
         <button class="calc-mp-btn" data-cmp="shein">Shein</button>
       </div>
       <div class="calc-mode-selector">
-        <button class="calc-mode-btn active" data-mode="venda">💰 Tenho o valor de venda</button>
-        <button class="calc-mode-btn" data-mode="quanto">🎯 Quero saber quanto vender</button>
+        <button class="calc-mode-btn active" data-mode="quanto">🎯 Quero saber quanto vender</button>
+        <button class="calc-mode-btn" data-mode="venda">💰 Tenho o valor de venda</button>
       </div>
       <div class="calc-grid">
         <div class="calc-inputs">
           <div class="calc-badge-head" id="calcBadgeHead"></div>
-          <div class="field" id="calcVendaField"><label>Preço de Venda / Anúncio (R$)</label><input type="number" step="0.01" id="calcVenda" placeholder="0,00"></div>
-          <div class="field hidden" id="calcLiquidoField"><label>Valor Líquido que Deseja Receber (R$)</label><input type="number" step="0.01" id="calcLiquido" placeholder="0,00"></div>
+          <div class="field hidden" id="calcVendaField"><label>Preço de Venda / Anúncio (R$)</label><input type="number" step="0.01" id="calcVenda" placeholder="0,00"></div>
+          <div class="field" id="calcLiquidoField"><label>Valor Líquido que Deseja Receber (R$)</label><input type="number" step="0.01" id="calcLiquido" placeholder="0,00"></div>
           <div class="field hidden" id="calcPesoField"><label>Peso do Produto (kg) — frete ML</label><input type="number" step="0.01" id="calcPeso" placeholder="Ex: 0.5"></div>
           <div class="field hidden" id="calcMlTipoField"><label>Tipo de Anúncio ML</label>
             <div class="chip-toggle-group">
@@ -514,7 +514,7 @@ document.getElementById('cancelDeleteModal').addEventListener('click',()=>{delMo
 document.getElementById('confirmDeleteBtn').addEventListener('click',async()=>{if(!delPend)return;try{await log(delPend.id,delPend.nome,'exclusão',`Excluído por ${currentUser}.`);await deleteDoc(doc(db,"clientes",delPend.id));showToast('Cliente excluído.');}catch{showToast('Erro.');}delModalOverlay.classList.add('hidden');delPend=null;});
 let toastT=null;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
-/* ================= CALCULADORA INTERNA LB (gross-up) ================= */
+/* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
 {max:0.3,v:[6.46,7.49,8.86,14.82,17.22,19.74,22.14,25.14]},
 {max:0.5,v:[6.80,7.60,8.97,15.90,18.54,21.18,23.82,27.06]},
@@ -537,15 +537,51 @@ const ML_FRETE=[
 ];
 function faixaPrecoIdx(p){if(p<19)return 0;if(p<49)return 1;if(p<79)return 2;if(p<100)return 3;if(p<120)return 4;if(p<150)return 5;if(p<200)return 6;return 7;}
 function freteML(peso,preco){if(preco<19)return 0;const row=ML_FRETE.find(r=>peso<=r.max)||ML_FRETE[ML_FRETE.length-1];return row.v[faixaPrecoIdx(preco)];}
-function taxaComissao(mp,preco,mlTipo){
-  if(mp==='shopee'){if(preco<80)return{com:0.20,fix:4};if(preco<100)return{com:0.14,fix:16};if(preco<200)return{com:0.14,fix:20};return{com:0.14,fix:26};}
-  if(mp==='ml'){return{com:mlTipo==='premium'?0.17:0.14,fix:0};}
-  if(mp==='tiktok'){return preco<50?{com:0.10,fix:4}:{com:0.06,fix:6};}
-  if(mp==='shein'){return{com:0.20,fix:4};}
-  return{com:0,fix:0};
+// Faixas de comissão por marketplace (definidas pelo PREÇO ANUNCIADO)
+const FAIXAS={
+  shopee:[{min:0,max:79.99,com:0.20,fix:4},{min:80,max:99.99,com:0.14,fix:16},{min:100,max:199.99,com:0.14,fix:20},{min:200,max:Infinity,com:0.14,fix:26}],
+  tiktok:[{min:0,max:49.99,com:0.10,fix:4},{min:50,max:Infinity,com:0.06,fix:6}],
+  shein:[{min:0,max:Infinity,com:0.20,fix:4}]
+};
+function faixaPorPreco(mp,p,mlTipo){
+  if(mp==='ml')return{min:0,max:Infinity,com:mlTipo==='premium'?0.17:0.14,fix:0};
+  const arr=FAIXAS[mp];for(const f of arr){if(p>=f.min&&p<=f.max)return f;}return arr[arr.length-1];
 }
-let calcMp='shopee',calcMode='venda',calcMlTipo='classico';
+let calcMp='shopee',calcMode='quanto',calcMlTipo='classico';
 let calcToggles={cupom:false,relampago:false,ads:false};
+function pctExtras(imposto){let p=imposto/100;if(calcToggles.cupom)p+=0.03;if(calcToggles.relampago)p+=0.05;if(calcToggles.ads)p+=0.10;return p;}
+// Detalha o resultado a partir de um preço de anúncio
+function calcDetalhado(preco,imposto,peso){
+  const f=faixaPorPreco(calcMp,preco,calcMlTipo);
+  const comissao=preco*f.com+f.fix;
+  const frete=calcMp==='ml'?freteML(peso,preco):0;
+  const cup=calcToggles.cupom?preco*0.03:0;
+  const rel=calcToggles.relampago?preco*0.05:0;
+  const ad=calcToggles.ads?preco*0.10:0;
+  const imp=preco*(imposto/100);
+  const totalTaxas=comissao+frete+cup+rel+ad+imp;
+  const liquido=preco-totalTaxas;
+  return{comissao,comPct:f.com*100,comFix:f.fix,frete,cup,rel,ad,imp,totalTaxas,liquido,pctTaxas:preco>0?totalTaxas/preco*100:0};
+}
+// GROSS-UP: dado o líquido desejado, acha o menor preço de anúncio, respeitando as faixas
+function grossUp(alvo,imposto,peso){
+  if(calcMp==='ml'){
+    // ML tem frete fixo por peso+faixa; resolve numericamente por busca
+    let lo=alvo,hi=alvo*6+3000;
+    for(let i=0;i<140;i++){const mid=(lo+hi)/2;if(calcDetalhado(mid,imposto,peso).liquido<alvo)lo=mid;else hi=mid;}
+    return (lo+hi)/2;
+  }
+  // Shopee/TikTok/Shein: resolve algebricamente por faixa e valida coerência
+  const arr=FAIXAS[calcMp];const solucoes=[];
+  for(const f of arr){
+    const pctVar=f.com+pctExtras(imposto);
+    const preco=(alvo+f.fix)/(1-pctVar);
+    if(preco>=f.min&&preco<=f.max)solucoes.push(preco);
+  }
+  if(solucoes.length===0)return null;
+  solucoes.sort((a,b)=>a-b);
+  return solucoes[0];
+}
 function calcRefreshFields(){
   document.getElementById('calcVendaField').classList.toggle('hidden',calcMode!=='venda');
   document.getElementById('calcLiquidoField').classList.toggle('hidden',calcMode!=='quanto');
@@ -559,18 +595,6 @@ document.querySelectorAll('.calc-mp-btn').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('.calc-mode-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mode-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');calcMode=b.dataset.mode;calcRefreshFields();}));
 document.querySelectorAll('.calc-mltipo').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mltipo').forEach(x=>x.classList.remove('on'));b.classList.add('on');calcMlTipo=b.dataset.tipo;}));
 document.querySelectorAll('.calc-toggle').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');calcToggles[b.dataset.t]=b.classList.contains('on');}));
-function calcDetalhado(preco,imposto,peso){
-  const t=taxaComissao(calcMp,preco,calcMlTipo);
-  const comissao=preco*t.com+t.fix;
-  const frete=calcMp==='ml'?freteML(peso,preco):0;
-  const cup=calcToggles.cupom?preco*0.03:0;
-  const rel=calcToggles.relampago?preco*0.05:0;
-  const ad=calcToggles.ads?preco*0.10:0;
-  const imp=preco*(imposto/100);
-  const totalTaxas=comissao+frete+cup+rel+ad+imp;
-  const liquido=preco-totalTaxas;
-  return{comissao,comPct:t.com*100,comFix:t.fix,frete,cup,rel,ad,imp,totalTaxas,liquido,pctTaxas:preco>0?totalTaxas/preco*100:0};
-}
 document.getElementById('calcBtn').addEventListener('click',()=>{
   const imposto=parseFloat(document.getElementById('calcImposto').value)||0;
   const peso=parseFloat(document.getElementById('calcPeso').value)||0;
@@ -583,9 +607,8 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
   }else{
     const alvo=parseFloat(document.getElementById('calcLiquido').value)||0;
     if(!alvo){res.innerHTML='<div class="calc-result-empty" style="color:var(--amber)">⚠ Informe o valor líquido que deseja receber.</div>';return;}
-    let lo=alvo,hi=alvo*6+3000;
-    for(let i=0;i<140;i++){const mid=(lo+hi)/2;const d=calcDetalhado(mid,imposto,peso);if(d.liquido<alvo)lo=mid;else hi=mid;}
-    preco=(lo+hi)/2;
+    preco=grossUp(alvo,imposto,peso);
+    if(preco===null){res.innerHTML='<div class="calc-result-empty" style="color:var(--red)">⚠ Não foi possível encontrar um preço válido para esse líquido nas faixas atuais. Revise os extras/imposto.</div>';return;}
   }
   const d=calcDetalhado(preco,imposto,peso);
   let bigHtml='';
