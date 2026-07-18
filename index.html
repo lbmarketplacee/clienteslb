@@ -268,6 +268,33 @@ textarea{resize:vertical;min-height:70px;}
 @media(max-width:1100px){.commission-grid{grid-template-columns:repeat(2,1fr);}.perf-cards{grid-template-columns:repeat(2,1fr);}.calc-grid{grid-template-columns:1fr;}}
 @media(max-width:900px){.sidebar{transform:translateX(-100%);transition:transform .3s;}.sidebar.open{transform:translateX(0);}.main-area{margin-left:0;}.mobile-menu-btn{display:flex;}.summary-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:600px){.summary-grid{grid-template-columns:1fr;}.perf-cards{grid-template-columns:1fr;}.commission-grid{grid-template-columns:1fr;}.welcome h1{font-size:24px;}.content,.topbar{padding-left:20px;padding-right:20px;}}
+
+/* ===== COFRE DE ACESSOS ===== */
+.vault-lock{text-align:center;padding:26px 10px;}
+.vault-lock .vl-icon{width:64px;height:64px;border-radius:18px;background:var(--gold-soft);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--gold);}
+.vault-lock h3{color:var(--gold);font-size:22px;margin-bottom:6px;}
+.vault-lock p{color:var(--text-dim);font-size:13px;line-height:1.6;margin-bottom:20px;}
+.vault-warn{background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--amber);line-height:1.6;margin-top:14px;text-align:left;}
+.acc-list{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.acc-item{background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.acc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.acc-plat{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13px;color:var(--text);}
+.acc-row{display:flex;align-items:center;gap:8px;margin-top:7px;}
+.acc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);min-width:54px;}
+.acc-val{flex:1;font-size:13px;color:var(--text);font-family:ui-monospace,monospace;word-break:break-all;background:#141414;border:1px solid var(--border-soft);border-radius:6px;padding:7px 10px;}
+.acc-val.blur{filter:blur(5px);user-select:none;}
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:6px 9px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s;flex:none;}
+.copy-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.acc-add{border:1px dashed var(--border);border-radius:12px;padding:16px;}
+.acc-add .form-row{gap:8px;}
+.mig-table{width:100%;border-collapse:collapse;font-size:12px;}
+.mig-table th{text-align:left;padding:9px 10px;color:var(--text-dim);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.mig-table td{padding:9px 10px;border-bottom:1px solid var(--border-soft);vertical-align:top;}
+.mig-ok{color:var(--green);font-weight:700;}
+.mig-bad{color:var(--amber);font-weight:700;}
+.mig-scroll{max-height:52vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;}
+.mig-cli{font-weight:600;color:var(--text);}
+.mig-raw{color:var(--text-dim);font-size:11px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -331,6 +358,7 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="topbar-actions">
         <button class="btn btn-ghost btn-sm" id="openHistoricoGlobalBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg> Histórico</span></button>
+        <button class="btn btn-ghost btn-sm" id="openMigBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Migrar p/ Cofre</span></button>
         <button class="btn btn-ghost btn-sm" id="importInitialBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Importar Lista</span></button>
         <button class="btn btn-gold btn-sm" id="openNewClientBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Cliente</span></button>
       </div>
@@ -488,6 +516,7 @@ textarea{resize:vertical;min-height:70px;}
       <input type="hidden" id="clientId">
       <div class="field"><label>Nome do Cliente</label><input type="text" id="fNome" required></div>
       <div class="field"><label>E-mail (opcional)</label><input type="email" id="fEmail" placeholder="cliente@email.com"></div>
+      <div class="field"><label>Pasta no Google Drive (link) — opcional</label><input type="url" id="fDrive" placeholder="https://drive.google.com/drive/folders/..."></div>
       <div class="field"><label>Marketplaces</label><div class="chip-toggle-group">
         <button type="button" class="chip-toggle" data-val="shopee">Shopee</button>
         <button type="button" class="chip-toggle" data-val="ml">Mercado Livre</button>
@@ -555,6 +584,51 @@ textarea{resize:vertical;min-height:70px;}
     </div>
   </div>
 </div>
+<div class="modal-overlay hidden" id="vaultModalOverlay">
+  <div class="modal modal-wide">
+    <div id="vaultLockView">
+      <div class="vault-lock">
+        <div class="vl-icon"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <h3>Cofre de Acessos</h3>
+        <p>Digite a senha-mestra da LB para abrir o cofre.<br>Ela nunca é salva — fica só nesta sessão.</p>
+        <input type="password" id="vaultMaster" placeholder="Senha-mestra" autocomplete="off">
+        <div id="vaultLockMsg" style="color:var(--red);font-size:12px;margin-top:10px;min-height:16px"></div>
+        <button class="btn btn-gold" id="vaultUnlockBtn" style="width:100%;margin-top:8px">Abrir Cofre</button>
+        <div class="vault-warn" id="vaultFirstWarn" style="display:none"><b>Primeira vez:</b> a senha que você digitar agora vira a senha-mestra da LB. Anote em local seguro e passe para a Paloma e a Caroline. Se todos esquecerem, os acessos não poderão ser recuperados.</div>
+      </div>
+    </div>
+    <div id="vaultDataView" class="hidden">
+      <h2 id="vaultTitle">🔑 Acessos</h2>
+      <div class="acc-list" id="accList"></div>
+      <div class="acc-add">
+        <div class="gmv-form-title">Adicionar acesso</div>
+        <div class="form-row">
+          <div class="field"><label>Plataforma</label><input type="text" id="accPlat" placeholder="Shopee, Mercado Livre..."></div>
+          <div class="field"><label>E-mail / Login</label><input type="text" id="accEmail" placeholder="loja@gmail.com"></div>
+          <div class="field"><label>Senha</label><input type="text" id="accSenha" placeholder="senha"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="accAddBtn">+ Adicionar</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="vaultCloseBtn">Fechar</button>
+        <button type="button" class="btn btn-gold" id="vaultSaveBtn">Salvar Acessos</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay hidden" id="migModalOverlay">
+  <div class="modal modal-wide">
+    <h2>Migrar observações para o cofre</h2>
+    <p style="color:var(--text-dim);font-size:13px;line-height:1.6;margin-bottom:16px">Confira como o sistema separou os acessos que já estão nas observações. Nada é gravado até você confirmar.</p>
+    <div class="mig-scroll"><table class="mig-table"><thead><tr><th>Cliente</th><th>Plataforma</th><th>E-mail / Login</th><th>Senha</th><th>Status</th></tr></thead><tbody id="migBody"></tbody></table></div>
+    <div id="migResumo" style="font-size:12px;color:var(--text-dim);margin-top:12px"></div>
+    <div class="vault-warn" style="margin-top:12px">As observações originais <b>não são apagadas</b>. Depois de conferir, você pode limpar manualmente as que quiser.</div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="migCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="migConfirmBtn">Confirmar e gravar no cofre</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 <div id="toast"></div>
 <script type="module">
@@ -563,7 +637,7 @@ const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","paloma@lbmarketplace.
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import{getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,onSnapshot,query,orderBy,serverTimestamp,limit}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import{getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,onSnapshot,query,orderBy,serverTimestamp,limit,getDocs}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 const nome=e=>USERS_MAP[e]||e;
 const isLincoln=()=>currentEmail===LINCOLN_EMAIL;
@@ -603,7 +677,7 @@ function renderAll(){renderSummary();renderTable();renderDashCharts();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
-function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td>${statusBadge(c.descontoFixoFim)}</td><td>${statusBadge(c.cupomFim)}</td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td>${renderOfertaFlag(c)}</td><td>${renderDevolucaoFlag(c)}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
+function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td>${statusBadge(c.descontoFixoFim)}</td><td>${statusBadge(c.cupomFim)}</td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td>${renderOfertaFlag(c)}</td><td>${renderDevolucaoFlag(c)}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>${c.driveUrl?`<button class="icon-act" onclick="window.open('${esc(c.driveUrl)}','_blank')" title="Pasta no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button>`:''}<button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
 function renderTable(){const lista=clientesCache.filter(c=>c.nome.toLowerCase().includes(busca.toLowerCase())&&(filtroMp==='todos'||(c.marketplaces||[]).includes(filtroMp)));const html=lista.map(clienteRowHtml).join('');[['clientTableBody','emptyState'],['clientTableBody2','emptyState2']].forEach(([tb,es])=>{const tbody=document.getElementById(tb);const empty=document.getElementById(es);if(!tbody)return;if(!lista.length){tbody.innerHTML='';empty.classList.remove('hidden');}else{empty.classList.add('hidden');tbody.innerHTML=html;}});
 if(firstTableRender&&lista.length){firstTableRender=false;const tbody=document.getElementById('clientTableBody');const rows=[...tbody.querySelectorAll('tr')];rows.forEach(r=>r.classList.add('reveal'));const io=new IntersectionObserver(es=>{let i=0;es.forEach(e=>{if(e.isIntersecting){e.target.style.transitionDelay=(i++*40)+'ms';e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:.05});rows.forEach(r=>io.observe(r));}}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -644,13 +718,13 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});clientModalOverlay.classList.remove('hidden');}
+function openClientModal(c){editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
 document.getElementById('cancelClientModal').addEventListener('click',()=>clientModalOverlay.classList.add('hidden'));
 window.__edit=id=>{const c=clientesCache.find(x=>x.id===id);if(c)openClientModal(c);};
-document.getElementById('clientForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('clientId').value;const mps=Array.from(document.querySelectorAll('#clientForm .chip-toggle.on')).map(b=>b.dataset.val);const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),marketplaces:mps,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
-function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
+document.getElementById('clientForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('clientId').value;const mps=Array.from(document.querySelectorAll('#clientForm .chip-toggle.on')).map(b=>b.dataset.val);const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),marketplaces:mps,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
 window.__gmv=(id,nm)=>{document.getElementById('gmvClienteId').value=id;document.getElementById('gmvClienteNome').value=nm;document.getElementById('gmvModalTitle').textContent=`📊 GMV — ${nm}`;document.getElementById('gmvMes').value='';document.getElementById('gmvValor').value='';document.getElementById('gmvAds').value='';const regs=gmvCache.filter(g=>g.clienteId===id).sort((a,b)=>b.mes.localeCompare(a.mes));const lista=document.getElementById('gmvMonthList');lista.innerHTML=regs.length===0?'<div class="empty-state" style="padding:20px">Nenhum mês registrado.</div>':regs.map(g=>`<div class="gmv-month-item"><div class="mes-label">${fmtMes(g.mes)}</div><div class="gmv-values"><span style="color:var(--green);font-weight:600">GMV: ${fmtR(g.gmv)}</span><br><span style="color:var(--amber)">Ads: ${fmtR(g.gastoAds)}</span><br><small style="color:var(--text-dim)">por ${g.registradoPor||'—'}</small></div></div>`).join('');gmvModalOverlay.classList.remove('hidden');};
@@ -682,6 +756,36 @@ window.__del=(id,nm)=>{delPend={id,nome:nm};document.getElementById('deleteConfi
 document.getElementById('cancelDeleteModal').addEventListener('click',()=>{delModalOverlay.classList.add('hidden');delPend=null;});
 document.getElementById('confirmDeleteBtn').addEventListener('click',async()=>{if(!delPend)return;try{await log(delPend.id,delPend.nome,'exclusão',`Excluído por ${currentUser}.`);await deleteDoc(doc(db,"clientes",delPend.id));showToast('Cliente excluído.');}catch{showToast('Erro.');}delModalOverlay.classList.add('hidden');delPend=null;});
 let toastT=null;function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
+/* ================= COFRE DE ACESSOS (AES-GCM) ================= */
+let vaultKey=null, vaultCliId=null, vaultCliNome=null, vaultRows=[];
+const enc=new TextEncoder(), dec=new TextDecoder();
+function b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf)));}
+function unb64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0));}
+async function deriveKey(senha,saltB64){const salt=unb64(saltB64);const base=await crypto.subtle.importKey('raw',enc.encode(senha),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:210000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function cifrar(key,texto){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(texto));return b64(iv)+'.'+b64(ct);}
+async function decifrar(key,blob){const[i,c]=blob.split('.');const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(i)},key,unb64(c));return dec.decode(pt);}
+let cofreCfg=null;
+async function carregarCfg(){if(cofreCfg)return cofreCfg;const snap=await getDocs(query(collection(db,"cofre"),limit(1)));if(!snap.empty){cofreCfg={id:snap.docs[0].id,...snap.docs[0].data()};}return cofreCfg;}
+const vaultOverlay=document.getElementById('vaultModalOverlay');
+window.__vault=async(id,nm)=>{vaultCliId=id;vaultCliNome=nm;document.getElementById('vaultTitle').textContent='🔑 Acessos — '+nm;document.getElementById('vaultLockMsg').textContent='';document.getElementById('vaultMaster').value='';const cfg=await carregarCfg();document.getElementById('vaultFirstWarn').style.display=cfg?'none':'block';if(vaultKey){document.getElementById('vaultLockView').classList.add('hidden');document.getElementById('vaultDataView').classList.remove('hidden');await abrirAcessos();}else{document.getElementById('vaultLockView').classList.remove('hidden');document.getElementById('vaultDataView').classList.add('hidden');}vaultOverlay.classList.remove('hidden');};
+document.getElementById('vaultUnlockBtn').addEventListener('click',async()=>{const senha=document.getElementById('vaultMaster').value;const msg=document.getElementById('vaultLockMsg');if(!senha||senha.length<6){msg.textContent='A senha-mestra precisa ter pelo menos 6 caracteres.';return;}msg.textContent='Abrindo...';try{let cfg=await carregarCfg();if(!cfg){const salt=b64(crypto.getRandomValues(new Uint8Array(16)));const k=await deriveKey(senha,salt);const check=await cifrar(k,'LB_COFRE_OK');const r=await addDoc(collection(db,"cofre"),{salt,check,criadoPor:currentUser,criadoEm:serverTimestamp()});cofreCfg={id:r.id,salt,check};vaultKey=k;showToast('🔐 Cofre criado! Guarde bem a senha-mestra.');}else{const k=await deriveKey(senha,cfg.salt);const ok=await decifrar(k,cfg.check).catch(()=>null);if(ok!=='LB_COFRE_OK'){msg.textContent='Senha-mestra incorreta.';return;}vaultKey=k;}msg.textContent='';document.getElementById('vaultLockView').classList.add('hidden');document.getElementById('vaultDataView').classList.remove('hidden');await abrirAcessos();}catch(e){console.error(e);msg.textContent='Erro ao abrir o cofre.';}});
+async function abrirAcessos(){const c=clientesCache.find(x=>x.id===vaultCliId);vaultRows=[];if(c&&c.acessosCof){try{vaultRows=JSON.parse(await decifrar(vaultKey,c.acessosCof));}catch(e){showToast('Não foi possível ler os acessos deste cliente.');}}renderAcessos();}
+function renderAcessos(){const l=document.getElementById('accList');if(!vaultRows.length){l.innerHTML='<div class="empty-state" style="padding:24px">Nenhum acesso guardado para este cliente ainda.</div>';return;}l.innerHTML=vaultRows.map((a,i)=>`<div class="acc-item"><div class="acc-head"><span class="acc-plat">${MP_ICON[detectMp(a.plataforma)]||'🔗'} ${esc(a.plataforma)}</span><button class="copy-btn" onclick="window.__accDel(${i})">Remover</button></div><div class="acc-row"><span class="acc-lbl">Login</span><span class="acc-val">${esc(a.email)}</span><button class="copy-btn" onclick="window.__copy('${esc(a.email)}')">Copiar</button></div><div class="acc-row"><span class="acc-lbl">Senha</span><span class="acc-val blur" id="pw-${i}">${esc(a.senha)}</span><button class="copy-btn" onclick="document.getElementById('pw-${i}').classList.toggle('blur')">Ver</button><button class="copy-btn" onclick="window.__copy('${esc(a.senha)}')">Copiar</button></div></div>`).join('');}
+function detectMp(p){const s=(p||'').toLowerCase();if(s.includes('shopee'))return'shopee';if(s.includes('mercado')||s.includes(' ml'))return'ml';if(s.includes('tiktok'))return'tiktok';if(s.includes('shein'))return'shein';return'';}
+window.__copy=async t=>{try{await navigator.clipboard.writeText(t);showToast('Copiado!');}catch{showToast('Não foi possível copiar.');}};
+window.__accDel=i=>{vaultRows.splice(i,1);renderAcessos();};
+document.getElementById('accAddBtn').addEventListener('click',()=>{const p=document.getElementById('accPlat').value.trim();const e2=document.getElementById('accEmail').value.trim();const s=document.getElementById('accSenha').value.trim();if(!p||!e2){showToast('Informe pelo menos plataforma e login.');return;}vaultRows.push({plataforma:p,email:e2,senha:s});document.getElementById('accPlat').value='';document.getElementById('accEmail').value='';document.getElementById('accSenha').value='';renderAcessos();});
+document.getElementById('vaultCloseBtn').addEventListener('click',()=>vaultOverlay.classList.add('hidden'));
+document.getElementById('vaultSaveBtn').addEventListener('click',async()=>{try{const blob=await cifrar(vaultKey,JSON.stringify(vaultRows));await updateDoc(doc(db,"clientes",vaultCliId),{acessosCof:blob,ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});await log(vaultCliId,vaultCliNome,'edição',`Acessos do cofre atualizados por ${currentUser} (${vaultRows.length} registro(s)).`);showToast('🔐 Acessos salvos com segurança.');vaultOverlay.classList.add('hidden');}catch(e){console.error(e);showToast('Erro ao salvar acessos.');}});
+/* ---- MIGRAÇÃO DAS OBSERVAÇÕES ---- */
+function parseObs(txt){if(!txt)return[];const partes=txt.split(/[\n;]+/).map(s=>s.trim()).filter(Boolean);const out=[];partes.forEach(p=>{const m=p.match(/^(.*?)\s*[:：]\s*(.+)$/);if(!m){out.push({plataforma:'',email:p,senha:'',ok:false,raw:p});return;}const plat=m[1].trim();const resto=m[2].trim();const sp=resto.split(/\s*[\/|]\s*|\s{2,}/).map(s=>s.trim()).filter(Boolean);const email=sp[0]||'';const senha=sp.slice(1).join(' ')||'';out.push({plataforma:plat,email,senha,ok:!!(plat&&email&&senha),raw:p});});return out;}
+let migDados=[];
+const migOverlay=document.getElementById('migModalOverlay');
+document.getElementById('openMigBtn')?.addEventListener('click',async()=>{if(!vaultKey){showToast('Abra o cofre primeiro (botão 🔑 em qualquer cliente).');return;}migDados=[];clientesCache.forEach(c=>{const rows=parseObs(c.observacoes);if(rows.length)migDados.push({id:c.id,nome:c.nome,rows});});const tb=document.getElementById('migBody');if(!migDados.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-dim)">Nenhuma observação com acessos encontrada.</td></tr>';}else{tb.innerHTML=migDados.map(d=>d.rows.map((r,i)=>`<tr><td class="mig-cli">${i===0?esc(d.nome):''}</td><td>${esc(r.plataforma)||'<span class="mig-raw">—</span>'}</td><td>${esc(r.email)}</td><td>${esc(r.senha)||'<span class="mig-raw">—</span>'}</td><td>${r.ok?'<span class="mig-ok">✓ OK</span>':'<span class="mig-bad">⚠ Conferir</span>'}</td></tr>`).join('')).join('');}
+const tot=migDados.reduce((a,d)=>a+d.rows.length,0);const ok=migDados.reduce((a,d)=>a+d.rows.filter(r=>r.ok).length,0);document.getElementById('migResumo').innerHTML=`<b>${migDados.length}</b> cliente(s) · <b>${tot}</b> acesso(s) encontrados · <span class="mig-ok">${ok} completos</span> · <span class="mig-bad">${tot-ok} para conferir</span>`;migOverlay.classList.remove('hidden');});
+document.getElementById('migCancelBtn').addEventListener('click',()=>migOverlay.classList.add('hidden'));
+document.getElementById('migConfirmBtn').addEventListener('click',async()=>{if(!vaultKey){showToast('Cofre fechado.');return;}showToast('Gravando no cofre...');let n=0;for(const d of migDados){try{const rows=d.rows.map(r=>({plataforma:r.plataforma||'Acesso',email:r.email,senha:r.senha}));const blob=await cifrar(vaultKey,JSON.stringify(rows));await updateDoc(doc(db,"clientes",d.id),{acessosCof:blob});n++;}catch(e){console.error(e);}}await log('migracao','Migração','edição',`${n} cliente(s) migrados para o cofre por ${currentUser}.`);showToast(`🔐 ${n} cliente(s) migrados para o cofre!`);migOverlay.classList.add('hidden');});
+
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
 {max:0.3,v:[6.46,7.49,8.86,14.82,17.22,19.74,22.14,25.14]},
