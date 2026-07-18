@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{--bg:#0a0a0a;--bg-sidebar:#0c0c0c;--bg-card:#161616;--bg-card2:#1a1a1a;--gold:#D4AF37;--gold-soft:#C9A22730;--gold-dim:#9c8127;--gold-bright:#f5d060;--text:#f3f0e8;--text-dim:#a8a39a;--text-dim2:#6d6a63;--border:#2a261c;--border-soft:#1e1c17;--red:#e0525a;--red-bg:#e0525a20;--amber:#e0a352;--amber-bg:#e0a35220;--green:#5cb88a;--green-bg:#5cb88a20;--purple:#a855f7;--purple-bg:#a855f720;--teal:#69c9d0;--shopee:#ee4d2d;--ml:#ffe156;--tiktok:#69c9d0;--shein:#a855f7;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -295,6 +296,27 @@ textarea{resize:vertical;min-height:70px;}
 .mig-scroll{max-height:52vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;}
 .mig-cli{font-weight:600;color:var(--text);}
 .mig-raw{color:var(--text-dim);font-size:11px;font-style:italic;}
+/* ===== DRIVE ===== */
+.drive-status{display:flex;align-items:center;gap:8px;font-size:11px;padding:8px 12px;border-radius:8px;margin-top:12px;}
+.drive-off{background:#141414;border:1px solid var(--border);color:var(--text-dim);}
+.drive-on{background:var(--green-bg);border:1px solid var(--green);color:var(--green);}
+.drive-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.drive-dot.off{background:var(--text-dim2);}
+.drive-dot.on{background:var(--green);box-shadow:0 0 8px var(--green);}
+.dz{border:2px dashed var(--border);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px;}
+.dz:hover,.dz.over{border-color:var(--gold);background:var(--gold-soft);}
+.dz svg{color:var(--gold);margin-bottom:10px;}
+.dz .dz-t{font-size:14px;font-weight:600;color:var(--text);}
+.dz .dz-s{font-size:12px;color:var(--text-dim);margin-top:4px;}
+.file-list{display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow-y:auto;}
+.file-item{display:flex;align-items:center;gap:12px;background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:11px 14px;}
+.file-ico{width:34px;height:34px;border-radius:8px;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;color:var(--gold);flex:none;}
+.file-info{flex:1;min-width:0;}
+.file-nm{font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-mt{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.up-bar{height:5px;background:#141414;border-radius:99px;overflow:hidden;margin-top:10px;}
+.up-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright));width:0%;transition:width .3s;}
+
 </style>
 </head>
 <body>
@@ -343,6 +365,10 @@ textarea{resize:vertical;min-height:70px;}
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
       <h4>LB Premium</h4>
       <p>Em breve: relatórios avançados, análises e muito mais.</p>
+    </div>
+    <div class="drive-status drive-off" id="driveStatus" style="cursor:pointer" title="Conectar Google Drive">
+      <span class="drive-dot off" id="driveDot"></span>
+      <span id="driveStatusTxt">Drive desconectado</span>
     </div>
     <div class="nav-user">
       <div class="avatar" id="navAvatar">L</div>
@@ -629,6 +655,24 @@ textarea{resize:vertical;min-height:70px;}
     </div>
   </div>
 </div>
+<div class="modal-overlay hidden" id="driveModalOverlay">
+  <div class="modal modal-wide">
+    <h2 id="driveTitle">📁 Arquivos</h2>
+    <div class="dz" id="dropZone">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div class="dz-t">Arraste arquivos aqui ou clique para escolher</div>
+      <div class="dz-s">Documentos, fotos de produtos, notas fiscais...</div>
+      <input type="file" id="driveFileInput" multiple class="hidden">
+    </div>
+    <div id="upProgress" class="hidden"><div class="up-bar"><div class="up-fill" id="upFill"></div></div><div style="font-size:11px;color:var(--text-dim);margin-top:6px" id="upTxt"></div></div>
+    <div class="gmv-form-title" style="margin-top:18px">Arquivos na pasta</div>
+    <div class="file-list" id="fileList"><div class="empty-state" style="padding:20px">Carregando...</div></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="driveCloseBtn">Fechar</button>
+      <button type="button" class="btn btn-gold" id="driveOpenBtn">Abrir no Drive</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 <div id="toast"></div>
 <script type="module">
@@ -677,7 +721,7 @@ function renderAll(){renderSummary();renderTable();renderDashCharts();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
-function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td>${statusBadge(c.descontoFixoFim)}</td><td>${statusBadge(c.cupomFim)}</td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td>${renderOfertaFlag(c)}</td><td>${renderDevolucaoFlag(c)}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>${c.driveUrl?`<button class="icon-act" onclick="window.open('${esc(c.driveUrl)}','_blank')" title="Pasta no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button>`:''}<button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
+function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td>${statusBadge(c.descontoFixoFim)}</td><td>${statusBadge(c.cupomFim)}</td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td>${renderOfertaFlag(c)}</td><td>${renderDevolucaoFlag(c)}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button><button class="icon-act" onclick="window.__drive('${c.id}','${esc(c.nome)}')" title="Arquivos no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
 function renderTable(){const lista=clientesCache.filter(c=>c.nome.toLowerCase().includes(busca.toLowerCase())&&(filtroMp==='todos'||(c.marketplaces||[]).includes(filtroMp)));const html=lista.map(clienteRowHtml).join('');[['clientTableBody','emptyState'],['clientTableBody2','emptyState2']].forEach(([tb,es])=>{const tbody=document.getElementById(tb);const empty=document.getElementById(es);if(!tbody)return;if(!lista.length){tbody.innerHTML='';empty.classList.remove('hidden');}else{empty.classList.add('hidden');tbody.innerHTML=html;}});
 if(firstTableRender&&lista.length){firstTableRender=false;const tbody=document.getElementById('clientTableBody');const rows=[...tbody.querySelectorAll('tr')];rows.forEach(r=>r.classList.add('reveal'));const io=new IntersectionObserver(es=>{let i=0;es.forEach(e=>{if(e.isIntersecting){e.target.style.transitionDelay=(i++*40)+'ms';e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:.05});rows.forEach(r=>io.observe(r));}}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -788,6 +832,47 @@ document.getElementById('openMigBtn')?.addEventListener('click',async()=>{if(!va
 const tot=migDados.reduce((a,d)=>a+d.rows.length,0);const ok=migDados.reduce((a,d)=>a+d.rows.filter(r=>r.ok).length,0);document.getElementById('migResumo').innerHTML=`<b>${migDados.length}</b> cliente(s) · <b>${tot}</b> acesso(s) encontrados · <span class="mig-ok">${ok} completos</span> · <span class="mig-bad">${tot-ok} para conferir</span>`;migOverlay.classList.remove('hidden');});
 document.getElementById('migCancelBtn').addEventListener('click',()=>migOverlay.classList.add('hidden'));
 document.getElementById('migConfirmBtn').addEventListener('click',async()=>{if(!vaultKey){showToast('Cofre fechado.');return;}showToast('Gravando no cofre...');let n=0;for(const d of migDados){try{const rows=d.rows.map(r=>({plataforma:r.plataforma||'Acesso',email:r.email,senha:r.senha}));const blob=await cifrar(vaultKey,JSON.stringify(rows));await updateDoc(doc(db,"clientes",d.id),{acessosCof:blob});n++;}catch(e){console.error(e);}}await log('migracao','Migração','edição',`${n} cliente(s) migrados para o cofre por ${currentUser}.`);showToast(`🔐 ${n} cliente(s) migrados para o cofre!`);migOverlay.classList.add('hidden');});
+
+/* ================= GOOGLE DRIVE ================= */
+const GOOGLE_CLIENT_ID='745640594764-fvh6dmevj6eehqtgid0npvp46l82n0jm.apps.googleusercontent.com';
+const DRIVE_SCOPE='https://www.googleapis.com/auth/drive';
+const EQUIPE_EMAILS=['lincoln@lbmarketplace.com.br','paloma@lbmarketplace.com.br','caroline@lbmarketplace.com.br'];
+const PASTA_MAE_NOME='Clientes LB';
+let gToken=null,gTokenClient=null,pastaMaeId=null,driveCliId=null,driveCliNome=null,drivePastaAtual=null;
+function driveUI(on){const s=document.getElementById('driveStatus');const d=document.getElementById('driveDot');const t=document.getElementById('driveStatusTxt');if(!s)return;s.className='drive-status '+(on?'drive-on':'drive-off');d.className='drive-dot '+(on?'on':'off');t.textContent=on?'Drive conectado':'Conectar Drive';}
+function initGoogle(){if(!window.google?.accounts?.oauth2){setTimeout(initGoogle,600);return;}gTokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:DRIVE_SCOPE,callback:async r=>{if(r.error){showToast('Não foi possível conectar ao Drive.');return;}gToken=r.access_token;driveUI(true);showToast('✅ Google Drive conectado!');try{sessionStorage.setItem('lb_gtoken',gToken);}catch(e){}await garantirPastaMae();if(driveCliId)await abrirPastaCliente(driveCliId,driveCliNome);}});const salvo=(()=>{try{return sessionStorage.getItem('lb_gtoken');}catch(e){return null;}})();if(salvo){gToken=salvo;driveUI(true);}}
+function conectarDrive(){if(!gTokenClient){showToast('Aguarde, carregando Google...');return;}gTokenClient.requestAccessToken({prompt:gToken?'':'consent'});}
+document.getElementById('driveStatus')?.addEventListener('click',conectarDrive);
+async function driveFetch(url,opts={}){const r=await fetch(url,{...opts,headers:{...(opts.headers||{}),'Authorization':'Bearer '+gToken}});if(r.status===401){gToken=null;driveUI(false);try{sessionStorage.removeItem('lb_gtoken');}catch(e){}throw new Error('Sessão do Drive expirou. Clique em "Conectar Drive".');}if(!r.ok)throw new Error('Erro no Drive ('+r.status+')');return r.json();}
+async function buscarPasta(nome,paiId){const q=encodeURIComponent(`name='${nome.replace(/'/g,"\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false`+(paiId?` and '${paiId}' in parents`:''));const d=await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`);return d.files?.[0]||null;}
+async function criarPasta(nome,paiId){const body={name:nome,mimeType:'application/vnd.google-apps.folder'};if(paiId)body.parents=[paiId];return driveFetch('https://www.googleapis.com/drive/v3/files?fields=id,name,webViewLink',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
+async function compartilhar(fileId){for(const em of EQUIPE_EMAILS){if(em===currentEmail)continue;try{await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions?sendNotificationEmail=false`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'writer',type:'user',emailAddress:em})});}catch(e){console.warn('Compartilhar '+em,e);}}}
+async function cfgDrive(){const snap=await getDocs(query(collection(db,"driveCfg"),limit(1)));return snap.empty?null:{id:snap.docs[0].id,...snap.docs[0].data()};}
+async function garantirPastaMae(){if(pastaMaeId)return pastaMaeId;const cfg=await cfgDrive();if(cfg?.pastaMaeId){try{await driveFetch(`https://www.googleapis.com/drive/v3/files/${cfg.pastaMaeId}?fields=id,trashed`);pastaMaeId=cfg.pastaMaeId;return pastaMaeId;}catch(e){console.warn('Pasta-mãe salva inacessível, recriando.');}}
+let p=await buscarPasta(PASTA_MAE_NOME,null);if(!p){p=await criarPasta(PASTA_MAE_NOME,null);await compartilhar(p.id);}
+pastaMaeId=p.id;
+if(cfg)await updateDoc(doc(db,"driveCfg",cfg.id),{pastaMaeId:p.id,atualizadoPor:currentUser});
+else await addDoc(collection(db,"driveCfg"),{pastaMaeId:p.id,criadoPor:currentUser,criadoEm:serverTimestamp()});
+return pastaMaeId;}
+async function garantirPastaCliente(cliId,cliNome){const c=clientesCache.find(x=>x.id===cliId);
+if(c?.driveFolderId){try{await driveFetch(`https://www.googleapis.com/drive/v3/files/${c.driveFolderId}?fields=id,trashed`);return c.driveFolderId;}catch(e){console.warn('Pasta do cliente inacessível, recriando.');}}
+await garantirPastaMae();let p=await buscarPasta(cliNome,pastaMaeId);if(!p)p=await criarPasta(cliNome,pastaMaeId);
+const link=`https://drive.google.com/drive/folders/${p.id}`;
+await updateDoc(doc(db,"clientes",cliId),{driveFolderId:p.id,driveUrl:link});return p.id;}
+window.__drive=async(id,nm)=>{driveCliId=id;driveCliNome=nm;document.getElementById('driveTitle').textContent='📁 Arquivos — '+nm;document.getElementById('driveModalOverlay').classList.remove('hidden');if(!gToken){document.getElementById('fileList').innerHTML='<div class="empty-state" style="padding:24px">Conecte o Google Drive para ver os arquivos.<br><br><button class="btn btn-gold btn-sm" onclick="window.__conectarDrive()">Conectar Drive</button></div>';return;}await abrirPastaCliente(id,nm);};
+window.__conectarDrive=conectarDrive;
+async function abrirPastaCliente(id,nm){const fl=document.getElementById('fileList');fl.innerHTML='<div class="empty-state" style="padding:20px">Abrindo pasta...</div>';try{drivePastaAtual=await garantirPastaCliente(id,nm);await listarArquivos();}catch(e){fl.innerHTML=`<div class="empty-state" style="padding:20px;color:var(--amber)">${esc(e.message)}</div>`;}}
+async function listarArquivos(){const fl=document.getElementById('fileList');if(!drivePastaAtual)return;try{const q=encodeURIComponent(`'${drivePastaAtual}' in parents and trashed=false`);const d=await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,size,modifiedTime,webViewLink)&orderBy=modifiedTime desc`);if(!d.files?.length){fl.innerHTML='<div class="empty-state" style="padding:20px">Pasta vazia. Envie o primeiro arquivo acima.</div>';return;}fl.innerHTML=d.files.map(f=>{const kb=f.size?(Number(f.size)/1024):0;const tam=kb>1024?(kb/1024).toFixed(1)+' MB':kb?Math.round(kb)+' KB':'—';const dt=f.modifiedTime?new Date(f.modifiedTime).toLocaleDateString('pt-BR'):'';const ico=f.mimeType?.startsWith('image/')?'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>':'<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';return`<div class="file-item"><div class="file-ico">${ico}</div><div class="file-info"><div class="file-nm">${esc(f.name)}</div><div class="file-mt">${tam} · ${dt}</div></div><button class="copy-btn" onclick="window.open('${f.webViewLink}','_blank')">Abrir</button></div>`;}).join('');}catch(e){fl.innerHTML=`<div class="empty-state" style="padding:20px;color:var(--amber)">${esc(e.message)}</div>`;}}
+async function subirArquivos(files){if(!gToken){showToast('Conecte o Drive primeiro.');return;}if(!drivePastaAtual){showToast('Pasta não encontrada.');return;}const prog=document.getElementById('upProgress');const fill=document.getElementById('upFill');const txt=document.getElementById('upTxt');prog.classList.remove('hidden');let n=0;for(const f of files){txt.textContent=`Enviando ${f.name} (${n+1} de ${files.length})...`;fill.style.width=Math.round(n/files.length*100)+'%';try{const meta={name:f.name,parents:[drivePastaAtual]};const fd=new FormData();fd.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));fd.append('file',f);await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gToken},body:fd});n++;}catch(e){console.error(e);}}fill.style.width='100%';txt.textContent=`${n} arquivo(s) enviado(s)!`;showToast(`✅ ${n} arquivo(s) enviado(s) ao Drive`);setTimeout(()=>{prog.classList.add('hidden');fill.style.width='0%';},2200);await listarArquivos();if(driveCliId)await log(driveCliId,driveCliNome,'edição',`${n} arquivo(s) enviado(s) ao Drive por ${currentUser}.`);}
+const dz=document.getElementById('dropZone');const dfi=document.getElementById('driveFileInput');
+dz?.addEventListener('click',()=>dfi.click());
+dfi?.addEventListener('change',e=>{if(e.target.files.length)subirArquivos([...e.target.files]);e.target.value='';});
+dz?.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz?.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz?.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files.length)subirArquivos([...e.dataTransfer.files]);});
+document.getElementById('driveCloseBtn')?.addEventListener('click',()=>document.getElementById('driveModalOverlay').classList.add('hidden'));
+document.getElementById('driveOpenBtn')?.addEventListener('click',()=>{if(drivePastaAtual)window.open('https://drive.google.com/drive/folders/'+drivePastaAtual,'_blank');else showToast('Pasta ainda não criada.');});
+initGoogle();
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
