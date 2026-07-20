@@ -330,6 +330,24 @@ textarea{resize:vertical;min-height:70px;}
 .link-url{font-size:11px;color:var(--text-dim2);font-family:ui-monospace,monospace;background:#0e0e0e;border:1px solid var(--border-soft);border-radius:6px;padding:8px 10px;margin-bottom:12px;word-break:break-all;}
 .link-actions{display:flex;gap:8px;}
 .link-actions .btn{flex:1;text-align:center;}
+
+/* ===== GERAR ANÚNCIO IA ===== */
+.ia-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+.ia-inputs{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;}
+.ia-mk-sel{display:flex;gap:8px;margin-bottom:16px;}
+.ia-mk-btn{flex:1;background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:11px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.ia-mk-btn:hover{border-color:var(--gold-dim);}
+.ia-mk-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.ia-result{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;min-height:340px;}
+.ia-empty{color:var(--text-dim);text-align:center;padding:70px 20px;font-size:14px;}
+.ia-block{margin-bottom:20px;}
+.ia-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.ia-block-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-weight:700;}
+.ia-block-txt{background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;}
+.ia-char{font-size:11px;color:var(--text-dim);margin-top:4px;text-align:right;}
+.ia-loading{text-align:center;padding:60px 20px;}
+.ia-spin{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;margin:0 auto 16px;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -374,6 +392,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="checklist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist Shopee</button>
       <button class="nav-item" data-page="checktiktok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist TikTok</button>
       <button class="nav-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
+      <button class="nav-item" data-page="gerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg> Gerar Anúncio</button>
     </nav>
     <div class="nav-premium">
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
@@ -570,6 +589,24 @@ textarea{resize:vertical;min-height:70px;}
           </div>
         </div>
       </div>
+      <div class="page" id="page-gerar">
+        <h2 class="page-title">Gerar Anúncio com IA ✨</h2>
+        <p class="page-sub">Descreva o produto e a IA cria título, destaques e descrição otimizados.</p>
+        <div class="ia-grid">
+          <div class="ia-inputs">
+            <div class="ia-mk-sel">
+              <button class="ia-mk-btn active" data-iamk="shopee">Shopee</button>
+              <button class="ia-mk-btn" data-iamk="ml">Mercado Livre</button>
+            </div>
+            <div class="field"><label>Descreva o produto (quanto mais detalhe, melhor)</label><textarea id="iaProduto" style="min-height:160px" placeholder="Ex: Vestido longo floral, tecido viscose leve, tamanhos P ao GG, disponível nas cores azul e rosa, ideal para o verão, modelagem soltinha e confortável..."></textarea></div>
+            <button class="btn btn-gold" id="iaGerarBtn" style="width:100%;margin-top:6px">✨ Gerar Anúncio</button>
+            <p style="font-size:11px;color:var(--text-dim);margin-top:12px;text-align:center">Custo aproximado: R$ 0,01 por anúncio gerado</p>
+          </div>
+          <div class="ia-result" id="iaResult">
+            <div class="ia-empty">Preencha a descrição e clique em <b>Gerar Anúncio</b>.<br>A IA vai criar o título, os destaques e a descrição prontos para publicar.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -744,7 +781,7 @@ onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmai
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],calculadora:['Calculadora','Precificação interna.'],checklist:['Checklist Shopee','Onboarding de contas.'],checktiktok:['Checklist TikTok Shop','Abertura e cadastro no TikTok.'],links:['Links Úteis','Links oficiais da LB.']};if(pg==='dashboard'){document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],calculadora:['Calculadora','Precificação interna.'],checklist:['Checklist Shopee','Onboarding de contas.'],checktiktok:['Checklist TikTok Shop','Abertura e cadastro no TikTok.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.']};if(pg==='dashboard'){document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -912,6 +949,33 @@ dz?.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');i
 document.getElementById('driveCloseBtn')?.addEventListener('click',()=>document.getElementById('driveModalOverlay').classList.add('hidden'));
 document.getElementById('driveOpenBtn')?.addEventListener('click',()=>{if(drivePastaAtual)window.open('https://drive.google.com/drive/folders/'+drivePastaAtual,'_blank');else showToast('Pasta ainda não criada.');});
 initGoogle();
+
+/* ================= GERAR ANÚNCIO COM IA ================= */
+const IA_ENDPOINT='https://lbiagerador.vercel.app/api/gerar';
+let iaMarketplace='shopee';
+document.querySelectorAll('.ia-mk-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.ia-mk-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');iaMarketplace=b.dataset.iamk;}));
+document.getElementById('iaGerarBtn')?.addEventListener('click',async()=>{
+  const produto=document.getElementById('iaProduto').value.trim();
+  const res=document.getElementById('iaResult');
+  if(!produto){res.innerHTML='<div class="ia-empty" style="color:var(--amber)">⚠ Descreva o produto primeiro.</div>';return;}
+  const btn=document.getElementById('iaGerarBtn');
+  btn.disabled=true;btn.textContent='Gerando...';
+  res.innerHTML='<div class="ia-loading"><div class="ia-spin"></div><div style="color:var(--text-dim);font-size:13px">A IA está criando seu anúncio...</div></div>';
+  try{
+    const r=await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto,marketplace:iaMarketplace})});
+    const d=await r.json();
+    if(!r.ok||d.erro){res.innerHTML=`<div class="ia-empty" style="color:var(--red)">⚠ ${esc(d.erro||'Erro ao gerar. Tente de novo.')}</div>`;return;}
+    const mkNome=iaMarketplace==='shopee'?'Shopee':'Mercado Livre';
+    const bullets=(d.bullets||[]).map(b=>esc(b)).join('\n');
+    res.innerHTML=`
+      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📌 Título — ${mkNome}</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(d.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(d.titulo||'')}</div><div class="ia-char">${(d.titulo||'').length} caracteres</div></div>
+      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">✨ Destaques</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(bullets).replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${bullets}</div></div>
+      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📝 Descrição</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(d.descricao||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(d.descricao||'')}</div></div>
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="window.__copy(${JSON.stringify('TÍTULO:\n'+(d.titulo||'')+'\n\nDESTAQUES:\n'+bullets+'\n\nDESCRIÇÃO:\n'+(d.descricao||'')).replace(/"/g,'&quot;')})">📋 Copiar tudo</button>`;
+  }catch(e){
+    res.innerHTML='<div class="ia-empty" style="color:var(--red)">⚠ Não foi possível conectar ao gerador. Verifique a conexão e tente de novo.</div>';
+  }finally{btn.disabled=false;btn.textContent='✨ Gerar Anúncio';}
+});
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
