@@ -736,7 +736,11 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="page" id="page-tarefas">
         <h2 class="page-title">Minhas Tarefas</h2>
-        <p class="page-sub">Seu quadro pessoal — só você vê estas tarefas.</p>
+        <p class="page-sub" id="tarefasSub">Seu quadro pessoal — só você vê estas tarefas.</p>
+        <div class="calc-mode-selector" style="margin-bottom:20px">
+          <button class="calc-mode-btn active" data-tfview="meu">📋 Meu Quadro</button>
+          <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas que Atribuí</button>
+        </div>
         <div class="kanban-board">
           <div class="kanban-col" data-coluna="afazer">
             <div class="kanban-col-head"><div class="kanban-col-title">📋 A Fazer <span class="kanban-count" id="countAfazer">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('afazer')">+</button></div>
@@ -940,6 +944,13 @@ textarea{resize:vertical;min-height:70px;}
             <option value="alta">Alta</option>
           </select>
         </div>
+      </div>
+      <div class="field"><label>Status (coluna)</label>
+        <select id="tfStatus">
+          <option value="afazer">📋 A Fazer</option>
+          <option value="fazendo">⚡ Fazendo</option>
+          <option value="feito">✅ Feito</option>
+        </select>
       </div>
       <div class="form-row">
         <div class="field"><label>Responsável</label>
@@ -1362,17 +1373,33 @@ document.getElementById('comMetasSalvarBtn')?.addEventListener('click',async()=>
 })();
 
 /* ================= QUADRO DE TAREFAS (Kanban pessoal) ================= */
-let tarefasCache=[],unsubTarefas=null,tarefaEditId=null,tarefaColunaAtual='afazer';
+let tarefasCache=[],todasTarefasCache=[],unsubTarefas=null,tarefaEditId=null,tarefaColunaAtual='afazer',tarefaView='meu';
 function tfDiffDias(s){if(!s)return null;const hoje=new Date();hoje.setHours(0,0,0,0);const d=new Date(s+'T00:00:00');return Math.round((d-hoje)/86400000);}
 function tfStatusPrazo(s){const d=tfDiffDias(s);if(d===null)return{cls:'',label:''};if(d<0)return{cls:'prazo-atrasado',label:'Atrasado'};if(d===0)return{cls:'prazo-hoje',label:'Hoje'};if(d<=2)return{cls:'prazo-perto',label:'Em '+d+'d'};return{cls:'',label:fmtBR ? fmtBR(s.replace(/-/g,'-')) : d+'d'};}
 function tfFmtPrazoCurto(s){if(!s)return'';const[y,m,d]=s.split('-');return d+'/'+m;}
 function startTarefasListener(){
   if(unsubTarefas)return;
   unsubTarefas=onSnapshot(query(collection(db,"tarefas"),orderBy("timestamp","desc")),snap=>{
-    tarefasCache=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>t.responsavelEmail===currentEmail);
+    todasTarefasCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    tfAtualizarLista();
     tfRenderBoard();
   });
 }
+function tfAtualizarLista(){
+  if(tarefaView==='meu'){
+    tarefasCache=todasTarefasCache.filter(t=>t.responsavelEmail===currentEmail);
+  }else{
+    tarefasCache=todasTarefasCache.filter(t=>t.criadoPor===currentUser&&t.responsavelEmail!==currentEmail);
+  }
+}
+document.querySelectorAll('[data-tfview]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-tfview]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  tarefaView=b.dataset.tfview;
+  document.getElementById('tarefasSub').textContent=tarefaView==='meu'?'Seu quadro pessoal — só você vê estas tarefas.':'Tarefas que você atribuiu para a equipe — acompanhe o andamento.';
+  document.querySelectorAll('.kanban-add').forEach(btn=>btn.style.display=tarefaView==='meu'?'':'none');
+  tfAtualizarLista();tfRenderBoard();
+}));
 function tfCardHtml(t){
   const prio={baixa:'kb-prio-baixa',media:'kb-prio-media',alta:'kb-prio-alta'}[t.prioridade]||'kb-prio-media';
   const prioLabel={baixa:'Baixa',media:'Média',alta:'Alta'}[t.prioridade]||'Média';
@@ -1381,7 +1408,8 @@ function tfCardHtml(t){
   const cliHtml=t.clienteNome?`<span class="kb-badge kb-cliente">${esc(t.clienteNome)}</span>`:'';
   const respHtml=t.responsavel?`<span class="kb-badge kb-resp">👤 ${esc(t.responsavel)}</span>`:'';
   const criadorHtml=(t.criadoPor&&t.criadoPor!==t.responsavel)?`<span class="kb-badge kb-resp" style="opacity:.75">de ${esc(t.criadoPor)}</span>`:'';
-  return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="window.__editTarefa('${t.id}')">
+  const arrastavel=tarefaView==='meu';
+  return `<div class="kanban-card" draggable="${arrastavel}" data-id="${t.id}" style="${arrastavel?'':'cursor:pointer'}" onclick="window.__editTarefa('${t.id}')">
     <div class="kanban-card-title">${esc(t.titulo)}</div>
     <div class="kanban-card-meta"><span class="kb-badge ${prio}">${prioLabel}</span>${prazoHtml}${respHtml}${criadorHtml}${cliHtml}</div>
   </div>`;
@@ -1399,6 +1427,7 @@ function tfRenderBoard(){
   tfAttachDragEvents();
 }
 function tfAttachDragEvents(){
+  if(tarefaView!=='meu')return;
   document.querySelectorAll('.kanban-card').forEach(card=>{
     card.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',card.dataset.id);card.classList.add('dragging');});
     card.addEventListener('dragend',()=>card.classList.remove('dragging'));
@@ -1428,6 +1457,7 @@ window.__novaTarefa=(coluna)=>{
   document.getElementById('tfTitulo').value='';document.getElementById('tfDescricao').value='';
   document.getElementById('tfPrazo').value='';document.getElementById('tfPrioridade').value='media';
   document.getElementById('tfResponsavel').value=currentEmail;
+  document.getElementById('tfStatus').value=coluna;
   tfPreencherClientes();document.getElementById('tfCliente').value='';
   document.getElementById('tarefaExcluirBtn').classList.add('hidden');
   tarefaModalOverlay.classList.remove('hidden');
@@ -1441,6 +1471,7 @@ window.__editTarefa=(id)=>{
   document.getElementById('tfPrazo').value=t.prazo||'';
   document.getElementById('tfPrioridade').value=t.prioridade||'media';
   document.getElementById('tfResponsavel').value=t.responsavelEmail||currentEmail;
+  document.getElementById('tfStatus').value=t.coluna||'afazer';
   tfPreencherClientes();document.getElementById('tfCliente').value=t.clienteId||'';
   document.getElementById('tarefaExcluirBtn').classList.remove('hidden');
   tarefaModalOverlay.classList.remove('hidden');
@@ -1461,7 +1492,7 @@ document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
     criadoPor:currentUser,
     clienteId:cliId||null,
     clienteNome:cli?cli.nome:null,
-    coluna:tarefaColunaAtual,
+    coluna:document.getElementById('tfStatus').value,
     timestamp:serverTimestamp()
   };
   try{
