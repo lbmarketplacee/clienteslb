@@ -371,6 +371,33 @@ textarea{resize:vertical;min-height:70px;}
 .com-entries-table td{padding:8px 10px;border-bottom:1px solid var(--border-soft);white-space:nowrap;}
 .com-entries-table tr:hover td{background:var(--bg-card2);}
 
+/* ===== QUADRO DE TAREFAS (Kanban pessoal) ===== */
+.kanban-board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;}
+.kanban-col{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;min-height:200px;transition:background .15s,border-color .15s;}
+.kanban-col.drag-over{border-color:var(--gold-dim);background:var(--gold-soft);}
+.kanban-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.kanban-col-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);display:flex;align-items:center;gap:8px;}
+.kanban-count{background:#141414;color:var(--text-dim);font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;}
+.kanban-add{background:transparent;border:1px solid var(--border);color:var(--text-dim);width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.kanban-add:hover{border-color:var(--gold);color:var(--gold);}
+.kanban-cards{display:flex;flex-direction:column;gap:10px;min-height:60px;}
+.kanban-card{background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:13px 14px;cursor:grab;transition:border-color .15s,transform .15s;}
+.kanban-card:hover{border-color:var(--gold-dim);}
+.kanban-card.dragging{opacity:.4;}
+.kanban-card-title{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4;}
+.kanban-card-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.kb-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;}
+.kb-prio-baixa{background:#5cb88a20;color:#5cb88a;}
+.kb-prio-media{background:#e0a35220;color:#e0a352;}
+.kb-prio-alta{background:#e0525a20;color:#e0525a;}
+.kb-prazo{background:#1e1c17;color:var(--text-dim);}
+.kb-prazo.prazo-hoje{background:var(--amber-bg);color:var(--amber);}
+.kb-prazo.prazo-atrasado{background:var(--red-bg);color:var(--red);}
+.kb-prazo.prazo-perto{background:var(--amber-bg);color:var(--amber);}
+.kb-cliente{background:var(--gold-soft);color:var(--gold);}
+.kb-resp{background:#1e1c17;color:var(--text-dim);}
+.kanban-empty{text-align:center;color:var(--text-dim);font-size:12px;padding:20px 10px;}
+
 </style>
 </head>
 <body>
@@ -408,6 +435,7 @@ textarea{resize:vertical;min-height:70px;}
     </div>
     <nav class="nav-section">
       <button class="nav-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</button>
+      <button class="nav-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minhas Tarefas</button>
       <button class="nav-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
       <button class="nav-item" data-page="contratos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Contratos</button>
@@ -706,6 +734,24 @@ textarea{resize:vertical;min-height:70px;}
           </table>
         </div></div>
       </div>
+      <div class="page" id="page-tarefas">
+        <h2 class="page-title">Minhas Tarefas</h2>
+        <p class="page-sub">Seu quadro pessoal — só você vê estas tarefas.</p>
+        <div class="kanban-board">
+          <div class="kanban-col" data-coluna="afazer">
+            <div class="kanban-col-head"><div class="kanban-col-title">📋 A Fazer <span class="kanban-count" id="countAfazer">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('afazer')">+</button></div>
+            <div class="kanban-cards" id="colAfazer"></div>
+          </div>
+          <div class="kanban-col" data-coluna="fazendo">
+            <div class="kanban-col-head"><div class="kanban-col-title">⚡ Fazendo <span class="kanban-count" id="countFazendo">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('fazendo')">+</button></div>
+            <div class="kanban-cards" id="colFazendo"></div>
+          </div>
+          <div class="kanban-col" data-coluna="feito">
+            <div class="kanban-col-head"><div class="kanban-col-title">✅ Feito <span class="kanban-count" id="countFeito">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('feito')">+</button></div>
+            <div class="kanban-cards" id="colFeito"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -877,6 +923,45 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="tarefaModalOverlay">
+  <div class="modal">
+    <h2 id="tarefaModalTitle">Nova Tarefa</h2>
+    <form id="tarefaForm">
+      <input type="hidden" id="tarefaId">
+      <input type="hidden" id="tarefaColuna">
+      <div class="field"><label>Título</label><input type="text" id="tfTitulo" required placeholder="Ex: Ligar para cliente X"></div>
+      <div class="field"><label>Descrição (opcional)</label><textarea id="tfDescricao" placeholder="Detalhes da tarefa..."></textarea></div>
+      <div class="form-row">
+        <div class="field"><label>Prazo</label><input type="date" id="tfPrazo"></div>
+        <div class="field"><label>Prioridade</label>
+          <select id="tfPrioridade">
+            <option value="baixa">Baixa</option>
+            <option value="media" selected>Média</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Responsável</label>
+          <select id="tfResponsavel">
+            <option value="Lincoln">Lincoln</option>
+            <option value="Paloma">Paloma</option>
+            <option value="Caroline">Caroline</option>
+          </select>
+        </div>
+        <div class="field"><label>Cliente vinculado (opcional)</label>
+          <select id="tfCliente"><option value="">— Nenhum —</option></select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger hidden" id="tarefaExcluirBtn">Excluir</button>
+        <button type="button" class="btn btn-ghost" id="cancelTarefaModal">Cancelar</button>
+        <button type="submit" class="btn btn-gold">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="toast"></div>
 <script type="module">
@@ -909,9 +994,9 @@ document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth))
 onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
 comSetupAcesso();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
-function startListeners(){if(unsubC)return;unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
+function startListeners(){if(unsubC)return;startTarefasListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],calculadora:['Calculadora','Precificação interna.'],checklist:['Checklist Shopee','Onboarding de contas.'],checktiktok:['Checklist TikTok Shop','Abertura e cadastro no TikTok.'],checkshein:['Checklist Shein','Criação de anúncio na Shein.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.']};if(pg==='dashboard'){document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],calculadora:['Calculadora','Precificação interna.'],checklist:['Checklist Shopee','Onboarding de contas.'],checktiktok:['Checklist TikTok Shop','Abertura e cadastro no TikTok.'],checkshein:['Checklist Shein','Criação de anúncio na Shein.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.']};if(pg==='dashboard'){document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -1275,6 +1360,118 @@ document.getElementById('comMetasSalvarBtn')?.addEventListener('click',async()=>
   const elData=document.getElementById('comData');
   if(elData){elData.value=hoje.toISOString().split('T')[0];}
 })();
+
+/* ================= QUADRO DE TAREFAS (Kanban pessoal) ================= */
+let tarefasCache=[],unsubTarefas=null,tarefaEditId=null,tarefaColunaAtual='afazer';
+function tfDiffDias(s){if(!s)return null;const hoje=new Date();hoje.setHours(0,0,0,0);const d=new Date(s+'T00:00:00');return Math.round((d-hoje)/86400000);}
+function tfStatusPrazo(s){const d=tfDiffDias(s);if(d===null)return{cls:'',label:''};if(d<0)return{cls:'prazo-atrasado',label:'Atrasado'};if(d===0)return{cls:'prazo-hoje',label:'Hoje'};if(d<=2)return{cls:'prazo-perto',label:'Em '+d+'d'};return{cls:'',label:fmtBR ? fmtBR(s.replace(/-/g,'-')) : d+'d'};}
+function tfFmtPrazoCurto(s){if(!s)return'';const[y,m,d]=s.split('-');return d+'/'+m;}
+function startTarefasListener(){
+  if(unsubTarefas)return;
+  unsubTarefas=onSnapshot(query(collection(db,"tarefas"),orderBy("timestamp","desc")),snap=>{
+    tarefasCache=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>t.donoEmail===currentEmail);
+    tfRenderBoard();
+  });
+}
+function tfCardHtml(t){
+  const prio={baixa:'kb-prio-baixa',media:'kb-prio-media',alta:'kb-prio-alta'}[t.prioridade]||'kb-prio-media';
+  const prioLabel={baixa:'Baixa',media:'Média',alta:'Alta'}[t.prioridade]||'Média';
+  const prazoSt=tfStatusPrazo(t.prazo);
+  const prazoHtml=t.prazo?`<span class="kb-badge kb-prazo ${prazoSt.cls}">📅 ${prazoSt.label||tfFmtPrazoCurto(t.prazo)}</span>`:'';
+  const cliHtml=t.clienteNome?`<span class="kb-badge kb-cliente">${esc(t.clienteNome)}</span>`:'';
+  const respHtml=t.responsavel?`<span class="kb-badge kb-resp">${esc(t.responsavel)}</span>`:'';
+  return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="window.__editTarefa('${t.id}')">
+    <div class="kanban-card-title">${esc(t.titulo)}</div>
+    <div class="kanban-card-meta"><span class="kb-badge ${prio}">${prioLabel}</span>${prazoHtml}${respHtml}${cliHtml}</div>
+  </div>`;
+}
+function tfRenderBoard(){
+  const cols={afazer:[],fazendo:[],feito:[]};
+  tarefasCache.forEach(t=>{(cols[t.coluna]||cols.afazer).push(t);});
+  const ids={afazer:'colAfazer',fazendo:'colFazendo',feito:'colFeito'};
+  const counts={afazer:'countAfazer',fazendo:'countFazendo',feito:'countFeito'};
+  Object.keys(cols).forEach(k=>{
+    const el=document.getElementById(ids[k]);
+    document.getElementById(counts[k]).textContent=cols[k].length;
+    el.innerHTML=cols[k].length?cols[k].map(tfCardHtml).join(''):'<div class="kanban-empty">Nenhuma tarefa aqui.</div>';
+  });
+  tfAttachDragEvents();
+}
+function tfAttachDragEvents(){
+  document.querySelectorAll('.kanban-card').forEach(card=>{
+    card.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',card.dataset.id);card.classList.add('dragging');});
+    card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+  });
+  document.querySelectorAll('.kanban-col').forEach(col=>{
+    col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('drag-over');});
+    col.addEventListener('dragleave',()=>col.classList.remove('drag-over'));
+    col.addEventListener('drop',async e=>{
+      e.preventDefault();col.classList.remove('drag-over');
+      const id=e.dataTransfer.getData('text/plain');
+      const novaColuna=col.dataset.coluna;
+      const t=tarefasCache.find(x=>x.id===id);
+      if(t&&t.coluna!==novaColuna){try{await updateDoc(doc(db,"tarefas",id),{coluna:novaColuna});}catch(err){showToast('Erro ao mover tarefa.');}}
+    });
+  });
+}
+function tfPreencherClientes(){
+  const sel=document.getElementById('tfCliente');
+  const atual=sel.value;
+  sel.innerHTML='<option value="">— Nenhum —</option>'+clientesCache.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  sel.value=atual||'';
+}
+const tarefaModalOverlay=document.getElementById('tarefaModalOverlay');
+window.__novaTarefa=(coluna)=>{
+  tarefaEditId=null;tarefaColunaAtual=coluna;
+  document.getElementById('tarefaModalTitle').textContent='Nova Tarefa';
+  document.getElementById('tfTitulo').value='';document.getElementById('tfDescricao').value='';
+  document.getElementById('tfPrazo').value='';document.getElementById('tfPrioridade').value='media';
+  document.getElementById('tfResponsavel').value=currentUser;
+  tfPreencherClientes();document.getElementById('tfCliente').value='';
+  document.getElementById('tarefaExcluirBtn').classList.add('hidden');
+  tarefaModalOverlay.classList.remove('hidden');
+};
+window.__editTarefa=(id)=>{
+  const t=tarefasCache.find(x=>x.id===id);if(!t)return;
+  tarefaEditId=id;tarefaColunaAtual=t.coluna;
+  document.getElementById('tarefaModalTitle').textContent='Editar Tarefa';
+  document.getElementById('tfTitulo').value=t.titulo||'';
+  document.getElementById('tfDescricao').value=t.descricao||'';
+  document.getElementById('tfPrazo').value=t.prazo||'';
+  document.getElementById('tfPrioridade').value=t.prioridade||'media';
+  document.getElementById('tfResponsavel').value=t.responsavel||currentUser;
+  tfPreencherClientes();document.getElementById('tfCliente').value=t.clienteId||'';
+  document.getElementById('tarefaExcluirBtn').classList.remove('hidden');
+  tarefaModalOverlay.classList.remove('hidden');
+};
+document.getElementById('cancelTarefaModal')?.addEventListener('click',()=>tarefaModalOverlay.classList.add('hidden'));
+document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const cliId=document.getElementById('tfCliente').value;
+  const cli=cliId?clientesCache.find(c=>c.id===cliId):null;
+  const dados={
+    titulo:document.getElementById('tfTitulo').value.trim(),
+    descricao:document.getElementById('tfDescricao').value.trim(),
+    prazo:document.getElementById('tfPrazo').value||null,
+    prioridade:document.getElementById('tfPrioridade').value,
+    responsavel:document.getElementById('tfResponsavel').value,
+    clienteId:cliId||null,
+    clienteNome:cli?cli.nome:null,
+    donoEmail:currentEmail,
+    coluna:tarefaColunaAtual,
+    timestamp:serverTimestamp()
+  };
+  try{
+    if(tarefaEditId){await updateDoc(doc(db,"tarefas",tarefaEditId),dados);showToast('Tarefa atualizada.');}
+    else{await addDoc(collection(db,"tarefas"),dados);showToast('Tarefa criada.');}
+    tarefaModalOverlay.classList.add('hidden');
+  }catch(err){console.error(err);showToast('Erro ao salvar tarefa.');}
+});
+document.getElementById('tarefaExcluirBtn')?.addEventListener('click',async()=>{
+  if(!tarefaEditId)return;
+  if(!confirm('Excluir esta tarefa?'))return;
+  try{await deleteDoc(doc(db,"tarefas",tarefaEditId));showToast('Tarefa excluída.');tarefaModalOverlay.classList.add('hidden');}catch(e){showToast('Erro.');}
+});
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
