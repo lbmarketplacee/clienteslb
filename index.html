@@ -944,9 +944,9 @@ textarea{resize:vertical;min-height:70px;}
       <div class="form-row">
         <div class="field"><label>Responsável</label>
           <select id="tfResponsavel">
-            <option value="Lincoln">Lincoln</option>
-            <option value="Paloma">Paloma</option>
-            <option value="Caroline">Caroline</option>
+            <option value="lincoln@lbmarketplace.com.br">Lincoln</option>
+            <option value="paloma@lbmarketplace.com.br">Paloma</option>
+            <option value="caroline@lbmarketplace.com.br">Caroline</option>
           </select>
         </div>
         <div class="field"><label>Cliente vinculado (opcional)</label>
@@ -1369,7 +1369,7 @@ function tfFmtPrazoCurto(s){if(!s)return'';const[y,m,d]=s.split('-');return d+'/
 function startTarefasListener(){
   if(unsubTarefas)return;
   unsubTarefas=onSnapshot(query(collection(db,"tarefas"),orderBy("timestamp","desc")),snap=>{
-    tarefasCache=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>t.donoEmail===currentEmail);
+    tarefasCache=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>t.responsavelEmail===currentEmail);
     tfRenderBoard();
   });
 }
@@ -1379,10 +1379,11 @@ function tfCardHtml(t){
   const prazoSt=tfStatusPrazo(t.prazo);
   const prazoHtml=t.prazo?`<span class="kb-badge kb-prazo ${prazoSt.cls}">📅 ${prazoSt.label||tfFmtPrazoCurto(t.prazo)}</span>`:'';
   const cliHtml=t.clienteNome?`<span class="kb-badge kb-cliente">${esc(t.clienteNome)}</span>`:'';
-  const respHtml=t.responsavel?`<span class="kb-badge kb-resp">${esc(t.responsavel)}</span>`:'';
+  const respHtml=t.responsavel?`<span class="kb-badge kb-resp">👤 ${esc(t.responsavel)}</span>`:'';
+  const criadorHtml=(t.criadoPor&&t.criadoPor!==t.responsavel)?`<span class="kb-badge kb-resp" style="opacity:.75">de ${esc(t.criadoPor)}</span>`:'';
   return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="window.__editTarefa('${t.id}')">
     <div class="kanban-card-title">${esc(t.titulo)}</div>
-    <div class="kanban-card-meta"><span class="kb-badge ${prio}">${prioLabel}</span>${prazoHtml}${respHtml}${cliHtml}</div>
+    <div class="kanban-card-meta"><span class="kb-badge ${prio}">${prioLabel}</span>${prazoHtml}${respHtml}${criadorHtml}${cliHtml}</div>
   </div>`;
 }
 function tfRenderBoard(){
@@ -1426,7 +1427,7 @@ window.__novaTarefa=(coluna)=>{
   document.getElementById('tarefaModalTitle').textContent='Nova Tarefa';
   document.getElementById('tfTitulo').value='';document.getElementById('tfDescricao').value='';
   document.getElementById('tfPrazo').value='';document.getElementById('tfPrioridade').value='media';
-  document.getElementById('tfResponsavel').value=currentUser;
+  document.getElementById('tfResponsavel').value=currentEmail;
   tfPreencherClientes();document.getElementById('tfCliente').value='';
   document.getElementById('tarefaExcluirBtn').classList.add('hidden');
   tarefaModalOverlay.classList.remove('hidden');
@@ -1439,7 +1440,7 @@ window.__editTarefa=(id)=>{
   document.getElementById('tfDescricao').value=t.descricao||'';
   document.getElementById('tfPrazo').value=t.prazo||'';
   document.getElementById('tfPrioridade').value=t.prioridade||'media';
-  document.getElementById('tfResponsavel').value=t.responsavel||currentUser;
+  document.getElementById('tfResponsavel').value=t.responsavelEmail||currentEmail;
   tfPreencherClientes();document.getElementById('tfCliente').value=t.clienteId||'';
   document.getElementById('tarefaExcluirBtn').classList.remove('hidden');
   tarefaModalOverlay.classList.remove('hidden');
@@ -1449,15 +1450,17 @@ document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
   const cliId=document.getElementById('tfCliente').value;
   const cli=cliId?clientesCache.find(c=>c.id===cliId):null;
+  const respEmail=document.getElementById('tfResponsavel').value;
   const dados={
     titulo:document.getElementById('tfTitulo').value.trim(),
     descricao:document.getElementById('tfDescricao').value.trim(),
     prazo:document.getElementById('tfPrazo').value||null,
     prioridade:document.getElementById('tfPrioridade').value,
-    responsavel:document.getElementById('tfResponsavel').value,
+    responsavelEmail:respEmail,
+    responsavel:nome(respEmail),
+    criadoPor:currentUser,
     clienteId:cliId||null,
     clienteNome:cli?cli.nome:null,
-    donoEmail:currentEmail,
     coluna:tarefaColunaAtual,
     timestamp:serverTimestamp()
   };
