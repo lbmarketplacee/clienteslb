@@ -440,6 +440,23 @@ textarea{resize:vertical;min-height:70px;}
 .cl-step-badge{display:inline-block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:var(--amber-bg);color:var(--amber);padding:2px 8px;border-radius:5px;margin-left:8px;}
 .cl-restart{margin-top:18px;}
 
+/* ===== CABEÇALHO DE PÁGINA (ícone + título) ===== */
+.page-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:24px;}
+.page-head-icon{width:52px;height:52px;border-radius:14px;background:var(--gold-soft);border:1px solid var(--gold-dim);color:var(--gold);display:flex;align-items:center;justify-content:center;flex:none;}
+.page-head-icon svg{width:25px;height:25px;}
+.page-head-text .page-title{margin-bottom:3px;}
+.page-head-text .page-sub{margin-bottom:0;}
+/* ===== CONTRATOS: contador em anel ===== */
+.cc-ring{width:92px;height:92px;border-radius:50%;border:2px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;margin:4px auto 12px;transition:border-color .2s;}
+.commission-card:hover .cc-ring{border-color:var(--gold);}
+.cc-ring .cc-count{margin:0;font-size:34px;}
+/* ===== CALCULADORA: header do resultado ===== */
+.calc-result-head{text-align:center;margin-bottom:18px;}
+.calc-result-icon{width:56px;height:56px;border-radius:16px;background:var(--purple-bg);border:1px solid var(--purple);color:var(--purple);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.calc-result-icon svg{width:28px;height:28px;}
+.calc-result-col{display:flex;flex-direction:column;}
+.calc-result-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--text);font-weight:600;margin-bottom:4px;}
+
 </style>
 </head>
 <body>
@@ -589,8 +606,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <!-- ===== PÁGINA: DESEMPENHO ===== -->
       <div class="page" id="page-desempenho">
-        <h2 class="page-title">Desempenho</h2>
-        <p class="page-sub">Acompanhe a evolução de GMV e Ads dos seus clientes.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Desempenho</h2><p class="page-sub">Evolução de GMV e Ads.</p></div>
+        </div>
         <div class="perf-cards">
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">GMV Total<br>Registrado</div></div><div class="sc-value green" id="perfGmvTotal">R$ 0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div><div class="sc-label">Total Gasto<br>em Ads</div></div><div class="sc-value" style="color:var(--amber)" id="perfAdsTotal">R$ 0</div></div>
@@ -606,12 +625,14 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <!-- ===== PÁGINA: CONTRATOS ===== -->
       <div class="page" id="page-contratos">
-        <h2 class="page-title">Contratos Novos</h2>
-        <p class="page-sub">Placar de indicações e fila de aprovação.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Contratos</h2><p class="page-sub">Indicações e aprovações.</p></div>
+        </div>
         <div class="commission-grid">
-          <div class="commission-card"><div class="cc-name">Lincoln</div><div class="cc-count" id="ccLincoln">0</div><div class="cc-label">contratos este mês</div></div>
-          <div class="commission-card"><div class="cc-name">Paloma</div><div class="cc-count" id="ccPaloma">0</div><div class="cc-label">contratos indicados</div></div>
-          <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-count" id="ccCaroline">0</div><div class="cc-label">contratos indicados</div></div>
+          <div class="commission-card"><div class="cc-name">Lincoln</div><div class="cc-ring"><div class="cc-count" id="ccLincoln">0</div></div><div class="cc-label">contratos este mês</div></div>
+          <div class="commission-card"><div class="cc-name">Paloma</div><div class="cc-ring"><div class="cc-count" id="ccPaloma">0</div></div><div class="cc-label">contratos indicados</div></div>
+          <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><div class="cc-label">contratos indicados</div></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button class="btn btn-gold btn-sm" id="openNovoContratoBtn">+ Propor Novo Contrato</button></div>
         <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
@@ -620,8 +641,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <!-- ===== PÁGINA: CALCULADORA ===== -->
       <div class="page" id="page-calculadora">
-        <h2 class="page-title">Calculadora de Precificação</h2>
-        <p class="page-sub">Uso interno — cálculo de gross-up no padrão LB Precifica.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Calculadora</h2><p class="page-sub">Precificação interna — Uso interno, cálculo de gross-up no padrão LB Precifica.</p></div>
+        </div>
         <div class="calc-mp-selector">
           <button class="calc-mp-btn active" data-cmp="shopee">Shopee</button>
           <button class="calc-mp-btn" data-cmp="ml">Mercado Livre</button>
@@ -644,7 +667,10 @@ textarea{resize:vertical;min-height:70px;}
             <div class="calc-toggles"><button type="button" class="calc-toggle" data-t="cupom">🎟️ Cupom 3%</button><button type="button" class="calc-toggle" data-t="relampago">⚡ Relâmpago 5%</button><button type="button" class="calc-toggle" data-t="ads">📢 Ads 10%</button></div>
             <button class="btn btn-gold" id="calcBtn" style="margin-top:20px;width:100%">Calcular</button>
           </div>
-          <div class="calc-result" id="calcResult"><div class="calc-result-empty">Preencha os dados e clique em <b>Calcular</b> para ver o resultado.</div></div>
+          <div class="calc-result-col">
+            <div class="calc-result-head"><div class="calc-result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><circle cx="12" cy="14" r="3"/></svg></div><div class="calc-result-title">Resultado da Precificação</div></div>
+            <div class="calc-result" id="calcResult"><div class="calc-result-empty">Preencha os dados e clique em <b>Calcular</b> para ver o resultado.</div></div>
+          </div>
         </div>
       </div>
       <!-- ===== PÁGINA: CHECKLIST ===== -->
