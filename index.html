@@ -1093,7 +1093,7 @@ textarea{resize:vertical;min-height:70px;}
         <p class="page-sub" id="tarefasSub">Seu quadro pessoal — só você vê estas tarefas.</p>
         <div class="calc-mode-selector" style="margin-bottom:20px">
           <button class="calc-mode-btn active" data-tfview="meu">📋 Meu Quadro</button>
-          <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas que Atribuí</button>
+          <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas da Equipe</button>
         </div>
         <div class="kanban-board">
           <div class="kanban-col" data-coluna="afazer">
@@ -1847,14 +1847,14 @@ function tfAtualizarLista(){
   if(tarefaView==='meu'){
     tarefasCache=todasTarefasCache.filter(t=>t.responsavelEmail===currentEmail);
   }else{
-    tarefasCache=todasTarefasCache.filter(t=>t.criadoPor===currentUser&&t.responsavelEmail!==currentEmail);
+    tarefasCache=todasTarefasCache.filter(t=>t.responsavelEmail&&t.responsavelEmail!==currentEmail);
   }
 }
 document.querySelectorAll('[data-tfview]').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('[data-tfview]').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   tarefaView=b.dataset.tfview;
-  document.getElementById('tarefasSub').textContent=tarefaView==='meu'?'Seu quadro pessoal — só você vê estas tarefas.':'Tarefas que você atribuiu para a equipe — acompanhe o andamento.';
+  document.getElementById('tarefasSub').textContent=tarefaView==='meu'?'Seu quadro pessoal — só você vê estas tarefas.':'Todas as tarefas de Paloma e Caroline — inclusive as que elas mesmas criaram.';
   document.querySelectorAll('.kanban-add').forEach(btn=>btn.style.display=tarefaView==='meu'?'':'none');
   tfAtualizarLista();tfRenderBoard();
 }));
@@ -1949,15 +1949,21 @@ document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
     prioridade:document.getElementById('tfPrioridade').value,
     responsavelEmail:respEmail,
     responsavel:nome(respEmail),
-    criadoPor:currentUser,
     clienteId:cliId||null,
     clienteNome:cli?cli.nome:null,
     coluna:document.getElementById('tfStatus').value,
     timestamp:serverTimestamp()
   };
   try{
-    if(tarefaEditId){await updateDoc(doc(db,"tarefas",tarefaEditId),dados);showToast('Tarefa atualizada.');}
-    else{await addDoc(collection(db,"tarefas"),dados);showToast('Tarefa criada.');}
+    if(tarefaEditId){
+      /* Preserva quem criou originalmente — edição nunca rouba a autoria */
+      await updateDoc(doc(db,"tarefas",tarefaEditId),dados);
+      showToast('Tarefa atualizada.');
+    }else{
+      dados.criadoPor=currentUser;
+      await addDoc(collection(db,"tarefas"),dados);
+      showToast('Tarefa criada.');
+    }
     tarefaModalOverlay.classList.add('hidden');
   }catch(err){console.error(err);showToast('Erro ao salvar tarefa.');}
 });
