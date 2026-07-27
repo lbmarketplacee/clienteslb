@@ -1095,6 +1095,11 @@ textarea{resize:vertical;min-height:70px;}
           <button class="calc-mode-btn active" data-tfview="meu">📋 Meu Quadro</button>
           <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas da Equipe</button>
         </div>
+        <div class="toolbar hidden" id="tfPessoaFiltroBar" style="margin-bottom:16px">
+          <button class="chip active" data-tfpessoa="todos">Todos</button>
+          <button class="chip" data-tfpessoa="Paloma">Paloma</button>
+          <button class="chip" data-tfpessoa="Caroline">Caroline</button>
+        </div>
         <div class="kanban-board">
           <div class="kanban-col" data-coluna="afazer">
             <div class="kanban-col-head"><div class="kanban-col-title">📋 A Fazer <span class="kanban-count" id="countAfazer">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('afazer')">+</button></div>
@@ -1831,7 +1836,7 @@ document.getElementById('comMetasSalvarBtn')?.addEventListener('click',async()=>
 })();
 
 /* ================= QUADRO DE TAREFAS (Kanban pessoal) ================= */
-let tarefasCache=[],todasTarefasCache=[],unsubTarefas=null,tarefaEditId=null,tarefaColunaAtual='afazer',tarefaView='meu';
+let tarefasCache=[],todasTarefasCache=[],unsubTarefas=null,tarefaEditId=null,tarefaColunaAtual='afazer',tarefaView='meu',tarefaPessoaFiltro='todos';
 function tfDiffDias(s){if(!s)return null;const hoje=new Date();hoje.setHours(0,0,0,0);const d=new Date(s+'T00:00:00');return Math.round((d-hoje)/86400000);}
 function tfStatusPrazo(s){const d=tfDiffDias(s);if(d===null)return{cls:'',label:''};if(d<0)return{cls:'prazo-atrasado',label:'Atrasado'};if(d===0)return{cls:'prazo-hoje',label:'Hoje'};if(d<=2)return{cls:'prazo-perto',label:'Em '+d+'d'};return{cls:'',label:fmtBR ? fmtBR(s.replace(/-/g,'-')) : d+'d'};}
 function tfFmtPrazoCurto(s){if(!s)return'';const[y,m,d]=s.split('-');return d+'/'+m;}
@@ -1848,6 +1853,9 @@ function tfAtualizarLista(){
     tarefasCache=todasTarefasCache.filter(t=>t.responsavelEmail===currentEmail);
   }else{
     tarefasCache=todasTarefasCache.filter(t=>t.responsavelEmail&&t.responsavelEmail!==currentEmail);
+    if(tarefaPessoaFiltro!=='todos'){
+      tarefasCache=tarefasCache.filter(t=>t.responsavel===tarefaPessoaFiltro);
+    }
   }
 }
 document.querySelectorAll('[data-tfview]').forEach(b=>b.addEventListener('click',()=>{
@@ -1856,6 +1864,14 @@ document.querySelectorAll('[data-tfview]').forEach(b=>b.addEventListener('click'
   tarefaView=b.dataset.tfview;
   document.getElementById('tarefasSub').textContent=tarefaView==='meu'?'Seu quadro pessoal — só você vê estas tarefas.':'Todas as tarefas de Paloma e Caroline — inclusive as que elas mesmas criaram.';
   document.querySelectorAll('.kanban-add').forEach(btn=>btn.style.display=tarefaView==='meu'?'':'none');
+  document.getElementById('tfPessoaFiltroBar').classList.toggle('hidden',tarefaView!=='atribuidas');
+  if(tarefaView==='meu'){tarefaPessoaFiltro='todos';document.querySelectorAll('[data-tfpessoa]').forEach(x=>x.classList.remove('active'));document.querySelector('[data-tfpessoa="todos"]').classList.add('active');}
+  tfAtualizarLista();tfRenderBoard();
+}));
+document.querySelectorAll('[data-tfpessoa]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-tfpessoa]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  tarefaPessoaFiltro=b.dataset.tfpessoa;
   tfAtualizarLista();tfRenderBoard();
 }));
 function tfCardHtml(t){
