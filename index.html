@@ -528,6 +528,25 @@ textarea{resize:vertical;min-height:70px;}
 .gasto-cat.pessoal{background:var(--purple-bg);color:var(--purple);}
 .gasto-row-nome{font-weight:600;color:var(--text);font-size:14px;}
 
+/* ===== SINO DE NOTIFICAÇÕES ===== */
+.notif-btn{position:relative;background:transparent;border:1px solid var(--border);color:var(--text-dim);width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
+.notif-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.notif-btn svg{width:18px;height:18px;}
+.notif-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.notif-panel{position:absolute;top:52px;right:0;width:360px;max-height:440px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:90;display:none;}
+.notif-panel.open{display:block;}
+.notif-panel-head{padding:16px 18px;border-bottom:1px solid var(--border);font-weight:700;color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:18px;}
+.notif-item{display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border-soft);cursor:pointer;transition:background .15s;}
+.notif-item:hover{background:var(--bg-card2);}
+.notif-item:last-child{border-bottom:none;}
+.notif-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;}
+.notif-ico svg{width:16px;height:16px;}
+.notif-ico.red{background:var(--red-bg);color:var(--red);}
+.notif-ico.amber{background:var(--amber-bg);color:var(--amber);}
+.notif-txt-title{font-size:13px;color:var(--text);font-weight:600;}
+.notif-txt-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+.notif-empty{padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px;}
+
 </style>
 </head>
 <body>
@@ -622,6 +641,13 @@ textarea{resize:vertical;min-height:70px;}
         <p id="welcomeSub">Aqui está o resumo geral da sua operação.</p>
       </div>
       <div class="topbar-actions">
+        <div style="position:relative">
+          <button class="notif-btn" id="notifBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge hidden" id="notifBadge">0</span></button>
+          <div class="notif-panel" id="notifPanel">
+            <div class="notif-panel-head">🔔 Notificações</div>
+            <div id="notifList"></div>
+          </div>
+        </div>
         <button class="btn btn-ghost btn-sm" id="openHistoricoGlobalBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg> Histórico</span></button>
         <button class="btn btn-ghost btn-sm" id="openMigBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Migrar p/ Cofre</span></button>
         <button class="btn btn-ghost btn-sm" id="importInitialBtn"><span style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Importar Lista</span></button>
@@ -680,8 +706,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <!-- ===== PÁGINA: CLIENTES (mesma tabela, título próprio) ===== -->
       <div class="page" id="page-clientes">
-        <h2 class="page-title">Clientes</h2>
-        <p class="page-sub">Gestão completa da sua carteira de clientes.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Clientes</h2><p class="page-sub">Gestão completa da sua carteira de clientes.</p></div>
+        </div>
         <div class="toolbar">
           <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchInput2" placeholder="Buscar cliente..."></div>
           <button class="chip active" data-mp2="todos">Todos</button>
@@ -799,8 +827,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <!-- ===== PÁGINA: CHECKLIST ===== -->
             <div class="page" id="page-checklisthub">
-        <h2 class="page-title">Checklist</h2>
-        <p class="page-sub">Acompanhe todas as etapas para configurar e otimizar suas lojas nos marketplaces.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Checklist</h2><p class="page-sub">Acompanhe todas as etapas para configurar e otimizar suas lojas nos marketplaces.</p></div>
+        </div>
 
         <div class="chk-hub-view" id="chkHubView">
           <div class="chk-hub-grid">
@@ -943,8 +973,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
 
       <div class="page" id="page-links">
-        <h2 class="page-title">Links Úteis</h2>
-        <p class="page-sub">Links oficiais da LB — use sempre estes para cadastros de clientes.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Links Úteis</h2><p class="page-sub">Links oficiais da LB — use sempre estes para cadastros de clientes.</p></div>
+        </div>
         <div class="links-grid">
           <div class="link-card">
             <div class="link-head"><div class="link-ico" style="background:#6c5ce720;color:#a29bfe">US</div><div><div class="link-nome">UpSeller</div><div class="link-tag">Afiliado Interno LB</div></div></div>
@@ -985,8 +1017,10 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
       <div class="page" id="page-gerar">
-        <h2 class="page-title">Gerar Anúncio com IA ✨</h2>
-        <p class="page-sub">Descreva o produto e a IA cria título, destaques e descrição otimizados.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Gerar Anúncio com IA ✨</h2><p class="page-sub">Descreva o produto e a IA cria título, destaques e descrição otimizados.</p></div>
+        </div>
         <div class="ia-grid">
           <div class="ia-inputs">
             <div class="ia-mk-sel">
@@ -1011,8 +1045,10 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
       <div class="page" id="page-comercial">
-        <h2 class="page-title">Comercial &amp; Marketing <span class="com-lock-badge">🔒 Restrito</span></h2>
-        <p class="page-sub">Acompanhamento diário de tráfego, funil e vendas — acesso exclusivo Lincoln e Gestor.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Comercial &amp; Marketing <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Acompanhamento diário de tráfego, funil e vendas — acesso exclusivo Lincoln e Gestor.</p></div>
+        </div>
         <div class="com-mes-bar">
           <input type="month" id="comMesFiltro">
           <button class="btn btn-ghost btn-sm" id="comMetasBtn">🎯 Definir Metas do Mês</button>
@@ -1089,8 +1125,10 @@ textarea{resize:vertical;min-height:70px;}
       </div>
 
       <div class="page" id="page-tarefas">
-        <h2 class="page-title">Minhas Tarefas</h2>
-        <p class="page-sub" id="tarefasSub">Seu quadro pessoal — só você vê estas tarefas.</p>
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Minhas Tarefas</h2><p class="page-sub" id="tarefasSub">Seu quadro pessoal — só você vê estas tarefas.</p></div>
+        </div>
         <div class="calc-mode-selector" style="margin-bottom:20px">
           <button class="calc-mode-btn active" data-tfview="meu">📋 Meu Quadro</button>
           <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas da Equipe</button>
@@ -1482,7 +1520,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -1542,7 +1580,7 @@ document.getElementById('saveGmvBtn').addEventListener('click',async()=>{const c
 /* DESEMPENHO */
 function renderPerformanceTab(){const byMes={};gmvCache.forEach(g=>{if(!byMes[g.mes])byMes[g.mes]={gmv:0,ads:0,clients:new Set()};byMes[g.mes].gmv+=Number(g.gmv)||0;byMes[g.mes].ads+=Number(g.gastoAds)||0;byMes[g.mes].clients.add(g.clienteId);});const meses=Object.keys(byMes).sort();const gt=Object.values(byMes).reduce((a,m)=>a+m.gmv,0);const at=Object.values(byMes).reduce((a,m)=>a+m.ads,0);animateTo(document.getElementById('perfGmvTotal'),gt,v=>fmtR(v));animateTo(document.getElementById('perfAdsTotal'),at,v=>fmtR(v));animateTo(document.getElementById('perfMeses'),meses.length,v=>Math.round(v));const el=document.getElementById('gmvChart');if(!el)return;const ctx=el.getContext('2d');if(gmvChart)gmvChart.destroy();gmvChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(fmtMes),datasets:[{label:'GMV',data:meses.map(m=>byMes[m].gmv),backgroundColor:'rgba(92,184,138,0.7)',borderColor:'#5cb88a',borderWidth:1.5,borderRadius:6},{label:'Gasto Ads',data:meses.map(m=>byMes[m].ads),backgroundColor:'rgba(224,163,82,0.65)',borderColor:'#e0a352',borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#a8a39a',font:{family:'Montserrat',size:12}}}},scales:{x:{ticks:{color:'#a8a39a'},grid:{color:'#2a261c'}},y:{ticks:{color:'#a8a39a',callback:v=>fmtR(v)},grid:{color:'#2a261c'}}}}});const tbody=document.getElementById('perfTableBody');if(!meses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">Nenhum dado registrado ainda.</td></tr>';return;}tbody.innerHTML=meses.slice().reverse().map((m,i,arr)=>{const d=byMes[m];const roi=d.ads>0?(d.gmv/d.ads).toFixed(1)+'x':'—';const prev=arr[i+1]?byMes[arr[i+1]]:null;let var_='—';if(prev&&prev.gmv>0){const p=((d.gmv-prev.gmv)/prev.gmv*100).toFixed(1);var_=`<span class="${p>=0?'trend-up':'trend-down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span>`;}return`<tr><td><b>${fmtMes(m)}</b></td><td style="color:var(--green);font-weight:600">${fmtR(d.gmv)}</td><td style="color:var(--amber)">${fmtR(d.ads)}</td><td>${roi}</td><td>${d.clients.size}</td><td>${var_}</td></tr>`;}).join('');}
 /* CONTRATOS */
-function renderContratosTab(){const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccPaloma',aprovMes.filter(c=>c.indicadoPor==='Paloma').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${esc(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${esc(c.nomeCliente)}')">✗ Reprovar</button>`:'';return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} · ${fmtMes(c.mes)} · ${dt}${c.obs?` · ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
+function renderContratosTab(){notifRecalcular();const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccPaloma',aprovMes.filter(c=>c.indicadoPor==='Paloma').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${esc(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${esc(c.nomeCliente)}')">✗ Reprovar</button>`:'';return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} · ${fmtMes(c.mes)} · ${dt}${c.obs?` · ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
 window.__aprov=async(id,nm)=>{if(!isLincoln()){showToast('Apenas Lincoln pode aprovar.');return;}try{await updateDoc(doc(db,"contratos",id),{status:'aprovado',aprovadoPor:currentUser,aprovadoEm:serverTimestamp()});showToast(`✅ Contrato de "${nm}" aprovado!`);}catch{showToast('Erro.');}};
 window.__reprov=async(id,nm)=>{if(!isLincoln()){showToast('Apenas Lincoln pode reprovar.');return;}try{await updateDoc(doc(db,"contratos",id),{status:'reprovado',reprovadoPor:currentUser,reprovadoEm:serverTimestamp()});showToast(`❌ Contrato de "${nm}" reprovado.`);}catch{showToast('Erro.');}};
 const contratoModalOverlay=document.getElementById('contratoModalOverlay');
@@ -1857,6 +1895,7 @@ function tfAtualizarLista(){
       tarefasCache=tarefasCache.filter(t=>t.responsavel===tarefaPessoaFiltro);
     }
   }
+  notifRecalcular();
 }
 document.querySelectorAll('[data-tfview]').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('[data-tfview]').forEach(x=>x.classList.remove('active'));
@@ -2120,6 +2159,7 @@ function gastosRenderSummary(){
   animateTo(document.getElementById('gtPagos'),pagosMes,v=>Math.round(v));
   animateTo(document.getElementById('gtVencendo'),vencendo,v=>Math.round(v));
   animateTo(document.getElementById('gtAtrasados'),atrasados,v=>Math.round(v));
+  notifRecalcular();
 }
 function gastosRenderTable(){
   const tbody=document.getElementById('gastosTableBody');const empty=document.getElementById('gastosEmptyState');
@@ -2256,6 +2296,63 @@ document.getElementById('gastoHistGlobalBtn')?.addEventListener('click',()=>{
   document.getElementById('gastoHistModalOverlay').classList.remove('hidden');
 });
 document.getElementById('closeGastoHistModal')?.addEventListener('click',()=>document.getElementById('gastoHistModalOverlay').classList.add('hidden'));
+
+/* ================= SINO DE NOTIFICAÇÕES ================= */
+function notifRecalcular(){
+  const itens=[];
+  // 1) Cupons e descontos vencendo em 7 dias
+  clientesCache.forEach(c=>{
+    const dd=diffDias(c.descontoFixoFim);
+    if(dd!==null&&dd<=7&&dd>=0){itens.push({tipo:'amber',titulo:`Desconto vencendo — ${c.nome}`,sub:`Vence em ${dd}d`,pagina:'clientes'});}
+    const dc=diffDias(c.cupomFim);
+    if(dc!==null&&dc<=7&&dc>=0){itens.push({tipo:'amber',titulo:`Cupom vencendo — ${c.nome}`,sub:`Vence em ${dc}d`,pagina:'clientes'});}
+  });
+  // 2) Tarefas atrasadas atribuídas a mim
+  (todasTarefasCache||[]).forEach(t=>{
+    if(t.responsavelEmail===currentEmail && t.coluna!=='feito' && t.prazo){
+      const dias=Math.round((new Date(t.prazo+'T00:00:00')-new Date(new Date().toDateString()))/86400000);
+      if(dias<0){itens.push({tipo:'red',titulo:`Tarefa atrasada — ${t.titulo}`,sub:`Prazo era ${fmtDate(t.prazo)}`,pagina:'tarefas'});}
+    }
+  });
+  // 3) Gastos vencendo/atrasados (só Lincoln)
+  if(isGastosAllowed && isGastosAllowed()){
+    (gastosCache||[]).forEach(g=>{
+      const d=gtDiffDias(g.proximoVencimento);
+      if(d!==null&&d<0){itens.push({tipo:'red',titulo:`Gasto atrasado — ${g.nome}`,sub:`Venceu em ${fmtDate(g.proximoVencimento)}`,pagina:'gastos'});}
+      else if(d!==null&&d<=3){itens.push({tipo:'amber',titulo:`Gasto vencendo — ${g.nome}`,sub:`Vence em ${d}d`,pagina:'gastos'});}
+    });
+  }
+  // 4) Contratos pendentes de aprovação (só Lincoln)
+  if(isLincoln()){
+    (contratosCache||[]).filter(c=>c.status==='pendente').forEach(c=>{
+      itens.push({tipo:'amber',titulo:`Contrato pendente — ${c.nomeCliente}`,sub:'Aguardando sua aprovação',pagina:'contratos'});
+    });
+  }
+  notifRenderizar(itens);
+}
+function notifIcone(tipo){return tipo==='red'?'<path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>':'<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/>';}
+function notifRenderizar(itens){
+  const badge=document.getElementById('notifBadge');
+  const lista=document.getElementById('notifList');
+  if(!badge||!lista)return;
+  if(itens.length){badge.textContent=itens.length>9?'9+':itens.length;badge.classList.remove('hidden');}
+  else{badge.classList.add('hidden');}
+  lista.innerHTML=itens.length?itens.map(n=>`<div class="notif-item" onclick="window.__notifIr('${n.pagina}')"><div class="notif-ico ${n.tipo}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${notifIcone(n.tipo)}</svg></div><div><div class="notif-txt-title">${esc(n.titulo)}</div><div class="notif-txt-sub">${esc(n.sub)}</div></div></div>`).join(''):'<div class="notif-empty">Tudo em dia por aqui! 🎉</div>';
+}
+window.__notifIr=(pagina)=>{
+  document.getElementById('notifPanel').classList.remove('open');
+  const btn=document.querySelector(`.nav-item[data-page="${pagina}"]`);
+  if(btn)btn.click();
+};
+document.getElementById('notifBtn')?.addEventListener('click',(e)=>{
+  e.stopPropagation();
+  document.getElementById('notifPanel').classList.toggle('open');
+});
+document.addEventListener('click',(e)=>{
+  const panel=document.getElementById('notifPanel');
+  const btn=document.getElementById('notifBtn');
+  if(panel&&panel.classList.contains('open')&&!panel.contains(e.target)&&e.target!==btn){panel.classList.remove('open');}
+});
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
