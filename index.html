@@ -624,6 +624,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
       <button class="nav-item" data-page="contratos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Contratos</button>
+      <button class="nav-item" data-page="cadastros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros</button>
       <button class="nav-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
       <button class="nav-item" data-page="checklisthub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist</button>
       <button class="nav-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
@@ -771,10 +772,17 @@ textarea{resize:vertical;min-height:70px;}
           <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><div class="cc-label">contratos indicados</div></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button class="btn btn-gold btn-sm" id="openNovoContratoBtn">+ Propor Novo Contrato</button></div>
-                <div class="contratos-section"><h3>📥 Cadastros Recebidos (Link Público)</h3><div id="cadastrosRecebidos"><div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div></div></div>
-<div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
+                <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
         <div class="contratos-section"><h3>✅ Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
         <div class="contratos-section"><h3>❌ Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
+      </div>
+      <!-- ===== PÁGINA: CADASTROS RECEBIDOS ===== -->
+      <div class="page" id="page-cadastros">
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Cadastros Recebidos</h2><p class="page-sub">Cadastros enviados pelo link público de onboarding — pendentes de análise.</p></div>
+        </div>
+        <div id="cadastrosRecebidos"><div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div></div>
       </div>
       <!-- ===== PÁGINA: CALCULADORA ===== -->
       <div class="page" id="page-calculadora">
@@ -1025,6 +1033,15 @@ textarea{resize:vertical;min-height:70px;}
             <div class="link-actions">
               <button class="btn btn-gold btn-sm" onclick="window.open('https://chatgpt.com/g/g-69f8aef4147c8191b1dca9233618075c-diretor-criativo-mercado-livre','_blank')">Abrir</button>
               <button class="btn btn-ghost btn-sm" onclick="window.__copy('https://chatgpt.com/g/g-69f8aef4147c8191b1dca9233618075c-diretor-criativo-mercado-livre')">Copiar</button>
+            </div>
+          </div>
+          <div class="link-card">
+            <div class="link-head"><div class="link-ico" style="background:#D4AF3720;color:#D4AF37">📋</div><div><div class="link-nome">Cadastro de Cliente</div><div class="link-tag">Link de Onboarding</div></div></div>
+            <div class="link-obs">Link público para o cliente novo preencher os dados e enviar documentos — envie para clientes fechando contrato.</div>
+            <div class="link-url">https://lbmarketplacee.github.io/lb-cadastro-cliente/</div>
+            <div class="link-actions">
+              <button class="btn btn-gold btn-sm" onclick="window.open('https://lbmarketplacee.github.io/lb-cadastro-cliente/','_blank')">Abrir</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.__copy('https://lbmarketplacee.github.io/lb-cadastro-cliente/')">Copiar</button>
             </div>
           </div>
         </div>
@@ -1521,7 +1538,7 @@ comSetupAcesso();gastosSetupAcesso();document.getElementById('welcomeTitle').inn
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startGastosListener();startGastosHistListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -2344,7 +2361,7 @@ function notifRecalcular(){
   // 5) Cadastros novos recebidos pelo link público (só Lincoln)
   if(isLincoln()){
     (cadastrosCache||[]).forEach(c=>{
-      itens.push({tipo:'amber',titulo:`Novo cadastro recebido — ${c.nomeLoja}`,sub:'Aguardando análise',pagina:'contratos'});
+      itens.push({tipo:'amber',titulo:`Novo cadastro recebido — ${c.nomeLoja}`,sub:'Aguardando análise',pagina:'cadastros'});
     });
   }
   notifRenderizar(itens);
