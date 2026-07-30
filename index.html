@@ -547,6 +547,18 @@ textarea{resize:vertical;min-height:70px;}
 .notif-txt-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
 .notif-empty{padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px;}
 
+/* ===== CADASTROS RECEBIDOS (formulário público) ===== */
+.cadastro-card{background:var(--bg-card);border:1px solid var(--gold-dim);border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+.cadastro-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.cadastro-nome{font-size:15px;font-weight:700;color:var(--gold);}
+.cadastro-data{font-size:11px;color:var(--text-dim);}
+.cadastro-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px;font-size:12.5px;color:var(--text-dim);margin-bottom:12px;}
+.cadastro-grid b{color:var(--text);}
+.cadastro-docs{display:flex;gap:8px;margin-bottom:12px;}
+.cadastro-docs a{font-size:11.5px;color:var(--gold);text-decoration:underline;}
+.cadastro-plataformas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.cadastro-plataforma-tag{font-size:10.5px;background:var(--gold-soft);color:var(--gold);padding:2px 8px;border-radius:5px;font-weight:700;}
+
 </style>
 </head>
 <body>
@@ -759,7 +771,8 @@ textarea{resize:vertical;min-height:70px;}
           <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><div class="cc-label">contratos indicados</div></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button class="btn btn-gold btn-sm" id="openNovoContratoBtn">+ Propor Novo Contrato</button></div>
-        <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
+                <div class="contratos-section"><h3>📥 Cadastros Recebidos (Link Público)</h3><div id="cadastrosRecebidos"><div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div></div></div>
+<div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
         <div class="contratos-section"><h3>✅ Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
         <div class="contratos-section"><h3>❌ Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
       </div>
@@ -1506,7 +1519,7 @@ document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth))
 onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
 comSetupAcesso();gastosSetupAcesso();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
-function startListeners(){if(unsubC)return;startTarefasListener();startGastosListener();startGastosHistListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
+function startListeners(){if(unsubC)return;startTarefasListener();startGastosListener();startGastosHistListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
 document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
 /* HELPERS */
@@ -2328,6 +2341,12 @@ function notifRecalcular(){
       itens.push({tipo:'amber',titulo:`Contrato pendente — ${c.nomeCliente}`,sub:'Aguardando sua aprovação',pagina:'contratos'});
     });
   }
+  // 5) Cadastros novos recebidos pelo link público (só Lincoln)
+  if(isLincoln()){
+    (cadastrosCache||[]).forEach(c=>{
+      itens.push({tipo:'amber',titulo:`Novo cadastro recebido — ${c.nomeLoja}`,sub:'Aguardando análise',pagina:'contratos'});
+    });
+  }
   notifRenderizar(itens);
 }
 function notifIcone(tipo){return tipo==='red'?'<path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>':'<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/>';}
@@ -2353,6 +2372,67 @@ document.addEventListener('click',(e)=>{
   const btn=document.getElementById('notifBtn');
   if(panel&&panel.classList.contains('open')&&!panel.contains(e.target)&&e.target!==btn){panel.classList.remove('open');}
 });
+
+/* ================= CADASTROS RECEBIDOS (formulário público de onboarding) ================= */
+let cadastrosCache=[],unsubCadastros=null;
+function startCadastrosListener(){
+  if(unsubCadastros)return;
+  unsubCadastros=onSnapshot(query(collection(db,"cadastros"),orderBy("criadoEm","desc")),snap=>{
+    cadastrosCache=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.status==='pendente');
+    renderCadastrosRecebidos();
+    notifRecalcular();
+  });
+}
+function renderCadastrosRecebidos(){
+  const el=document.getElementById('cadastrosRecebidos');
+  if(!el)return;
+  if(!cadastrosCache.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div>';return;}
+  el.innerHTML=cadastrosCache.map(c=>{
+    const dt=c.criadoEm?new Date(c.criadoEm.seconds*1000).toLocaleDateString('pt-BR'):'';
+    return `<div class="cadastro-card">
+      <div class="cadastro-card-top"><span class="cadastro-nome">${esc(c.nomeLoja)}</span><span class="cadastro-data">${dt}</span></div>
+      <div class="cadastro-plataformas">${(c.plataformas||[]).map(p=>`<span class="cadastro-plataforma-tag">${esc(p)}</span>`).join('')}</div>
+      <div class="cadastro-grid">
+        <div><b>E-mail:</b> ${esc(c.email)}</div>
+        <div><b>Telefone:</b> ${esc(c.telefone)}</div>
+        <div><b>CPF/CNPJ:</b> ${esc(c.documento)}</div>
+        <div><b>Nicho:</b> ${esc(c.nicho||'-')}</div>
+        <div><b>Qtd. produtos:</b> ${c.qtdProdutos||0}</div>
+        <div><b>Endereço:</b> ${esc(c.rua||'')}, ${esc(c.numero||'')} - ${esc(c.bairro||'')}, ${esc(c.cidade||'')}/${esc(c.estado||'')}</div>
+      </div>
+      <div class="cadastro-docs">
+        ${c.urlDocFrente?`<a href="${c.urlDocFrente}" target="_blank">📄 Doc. Frente</a>`:''}
+        ${c.urlDocVerso?`<a href="${c.urlDocVerso}" target="_blank">📄 Doc. Verso</a>`:''}
+        ${c.urlSelfie?`<a href="${c.urlSelfie}" target="_blank">🤳 Selfie</a>`:''}
+      </div>
+      <div class="actions-cell">
+        <button class="btn btn-gold btn-sm" onclick="window.__criarClienteDoCadastro('${c.id}')">+ Criar Cliente</button>
+        <button class="icon-btn danger" onclick="window.__descartarCadastro('${c.id}')">Descartar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.__criarClienteDoCadastro=(id)=>{
+  const cad=cadastrosCache.find(x=>x.id===id);
+  if(!cad)return;
+  openClientModal(null);
+  document.getElementById('clientModalTitle').textContent='Novo Cliente (via Cadastro Recebido)';
+  document.getElementById('fNome').value=cad.nomeLoja||'';
+  document.getElementById('fEmail').value=cad.email||'';
+  const enderecoTxt=`CPF/CNPJ: ${cad.documento||'-'}\nTelefone: ${cad.telefone||'-'}\nEndereço: ${cad.rua||''}, ${cad.numero||''} - ${cad.bairro||''}, ${cad.cidade||''}/${cad.estado||''} - CEP ${cad.cep||''}\nNicho: ${cad.nicho||'-'}\nQtd. produtos a cadastrar: ${cad.qtdProdutos||0}\nDoc. Frente: ${cad.urlDocFrente||''}\nDoc. Verso: ${cad.urlDocVerso||''}\nSelfie: ${cad.urlSelfie||''}`;
+  document.getElementById('fObs').value=enderecoTxt;
+  const mapaPlataforma={'Shopee':'shopee','Mercado Livre':'ml','TikTok Shop':'tiktok','Shein':'shein'};
+  document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{
+    const nomeCorrespondente=Object.keys(mapaPlataforma).find(k=>mapaPlataforma[k]===b.dataset.val);
+    b.classList.toggle('on',(cad.plataformas||[]).includes(nomeCorrespondente));
+  });
+  clientModalOverlay.classList.remove('hidden');
+  updateDoc(doc(db,"cadastros",id),{status:'convertido'}).catch(()=>{});
+};
+window.__descartarCadastro=async(id)=>{
+  if(!confirm('Descartar este cadastro? Ele deixará de aparecer na lista (mas os dados continuam salvos).'))return;
+  try{await updateDoc(doc(db,"cadastros",id),{status:'descartado'});showToast('Cadastro descartado.');}catch(e){showToast('Erro.');}
+};
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
