@@ -263,11 +263,12 @@ textarea{resize:vertical;min-height:70px;}
 .gmv-form-title{font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
 #toast{position:fixed;bottom:24px;right:24px;z-index:100;background:var(--bg-card);border:1px solid var(--gold-dim);color:var(--text);padding:13px 20px;border-radius:10px;font-size:13px;box-shadow:0 10px 40px rgba(0,0,0,.5);transform:translateY(20px);opacity:0;transition:all .25s;max-width:320px;}
 #toast.show{transform:translateY(0);opacity:1;}
-.mobile-menu-btn{display:none;}
+.mobile-menu-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--gold);width:38px;height:38px;border-radius:10px;align-items:center;justify-content:center;cursor:pointer;flex:none;margin-right:12px;}
+.mobile-menu-btn svg{width:18px;height:18px;}
 /* ===== RESPONSIVO ===== */
 @media(max-width:1300px){.summary-grid{grid-template-columns:repeat(3,1fr);}.dash-row{grid-template-columns:1fr;}}
 @media(max-width:1100px){.commission-grid{grid-template-columns:repeat(2,1fr);}.perf-cards{grid-template-columns:repeat(2,1fr);}.calc-grid{grid-template-columns:1fr;}}
-@media(max-width:900px){.sidebar{transform:translateX(-100%);transition:transform .3s;}.sidebar.open{transform:translateX(0);}.main-area{margin-left:0;}.mobile-menu-btn{display:flex;}.summary-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){.sidebar{transform:translateX(-100%);transition:transform .3s;position:fixed;top:0;left:0;height:100vh;z-index:200;}.sidebar.open{transform:translateX(0);}.main-area{margin-left:0;}.mobile-menu-btn{display:flex;}.summary-grid{grid-template-columns:repeat(2,1fr);}.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;}.sidebar-overlay.show{display:block;}}
 @media(max-width:600px){.summary-grid{grid-template-columns:1fr;}.perf-cards{grid-template-columns:1fr;}.commission-grid{grid-template-columns:1fr;}.welcome h1{font-size:24px;}.content,.topbar{padding-left:20px;padding-right:20px;}}
 
 /* ===== COFRE DE ACESSOS ===== */
@@ -567,6 +568,77 @@ textarea{resize:vertical;min-height:70px;}
 .cad-det-foto-box img{width:100%;height:130px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer;}
 .cad-det-foto-box .lbl{font-size:11px;color:var(--text-dim);margin:6px 0 4px;}
 
+/* ===== AJUSTES VISUAIS FINAIS (personalização) ===== */
+.sc-label-line{display:block;width:24px;height:2px;background:currentColor;opacity:.4;margin-top:4px;border-radius:2px;}
+.sc-spark{margin-top:8px;height:24px;width:100%;}
+.security-banner{display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--gold-dim);border-radius:14px;padding:20px 26px;margin-top:24px;position:relative;overflow:hidden;}
+.security-banner-icon{width:48px;height:48px;border-radius:12px;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;flex:none;margin-right:18px;}
+.security-banner-icon svg{width:24px;height:24px;}
+.security-banner-title{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--gold);font-weight:600;margin-bottom:4px;}
+.security-banner-sub{font-size:12.5px;color:var(--text-dim);}
+.security-banner-emblem{width:56px;height:56px;border:2px solid var(--gold-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:'Cormorant Garamond',serif;font-weight:700;font-size:22px;flex:none;}
+.ia-right-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:36px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;}
+.ia-icons-cluster{position:relative;width:180px;height:100px;margin-bottom:24px;}
+.ia-icons-cluster .center-ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:16px;background:var(--gold-soft);border:1px solid var(--gold-dim);color:var(--gold);display:flex;align-items:center;justify-content:center;}
+.ia-icons-cluster .center-ico svg{width:32px;height:32px;}
+.ia-icons-cluster .float-ico{position:absolute;width:34px;height:34px;border-radius:9px;background:#141210;border:1px solid var(--border);color:var(--gold-dim);display:flex;align-items:center;justify-content:center;}
+.ia-icons-cluster .float-ico svg{width:16px;height:16px;}
+.ia-icons-cluster .f1{top:0;left:10px;}
+.ia-icons-cluster .f2{top:5px;right:5px;}
+.ia-icons-cluster .f3{bottom:5px;right:15px;}
+.ia-right-panel h3{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:12px;}
+.ia-right-panel p{font-size:13px;color:var(--text-dim);line-height:1.7;margin-bottom:24px;max-width:320px;}
+.ia-feature-badges{display:flex;gap:10px;width:100%;}
+.ia-feature-badge{flex:1;background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center;}
+.ia-feature-badge svg{width:20px;height:20px;color:var(--gold);margin-bottom:8px;}
+.ia-feature-badge span{display:block;font-size:10.5px;color:var(--text-dim);line-height:1.4;}
+.cadastro-doc-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;background:#141210;border:1px solid var(--border);color:var(--text-dim);}
+.cadastro-doc-pill.ok{color:var(--green);border-color:var(--green);}
+.cc-spark{width:80px;height:20px;margin-top:4px;}
+
+/* ===== RESPONSIVIDADE COMPLETA — CELULAR ===== */
+@media(max-width:900px){
+  .topbar-actions{flex-wrap:wrap;justify-content:flex-end;row-gap:8px;}
+  .kanban-board{grid-template-columns:1fr;}
+  .gastos-summary{grid-template-columns:repeat(2,1fr);}
+  .perf-cards{grid-template-columns:repeat(2,1fr);}
+  .chk-hub-grid{grid-template-columns:1fr;}
+  .links-grid{grid-template-columns:1fr;}
+  .ia-grid{grid-template-columns:1fr;}
+  .com-diario-grid{grid-template-columns:repeat(2,1fr);}
+  .cadastro-grid{grid-template-columns:1fr;}
+  .cad-det-grid{grid-template-columns:1fr;}
+  .cad-det-fotos{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:700px){
+  .page-head{flex-direction:column;align-items:flex-start;gap:10px;}
+  .page-head-icon{width:44px;height:44px;}
+  .page-title{font-size:22px;}
+  .form-row{flex-direction:column;gap:0;}
+  .row2{grid-template-columns:1fr!important;}
+  .gastos-summary{grid-template-columns:1fr;}
+  .perf-cards{grid-template-columns:1fr;}
+  .com-diario-grid{grid-template-columns:1fr;}
+  .cad-det-fotos{grid-template-columns:1fr;}
+  .modal{padding:20px;max-width:94vw;}
+  .modal h2{font-size:20px;}
+  .content{padding:20px 14px 50px!important;}
+  .topbar{padding:20px 14px 0!important;}
+  .security-banner{flex-direction:column;align-items:flex-start;gap:14px;}
+  .security-banner-emblem{align-self:flex-end;}
+  .chip-toggle-group,.chip-group{flex-wrap:wrap;}
+  .calc-mode-btn{min-width:100%;}
+  .toolbar{flex-wrap:wrap;}
+  .actions-cell{flex-wrap:wrap;}
+}
+@media(max-width:480px){
+  .sc-value{font-size:22px;}
+  .commission-card .cc-count{font-size:26px;}
+  .cc-ring{width:70px;height:70px;}
+  .notif-panel{width:92vw;right:-40px;}
+  .cad-det-fotos{grid-template-columns:1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -655,8 +727,10 @@ textarea{resize:vertical;min-height:70px;}
       <button class="icon-act" id="logoutBtn" title="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
   </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <div class="main-area">
     <div class="topbar">
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       <div class="welcome" id="welcomeBox">
         <h1 id="welcomeTitle">Bem-vindo de volta! 👋</h1>
         <p id="welcomeSub">Aqui está o resumo geral da sua operação.</p>
@@ -682,7 +756,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="sc-label">Clientes<br>Ativos</div></div></div><div class="sc-value" id="sumTotal">0</div><div class="sc-foot" id="sumTotalFoot">&nbsp;</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg></div><div><div class="sc-label">Descontos<br>Vencendo 7d</div></div></div><div class="sc-value" id="sumDesconto">0</div><div class="sc-foot" id="sumDescontoFoot">&nbsp;</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><div class="sc-label">Cupons<br>Vencendo 7d</div></div></div><div class="sc-value" id="sumCupom">0</div><div class="sc-foot" id="sumCupomFoot">&nbsp;</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saldo Total<br>em Ads</div></div></div><div class="sc-value green" id="sumSaldo">R$ 0</div><div class="sc-foot" id="sumSaldoFoot">&nbsp;</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saldo Total<br>em Ads</div></div></div><div class="sc-value green" id="sumSaldo">R$ 0</div><svg class="sc-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,18 15,15 30,17 45,10 60,12 75,5 100,3" fill="none" stroke="var(--green)" stroke-width="2"/></svg></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">GMV Total<br>Acumulado</div></div></div><div class="sc-value green" id="sumGmv">R$ 0</div><div class="sc-foot" id="sumGmvFoot">&nbsp;</div></div>
         </div>
         <div class="dash-row">
@@ -775,9 +849,9 @@ textarea{resize:vertical;min-height:70px;}
           <div class="page-head-text"><h2 class="page-title">Contratos</h2><p class="page-sub">Indicações e aprovações.</p></div>
         </div>
         <div class="commission-grid">
-          <div class="commission-card"><div class="cc-name">Lincoln</div><div class="cc-ring"><div class="cc-count" id="ccLincoln">0</div></div><div class="cc-label">contratos este mês</div></div>
-          <div class="commission-card"><div class="cc-name">Paloma</div><div class="cc-ring"><div class="cc-count" id="ccPaloma">0</div></div><div class="cc-label">contratos indicados</div></div>
-          <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><div class="cc-label">contratos indicados</div></div>
+          <div class="commission-card"><div class="cc-name">Lincoln</div><div class="cc-ring"><div class="cc-count" id="ccLincoln">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos este mês</div></div>
+          <div class="commission-card"><div class="cc-name">Paloma</div><div class="cc-ring"><div class="cc-count" id="ccPaloma">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos indicados</div></div>
+          <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos indicados</div></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button class="btn btn-gold btn-sm" id="openNovoContratoBtn">+ Propor Novo Contrato</button></div>
                 <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
@@ -1053,6 +1127,13 @@ textarea{resize:vertical;min-height:70px;}
             </div>
           </div>
         </div>
+        <div class="security-banner">
+          <div style="display:flex;align-items:center">
+            <div class="security-banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <div><div class="security-banner-title">Segurança em primeiro lugar</div><div class="security-banner-sub">Utilize sempre os links oficiais da LB para garantir segurança, rastreabilidade e melhores resultados.</div></div>
+          </div>
+          <div class="security-banner-emblem">LB</div>
+        </div>
       </div>
       <div class="page" id="page-gerar">
         <div class="page-head">
@@ -1078,7 +1159,21 @@ textarea{resize:vertical;min-height:70px;}
             <p style="font-size:11px;color:var(--text-dim);margin-top:12px;text-align:center">Custo aproximado: R$ 0,01 por anúncio gerado</p>
           </div>
           <div class="ia-result" id="iaResult">
-            <div class="ia-empty">Preencha a descrição e clique em <b>Gerar Anúncio</b>.<br>A IA vai criar o título, os destaques e a descrição prontos para publicar.</div>
+            <div class="ia-right-panel">
+              <div class="ia-icons-cluster">
+                <div class="float-ico f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></div>
+                <div class="center-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12h8M8 8h5M8 16h4"/></svg></div>
+                <div class="float-ico f2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div>
+                <div class="float-ico f3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+              </div>
+              <h3>Pronta para criar seu anúncio!</h3>
+              <p>Preencha a descrição e clique em <b style="color:var(--gold)">Gerar Anúncio</b>.<br>A IA vai criar o título, os destaques e a descrição prontos para publicar.</p>
+              <div class="ia-feature-badges">
+                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Rápido e inteligente</span></div>
+                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Otimizado para conversão</span></div>
+                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Conteúdo profissional</span></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1558,7 +1653,12 @@ comSetupAcesso();gastosSetupAcesso();document.getElementById('welcomeTitle').inn
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startGastosListener();startGastosHistListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);}));
+/* ===== MENU MOBILE (abrir/fechar) ===== */
+function fecharMenuMobile(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
+function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
+document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
+document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -2438,9 +2538,9 @@ function renderCadastrosRecebidos(){
         <div><b>Endereço:</b> ${esc(c.rua||'')}, ${esc(c.numero||'')} - ${esc(c.bairro||'')}, ${esc(c.cidade||'')}/${esc(c.estado||'')}</div>
       </div>
       <div class="cadastro-docs">
-        ${c.urlDocFrente?`<a href="${c.urlDocFrente}" target="_blank">📄 Doc. Frente</a>`:''}
-        ${c.urlDocVerso?`<a href="${c.urlDocVerso}" target="_blank">📄 Doc. Verso</a>`:''}
-        ${c.urlSelfie?`<a href="${c.urlSelfie}" target="_blank">🤳 Selfie</a>`:''}
+        <span class="cadastro-doc-pill ${c.urlDocFrente?'ok':''}">📄 Doc. Frente ${c.urlDocFrente?'✓':'—'}</span>
+        <span class="cadastro-doc-pill ${c.urlDocVerso?'ok':''}">📄 Doc. Verso ${c.urlDocVerso?'✓':'—'}</span>
+        <span class="cadastro-doc-pill ${c.urlSelfie?'ok':''}">🤳 Selfie ${c.urlSelfie?'✓':'—'}</span>
       </div>
       <div class="actions-cell">
         <button class="btn btn-gold btn-sm" onclick="window.__verCadastro('${c.id}')">👁 Ver Detalhes</button>
