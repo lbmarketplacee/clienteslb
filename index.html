@@ -1488,6 +1488,7 @@ textarea{resize:vertical;min-height:70px;}
             <option value="lincoln@lbmarketplace.com.br">Lincoln</option>
             <option value="paloma@lbmarketplace.com.br">Paloma</option>
             <option value="caroline@lbmarketplace.com.br">Caroline</option>
+            <option value="ambas">👥 Paloma e Caroline (ambas)</option>
           </select>
         </div>
         <div class="field"><label>Cliente vinculado (opcional)</label>
@@ -2147,26 +2148,40 @@ document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
   const cliId=document.getElementById('tfCliente').value;
   const cli=cliId?clientesCache.find(c=>c.id===cliId):null;
   const respEmail=document.getElementById('tfResponsavel').value;
-  const dados={
+
+  if(respEmail==='ambas'&&tarefaEditId){
+    showToast('Não é possível editar uma tarefa existente para "Ambas". Crie uma tarefa nova.');
+    return;
+  }
+
+  const dadosBase={
     titulo:document.getElementById('tfTitulo').value.trim(),
     descricao:document.getElementById('tfDescricao').value.trim(),
     prazo:document.getElementById('tfPrazo').value||null,
     prioridade:document.getElementById('tfPrioridade').value,
-    responsavelEmail:respEmail,
-    responsavel:nome(respEmail),
     clienteId:cliId||null,
     clienteNome:cli?cli.nome:null,
     coluna:document.getElementById('tfStatus').value,
     timestamp:serverTimestamp()
   };
+
   try{
-    if(tarefaEditId){
+    if(respEmail==='ambas'){
+      /* Cria DUAS tarefas independentes — uma pra Paloma, uma pra Caroline. Cada uma acompanha a própria, separadamente. */
+      const emails=['paloma@lbmarketplace.com.br','caroline@lbmarketplace.com.br'];
+      await Promise.all(emails.map(email=>addDoc(collection(db,"tarefas"),{
+        ...dadosBase,
+        responsavelEmail:email,
+        responsavel:nome(email),
+        criadoPor:currentUser
+      })));
+      showToast('✓ Tarefa criada para Paloma e Caroline (2 cópias independentes).');
+    }else if(tarefaEditId){
       /* Preserva quem criou originalmente — edição nunca rouba a autoria */
-      await updateDoc(doc(db,"tarefas",tarefaEditId),dados);
+      await updateDoc(doc(db,"tarefas",tarefaEditId),{...dadosBase,responsavelEmail:respEmail,responsavel:nome(respEmail)});
       showToast('Tarefa atualizada.');
     }else{
-      dados.criadoPor=currentUser;
-      await addDoc(collection(db,"tarefas"),dados);
+      await addDoc(collection(db,"tarefas"),{...dadosBase,responsavelEmail:respEmail,responsavel:nome(respEmail),criadoPor:currentUser});
       showToast('Tarefa criada.');
     }
     tarefaModalOverlay.classList.add('hidden');
