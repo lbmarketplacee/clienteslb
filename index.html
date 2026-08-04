@@ -659,6 +659,21 @@ textarea{resize:vertical;min-height:70px;}
 .sgmv-empty-connected{text-align:center;padding:60px 20px;color:var(--text-dim);}
 .sgmv-empty-connected .ico{font-size:44px;margin-bottom:14px;opacity:.6;}
 
+/* ===== ABA TIKTOK OFERTA RELÂMPAGO ===== */
+.tt-list{display:flex;flex-direction:column;gap:12px;}
+.tt-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:16px;transition:border-color .15s;}
+.tt-card.ok{border-left:3px solid var(--green);}
+.tt-card.hoje{border-left:3px solid var(--amber);}
+.tt-card.atrasada{border-left:3px solid var(--red);}
+.tt-ico{width:46px;height:46px;border-radius:12px;background:#00000020;color:#fff;background-image:linear-gradient(135deg,#25f4ee30,#fe2c5530);display:flex;align-items:center;justify-content:center;flex:none;font-weight:800;font-size:16px;}
+.tt-info{flex:1;min-width:0;}
+.tt-nome{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.tt-sub{font-size:12px;color:var(--text-dim);}
+.tt-status-pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em;margin-right:8px;white-space:nowrap;}
+.tt-status-pill.ok{background:var(--green-bg);color:var(--green);}
+.tt-status-pill.hoje{background:var(--amber-bg);color:var(--amber);}
+.tt-status-pill.atrasada{background:var(--red-bg);color:var(--red);}
+
 </style>
 </head>
 <body>
@@ -732,6 +747,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
       <button class="nav-item" data-page="shopeegmv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M3.5 6h17l-1.6 13.5A2 2 0 0 1 17 21H7a2 2 0 0 1-1.9-1.5L3.5 6z"/><path d="M9 10a3 3 0 0 0 6 0"/></svg> Shopee GMV API</button>
+      <button class="nav-item" data-page="tiktokoferta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg> TikTok Oferta</button>
     </nav>
     <div class="nav-premium">
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
@@ -1295,6 +1311,19 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="sgmv-list" id="sgmvLista"></div>
       </div>
+      <div class="page" id="page-tiktokoferta">
+        <div class="page-head">
+          <div class="page-head-icon" style="background:#00000030;color:#fff;border-color:#333"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">TikTok Shop — Oferta Relâmpago</h2><p class="page-sub">Ciclo de 3 em 3 dias — só clientes com TikTok Shop ativo.</p></div>
+        </div>
+        <div class="sgmv-summary">
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="ttEmDia">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Programar<br>Hoje</div></div><div class="sc-value" id="ttHoje">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/></svg></div><div class="sc-label">Atrasadas</div></div><div class="sc-value" style="color:var(--red)" id="ttAtrasadas">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>TikTok Shop</div></div><div class="sc-value" id="ttTotal">0</div></div>
+        </div>
+        <div class="tt-list" id="ttLista"></div>
+      </div>
       <div class="page" id="page-tarefas">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
@@ -1303,6 +1332,9 @@ textarea{resize:vertical;min-height:70px;}
         <div class="calc-mode-selector" style="margin-bottom:20px">
           <button class="calc-mode-btn active" data-tfview="meu">📋 Meu Quadro</button>
           <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas da Equipe</button>
+        </div>
+        <div class="field" style="max-width:420px;margin-bottom:16px">
+          <input type="text" id="tfBuscaInput" placeholder="🔎 Buscar tarefa por título, cliente ou descrição...">
         </div>
         <div class="toolbar hidden" id="tfPessoaFiltroBar" style="margin-bottom:16px">
           <button class="chip active" data-tfpessoa="todos">Todos</button>
@@ -1707,7 +1739,7 @@ function fecharMenuMobile(){document.getElementById('sidebar').classList.remove(
 function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
 document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
 document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],shopeegmv:['Shopee GMV API','Acompanhamento automático de faturamento.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],shopeegmv:['Shopee GMV API','Acompanhamento automático de faturamento.'],tiktokoferta:['TikTok Shop — Oferta Relâmpago','Ciclo de 3 em 3 dias.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -1719,7 +1751,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -2085,6 +2117,7 @@ function startTarefasListener(){
     tfRenderBoard();
   });
 }
+let tarefaBuscaTexto='';
 function tfAtualizarLista(){
   if(tarefaView==='meu'){
     tarefasCache=todasTarefasCache.filter(t=>t.responsavelEmail===currentEmail);
@@ -2094,8 +2127,21 @@ function tfAtualizarLista(){
       tarefasCache=tarefasCache.filter(t=>t.responsavel===tarefaPessoaFiltro);
     }
   }
+  if(tarefaBuscaTexto.trim()){
+    const q=tarefaBuscaTexto.trim().toLowerCase();
+    tarefasCache=tarefasCache.filter(t=>
+      (t.titulo||'').toLowerCase().includes(q) ||
+      (t.descricao||'').toLowerCase().includes(q) ||
+      (t.clienteNome||'').toLowerCase().includes(q) ||
+      (t.responsavel||'').toLowerCase().includes(q)
+    );
+  }
   notifRecalcular();
 }
+document.getElementById('tfBuscaInput')?.addEventListener('input',(e)=>{
+  tarefaBuscaTexto=e.target.value;
+  tfAtualizarLista();tfRenderBoard();
+});
 document.querySelectorAll('[data-tfview]').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('[data-tfview]').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
@@ -2519,6 +2565,11 @@ function notifRecalcular(){
     if(dd!==null&&dd<=7&&dd>=0){itens.push({tipo:'amber',titulo:`Desconto vencendo — ${c.nome}`,sub:`Vence em ${dd}d`,pagina:'clientes'});}
     const dc=diffDias(c.cupomFim);
     if(dc!==null&&dc<=7&&dc>=0){itens.push({tipo:'amber',titulo:`Cupom vencendo — ${c.nome}`,sub:`Vence em ${dc}d`,pagina:'clientes'});}
+    if((c.marketplaces||[]).includes('tiktok')){
+      const dt=c.tiktokOfertaProxima?diffDias(c.tiktokOfertaProxima):null;
+      if(dt===null||dt<0){itens.push({tipo:'red',titulo:`TikTok Oferta atrasada — ${c.nome}`,sub:dt===null?'Nunca programada':'Programar agora',pagina:'tiktokoferta'});}
+      else if(dt===0){itens.push({tipo:'amber',titulo:`TikTok Oferta hoje — ${c.nome}`,sub:'Programar hoje',pagina:'tiktokoferta'});}
+    }
   });
   // 2) Tarefas atrasadas atribuídas a mim
   (todasTarefasCache||[]).forEach(t=>{
@@ -2822,6 +2873,68 @@ document.getElementById('sgmvAtualizarTodosBtn')?.addEventListener('click',async
   btn.disabled=false;btn.textContent='🔄 Atualizar Todas as Lojas';
   showToast(`Concluído! ${sucesso} de ${conectados.length} lojas atualizadas.`);
 });
+/* ================= TIKTOK SHOP — OFERTA RELÂMPAGO (ciclo de 3 dias) ================= */
+function ttRenderizar(){
+  const lista=document.getElementById('ttLista');
+  if(!lista)return;
+  const clientesTiktok=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('tiktok'));
+
+  let emDia=0,hojeCount=0,atrasadas=0;
+  clientesTiktok.forEach(c=>{
+    const d=c.tiktokOfertaProxima?diffDias(c.tiktokOfertaProxima):null;
+    if(d===null||d<0)atrasadas++;
+    else if(d===0)hojeCount++;
+    else emDia++;
+  });
+  animateTo(document.getElementById('ttEmDia'),emDia,v=>Math.round(v));
+  animateTo(document.getElementById('ttHoje'),hojeCount,v=>Math.round(v));
+  animateTo(document.getElementById('ttAtrasadas'),atrasadas,v=>Math.round(v));
+  animateTo(document.getElementById('ttTotal'),clientesTiktok.length,v=>Math.round(v));
+
+  if(!clientesTiktok.length){
+    lista.innerHTML=`<div class="sgmv-empty-connected"><div class="ico">🎵</div><h3 style="color:var(--gold);font-family:'Cormorant Garamond',serif;margin-bottom:8px">Nenhum cliente com TikTok Shop ainda</h3><p>Marque "TikTok Shop" nos marketplaces de um cliente pra ele aparecer aqui.</p></div>`;
+    return;
+  }
+
+  // Ordena: atrasados primeiro, depois hoje, depois em dia
+  const comStatus=clientesTiktok.map(c=>{
+    const d=c.tiktokOfertaProxima?diffDias(c.tiktokOfertaProxima):null;
+    let status='atrasada';
+    if(d!==null&&d===0)status='hoje';
+    else if(d!==null&&d>0)status='ok';
+    return {c,d,status};
+  });
+  const ordem={atrasada:0,hoje:1,ok:2};
+  comStatus.sort((a,b)=>ordem[a.status]-ordem[b.status]);
+
+  lista.innerHTML=comStatus.map(({c,d,status})=>{
+    let sub;
+    if(status==='atrasada')sub=c.tiktokOfertaProxima?`Venceu em ${fmtDate(c.tiktokOfertaProxima)} — ${Math.abs(d)}d atrás`:'Nunca programada';
+    else if(status==='hoje')sub='Programar hoje!';
+    else sub=`Próxima em ${fmtDate(c.tiktokOfertaProxima)} (em ${d}d)`;
+    const label={atrasada:'⚠ Atrasada',hoje:'⚡ Hoje',ok:'✓ Em dia'}[status];
+    return `<div class="tt-card ${status}">
+      <div class="tt-ico">🎵</div>
+      <div class="tt-info"><div class="tt-nome">${esc(c.nome)}</div><div class="tt-sub">${sub}</div></div>
+      <span class="tt-status-pill ${status}">${label}</span>
+      <button class="btn btn-gold btn-sm" onclick="window.__marcarTiktokOferta('${c.id}')">✓ Marcar Programada</button>
+    </div>`;
+  }).join('');
+}
+
+window.__marcarTiktokOferta=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente)return;
+  const hoje=new Date();
+  const proxima=new Date(hoje);
+  proxima.setDate(proxima.getDate()+3);
+  const proximaStr=`${proxima.getFullYear()}-${String(proxima.getMonth()+1).padStart(2,'0')}-${String(proxima.getDate()).padStart(2,'0')}`;
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{tiktokOfertaProxima:proximaStr,tiktokOfertaUltimaMarcacao:serverTimestamp()});
+    showToast(`✓ ${cliente.nome}: próxima oferta em ${fmtDate(proximaStr)}`);
+  }catch(e){showToast('Erro ao marcar.');}
+};
+
 
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
