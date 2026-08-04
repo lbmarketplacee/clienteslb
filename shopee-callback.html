@@ -26,10 +26,19 @@ p{color:var(--text-dim);font-size:14px;line-height:1.6;margin-bottom:24px;}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import{getFirestore,doc,updateDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
+const auth=getAuth(app);
+
+// Espera confirmar que o login (da sessão já ativa no navegador) carregou antes de continuar
+function aguardarLogin(){
+  return new Promise((resolve)=>{
+    const unsub=onAuthStateChanged(auth,(user)=>{unsub();resolve(user);});
+  });
+}
 
 const SHOPEE_API='https://lb-shopee-gmv.vercel.app/api/shopee';
 const card=document.getElementById('card');
@@ -51,6 +60,12 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
   }
   if(!clienteId){
     mostrar('⚠️','Não sabemos qual cliente','O link de conexão expirou ou foi aberto fora do sistema. Volte e clique em "Conectar Shopee" de novo.',true);
+    return;
+  }
+
+  const usuario=await aguardarLogin();
+  if(!usuario){
+    mostrar('🔒','Sessão expirada','Sua sessão de login não foi encontrada nesta aba. Volte pro sistema, confirme que está logado, e tente conectar de novo.',true);
     return;
   }
 
