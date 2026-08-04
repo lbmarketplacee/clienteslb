@@ -639,6 +639,26 @@ textarea{resize:vertical;min-height:70px;}
   .cad-det-fotos{grid-template-columns:1fr;}
 }
 
+/* ===== ABA SHOPEE GMV ===== */
+.sgmv-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.sgmv-list{display:flex;flex-direction:column;gap:12px;}
+.sgmv-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:16px;transition:border-color .15s;}
+.sgmv-card:hover{border-color:var(--gold-dim);}
+.sgmv-card.conectado{border-left:3px solid var(--green);}
+.sgmv-card.pendente{border-left:3px solid var(--amber);}
+.sgmv-ico{width:46px;height:46px;border-radius:12px;background:#ee4d2d20;color:#ee4d2d;display:flex;align-items:center;justify-content:center;flex:none;font-weight:800;font-size:18px;}
+.sgmv-info{flex:1;min-width:0;}
+.sgmv-nome{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.sgmv-sub{font-size:12px;color:var(--text-dim);}
+.sgmv-status-pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em;margin-right:8px;}
+.sgmv-status-pill.on{background:var(--green-bg);color:var(--green);}
+.sgmv-status-pill.off{background:var(--amber-bg);color:var(--amber);}
+.sgmv-valor{text-align:right;margin-right:8px;}
+.sgmv-valor .num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--green);}
+.sgmv-valor .lbl{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;}
+.sgmv-empty-connected{text-align:center;padding:60px 20px;color:var(--text-dim);}
+.sgmv-empty-connected .ico{font-size:44px;margin-bottom:14px;opacity:.6;}
+
 </style>
 </head>
 <body>
@@ -711,6 +731,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="gerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg> Gerar Anúncio</button>
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
+      <button class="nav-item" data-page="shopeegmv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M3.5 6h17l-1.6 13.5A2 2 0 0 1 17 21H7a2 2 0 0 1-1.9-1.5L3.5 6z"/><path d="M9 10a3 3 0 0 0 6 0"/></svg> Shopee GMV API</button>
     </nav>
     <div class="nav-premium">
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
@@ -1257,6 +1278,23 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
 
+      <div class="page" id="page-shopeegmv">
+        <div class="page-head">
+          <div class="page-head-icon" style="background:#ee4d2d20;color:#ee4d2d;border-color:#ee4d2d40"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M3.5 6h17l-1.6 13.5A2 2 0 0 1 17 21H7a2 2 0 0 1-1.9-1.5L3.5 6z"/><path d="M9 10a3 3 0 0 0 6 0"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Shopee GMV <span style="color:#ee4d2d">API</span></h2><p class="page-sub">Acompanhamento automático de faturamento via integração oficial da Shopee.</p></div>
+        </div>
+        <div class="sgmv-summary">
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">GMV via API<br>(mês atual)</div></div><div class="sc-value green" id="sgmvTotal">R$ 0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Lojas<br>Conectadas</div></div><div class="sc-value" id="sgmvConectadas">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Aguardando<br>Conexão</div></div><div class="sc-value" id="sgmvPendentes">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></div><div class="sc-label">Última<br>Sincronização</div></div><div class="sc-value" id="sgmvUltimaSinc" style="font-size:16px">—</div></div>
+        </div>
+        <div class="toolbar">
+          <div class="spacer"></div>
+          <button class="btn btn-gold btn-sm" id="sgmvAtualizarTodosBtn">🔄 Atualizar Todas as Lojas</button>
+        </div>
+        <div class="sgmv-list" id="sgmvLista"></div>
+      </div>
       <div class="page" id="page-tarefas">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
@@ -1669,7 +1707,7 @@ function fecharMenuMobile(){document.getElementById('sidebar').classList.remove(
 function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
 document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
 document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],shopeegmv:['Shopee GMV API','Acompanhamento automático de faturamento.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -1681,7 +1719,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -2649,7 +2687,7 @@ function shopeeAtualizarStatusModal(c){
   wrap.classList.remove('hidden');
   if(c.shopeeShopId){
     const dt=c.gmvShopeeAtualizadoEm?new Date(c.gmvShopeeAtualizadoEm.seconds?c.gmvShopeeAtualizadoEm.seconds*1000:c.gmvShopeeAtualizadoEm).toLocaleString('pt-BR'):'ainda não atualizado';
-    txt.innerHTML=`✅ Conectado — Loja <b style="color:var(--text)">${c.shopeeShopId}</b><br>GMV automático (mês atual): <b style="color:var(--green)">${fmtR(c.gmvShopeeAutomatico||0)}</b><br><span style="font-size:11px">Última atualização: ${dt}</span>`;
+    txt.innerHTML=`✅ Conectado — Loja <b style="color:var(--text)">${c.shopeeShopId}</b><br>GMV automático (mês atual): <b style="color:var(--green)">${fmtR(c.gmvShopeeAutomatico||0)}</b><br><span style="font-size:11px">Última atualização: ${dt} — veja todos em <b style="color:var(--gold)">Shopee GMV API</b></span>`;
     btnConectar.textContent='🔄 Reconectar Shopee';
     btnAtualizar.classList.remove('hidden');
   }else{
@@ -2659,18 +2697,11 @@ function shopeeAtualizarStatusModal(c){
   }
 }
 
-document.getElementById('conectarShopeeBtn')?.addEventListener('click',async()=>{
+document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
   const clienteNome=document.getElementById('fNome').value.trim();
   if(!clienteId){showToast('Salve o cliente primeiro antes de conectar a Shopee.');return;}
-  try{
-    localStorage.setItem('shopee_auth_cliente_id',clienteId);
-    localStorage.setItem('shopee_auth_cliente_nome',clienteNome);
-    const resp=await fetch(`${SHOPEE_API}?acao=gerar_link_autorizacao&redirect=${encodeURIComponent(SHOPEE_CALLBACK_URL)}`);
-    const data=await resp.json();
-    if(!data.ok){showToast('Erro ao gerar link: '+(data.erro||'desconhecido'));return;}
-    window.location.href=data.link;
-  }catch(e){showToast('Erro ao conectar com a Shopee.');}
+  window.__shopeeConectar(clienteId,clienteNome);
 });
 
 async function shopeeGarantirTokenValido(cliente){
@@ -2694,10 +2725,69 @@ async function shopeeGarantirTokenValido(cliente){
 
 document.getElementById('atualizarGmvBtn')?.addEventListener('click',async()=>{
   const clienteId=document.getElementById('clientId').value;
-  const cliente=clientesCache.find(c=>c.id===clienteId);
-  if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
   const btn=document.getElementById('atualizarGmvBtn');
   btn.disabled=true;btn.textContent='Buscando...';
+  await window.__shopeeAtualizarGmv(clienteId);
+  btn.disabled=false;btn.textContent='🔄 Atualizar GMV (mês atual)';
+});
+/* ================= ABA SHOPEE GMV — visão consolidada ================= */
+function sgmvRenderizar(){
+  const lista=document.getElementById('sgmvLista');
+  if(!lista)return;
+  const clientesShopee=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee'));
+  const conectados=clientesShopee.filter(c=>c.shopeeShopId);
+  const pendentes=clientesShopee.filter(c=>!c.shopeeShopId);
+
+  const totalGmv=conectados.reduce((s,c)=>s+(c.gmvShopeeAutomatico||0),0);
+  animateTo(document.getElementById('sgmvTotal'),totalGmv,v=>fmtR(v));
+  animateTo(document.getElementById('sgmvConectadas'),conectados.length,v=>Math.round(v));
+  animateTo(document.getElementById('sgmvPendentes'),pendentes.length,v=>Math.round(v));
+
+  let ultimaData=null;
+  conectados.forEach(c=>{const t=c.gmvShopeeAtualizadoEm?.seconds?c.gmvShopeeAtualizadoEm.seconds*1000:c.gmvShopeeAtualizadoEm;if(t&&(!ultimaData||t>ultimaData))ultimaData=t;});
+  document.getElementById('sgmvUltimaSinc').textContent=ultimaData?new Date(ultimaData).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+
+  if(!clientesShopee.length){
+    lista.innerHTML=`<div class="sgmv-empty-connected"><div class="ico">🛒</div><h3 style="color:var(--gold);font-family:'Cormorant Garamond',serif;margin-bottom:8px">Nenhum cliente com Shopee ainda</h3><p>Marque "Shopee" nos marketplaces de um cliente pra ele aparecer aqui.</p></div>`;
+    return;
+  }
+
+  const ordenados=[...conectados,...pendentes];
+  lista.innerHTML=ordenados.map(c=>{
+    const conectado=!!c.shopeeShopId;
+    const dt=c.gmvShopeeAtualizadoEm?.seconds?new Date(c.gmvShopeeAtualizadoEm.seconds*1000).toLocaleDateString('pt-BR'):(c.gmvShopeeAtualizadoEm?new Date(c.gmvShopeeAtualizadoEm).toLocaleDateString('pt-BR'):'nunca');
+    return `<div class="sgmv-card ${conectado?'conectado':'pendente'}">
+      <div class="sgmv-ico">S</div>
+      <div class="sgmv-info">
+        <div class="sgmv-nome">${esc(c.nome)}</div>
+        <div class="sgmv-sub">${conectado?`Loja ${c.shopeeShopId} · Atualizado em ${dt}`:'Ainda não autorizou o acesso'}</div>
+      </div>
+      ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.gmvShopeeAutomatico||0)}</div><div class="lbl">GMV mês atual</div></div>`:''}
+      <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
+      ${conectado
+        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">🔄 Atualizar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">🔗 Conectar</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+/* --- Conectar (reutilizável, chamado da aba nova OU do modal) --- */
+window.__shopeeConectar=async(clienteId,clienteNome)=>{
+  try{
+    localStorage.setItem('shopee_auth_cliente_id',clienteId);
+    localStorage.setItem('shopee_auth_cliente_nome',clienteNome||'');
+    const resp=await fetch(`${SHOPEE_API}?acao=gerar_link_autorizacao&redirect=${encodeURIComponent(SHOPEE_CALLBACK_URL)}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro ao gerar link: '+(data.erro||'desconhecido'));return;}
+    window.location.href=data.link;
+  }catch(e){showToast('Erro ao conectar com a Shopee.');}
+};
+
+/* --- Atualizar GMV de 1 cliente (reutilizável) --- */
+window.__shopeeAtualizarGmv=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente);
     const hoje=new Date();
@@ -2707,10 +2797,26 @@ document.getElementById('atualizarGmvBtn')?.addEventListener('click',async()=>{
     const data=await resp.json();
     if(!data.ok)throw new Error(data.erro||'Erro ao buscar GMV.');
     await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:data.gmv,gmvShopeeAtualizadoEm:serverTimestamp()});
-    showToast(`✓ GMV atualizado: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos)`);
-  }catch(e){console.error(e);showToast('Erro: '+e.message);}
-  btn.disabled=false;btn.textContent='🔄 Atualizar GMV (mês atual)';
+    showToast(`✓ ${cliente.nome}: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos)`);
+    return true;
+  }catch(e){console.error(e);showToast(`Erro em ${cliente.nome}: `+e.message);return false;}
+};
+
+document.getElementById('sgmvAtualizarTodosBtn')?.addEventListener('click',async()=>{
+  const btn=document.getElementById('sgmvAtualizarTodosBtn');
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee')&&c.shopeeShopId);
+  if(!conectados.length){showToast('Nenhuma loja conectada ainda.');return;}
+  btn.disabled=true;btn.textContent=`Atualizando 0/${conectados.length}...`;
+  let sucesso=0;
+  for(let i=0;i<conectados.length;i++){
+    btn.textContent=`Atualizando ${i+1}/${conectados.length}...`;
+    const ok=await window.__shopeeAtualizarGmv(conectados[i].id);
+    if(ok)sucesso++;
+  }
+  btn.disabled=false;btn.textContent='🔄 Atualizar Todas as Lojas';
+  showToast(`Concluído! ${sucesso} de ${conectados.length} lojas atualizadas.`);
 });
+
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
