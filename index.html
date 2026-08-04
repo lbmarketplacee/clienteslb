@@ -1309,6 +1309,16 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="field"><label>Saldo de Ads (R$)</label><input type="number" step="0.01" id="fSaldo" placeholder="0,00"></div>
       <div class="field"><label>Observações</label><textarea id="fObs" placeholder="Notas internas..."></textarea></div>
+      <div class="field hidden" id="shopeeIntegracaoField">
+        <label>🛒 Integração Shopee (GMV Automático)</label>
+        <div id="shopeeStatusBox" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;">
+          <div id="shopeeStatusTexto" style="font-size:13px;color:var(--text-dim);margin-bottom:10px">Verificando...</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeBtn">🔗 Conectar Shopee</button>
+            <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarGmvBtn">🔄 Atualizar GMV (mês atual)</button>
+          </div>
+        </div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="cancelClientModal">Cancelar</button>
         <button type="submit" class="btn btn-gold">Salvar</button>
@@ -1716,7 +1726,7 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){window.__cadastroOrigemAtual=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});clientModalOverlay.classList.remove('hidden');}
+function openClientModal(c){window.__cadastroOrigemAtual=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});shopeeAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
 document.getElementById('cancelClientModal').addEventListener('click',()=>{clientModalOverlay.classList.add('hidden');window.__cadastroOrigemAtual=null;});
@@ -2625,6 +2635,82 @@ window.__descartarCadastro=async(id)=>{
   if(!confirm('Descartar este cadastro? Ele deixará de aparecer na lista (mas os dados continuam salvos).'))return;
   try{await updateDoc(doc(db,"cadastros",id),{status:'descartado'});showToast('Cadastro descartado.');}catch(e){showToast('Erro.');}
 };
+
+/* ================= INTEGRAÇÃO SHOPEE — GMV automático por cliente ================= */
+const SHOPEE_API = 'https://lb-shopee-gmv.vercel.app/api/shopee';
+const SHOPEE_CALLBACK_URL = 'https://lbmarketplacee.github.io/clienteslb/shopee-callback.html';
+
+function shopeeAtualizarStatusModal(c){
+  const wrap=document.getElementById('shopeeIntegracaoField');
+  const txt=document.getElementById('shopeeStatusTexto');
+  const btnConectar=document.getElementById('conectarShopeeBtn');
+  const btnAtualizar=document.getElementById('atualizarGmvBtn');
+  if(!c||!c.id){wrap.classList.add('hidden');return;} // só mostra em cliente já salvo
+  wrap.classList.remove('hidden');
+  if(c.shopeeShopId){
+    const dt=c.gmvShopeeAtualizadoEm?new Date(c.gmvShopeeAtualizadoEm.seconds?c.gmvShopeeAtualizadoEm.seconds*1000:c.gmvShopeeAtualizadoEm).toLocaleString('pt-BR'):'ainda não atualizado';
+    txt.innerHTML=`✅ Conectado — Loja <b style="color:var(--text)">${c.shopeeShopId}</b><br>GMV automático (mês atual): <b style="color:var(--green)">${fmtR(c.gmvShopeeAutomatico||0)}</b><br><span style="font-size:11px">Última atualização: ${dt}</span>`;
+    btnConectar.textContent='🔄 Reconectar Shopee';
+    btnAtualizar.classList.remove('hidden');
+  }else{
+    txt.textContent='Não conectado. Clique em "Conectar Shopee" e peça pro cliente autorizar o acesso.';
+    btnConectar.textContent='🔗 Conectar Shopee';
+    btnAtualizar.classList.add('hidden');
+  }
+}
+
+document.getElementById('conectarShopeeBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('clientId').value;
+  const clienteNome=document.getElementById('fNome').value.trim();
+  if(!clienteId){showToast('Salve o cliente primeiro antes de conectar a Shopee.');return;}
+  try{
+    localStorage.setItem('shopee_auth_cliente_id',clienteId);
+    localStorage.setItem('shopee_auth_cliente_nome',clienteNome);
+    const resp=await fetch(`${SHOPEE_API}?acao=gerar_link_autorizacao&redirect=${encodeURIComponent(SHOPEE_CALLBACK_URL)}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro ao gerar link: '+(data.erro||'desconhecido'));return;}
+    window.location.href=data.link;
+  }catch(e){showToast('Erro ao conectar com a Shopee.');}
+});
+
+async function shopeeGarantirTokenValido(cliente){
+  const agora=Date.now();
+  const expiraEm=cliente.shopeeTokenExpiraEm?.seconds?cliente.shopeeTokenExpiraEm.seconds*1000:cliente.shopeeTokenExpiraEm;
+  if(expiraEm&&agora<expiraEm-5*60*1000){
+    return cliente.shopeeAccessToken; // ainda válido (com 5min de folga)
+  }
+  // Expirado ou perto de expirar — renova usando o refresh_token
+  const resp=await fetch(`${SHOPEE_API}?acao=renovar_token&refresh_token=${cliente.shopeeRefreshToken}&shop_id=${cliente.shopeeShopId}`);
+  const data=await resp.json();
+  if(!data.ok||!data.access_token)throw new Error('Não foi possível renovar o token da Shopee.');
+  const novaExpiraEm=Date.now()+(data.expire_in*1000);
+  await updateDoc(doc(db,"clientes",cliente.id),{
+    shopeeAccessToken:data.access_token,
+    shopeeRefreshToken:data.refresh_token,
+    shopeeTokenExpiraEm:novaExpiraEm
+  });
+  return data.access_token;
+}
+
+document.getElementById('atualizarGmvBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('clientId').value;
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
+  const btn=document.getElementById('atualizarGmvBtn');
+  btn.disabled=true;btn.textContent='Buscando...';
+  try{
+    const accessToken=await shopeeGarantirTokenValido(cliente);
+    const hoje=new Date();
+    const primeiroDia=new Date(hoje.getFullYear(),hoje.getMonth(),1).toISOString().split('T')[0];
+    const ultimoDia=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).toISOString().split('T')[0];
+    const resp=await fetch(`${SHOPEE_API}?acao=buscar_gmv&access_token=${accessToken}&shop_id=${cliente.shopeeShopId}&data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
+    const data=await resp.json();
+    if(!data.ok)throw new Error(data.erro||'Erro ao buscar GMV.');
+    await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:data.gmv,gmvShopeeAtualizadoEm:serverTimestamp()});
+    showToast(`✓ GMV atualizado: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos)`);
+  }catch(e){console.error(e);showToast('Erro: '+e.message);}
+  btn.disabled=false;btn.textContent='🔄 Atualizar GMV (mês atual)';
+});
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
