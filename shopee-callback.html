@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conectando Shopee — LB Marketplace</title>
+<style>
+:root{--bg:#0a0a0a;--gold:#D4AF37;--gold-dim:#9c8127;--text:#f3f0e8;--text-dim:#a8a39a;--border:#2a261c;--red:#e0525a;--green:#5cb88a;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:radial-gradient(circle at 50% 20%,#161208,#0a0a0a 65%);color:var(--text);font-family:sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.card{background:#111;border:1px solid var(--gold-dim);border-radius:16px;padding:40px 32px;max-width:440px;text-align:center;}
+.ico{font-size:48px;margin-bottom:16px;}
+h1{color:var(--gold);font-size:20px;margin-bottom:12px;}
+p{color:var(--text-dim);font-size:14px;line-height:1.6;margin-bottom:24px;}
+.btn{display:inline-block;background:linear-gradient(135deg,#f5d060,var(--gold),var(--gold-dim));color:#0a0a0a;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="spinner"></div>
+  <h1>Conectando com a Shopee...</h1>
+  <p>Aguarde um instante, estamos finalizando a autorização.</p>
+</div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import{getFirestore,doc,updateDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const SHOPEE_API='https://lb-shopee-gmv.vercel.app/api/shopee';
+const card=document.getElementById('card');
+
+function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
+  card.innerHTML=`<div class="ico">${icone}</div><h1>${titulo}</h1><p>${texto}</p>${mostrarBotaoVoltar?'<a class="btn" href="https://lbmarketplacee.github.io/clienteslb/">← Voltar para o Sistema</a>':''}`;
+}
+
+(async()=>{
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  const shopId=params.get('shop_id');
+  const clienteId=localStorage.getItem('shopee_auth_cliente_id');
+  const clienteNome=localStorage.getItem('shopee_auth_cliente_nome')||'o cliente';
+
+  if(!code||!shopId){
+    mostrar('⚠️','Algo deu errado','Não recebemos o código de autorização da Shopee. Tente conectar novamente pelo sistema.',true);
+    return;
+  }
+  if(!clienteId){
+    mostrar('⚠️','Não sabemos qual cliente','O link de conexão expirou ou foi aberto fora do sistema. Volte e clique em "Conectar Shopee" de novo.',true);
+    return;
+  }
+
+  try{
+    const resp=await fetch(`${SHOPEE_API}?acao=trocar_codigo_por_token&code=${code}&shop_id=${shopId}`);
+    const data=await resp.json();
+    if(!data.ok||!data.access_token){
+      mostrar('❌','Erro ao conectar',data.erro||data.message||'A Shopee não retornou um token válido. Tente novamente.',true);
+      return;
+    }
+    const expiraEm=Date.now()+(data.expire_in*1000);
+    await updateDoc(doc(db,"clientes",clienteId),{
+      shopeeShopId:Number(shopId),
+      shopeeAccessToken:data.access_token,
+      shopeeRefreshToken:data.refresh_token,
+      shopeeTokenExpiraEm:expiraEm,
+      shopeeConectadoEm:serverTimestamp()
+    });
+    localStorage.removeItem('shopee_auth_cliente_id');
+    localStorage.removeItem('shopee_auth_cliente_nome');
+    mostrar('✅','Conectado com sucesso!',`A loja Shopee de <b style="color:var(--text)">${clienteNome}</b> foi conectada. Volte pro sistema e clique em "Atualizar GMV" pra ver os números.`,true);
+  }catch(e){
+    mostrar('❌','Erro ao conectar','Não foi possível salvar a conexão. Tente novamente ou avise o suporte técnico.',true);
+  }
+})();
+</script>
+</body>
+</html>
