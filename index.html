@@ -683,6 +683,14 @@ textarea{resize:vertical;min-height:70px;}
 .cm-item{display:flex;align-items:center;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
 .cm-item .nome{flex:1;font-size:13.5px;font-weight:600;color:var(--text);}
 
+
+.cm-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;}
+.cm-tab-btn{background:#0e0e0e;border:1px solid var(--border);color:var(--text-dim);padding:11px 16px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:all .15s;white-space:nowrap;}
+.cm-tab-btn:hover{border-color:var(--gold-dim);}
+.cm-tab-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.cm-painel{display:none;}
+.cm-painel.active{display:block;}
+
 </style>
 </head>
 <body>
@@ -1308,7 +1316,16 @@ textarea{resize:vertical;min-height:70px;}
           <div class="page-head-text"><h2 class="page-title">Central de Marketing</h2><p class="page-sub">Tudo que precisa de ação em um lugar só — ofertas, descontos, cupons e devoluções.</p></div>
         </div>
 
-        <div class="cm-secao">
+        <div class="cm-tabs">
+          <button class="cm-tab-btn active" data-cmtab="gmv">🛒 Shopee GMV API</button>
+          <button class="cm-tab-btn" data-cmtab="ofertashopee">⚡ Oferta Shopee</button>
+          <button class="cm-tab-btn" data-cmtab="ofertatiktok">🎵 Oferta TikTok</button>
+          <button class="cm-tab-btn" data-cmtab="descontos">🏷️ Descontos</button>
+          <button class="cm-tab-btn" data-cmtab="cupons">🎟️ Cupons</button>
+          <button class="cm-tab-btn" data-cmtab="devolucao">📦 Devolução</button>
+        </div>
+
+        <div class="cm-secao cm-painel active" data-cmpainel="gmv">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><h3>Shopee GMV API</h3></div>
 
         
@@ -1325,12 +1342,12 @@ textarea{resize:vertical;min-height:70px;}
         <div class="sgmv-list" id="sgmvLista"></div>
         </div>
 
-        <div class="cm-secao">
+        <div class="cm-secao cm-painel" data-cmpainel="ofertashopee">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><h3>Oferta Relâmpago — Shopee</h3></div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
         </div>
 
-        <div class="cm-secao">
+        <div class="cm-secao cm-painel" data-cmpainel="ofertatiktok">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>Oferta Relâmpago — TikTok Shop</h3></div>
 
         
@@ -1343,17 +1360,17 @@ textarea{resize:vertical;min-height:70px;}
         <div class="tt-list" id="ttLista"></div>
         </div>
 
-        <div class="cm-secao">
+        <div class="cm-secao cm-painel" data-cmpainel="descontos">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><h3>Descontos</h3></div>
           <div class="cm-lista-simples" id="cmDescontosLista"></div>
         </div>
 
-        <div class="cm-secao">
+        <div class="cm-secao cm-painel" data-cmpainel="cupons">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><h3>Cupons</h3></div>
           <div class="cm-lista-simples" id="cmCuponsLista"></div>
         </div>
 
-        <div class="cm-secao">
+        <div class="cm-secao cm-painel" data-cmpainel="devolucao">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><h3>Devolução</h3></div>
           <div class="cm-lista-simples" id="cmDevolucaoLista"></div>
         </div>
@@ -3001,6 +3018,14 @@ function cmRenderTudo(){cmRenderOfertaShopee();cmRenderDescontos();cmRenderCupon
 
 
 
+
+
+document.querySelectorAll('.cm-tab-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.cm-tab-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const alvo=b.dataset.cmtab;
+  document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
+}));
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
