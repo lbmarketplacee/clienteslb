@@ -2797,7 +2797,13 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
     const data=await resp.json();
     if(!data.ok)throw new Error(data.erro||'Erro ao buscar GMV.');
     await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:data.gmv,gmvShopeeAtualizadoEm:serverTimestamp()});
-    showToast(`✓ ${cliente.nome}: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos)`);
+    const brutos=data.debug?.respostaListaBruta?.response?.order_list?.length ?? '?';
+    const totalBruto=data.debug?.respostaListaBruta?.response?.total_count ?? brutos;
+    console.log('[Shopee GMV debug]',cliente.nome,data.debug);
+    if(data.totalPedidos===0 && Number(totalBruto)>0){
+      alert(`Diagnóstico Shopee — ${cliente.nome}:\n\nExistem ${totalBruto} pedido(s) no período (qualquer status), mas 0 com status "COMPLETED".\n\nOu seja: os pedidos existem, mas nenhum chegou no status final de "concluído" ainda (isso só acontece dias depois da entrega, quando o comprador confirma o recebimento).\n\nAbra o Console do navegador (F12) e veja "[Shopee GMV debug]" pra detalhes completos.`);
+    }
+    showToast(`✓ ${cliente.nome}: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos concluídos)`);
     return true;
   }catch(e){console.error(e);showToast(`Erro em ${cliente.nome}: `+e.message);return false;}
 };
