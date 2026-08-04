@@ -674,6 +674,15 @@ textarea{resize:vertical;min-height:70px;}
 .tt-status-pill.hoje{background:var(--amber-bg);color:var(--amber);}
 .tt-status-pill.atrasada{background:var(--red-bg);color:var(--red);}
 
+/* ===== CENTRAL DE MARKETING ===== */
+.cm-secao{margin-bottom:34px;}
+.cm-secao-titulo{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.cm-secao-titulo h3{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:600;}
+.cm-secao-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;}
+.cm-lista-simples{display:flex;flex-direction:column;gap:8px;}
+.cm-item{display:flex;align-items:center;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.cm-item .nome{flex:1;font-size:13.5px;font-weight:600;color:var(--text);}
+
 </style>
 </head>
 <body>
@@ -746,8 +755,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="gerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg> Gerar Anúncio</button>
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
-      <button class="nav-item" data-page="shopeegmv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M3.5 6h17l-1.6 13.5A2 2 0 0 1 17 21H7a2 2 0 0 1-1.9-1.5L3.5 6z"/><path d="M9 10a3 3 0 0 0 6 0"/></svg> Shopee GMV API</button>
-      <button class="nav-item" data-page="tiktokoferta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg> TikTok Oferta</button>
+      <button class="nav-item" data-page="marketing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing</button>
     </nav>
     <div class="nav-premium">
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
@@ -829,7 +837,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="table-wrap">
           <div class="table-scroll">
             <table>
-              <thead><tr><th>Cliente</th><th>Marketplaces</th><th>Desconto</th><th>Cupom</th><th>Saldo Ads</th><th>Última Edição</th><th>Oferta</th><th>Devolução</th><th>Ações</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Marketplaces</th><th>Saldo Ads</th><th>Última Edição</th><th>Ações</th></tr></thead>
               <tbody id="clientTableBody"></tbody>
             </table>
           </div>
@@ -853,7 +861,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="table-wrap">
           <div class="table-scroll">
             <table>
-              <thead><tr><th>Cliente</th><th>Marketplaces</th><th>Desconto</th><th>Cupom</th><th>Saldo Ads</th><th>Última Edição</th><th>Oferta</th><th>Devolução</th><th>Ações</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Marketplaces</th><th>Saldo Ads</th><th>Última Edição</th><th>Ações</th></tr></thead>
               <tbody id="clientTableBody2"></tbody>
             </table>
           </div>
@@ -1294,11 +1302,16 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
 
-      <div class="page" id="page-shopeegmv">
+            <div class="page" id="page-marketing">
         <div class="page-head">
-          <div class="page-head-icon" style="background:#ee4d2d20;color:#ee4d2d;border-color:#ee4d2d40"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1.5 4h9L18 2"/><path d="M3.5 6h17l-1.6 13.5A2 2 0 0 1 17 21H7a2 2 0 0 1-1.9-1.5L3.5 6z"/><path d="M9 10a3 3 0 0 0 6 0"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Shopee GMV <span style="color:#ee4d2d">API</span></h2><p class="page-sub">Acompanhamento automático de faturamento via integração oficial da Shopee.</p></div>
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Central de Marketing</h2><p class="page-sub">Tudo que precisa de ação em um lugar só — ofertas, descontos, cupons e devoluções.</p></div>
         </div>
+
+        <div class="cm-secao">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><h3>Shopee GMV API</h3></div>
+
+        
         <div class="sgmv-summary">
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">GMV via API<br>(mês atual)</div></div><div class="sc-value green" id="sgmvTotal">R$ 0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Lojas<br>Conectadas</div></div><div class="sc-value" id="sgmvConectadas">0</div></div>
@@ -1310,12 +1323,17 @@ textarea{resize:vertical;min-height:70px;}
           <button class="btn btn-gold btn-sm" id="sgmvAtualizarTodosBtn">🔄 Atualizar Todas as Lojas</button>
         </div>
         <div class="sgmv-list" id="sgmvLista"></div>
-      </div>
-      <div class="page" id="page-tiktokoferta">
-        <div class="page-head">
-          <div class="page-head-icon" style="background:#00000030;color:#fff;border-color:#333"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">TikTok Shop — Oferta Relâmpago</h2><p class="page-sub">Ciclo de 3 em 3 dias — só clientes com TikTok Shop ativo.</p></div>
         </div>
+
+        <div class="cm-secao">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><h3>Oferta Relâmpago — Shopee</h3></div>
+          <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
+        </div>
+
+        <div class="cm-secao">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>Oferta Relâmpago — TikTok Shop</h3></div>
+
+        
         <div class="sgmv-summary">
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="ttEmDia">0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Programar<br>Hoje</div></div><div class="sc-value" id="ttHoje">0</div></div>
@@ -1323,8 +1341,24 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>TikTok Shop</div></div><div class="sc-value" id="ttTotal">0</div></div>
         </div>
         <div class="tt-list" id="ttLista"></div>
+        </div>
+
+        <div class="cm-secao">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><h3>Descontos</h3></div>
+          <div class="cm-lista-simples" id="cmDescontosLista"></div>
+        </div>
+
+        <div class="cm-secao">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><h3>Cupons</h3></div>
+          <div class="cm-lista-simples" id="cmCuponsLista"></div>
+        </div>
+
+        <div class="cm-secao">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><h3>Devolução</h3></div>
+          <div class="cm-lista-simples" id="cmDevolucaoLista"></div>
+        </div>
       </div>
-      <div class="page" id="page-tarefas">
+<div class="page" id="page-tarefas">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Minhas Tarefas</h2><p class="page-sub" id="tarefasSub">Seu quadro pessoal — só você vê estas tarefas.</p></div>
@@ -1739,7 +1773,7 @@ function fecharMenuMobile(){document.getElementById('sidebar').classList.remove(
 function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
 document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
 document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],shopeegmv:['Shopee GMV API','Acompanhamento automático de faturamento.'],tiktokoferta:['TikTok Shop — Oferta Relâmpago','Ciclo de 3 em 3 dias.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -1751,11 +1785,11 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();cmRenderTudo();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
-function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td>${statusBadge(c.descontoFixoFim)}</td><td>${statusBadge(c.cupomFim)}</td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td>${renderOfertaFlag(c)}</td><td>${renderDevolucaoFlag(c)}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button><button class="icon-act" onclick="window.__drive('${c.id}','${esc(c.nome)}')" title="Arquivos no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
+function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button><button class="icon-act" onclick="window.__drive('${c.id}','${esc(c.nome)}')" title="Arquivos no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
 function renderTable(){const lista=clientesCache.filter(c=>c.nome.toLowerCase().includes(busca.toLowerCase())&&(filtroMp==='todos'||(c.marketplaces||[]).includes(filtroMp)));const html=lista.map(clienteRowHtml).join('');[['clientTableBody','emptyState'],['clientTableBody2','emptyState2']].forEach(([tb,es])=>{const tbody=document.getElementById(tb);const empty=document.getElementById(es);if(!tbody)return;if(!lista.length){tbody.innerHTML='';empty.classList.remove('hidden');}else{empty.classList.add('hidden');tbody.innerHTML=html;}});
 if(firstTableRender&&lista.length){firstTableRender=false;const tbody=document.getElementById('clientTableBody');const rows=[...tbody.querySelectorAll('tr')];rows.forEach(r=>r.classList.add('reveal'));const io=new IntersectionObserver(es=>{let i=0;es.forEach(e=>{if(e.isIntersecting){e.target.style.transitionDelay=(i++*40)+'ms';e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:.05});rows.forEach(r=>io.observe(r));}}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -2562,13 +2596,13 @@ function notifRecalcular(){
   // 1) Cupons e descontos vencendo em 7 dias
   clientesCache.forEach(c=>{
     const dd=diffDias(c.descontoFixoFim);
-    if(dd!==null&&dd<=7&&dd>=0){itens.push({tipo:'amber',titulo:`Desconto vencendo — ${c.nome}`,sub:`Vence em ${dd}d`,pagina:'clientes'});}
+    if(dd!==null&&dd<=7&&dd>=0){itens.push({tipo:'amber',titulo:`Desconto vencendo — ${c.nome}`,sub:`Vence em ${dd}d`,pagina:'marketing'});}
     const dc=diffDias(c.cupomFim);
-    if(dc!==null&&dc<=7&&dc>=0){itens.push({tipo:'amber',titulo:`Cupom vencendo — ${c.nome}`,sub:`Vence em ${dc}d`,pagina:'clientes'});}
+    if(dc!==null&&dc<=7&&dc>=0){itens.push({tipo:'amber',titulo:`Cupom vencendo — ${c.nome}`,sub:`Vence em ${dc}d`,pagina:'marketing'});}
     if((c.marketplaces||[]).includes('tiktok')){
       const dt=c.tiktokOfertaProxima?diffDias(c.tiktokOfertaProxima):null;
-      if(dt===null||dt<0){itens.push({tipo:'red',titulo:`TikTok Oferta atrasada — ${c.nome}`,sub:dt===null?'Nunca programada':'Programar agora',pagina:'tiktokoferta'});}
-      else if(dt===0){itens.push({tipo:'amber',titulo:`TikTok Oferta hoje — ${c.nome}`,sub:'Programar hoje',pagina:'tiktokoferta'});}
+      if(dt===null||dt<0){itens.push({tipo:'red',titulo:`TikTok Oferta atrasada — ${c.nome}`,sub:dt===null?'Nunca programada':'Programar agora',pagina:'marketing'});}
+      else if(dt===0){itens.push({tipo:'amber',titulo:`TikTok Oferta hoje — ${c.nome}`,sub:'Programar hoje',pagina:'marketing'});}
     }
   });
   // 2) Tarefas atrasadas atribuídas a mim
@@ -2934,6 +2968,37 @@ window.__marcarTiktokOferta=async(clienteId)=>{
     showToast(`✓ ${cliente.nome}: próxima oferta em ${fmtDate(proximaStr)}`);
   }catch(e){showToast('Erro ao marcar.');}
 };
+/* ================= CENTRAL DE MARKETING — seções de Oferta Shopee, Descontos, Cupons, Devolução ================= */
+function cmRenderOfertaShopee(){
+  const el=document.getElementById('cmOfertaShopeeLista');
+  if(!el)return;
+  const lista=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee'));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
+  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`).join('');
+}
+function cmRenderDescontos(){
+  const el=document.getElementById('cmDescontosLista');
+  if(!el)return;
+  const lista=(clientesCache||[]);
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
+  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.descontoFixoFim)}</div>`).join('');
+}
+function cmRenderCupons(){
+  const el=document.getElementById('cmCuponsLista');
+  if(!el)return;
+  const lista=(clientesCache||[]);
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
+  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}</div>`).join('');
+}
+function cmRenderDevolucao(){
+  const el=document.getElementById('cmDevolucaoLista');
+  if(!el)return;
+  const lista=(clientesCache||[]);
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
+  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
+}
+function cmRenderTudo(){cmRenderOfertaShopee();cmRenderDescontos();cmRenderCupons();cmRenderDevolucao();}
+
 
 
 
