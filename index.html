@@ -1295,8 +1295,8 @@ textarea{resize:vertical;min-height:70px;}
           <div class="page-head-text"><h2 class="page-title">Central de Marketing</h2><p class="page-sub">Tudo que precisa de ação em um lugar só — ofertas, descontos, cupons e devoluções.</p></div>
         </div>
 
-        <div class="cm-card-grid">
-          <div class="cm-tool-card active" data-cmtab="ofertashopee"><div class="cm-tool-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Marque o marco semanal (terça/sexta) de cada cliente com Shopee.</div></div></div>
+        <div class="cm-card-grid" id="cmCardGrid">
+          <div class="cm-tool-card" data-cmtab="ofertashopee"><div class="cm-tool-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Marque o marco semanal (terça/sexta) de cada cliente com Shopee.</div></div></div>
           <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 3 em 3 dias pra cada cliente com TikTok Shop.</div></div></div>
           <div class="cm-tool-card" data-cmtab="descontos"><div class="cm-tool-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Descontos</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do desconto fixo de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="cupons"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Cupons</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do cupom de cada cliente.</div></div></div>
@@ -1307,6 +1307,7 @@ textarea{resize:vertical;min-height:70px;}
 
 
         <div class="cm-secao cm-painel" data-cmpainel="gerarad">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><h3>Gerar Anúncio com IA</h3></div>
 
         
@@ -1348,6 +1349,7 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         </div>
         <div class="cm-secao cm-painel" data-cmpainel="gmv">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><h3>Shopee GMV API</h3></div>
 
         
@@ -1364,12 +1366,14 @@ textarea{resize:vertical;min-height:70px;}
         <div class="sgmv-list" id="sgmvLista"></div>
         </div>
 
-        <div class="cm-secao cm-painel active" data-cmpainel="ofertashopee">
+        <div class="cm-secao cm-painel" data-cmpainel="ofertashopee">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><h3>Oferta Relâmpago — Shopee</h3></div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="ofertatiktok">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>Oferta Relâmpago — TikTok Shop</h3></div>
 
         
@@ -1383,16 +1387,19 @@ textarea{resize:vertical;min-height:70px;}
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="descontos">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><h3>Descontos</h3></div>
           <div class="cm-lista-simples" id="cmDescontosLista"></div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="cupons">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><h3>Cupons</h3></div>
           <div class="cm-lista-simples" id="cmCuponsLista"></div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="devolucao">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><h3>Devolução</h3></div>
           <div class="cm-lista-simples" id="cmDevolucaoLista"></div>
         </div>
@@ -2957,11 +2964,21 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
     const data=await resp.json();
     if(!data.ok)throw new Error(data.erro||'Erro ao buscar GMV.');
     await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:data.gmv,gmvShopeeAtualizadoEm:serverTimestamp()});
-    const brutos=data.debug?.respostaListaBruta?.response?.order_list?.length ?? '?';
-    const totalBruto=data.debug?.respostaListaBruta?.response?.total_count ?? brutos;
+    const bruta=data.debug?.respostaListaBruta;
+    const brutos=bruta?.response?.order_list?.length ?? 0;
+    const totalBruto=bruta?.response?.total_count ?? brutos;
+    const erroShopee=bruta?.error || bruta?.message || '';
     console.log('[Shopee GMV debug]',cliente.nome,data.debug);
-    if(data.totalPedidos===0 && Number(totalBruto)>0){
-      alert(`Diagnóstico Shopee — ${cliente.nome}:\n\nExistem ${totalBruto} pedido(s) no período (qualquer status), mas 0 com status "COMPLETED".\n\nOu seja: os pedidos existem, mas nenhum chegou no status final de "concluído" ainda (isso só acontece dias depois da entrega, quando o comprador confirma o recebimento).\n\nAbra o Console do navegador (F12) e veja "[Shopee GMV debug]" pra detalhes completos.`);
+    if(data.totalPedidos===0){
+      let msg=`Diagnóstico Shopee — ${cliente.nome}:\n\n`;
+      if(erroShopee){
+        msg+=`⚠️ A Shopee retornou um ERRO ao listar pedidos:\n"${erroShopee}"\n\nProvavelmente o token de acesso dessa loja expirou ou é inválido. Talvez seja necessário reconectar essa loja (botão "Conectar Shopee" de novo).`;
+      }else if(Number(totalBruto)>0){
+        msg+=`Existem ${totalBruto} pedido(s) no período (qualquer status), mas 0 com status "COMPLETED".\n\nOu seja: os pedidos existem, mas nenhum chegou no status final de "concluído" ainda.`;
+      }else{
+        msg+=`A Shopee não retornou NENHUM pedido nesse período — nem sem filtro de status.\n\nRequest ID: ${bruta?.request_id||'—'}\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`;
+      }
+      alert(msg);
     }
     showToast(`✓ ${cliente.nome}: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos concluídos)`);
     return true;
@@ -3109,12 +3126,14 @@ document.getElementById('editarDataSalvarBtn')?.addEventListener('click',async()
 
 
 document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.cm-tool-card').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
   const alvo=b.dataset.cmtab;
+  document.getElementById('cmCardGrid').classList.add('hidden');
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
-  document.querySelector('.cm-card-grid')?.scrollIntoView({behavior:'smooth',block:'start'});
 }));
+window.__cmVoltar=()=>{
+  document.querySelectorAll('.cm-painel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('cmCardGrid').classList.remove('hidden');
+};
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
