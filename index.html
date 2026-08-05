@@ -753,6 +753,7 @@ textarea{resize:vertical;min-height:70px;}
     <nav class="nav-section">
       <button class="nav-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</button>
       <button class="nav-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minhas Tarefas</button>
+      <button class="nav-item" data-page="marketing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing</button>
       <button class="nav-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
       <button class="nav-item" data-page="contratos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Contratos</button>
@@ -763,8 +764,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="gerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg> Gerar Anúncio</button>
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
-      <button class="nav-item" data-page="marketing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing</button>
-    </nav>
+      </nav>
     <div class="nav-premium">
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
       <h4>LB Premium</h4>
@@ -865,6 +865,13 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chip" data-mp2="ml">Mercado Livre</button>
           <button class="chip" data-mp2="tiktok">TikTok Shop</button>
           <button class="chip" data-mp2="shein">Shein</button>
+        </div>
+        <div class="toolbar" style="margin-bottom:16px">
+          <span style="font-size:12px;color:var(--text-dim);align-self:center;margin-right:4px">Gerenciado por:</span>
+          <button class="chip active" data-resp2="todos">Todos</button>
+          <button class="chip" data-resp2="lincoln@lbmarketplace.com.br">Lincoln</button>
+          <button class="chip" data-resp2="paloma@lbmarketplace.com.br">Paloma</button>
+          <button class="chip" data-resp2="caroline@lbmarketplace.com.br">Caroline</button>
         </div>
         <div class="table-wrap">
           <div class="table-scroll">
@@ -1317,15 +1324,15 @@ textarea{resize:vertical;min-height:70px;}
         </div>
 
         <div class="cm-tabs">
-          <button class="cm-tab-btn active" data-cmtab="gmv">🛒 Shopee GMV API</button>
-          <button class="cm-tab-btn" data-cmtab="ofertashopee">⚡ Oferta Shopee</button>
+          <button class="cm-tab-btn active" data-cmtab="ofertashopee">⚡ Oferta Shopee</button>
           <button class="cm-tab-btn" data-cmtab="ofertatiktok">🎵 Oferta TikTok</button>
           <button class="cm-tab-btn" data-cmtab="descontos">🏷️ Descontos</button>
           <button class="cm-tab-btn" data-cmtab="cupons">🎟️ Cupons</button>
           <button class="cm-tab-btn" data-cmtab="devolucao">📦 Devolução</button>
+          <button class="cm-tab-btn" data-cmtab="gmv">🛒 Shopee GMV API</button>
         </div>
 
-        <div class="cm-secao cm-painel active" data-cmpainel="gmv">
+        <div class="cm-secao cm-painel" data-cmpainel="gmv">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><h3>Shopee GMV API</h3></div>
 
         
@@ -1342,7 +1349,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="sgmv-list" id="sgmvLista"></div>
         </div>
 
-        <div class="cm-secao cm-painel" data-cmpainel="ofertashopee">
+        <div class="cm-secao cm-painel active" data-cmpainel="ofertashopee">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><h3>Oferta Relâmpago — Shopee</h3></div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
         </div>
@@ -1424,6 +1431,16 @@ textarea{resize:vertical;min-height:70px;}
         <button type="button" class="chip-toggle" data-val="tiktok">TikTok Shop</button>
         <button type="button" class="chip-toggle" data-val="shein">Shein</button>
       </div></div>
+      <div class="field"><label>Responsável por Marketplace (quem gerencia cada um)</label>
+        <div class="form-row">
+          <div class="field"><label style="font-size:10px">Shopee</label><select id="fRespShopee"><option value="">— Ninguém —</option><option value="lincoln@lbmarketplace.com.br">Lincoln</option><option value="paloma@lbmarketplace.com.br">Paloma</option><option value="caroline@lbmarketplace.com.br">Caroline</option></select></div>
+          <div class="field"><label style="font-size:10px">Mercado Livre</label><select id="fRespML"><option value="">— Ninguém —</option><option value="lincoln@lbmarketplace.com.br">Lincoln</option><option value="paloma@lbmarketplace.com.br">Paloma</option><option value="caroline@lbmarketplace.com.br">Caroline</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label style="font-size:10px">TikTok Shop</label><select id="fRespTiktok"><option value="">— Ninguém —</option><option value="lincoln@lbmarketplace.com.br">Lincoln</option><option value="paloma@lbmarketplace.com.br">Paloma</option><option value="caroline@lbmarketplace.com.br">Caroline</option></select></div>
+          <div class="field"><label style="font-size:10px">Shein</label><select id="fRespShein"><option value="">— Ninguém —</option><option value="lincoln@lbmarketplace.com.br">Lincoln</option><option value="paloma@lbmarketplace.com.br">Paloma</option><option value="caroline@lbmarketplace.com.br">Caroline</option></select></div>
+        </div>
+      </div>
       <div class="form-row">
         <div class="field"><label>Encerramento Desconto Fixo</label><input type="datetime-local" id="fDesconto"></div>
         <div class="field"><label>Encerramento Cupom</label><input type="datetime-local" id="fCupom"></div>
@@ -1743,7 +1760,7 @@ const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFire
 const nome=e=>USERS_MAP[e]||e;
 const isLincoln=()=>currentEmail===LINCOLN_EMAIL;
 let clientesCache=[],gmvCache=[],contratosCache=[];
-let filtroMp="todos",busca="",currentUser="",currentEmail="";
+let filtroMp="todos",filtroResp="todos",busca="",currentUser="",currentEmail="";
 let gmvChart=null,gmvLineChart=null,gmvDonutChart=null,firstTableRender=true;
 const TT='M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z';
 const MP_ICON={
@@ -1806,8 +1823,8 @@ function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecal
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
-function clienteRowHtml(c){const badges=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${MP_L[m]||m}</span>`).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button><button class="icon-act" onclick="window.__drive('${c.id}','${esc(c.nome)}')" title="Arquivos no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
-function renderTable(){const lista=clientesCache.filter(c=>c.nome.toLowerCase().includes(busca.toLowerCase())&&(filtroMp==='todos'||(c.marketplaces||[]).includes(filtroMp)));const html=lista.map(clienteRowHtml).join('');[['clientTableBody','emptyState'],['clientTableBody2','emptyState2']].forEach(([tb,es])=>{const tbody=document.getElementById(tb);const empty=document.getElementById(es);if(!tbody)return;if(!lista.length){tbody.innerHTML='';empty.classList.remove('hidden');}else{empty.classList.add('hidden');tbody.innerHTML=html;}});
+function clienteRowHtml(c){const respMp=c.responsaveisPorMarketplace||{};const badges=(c.marketplaces||[]).map(m=>{const respEmail=respMp[m];const respIni=respEmail?nome(respEmail).charAt(0).toUpperCase():'';return `<span class="mp-badge ${MP_C[m]||''}" title="${respEmail?'Gerenciado por '+nome(respEmail):'Sem responsável definido'}">${MP_ICON[m]||''}${MP_L[m]||m}${respIni?` <b style="opacity:.7">(${respIni})</b>`:''}</span>`;}).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvC=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvC>0?`<div class="cli-gmv">GMV: ${fmtR(gmvC)}</div>`:'';const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name">${esc(c.nome)}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button><button class="icon-act" onclick="window.__drive('${c.id}','${esc(c.nome)}')" title="Arquivos no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button><button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
+function renderTable(){const lista=clientesCache.filter(c=>c.nome.toLowerCase().includes(busca.toLowerCase())&&(filtroMp==='todos'||(c.marketplaces||[]).includes(filtroMp))&&(filtroResp==='todos'||Object.values(c.responsaveisPorMarketplace||{}).includes(filtroResp)));const html=lista.map(clienteRowHtml).join('');[['clientTableBody','emptyState'],['clientTableBody2','emptyState2']].forEach(([tb,es])=>{const tbody=document.getElementById(tb);const empty=document.getElementById(es);if(!tbody)return;if(!lista.length){tbody.innerHTML='';empty.classList.remove('hidden');}else{empty.classList.add('hidden');tbody.innerHTML=html;}});
 if(firstTableRender&&lista.length){firstTableRender=false;const tbody=document.getElementById('clientTableBody');const rows=[...tbody.querySelectorAll('tr')];rows.forEach(r=>r.classList.add('reveal'));const io=new IntersectionObserver(es=>{let i=0;es.forEach(e=>{if(e.isIntersecting){e.target.style.transitionDelay=(i++*40)+'ms';e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:.05});rows.forEach(r=>io.observe(r));}}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function proxMarco(from){const d=from?new Date(from):new Date();d.setHours(0,0,0,0);for(let i=1;i<=7;i++){const t=new Date(d);t.setDate(d.getDate()+i);if(t.getDay()===2||t.getDay()===5)return ymd(t);}return ymd(d);}
@@ -1822,6 +1839,7 @@ window.__devol=async(id,nm)=>{const hoje=new Date();const ma=`${hoje.getFullYear
 ['searchInput','searchInput2'].forEach(sid=>{const el=document.getElementById(sid);if(el)el.addEventListener('input',e=>{busca=e.target.value;document.querySelectorAll('#searchInput,#searchInput2').forEach(x=>{if(x!==e.target)x.value=e.target.value;});renderTable();});});
 document.querySelectorAll('.chip[data-mp]').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.chip[data-mp]').forEach(x=>x.classList.remove('active'));c.classList.add('active');filtroMp=c.dataset.mp;syncChips();renderTable();}));
 document.querySelectorAll('.chip[data-mp2]').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.chip[data-mp2]').forEach(x=>x.classList.remove('active'));c.classList.add('active');filtroMp=c.dataset.mp2;syncChips();renderTable();}));
+document.querySelectorAll('.chip[data-resp2]').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.chip[data-resp2]').forEach(x=>x.classList.remove('active'));c.classList.add('active');filtroResp=c.dataset.resp2;renderTable();}));
 function syncChips(){document.querySelectorAll('.chip[data-mp]').forEach(x=>x.classList.toggle('active',x.dataset.mp===filtroMp));document.querySelectorAll('.chip[data-mp2]').forEach(x=>x.classList.toggle('active',x.dataset.mp2===filtroMp));}
 /* DASHBOARD CHARTS */
 function renderDashCharts(){
@@ -1847,12 +1865,25 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){window.__cadastroOrigemAtual=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});shopeeAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
+function openClientModal(c){window.__cadastroOrigemAtual=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+const resp=c?.responsaveisPorMarketplace||{};
+document.getElementById('fRespShopee').value=resp.shopee||'';
+document.getElementById('fRespML').value=resp.ml||'';
+document.getElementById('fRespTiktok').value=resp.tiktok||'';
+document.getElementById('fRespShein').value=resp.shein||'';
+shopeeAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
 document.getElementById('cancelClientModal').addEventListener('click',()=>{clientModalOverlay.classList.add('hidden');window.__cadastroOrigemAtual=null;});
 window.__edit=id=>{const c=clientesCache.find(x=>x.id===id);if(c)openClientModal(c);};
-document.getElementById('clientForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('clientId').value;const mps=Array.from(document.querySelectorAll('#clientForm .chip-toggle.on')).map(b=>b.dataset.val);const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),marketplaces:mps,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+document.getElementById('clientForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('clientId').value;const mps=Array.from(document.querySelectorAll('#clientForm .chip-toggle.on')).map(b=>b.dataset.val);
+const responsaveisPorMarketplace={
+  shopee:document.getElementById('fRespShopee').value||null,
+  ml:document.getElementById('fRespML').value||null,
+  tiktok:document.getElementById('fRespTiktok').value||null,
+  shein:document.getElementById('fRespShein').value||null
+};
+const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),marketplaces:mps,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
 function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
@@ -2893,8 +2924,9 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente);
     const hoje=new Date();
-    const primeiroDia=new Date(hoje.getFullYear(),hoje.getMonth(),1).toISOString().split('T')[0];
-    const ultimoDia=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).toISOString().split('T')[0];
+    const trintaDiasAtras=new Date(hoje.getTime()-29*24*60*60*1000);
+    const primeiroDia=trintaDiasAtras.toISOString().split('T')[0];
+    const ultimoDia=hoje.toISOString().split('T')[0];
     const resp=await fetch(`${SHOPEE_API}?acao=buscar_gmv&access_token=${accessToken}&shop_id=${cliente.shopeeShopId}&data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
     const data=await resp.json();
     if(!data.ok)throw new Error(data.erro||'Erro ao buscar GMV.');
