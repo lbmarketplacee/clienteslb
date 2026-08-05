@@ -691,6 +691,20 @@ textarea{resize:vertical;min-height:70px;}
 .cm-painel{display:none;}
 .cm-painel.active{display:block;}
 
+/* ===== CENTRAL DE MARKETING v2 — card-grid estilo Shopee, cores LB ===== */
+.cm-card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.cm-tool-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;display:flex;gap:14px;align-items:flex-start;}
+.cm-tool-card:hover{border-color:var(--gold-dim);transform:translateY(-2px);}
+.cm-tool-card.active{border-color:var(--gold);background:var(--gold-soft);}
+.cm-tool-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;font-size:20px;}
+.cm-tool-body{flex:1;min-width:0;}
+.cm-tool-titulo{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.cm-tool-tag{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:5px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;}
+.cm-tool-tag.vendas{background:var(--gold-soft);color:var(--gold);}
+.cm-tool-tag.trafego{background:var(--purple-bg);color:var(--purple);}
+.cm-tool-tag.engajamento{background:var(--green-bg);color:var(--green);}
+.cm-tool-desc{font-size:11.5px;color:var(--text-dim);line-height:1.5;}
+
 </style>
 </head>
 <body>
@@ -761,7 +775,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
       <button class="nav-item" data-page="checklisthub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist</button>
       <button class="nav-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
-      <button class="nav-item" data-page="gerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg> Gerar Anúncio</button>
+      
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
       </nav>
@@ -1195,48 +1209,6 @@ textarea{resize:vertical;min-height:70px;}
           <div class="security-banner-emblem">LB</div>
         </div>
       </div>
-      <div class="page" id="page-gerar">
-        <div class="page-head">
-          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Gerar Anúncio com IA ✨</h2><p class="page-sub">Descreva o produto e a IA cria título, destaques e descrição otimizados.</p></div>
-        </div>
-        <div class="ia-grid">
-          <div class="ia-inputs">
-            <div class="ia-mk-sel">
-              <button class="ia-mk-btn active" data-iamk="shopee">Shopee</button>
-              <button class="ia-mk-btn" data-iamk="ml">Mercado Livre</button>
-            </div>
-            <div class="field"><label>Foto do produto (opcional — melhora o texto)</label>
-              <div class="dz" id="iaDropZone" style="padding:20px">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                <div class="dz-t" id="iaDzText">Clique ou arraste a foto do produto</div>
-                <input type="file" id="iaFotoInput" accept="image/*" class="hidden">
-              </div>
-              <div id="iaFotoPreview" class="hidden" style="margin-top:10px;position:relative"><img id="iaFotoImg" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid var(--border)"><button onclick="window.__iaRemoveFoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">Remover</button></div>
-              </div>
-              <div class="field"><label>Descreva o produto (quanto mais detalhe, melhor)</label><textarea id="iaProduto" style="min-height:130px" placeholder="Ex: Vestido longo floral, tecido viscose leve, tamanhos P ao GG, cores azul e rosa, ideal para o verão..."></textarea></div>
-            <button class="btn btn-gold" id="iaGerarBtn" style="width:100%;margin-top:6px">✨ Gerar Anúncio</button>
-            <p style="font-size:11px;color:var(--text-dim);margin-top:12px;text-align:center">Custo aproximado: R$ 0,01 por anúncio gerado</p>
-          </div>
-          <div class="ia-result" id="iaResult">
-            <div class="ia-right-panel">
-              <div class="ia-icons-cluster">
-                <div class="float-ico f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></div>
-                <div class="center-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12h8M8 8h5M8 16h4"/></svg></div>
-                <div class="float-ico f2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div>
-                <div class="float-ico f3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-              </div>
-              <h3>Pronta para criar seu anúncio!</h3>
-              <p>Preencha a descrição e clique em <b style="color:var(--gold)">Gerar Anúncio</b>.<br>A IA vai criar o título, os destaques e a descrição prontos para publicar.</p>
-              <div class="ia-feature-badges">
-                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Rápido e inteligente</span></div>
-                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Otimizado para conversão</span></div>
-                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Conteúdo profissional</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div class="page" id="page-comercial">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
@@ -1323,15 +1295,58 @@ textarea{resize:vertical;min-height:70px;}
           <div class="page-head-text"><h2 class="page-title">Central de Marketing</h2><p class="page-sub">Tudo que precisa de ação em um lugar só — ofertas, descontos, cupons e devoluções.</p></div>
         </div>
 
-        <div class="cm-tabs">
-          <button class="cm-tab-btn active" data-cmtab="ofertashopee">⚡ Oferta Shopee</button>
-          <button class="cm-tab-btn" data-cmtab="ofertatiktok">🎵 Oferta TikTok</button>
-          <button class="cm-tab-btn" data-cmtab="descontos">🏷️ Descontos</button>
-          <button class="cm-tab-btn" data-cmtab="cupons">🎟️ Cupons</button>
-          <button class="cm-tab-btn" data-cmtab="devolucao">📦 Devolução</button>
-          <button class="cm-tab-btn" data-cmtab="gmv">🛒 Shopee GMV API</button>
+        <div class="cm-card-grid">
+          <div class="cm-tool-card active" data-cmtab="ofertashopee"><div class="cm-tool-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Marque o marco semanal (terça/sexta) de cada cliente com Shopee.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 3 em 3 dias pra cada cliente com TikTok Shop.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="descontos"><div class="cm-tool-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Descontos</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do desconto fixo de cada cliente.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="cupons"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Cupons</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do cupom de cada cliente.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="gerarad"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Anúncio com IA</div><span class="cm-tool-tag trafego">Aumente o tráfego</span><div class="cm-tool-desc">A IA cria título, destaques e descrição prontos pra publicar.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="gmv"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee GMV API</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Faturamento automático de cada loja Shopee conectada.</div></div></div>
         </div>
 
+
+        <div class="cm-secao cm-painel" data-cmpainel="gerarad">
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><h3>Gerar Anúncio com IA</h3></div>
+
+        
+        <div class="ia-grid">
+          <div class="ia-inputs">
+            <div class="ia-mk-sel">
+              <button class="ia-mk-btn active" data-iamk="shopee">Shopee</button>
+              <button class="ia-mk-btn" data-iamk="ml">Mercado Livre</button>
+            </div>
+            <div class="field"><label>Foto do produto (opcional — melhora o texto)</label>
+              <div class="dz" id="iaDropZone" style="padding:20px">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <div class="dz-t" id="iaDzText">Clique ou arraste a foto do produto</div>
+                <input type="file" id="iaFotoInput" accept="image/*" class="hidden">
+              </div>
+              <div id="iaFotoPreview" class="hidden" style="margin-top:10px;position:relative"><img id="iaFotoImg" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid var(--border)"><button onclick="window.__iaRemoveFoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">Remover</button></div>
+              </div>
+              <div class="field"><label>Descreva o produto (quanto mais detalhe, melhor)</label><textarea id="iaProduto" style="min-height:130px" placeholder="Ex: Vestido longo floral, tecido viscose leve, tamanhos P ao GG, cores azul e rosa, ideal para o verão..."></textarea></div>
+            <button class="btn btn-gold" id="iaGerarBtn" style="width:100%;margin-top:6px">✨ Gerar Anúncio</button>
+            <p style="font-size:11px;color:var(--text-dim);margin-top:12px;text-align:center">Custo aproximado: R$ 0,01 por anúncio gerado</p>
+          </div>
+          <div class="ia-result" id="iaResult">
+            <div class="ia-right-panel">
+              <div class="ia-icons-cluster">
+                <div class="float-ico f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></div>
+                <div class="center-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12h8M8 8h5M8 16h4"/></svg></div>
+                <div class="float-ico f2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div>
+                <div class="float-ico f3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+              </div>
+              <h3>Pronta para criar seu anúncio!</h3>
+              <p>Preencha a descrição e clique em <b style="color:var(--gold)">Gerar Anúncio</b>.<br>A IA vai criar o título, os destaques e a descrição prontos para publicar.</p>
+              <div class="ia-feature-badges">
+                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Rápido e inteligente</span></div>
+                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Otimizado para conversão</span></div>
+                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Conteúdo profissional</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
         <div class="cm-secao cm-painel" data-cmpainel="gmv">
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><h3>Shopee GMV API</h3></div>
 
@@ -1818,7 +1833,7 @@ function fecharMenuMobile(){document.getElementById('sidebar').classList.remove(
 function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
 document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
 document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],gerar:['Gerar Anúncio','Crie anúncios otimizados com IA.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -3093,11 +3108,12 @@ document.getElementById('editarDataSalvarBtn')?.addEventListener('click',async()
 
 
 
-document.querySelectorAll('.cm-tab-btn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.cm-tab-btn').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.cm-tool-card').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   const alvo=b.dataset.cmtab;
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
+  document.querySelector('.cm-card-grid')?.scrollIntoView({behavior:'smooth',block:'start'});
 }));
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
