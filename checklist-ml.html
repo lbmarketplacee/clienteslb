@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LB Marketplace — Checklist Abertura de Loja Mercado Livre</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #D4A017;
+    --gold-bright: #FFD045;
+    --gold-dark: #9A7210;
+    --gold-glow: rgba(212,160,23,0.35);
+    --gold-glow-soft: rgba(212,160,23,0.12);
+    --bg: #080808;
+    --bg2: #0f0f0f;
+    --bg3: #141414;
+    --card: #111111;
+    --card2: #181818;
+    --border: rgba(212,160,23,0.18);
+    --border-hover: rgba(212,160,23,0.45);
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --text-dim: #555;
+    --ml: #FFE600;
+    --ml-soft: rgba(255,230,0,0.12);
+    --upseller: #7C3AED;
+    --upseller-soft: rgba(124,58,237,0.15);
+    --green: #22c55e;
+    --green-glow: rgba(34,197,94,0.3);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(212,160,23,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,160,23,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .bg-glow-1 {
+    position: absolute; top: -200px; left: -200px; width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(212,160,23,0.08) 0%, transparent 70%);
+    border-radius: 50%; animation: drift1 12s ease-in-out infinite;
+  }
+  .bg-glow-2 {
+    position: absolute; bottom: -300px; right: -200px; width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(255,230,0,0.05) 0%, transparent 70%);
+    border-radius: 50%; animation: drift2 16s ease-in-out infinite;
+  }
+  .bg-glow-3 {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(212,160,23,0.04) 0%, transparent 70%);
+  }
+  .bg-line {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212,160,23,0.2) 30%, rgba(212,160,23,0.5) 50%, rgba(212,160,23,0.2) 70%, transparent 100%);
+    animation: scanline 8s ease-in-out infinite; opacity: 0.4;
+  }
+  .corner-decor { position: absolute; width: 80px; height: 80px; border-color: rgba(212,160,23,0.25); border-style: solid; }
+  .corner-decor.tl { top: 24px; left: 24px; border-width: 2px 0 0 2px; }
+  .corner-decor.tr { top: 24px; right: 24px; border-width: 2px 2px 0 0; }
+  .corner-decor.bl { bottom: 24px; left: 24px; border-width: 0 0 2px 2px; }
+  .corner-decor.br { bottom: 24px; right: 24px; border-width: 0 2px 2px 0; }
+  @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-60px)} }
+  @keyframes scanline { 0%{top:-2px} 100%{top:100%} }
+  @keyframes pulse-gold { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+  .header { text-align: center; padding: 64px 0 48px; animation: fadeUp 0.7s ease both; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(212,160,23,0.1); border: 1px solid rgba(212,160,23,0.3); border-radius: 99px;
+    padding: 6px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 24px;
+  }
+  .header-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); animation: pulse-gold 2s infinite; }
+  .logo-text {
+    font-family: 'Outfit', sans-serif; font-size: clamp(32px, 6vw, 56px); font-weight: 900; letter-spacing: -0.02em; line-height: 1;
+    background: linear-gradient(135deg, #FFD045 0%, #D4A017 40%, #FFD045 70%, #9A7210 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(212,160,23,0.5)); margin-bottom: 4px;
+  }
+  .logo-sub { font-size: 13px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-muted); }
+  .header-title { margin-top: 28px; font-size: clamp(18px, 3vw, 24px); font-weight: 500; color: var(--text); }
+  .header-desc { font-size: 14px; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
+  .platforms { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+  .plat-badge { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 99px; border: 1px solid; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+  .plat-badge.ml { border-color: rgba(255,230,0,0.4); background: rgba(255,230,0,0.08); color: #FFE600; }
+  .plat-badge.upseller { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.08); color: #a78bfa; }
+  .plat-badge.ads { border-color: rgba(255,230,0,0.3); background: rgba(255,230,0,0.06); color: #fff59d; }
+  .progress-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 28px; margin-bottom: 32px; animation: fadeUp 0.7s 0.1s ease both; }
+  .progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .progress-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .progress-pct { font-size: 20px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .progress-bar-bg { height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dark), var(--gold-bright)); border-radius: 99px; width: 0%; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 12px rgba(212,160,23,0.6); }
+  .progress-stats { display: flex; gap: 24px; margin-top: 14px; }
+  .stat { font-size: 12px; color: var(--text-dim); }
+  .stat span { color: var(--text-muted); font-weight: 600; }
+  .steps-list { display: flex; flex-direction: column; gap: 12px; }
+  .step-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: border-color 0.25s, box-shadow 0.25s; animation: fadeUp 0.5s ease both; }
+  .step-card:hover { border-color: var(--border-hover); box-shadow: 0 0 20px var(--gold-glow-soft); }
+  .step-card.done { border-color: rgba(34,197,94,0.3); }
+  .step-card.done .step-num { background: rgba(34,197,94,0.15); color: var(--green); border-color: rgba(34,197,94,0.4); }
+  .step-header { display: flex; align-items: center; gap: 16px; padding: 18px 20px; cursor: pointer; user-select: none; }
+  .step-num { min-width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(212,160,23,0.35); background: rgba(212,160,23,0.08); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--gold); flex-shrink: 0; transition: all 0.2s; }
+  .step-info { flex: 1; min-width: 0; }
+  .step-name { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .step-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .step-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .step-count { font-size: 11px; color: var(--text-dim); }
+  .step-done-badge { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.3); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; display: none; }
+  .step-done-badge.show { display: block; }
+  .step-chevron { font-size: 18px; color: var(--text-dim); transition: transform 0.25s; flex-shrink: 0; }
+  .step-chevron.open { transform: rotate(180deg); }
+  .plat-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 99px; border: 1px solid; margin-left: 8px; vertical-align: middle; }
+  .plat-tag.ml { border-color: rgba(255,230,0,0.4); color: #FFE600; background: rgba(255,230,0,0.08); }
+  .plat-tag.upseller { border-color: rgba(124,58,237,0.4); color: #a78bfa; background: rgba(124,58,237,0.08); }
+  .step-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 0 20px; }
+  .step-body { padding: 0 20px 18px; display: none; }
+  .step-body.open { display: block; }
+  .task-list { padding-top: 14px; display: flex; flex-direction: column; gap: 4px; }
+  .task-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+  .task-item:hover { background: rgba(255,255,255,0.03); }
+  .task-cb { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid rgba(212,160,23,0.35); background: rgba(212,160,23,0.04); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .task-cb.checked { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 10px rgba(212,160,23,0.6); }
+  .task-cb.checked::after { content: ''; width: 5px; height: 9px; border: 2px solid #000; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px, -1px); display: block; }
+  .task-text { font-size: 13px; color: rgba(240,240,240,0.85); line-height: 1.55; flex: 1; transition: color 0.2s; }
+  .task-text.checked { color: var(--text-dim); text-decoration: line-through; }
+  .step-note { display: flex; gap: 10px; align-items: flex-start; background: rgba(212,160,23,0.06); border: 1px solid rgba(212,160,23,0.18); border-left: 3px solid var(--gold); border-radius: 8px; padding: 10px 12px; margin-top: 12px; font-size: 12px; color: rgba(212,160,23,0.85); line-height: 1.55; }
+  .step-alert { display: flex; gap: 10px; align-items: flex-start; background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-left: 3px solid #3b82f6; border-radius: 8px; padding: 10px 12px; margin-top: 12px; font-size: 12px; color: rgba(147,197,253,0.9); line-height: 1.55; }
+  .footer { text-align: center; margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .footer p { font-size: 12px; color: var(--text-dim); }
+  .footer .ft-brand { font-size: 14px; font-weight: 700; background: linear-gradient(90deg, var(--gold-dark), var(--gold-bright)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .reset-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 20px; color: var(--text-muted); font-size: 13px; font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.2s; }
+  .reset-btn:hover { border-color: rgba(212,160,23,0.3); color: var(--gold); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.3); border-radius: 99px; }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="bg-grid"></div>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+  <div class="bg-glow-3"></div>
+  <div class="bg-line" id="scanline"></div>
+  <div class="corner-decor tl"></div>
+  <div class="corner-decor tr"></div>
+  <div class="corner-decor bl"></div>
+  <div class="corner-decor br"></div>
+</div>
+
+<div class="page">
+  <div class="header">
+    <div class="header-badge"><div class="dot"></div>Operacional Interno</div>
+    <div class="logo-text">LB MARKETPLACE</div>
+    <div class="logo-sub">Gestão Profissional de Lojas</div>
+    <div class="header-title">Checklist — Abertura de Loja Mercado Livre</div>
+    <div class="header-desc">Passo a passo completo para configuração de nova loja no Mercado Livre.<br>Marque cada tarefa ao concluir e confirme com o Lincoln ao final de cada etapa.</div>
+    <div class="platforms">
+      <div class="plat-badge ml">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M4 8h16l-1.5 11.5A2 2 0 0 1 16.5 21h-9A2 2 0 0 1 5.5 19.5L4 8z" stroke="#FFE600" stroke-width="1.8"/>
+          <path d="M8 8a4 4 0 0 1 8 0" stroke="#FFE600" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Mercado Livre
+      </div>
+      <div class="plat-badge upseller">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M3 17l6-6 4 4 8-9" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="19" cy="5" r="3" fill="#7C3AED" opacity="0.8"/>
+        </svg>
+        UpSeller
+      </div>
+      <div class="plat-badge ads">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff59d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Product Ads
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-top">
+      <div class="progress-label">Progresso geral da configuração</div>
+      <div class="progress-pct" id="prog-pct">0%</div>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill"></div></div>
+    <div class="progress-stats">
+      <div class="stat"><span id="done-count">0</span> tarefas concluídas</div>
+      <div class="stat">de <span id="total-count">0</span> total</div>
+      <div class="stat"><span id="steps-done">0</span> de 6 etapas</div>
+    </div>
+  </div>
+
+  <div class="steps-list" id="steps-list"></div>
+
+  <div class="footer">
+    <p class="ft-brand">LB Marketplace</p>
+    <p style="margin-top:4px;">Documento interno — uso exclusivo da equipe operacional</p>
+    <button class="reset-btn" onclick="resetAll()">↺ Reiniciar checklist</button>
+  </div>
+</div>
+
+<script>
+const STEPS = [
+  {
+    num: 1,
+    name: "Criar ou Acessar Conta",
+    desc: "Cadastro inicial da conta do cliente",
+    platform: null,
+    tasks: [
+      "E-mail",
+      "Telefone",
+      "Nome da loja",
+      "Definir senha",
+      "Mandar código para o cliente",
+      "Fazer a validação do QR Code com o cliente"
+    ],
+    note: "Esta etapa será feita pela Carol ou pelo Lincoln."
+  },
+  {
+    num: 2,
+    name: "Perfil do Cliente",
+    desc: "Validações e dados cadastrais",
+    platform: null,
+    tasks: [
+      "Acessar o perfil do cliente",
+      "Informações do perfil",
+      "Validar identidade",
+      "Validar Gmail",
+      "Colocar logotipo",
+      "Preencher endereço do cliente"
+    ],
+    note: "Esta etapa será feita pela Carol ou pelo Lincoln."
+  },
+  {
+    num: 3,
+    name: "UpSeller + Minha Página",
+    desc: "Conectar Mercado Livre e configurar a vitrine",
+    platform: "upseller",
+    tasks: [
+      "Acessar o UpSeller do cliente e conectar o Mercado Livre",
+      "Menu esquerdo > Central de Marketing > Minha Página",
+      "Adicionar o nome da loja",
+      "Adicionar o logo (caso não tenha ainda)",
+      "Fazer 2 banners que combinem com a loja — 1 para celular e outro para computador (1900x100px e 720x160px)",
+      "Adicionar um produto de destaque",
+      "Adicionar os produtos que ficarão na galeria",
+      "Adicionar componente e fazer 2 banners de divulgação (Celular 600x338px / Computador 1920x480px)"
+    ]
+  },
+  {
+    num: 4,
+    name: "Criar o Anúncio",
+    desc: "Fotos, título, descrição e publicação",
+    platform: "ml",
+    tasks: [
+      "Criar fotos no Diretor Criativo (enviar o máximo de informações no chat para o melhor resultado)",
+      "Criar título de 60 caracteres, com o máximo de palavras-chave, da esquerda pra direita (esquerda = mais importante)",
+      "Criar descrição convidativa para e-commerce, com informações técnicas",
+      "Entrar no ML e clicar em Vender",
+      "Clicar em Produto e escrever qual é o produto",
+      "Escolher a categoria que mais se adequa",
+      "Preencher: Marca, Modelo, Gênero",
+      "Condição: Novo",
+      "Anexar imagem do guia de tamanhos criado pelo chat (algumas categorias não exigem)",
+      "Anexar todas as fotos do Diretor Criativo (variação de cor/tamanho também) + clipe de no mínimo 10 segundos",
+      "Adicionar o título",
+      "Adicionar informações do produto: Material, Dimensões, Estilos",
+      "Adicionar a descrição",
+      "Preço: ver quanto o cliente quer receber e calcular na Calculadora LB, marcando 3% de cupom e 5% de oferta relâmpago",
+      "Colocar um valor sempre MAIOR que o resultado da calculadora (Gross-up)",
+      "Colocar Clássico ou Premium (Premium só acima de R$150)",
+      "Forma de entrega: por conta do comprador",
+      "Garantia: pelo menos 7 dias",
+      "Anunciar"
+    ],
+    note: "O preço cadastrado é sempre maior que o valor calculado pela LB, para cobrir taxas de cupom e oferta relâmpago (Gross-up)."
+  },
+  {
+    num: 5,
+    name: "Oferta Relâmpago e Cupom",
+    desc: "Ativar os 5% em todos os anúncios",
+    platform: "ml",
+    tasks: [
+      "Central de Marketing (menu esquerdo) > Oferta Relâmpago > 5% em todos os anúncios",
+      "Central de Marketing (menu esquerdo) > Cupom > 5% em todos os anúncios"
+    ]
+  },
+  {
+    num: 6,
+    name: "Publicidade (Product Ads)",
+    desc: "Campanha com meta de ROAS 25x",
+    platform: "ml",
+    tasks: [
+      "Menu esquerdo > Central de Marketing > Publicidade",
+      "Clicar em Ir para Campanhas",
+      "Criar Campanha",
+      "Adicionar todos os anúncios",
+      "Definir meta de ROAS: 25x",
+      "Criar"
+    ],
+    alert: "Depois de concluir tudo isso, enviar o link da página para o cliente."
+  }
+];
+
+let totalTasks = 0;
+let checkedCount = 0;
+
+function countTotals() {
+  STEPS.forEach(s => totalTasks += s.tasks.length);
+  document.getElementById('total-count').textContent = totalTasks;
+}
+
+function updateProgress() {
+  const pct = totalTasks > 0 ? Math.round((checkedCount / totalTasks) * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('done-count').textContent = checkedCount;
+
+  let stepsDone = 0;
+  STEPS.forEach((s, idx) => {
+    const allDone = s.tasks.every((_, ti) => {
+      const cb = document.querySelector(`[data-id="${idx}-${ti}"]`);
+      return cb && cb.classList.contains('checked');
+    });
+    if (allDone) stepsDone++;
+    const badge = document.getElementById('badge-' + idx);
+    const card = document.getElementById('card-' + idx);
+    if (badge) badge.classList.toggle('show', allDone);
+    if (card) card.classList.toggle('done', allDone);
+    const stepNum = document.getElementById('num-' + idx);
+    if (allDone && stepNum) {
+      stepNum.innerHTML = '✓';
+      stepNum.style.background = 'rgba(34,197,94,0.15)';
+      stepNum.style.borderColor = 'rgba(34,197,94,0.4)';
+      stepNum.style.color = '#22c55e';
+    } else if (stepNum) {
+      stepNum.innerHTML = s.num;
+      stepNum.style.background = '';
+      stepNum.style.borderColor = '';
+      stepNum.style.color = '';
+    }
+  });
+  document.getElementById('steps-done').textContent = stepsDone;
+}
+
+function toggleTask(el, stepIdx, taskIdx) {
+  const isChecked = el.classList.toggle('checked');
+  const textEl = el.parentElement.querySelector('.task-text');
+  textEl.classList.toggle('checked', isChecked);
+  if (isChecked) checkedCount++; else checkedCount--;
+  updateProgress();
+  save();
+}
+
+function toggleStep(idx) {
+  const body = document.getElementById('body-' + idx);
+  const chev = document.getElementById('chev-' + idx);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function save() {
+  try {
+    const state = {};
+    document.querySelectorAll('[data-id]').forEach(cb => {
+      state[cb.dataset.id] = cb.classList.contains('checked');
+    });
+    localStorage.setItem('lb_op_checklist_ml', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadSaved() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('lb_op_checklist_ml') || '{}');
+    Object.keys(saved).forEach(id => {
+      if (saved[id]) {
+        const cb = document.querySelector(`[data-id="${id}"]`);
+        if (cb) {
+          cb.classList.add('checked');
+          cb.parentElement.querySelector('.task-text').classList.add('checked');
+          checkedCount++;
+        }
+      }
+    });
+    updateProgress();
+  } catch(e) {}
+}
+
+function resetAll() {
+  if (!confirm('Reiniciar todo o checklist?')) return;
+  document.querySelectorAll('[data-id]').forEach(cb => cb.classList.remove('checked'));
+  document.querySelectorAll('.task-text').forEach(t => t.classList.remove('checked'));
+  checkedCount = 0;
+  updateProgress();
+  try { localStorage.removeItem('lb_op_checklist_ml'); } catch(e) {}
+}
+
+function platTag(p) {
+  if (!p) return '';
+  if (p === 'ml') return '<span class="plat-tag ml">Mercado Livre</span>';
+  if (p === 'upseller') return '<span class="plat-tag upseller">UpSeller</span>';
+  return '';
+}
+
+function renderSteps() {
+  const container = document.getElementById('steps-list');
+  STEPS.forEach((step, idx) => {
+    const delay = (idx * 0.06).toFixed(2);
+    const tasksHtml = step.tasks.map((t, ti) => `
+      <div class="task-item" onclick="toggleTask(document.querySelector('[data-id=\\'${idx}-${ti}\\']'), ${idx}, ${ti})">
+        <div class="task-cb" data-id="${idx}-${ti}"></div>
+        <span class="task-text">${t}</span>
+      </div>
+    `).join('');
+    const noteHtml = step.note ? `<div class="step-note"><span>⚡</span><span>${step.note}</span></div>` : '';
+    const alertHtml = step.alert ? `<div class="step-alert"><span>ℹ</span><span>${step.alert}</span></div>` : '';
+    const div = document.createElement('div');
+    div.className = 'step-card';
+    div.id = 'card-' + idx;
+    div.style.animationDelay = delay + 's';
+    div.innerHTML = `
+      <div class="step-header" onclick="toggleStep(${idx})">
+        <div class="step-num" id="num-${idx}">${step.num}</div>
+        <div class="step-info">
+          <div class="step-name">${step.name}${platTag(step.platform)}</div>
+          <div class="step-desc">${step.desc}</div>
+        </div>
+        <div class="step-meta">
+          <div class="step-count">${step.tasks.length} tarefa${step.tasks.length > 1 ? 's' : ''}</div>
+          <div class="step-done-badge" id="badge-${idx}">✓ Concluído</div>
+          <div class="step-chevron" id="chev-${idx}">▾</div>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-body" id="body-${idx}">
+        <div class="task-list">${tasksHtml}</div>
+        ${noteHtml}${alertHtml}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+let scanY = -2;
+function animateScan() {
+  scanY = (scanY + 0.3) % 102;
+  const el = document.getElementById('scanline');
+  if (el) el.style.top = scanY + '%';
+  requestAnimationFrame(animateScan);
+}
+
+renderSteps();
+countTotals();
+loadSaved();
+animateScan();
+</script>
+</body>
+</html>
