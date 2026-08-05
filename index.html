@@ -1746,6 +1746,17 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="editarDataModalOverlay">
+  <div class="modal" style="max-width:400px">
+    <h2 id="editarDataTitulo">Editar Data</h2>
+    <div class="field"><label id="editarDataLabel">Nova data</label><input type="datetime-local" id="editarDataInput"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="editarDataCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="editarDataSalvarBtn">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="toast"></div>
 <script type="module">
@@ -3030,14 +3041,14 @@ function cmRenderDescontos(){
   if(!el)return;
   const lista=(clientesCache||[]);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.descontoFixoFim)}</div>`).join('');
+  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.descontoFixoFim)}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}')">✏️ Editar</button></div>`).join('');
 }
 function cmRenderCupons(){
   const el=document.getElementById('cmCuponsLista');
   if(!el)return;
   const lista=(clientesCache||[]);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}</div>`).join('');
+  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}<button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button></div>`).join('');
 }
 function cmRenderDevolucao(){
   const el=document.getElementById('cmDevolucaoLista');
@@ -3047,6 +3058,36 @@ function cmRenderDevolucao(){
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
 function cmRenderTudo(){cmRenderOfertaShopee();cmRenderDescontos();cmRenderCupons();cmRenderDevolucao();}
+/* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
+let editarDataAlvo=null; // {clienteId, campo}
+window.__editarDataDesconto=(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
+  editarDataAlvo={clienteId,campo:'descontoFixoFim'};
+  document.getElementById('editarDataTitulo').textContent=`Desconto — ${c.nome}`;
+  document.getElementById('editarDataLabel').textContent='Encerramento do Desconto Fixo';
+  document.getElementById('editarDataInput').value=c.descontoFixoFim||'';
+  document.getElementById('editarDataModalOverlay').classList.remove('hidden');
+};
+window.__editarDataCupom=(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
+  editarDataAlvo={clienteId,campo:'cupomFim'};
+  document.getElementById('editarDataTitulo').textContent=`Cupom — ${c.nome}`;
+  document.getElementById('editarDataLabel').textContent='Encerramento do Cupom';
+  document.getElementById('editarDataInput').value=c.cupomFim||'';
+  document.getElementById('editarDataModalOverlay').classList.remove('hidden');
+};
+document.getElementById('editarDataCancelBtn')?.addEventListener('click',()=>{document.getElementById('editarDataModalOverlay').classList.add('hidden');editarDataAlvo=null;});
+document.getElementById('editarDataSalvarBtn')?.addEventListener('click',async()=>{
+  if(!editarDataAlvo)return;
+  const valor=document.getElementById('editarDataInput').value||null;
+  try{
+    await updateDoc(doc(db,"clientes",editarDataAlvo.clienteId),{[editarDataAlvo.campo]:valor,ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});
+    showToast('✓ Data atualizada.');
+    document.getElementById('editarDataModalOverlay').classList.add('hidden');
+    editarDataAlvo=null;
+  }catch(e){showToast('Erro ao salvar.');}
+});
+
 
 
 
