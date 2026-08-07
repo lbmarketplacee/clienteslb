@@ -3534,8 +3534,8 @@ function brdRenderBoard(key){
   `;
 }
 
-function brdToggleLog(key){brdLogOpen[key]=!brdLogOpen[key];brdRenderBoard(key);}
-function brdOnMetaEdit(el){
+window.brdToggleLog=function(key){brdLogOpen[key]=!brdLogOpen[key];brdRenderBoard(key);}
+window.brdOnMetaEdit=function(el){
   const boardKey=el.dataset.board,rowKey=el.dataset.key,field=el.dataset.field;
   const parsed=BRD_PARSE_EDIT(el.textContent);
   const row=brdFindRow(boardKey,rowKey);
@@ -3543,9 +3543,9 @@ function brdOnMetaEdit(el){
   brdRenderBoard(boardKey);
   brdSaveMeta(boardKey);
 }
-function brdOnPeriodEdit(el){const boardKey=el.dataset.board;BRD_DATA[boardKey].period=el.textContent.trim();brdSaveMeta(boardKey);}
+window.brdOnPeriodEdit=function(el){const boardKey=el.dataset.board;BRD_DATA[boardKey].period=el.textContent.trim();brdSaveMeta(boardKey);}
 
-async function brdSaveEntry(key){
+window.brdSaveEntry=async function(key){
   const dateInput=document.getElementById(`brd-input-${key}-date`);
   const date=dateInput.value||brdTodayStr();
   const entry={date};
@@ -3558,14 +3558,14 @@ async function brdSaveEntry(key){
   brdRenderBoard(key);
   showToast('✓ Lançamento salvo.');
 }
-async function brdDeleteEntry(key,date){
+window.brdDeleteEntry=async function(key,date){
   BRD_DATA[key].history=BRD_DATA[key].history.filter(e=>e.date!==date);
   brdRecompute();
   await brdSaveHistory(key);
   brdLogOpen[key]=true;
   brdRenderBoard(key);
 }
-function brdSwitchBoard(key){
+window.brdSwitchBoard=function(key){
   document.getElementById('brd-tab-marketing').classList.toggle('active',key==='marketing');
   document.getElementById('brd-tab-comercial').classList.toggle('active',key==='comercial');
   document.getElementById('brd-tab-comercial').classList.toggle('com',key==='comercial');
