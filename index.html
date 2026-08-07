@@ -3011,7 +3011,7 @@ function sgmvRenderizar(){
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
         ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">🔄 Atualizar</button>
-        <button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${esc(c.nome).replace(/'/g,"\'")}')">🎟️ Criar Cupom</button>`
+        `
         :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">🔗 Conectar</button>`
       }
     </div>`;
@@ -3231,7 +3231,11 @@ function cmRenderCupons(){
   if(!el)return;
   const lista=(clientesCache||[]);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}<button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button></div>`).join('');
+  el.innerHTML=lista.map(c=>{
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    const botaoCriar=c.shopeeShopId?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button>`:'';
+    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}<button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button>${botaoCriar}</div>`;
+  }).join('');
 }
 function cmRenderDevolucao(){
   const el=document.getElementById('cmDevolucaoLista');
