@@ -1358,6 +1358,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-tool-card" data-cmtab="cupons"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Cupons</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do cupom de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gerarad"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Anúncio com IA</div><span class="cm-tool-tag trafego">Aumente o tráfego</span><div class="cm-tool-desc">A IA cria título, destaques e descrição prontos pra publicar.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="saude"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">💚</div><div class="cm-tool-body"><div class="cm-tool-titulo">Saúde da Loja</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Nota geral, pontos de penalidade e pedidos atrasados de cada loja Shopee.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gmv"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee GMV API</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Faturamento automático de cada loja Shopee conectada.</div></div></div>
         </div>
 
@@ -1403,6 +1404,11 @@ textarea{resize:vertical;min-height:70px;}
             </div>
           </div>
         </div>
+        </div>
+                <div class="cm-secao cm-painel" data-cmpainel="saude">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">💚</div><h3>Saúde da Loja — Shopee</h3></div>
+          <div class="sgmv-list" id="saudeLojaLista"></div>
         </div>
         <div class="cm-secao cm-painel" data-cmpainel="gmv">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -1835,6 +1841,23 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="cupomModalOverlay">
+  <div class="modal" style="max-width:420px">
+    <h2 id="cupomModalTitulo">Criar Cupom</h2>
+    <div class="field"><label>Nome do Cupom</label><input type="text" id="cupomNome" placeholder="Ex: Cupom 5% - Loja"></div>
+    <div class="field"><label>Código</label><input type="text" id="cupomCodigo" placeholder="Ex: LB5OFF" style="text-transform:uppercase"></div>
+    <div class="form-row">
+      <div class="field"><label>Desconto (%)</label><input type="number" id="cupomPercentual" value="5" min="1" max="90"></div>
+      <div class="field"><label>Valor mínimo compra (R$)</label><input type="number" id="cupomValorMinimo" placeholder="0"></div>
+    </div>
+    <div class="field"><label>Validade (dias)</label><input type="number" id="cupomDias" value="180"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="cupomCancelarBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="cupomSalvarBtn">Criar Cupom</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="toast"></div>
 <script type="module">
@@ -1908,7 +1931,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();cmRenderTudo();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();cmRenderTudo();saudeLojaRenderizar();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -2987,7 +3010,8 @@ function sgmvRenderizar(){
       ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.gmvShopeeAutomatico||0)}</div><div class="lbl">GMV mês atual</div></div>`:''}
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
-        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">🔄 Atualizar</button>`
+        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">🔄 Atualizar</button>
+        <button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${esc(c.nome).replace(/'/g,"\'")}')">🎟️ Criar Cupom</button>`
         :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">🔗 Conectar</button>`
       }
     </div>`;
@@ -3055,6 +3079,77 @@ document.getElementById('sgmvAtualizarTodosBtn')?.addEventListener('click',async
   btn.disabled=false;btn.textContent='🔄 Atualizar Todas as Lojas';
   showToast(`Concluído! ${sucesso} de ${conectados.length} lojas atualizadas.`);
 });
+/* ================= SAÚDE DA LOJA (Shopee) ================= */
+async function saudeLojaRenderizar(){
+  const el=document.getElementById('saudeLojaLista');
+  if(!el)return;
+  const conectados=(clientesCache||[]).filter(c=>c.shopeeShopId);
+  if(!conectados.length){
+    el.innerHTML='<div class="sgmv-empty-connected"><div class="ico">💚</div><h3 style="color:var(--gold);font-family:\'Oswald\',sans-serif;text-transform:uppercase;margin-bottom:8px">Nenhuma loja Shopee conectada ainda</h3><p>Conecte uma loja na aba Shopee GMV API pra ver a saúde dela aqui.</p></div>';
+    return;
+  }
+  el.innerHTML=conectados.map(c=>`<div class="sgmv-card"><div class="sgmv-ico">S</div><div class="sgmv-info"><div class="sgmv-nome">${esc(c.nome)}</div><div class="sgmv-sub" id="saudeSub-${c.id}">Carregando...</div></div></div>`).join('');
+  for(const c of conectados){
+    try{
+      const accessToken=await shopeeGarantirTokenValido(c);
+      const resp=await fetch(`${SHOPEE_API}?acao=saude_loja&access_token=${accessToken}&shop_id=${c.shopeeShopId}`);
+      const data=await resp.json();
+      const sub=document.getElementById(`saudeSub-${c.id}`);
+      if(!sub)continue;
+      if(!data.ok){sub.textContent='Erro ao buscar dados.';continue;}
+      const perf=data.performance?.response?.overall_performance;
+      const pen=data.penalidade?.response?.penalty_points;
+      const nota=perf?.rating!=null?perf.rating:'—';
+      const pontos=pen?.overall_penalty_points!=null?pen.overall_penalty_points:'—';
+      const cor=Number(pontos)>=6?'var(--red)':Number(pontos)>=1?'var(--amber)':'var(--green)';
+      sub.innerHTML=`Nota geral: <b style="color:var(--text)">${nota}</b> &nbsp;•&nbsp; Pontos de penalidade: <b style="color:${cor}">${pontos}</b>`;
+    }catch(e){
+      const sub=document.getElementById(`saudeSub-${c.id}`);
+      if(sub)sub.textContent='Erro ao buscar dados.';
+    }
+  }
+}
+
+/* ================= CRIAR CUPOM (Shopee) ================= */
+let cupomClienteAtual=null;
+window.__abrirModalCupom=(clienteId,clienteNome)=>{
+  cupomClienteAtual=clienteId;
+  document.getElementById('cupomModalTitulo').textContent=`Criar Cupom — ${clienteNome}`;
+  document.getElementById('cupomNome').value='';
+  document.getElementById('cupomCodigo').value='';
+  document.getElementById('cupomPercentual').value='5';
+  document.getElementById('cupomValorMinimo').value='';
+  document.getElementById('cupomDias').value='180';
+  document.getElementById('cupomModalOverlay').classList.remove('hidden');
+};
+document.getElementById('cupomCancelarBtn')?.addEventListener('click',()=>document.getElementById('cupomModalOverlay').classList.add('hidden'));
+document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
+  if(!cupomClienteAtual)return;
+  const cliente=clientesCache.find(c=>c.id===cupomClienteAtual);
+  if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
+  const btn=document.getElementById('cupomSalvarBtn');
+  btn.disabled=true;btn.textContent='Criando...';
+  try{
+    const accessToken=await shopeeGarantirTokenValido(cliente);
+    const params=new URLSearchParams({
+      acao:'criar_cupom',
+      access_token:accessToken,
+      shop_id:cliente.shopeeShopId,
+      nome:document.getElementById('cupomNome').value.trim(),
+      codigo:document.getElementById('cupomCodigo').value.trim().toUpperCase(),
+      percentual:document.getElementById('cupomPercentual').value,
+      valor_minimo:document.getElementById('cupomValorMinimo').value||'0',
+      dias_validade:document.getElementById('cupomDias').value
+    });
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    if(!data.ok||data.error){showToast('Erro: '+(data.message||data.error||'não foi possível criar.'));btn.disabled=false;btn.textContent='Criar Cupom';return;}
+    showToast(`✓ Cupom criado pra ${cliente.nome}!`);
+    document.getElementById('cupomModalOverlay').classList.add('hidden');
+  }catch(e){showToast('Erro ao criar cupom.');}
+  btn.disabled=false;btn.textContent='Criar Cupom';
+});
+
 /* ================= TIKTOK SHOP — OFERTA RELÂMPAGO (ciclo de 3 dias) ================= */
 function ttRenderizar(){
   const lista=document.getElementById('ttLista');
