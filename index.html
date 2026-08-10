@@ -3202,7 +3202,12 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     if(!data.ok||data.error){showToast('Erro: '+(data.message||data.error||'não foi possível criar.'));btn.disabled=false;btn.textContent='Criar Cupom';return;}
-    showToast(`✓ Cupom criado pra ${cliente.nome}!`);
+    // Preenche automaticamente a data de vencimento do cupom (já usada nos alertas da Central de Marketing)
+    const diasValidade=Number(document.getElementById('cupomDias').value||90);
+    const dataFim=new Date(Date.now()+diasValidade*24*60*60*1000);
+    const cupomFimStr=dataFim.toISOString().slice(0,16); // formato datetime-local (YYYY-MM-DDTHH:mm)
+    await updateDoc(doc(db,"clientes",cupomClienteAtual),{cupomFim:cupomFimStr});
+    showToast(`✓ Cupom criado pra ${cliente.nome}! Data de vencimento atualizada automaticamente.`);
     document.getElementById('cupomModalOverlay').classList.add('hidden');
   }catch(e){showToast('Erro ao criar cupom.');}
   btn.disabled=false;btn.textContent='Criar Cupom';
