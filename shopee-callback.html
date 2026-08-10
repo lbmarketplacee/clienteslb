@@ -53,6 +53,9 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
   const shopId=params.get('shop_id');
   const clienteId=localStorage.getItem('shopee_auth_cliente_id');
   const clienteNome=localStorage.getItem('shopee_auth_cliente_nome')||'o cliente';
+  const app=localStorage.getItem('shopee_auth_app')||'gmv';
+  const pre=app==='mkt'?'shopeeMkt':'shopee';
+  const nomeApp=app==='mkt'?'Marketing':'GMV';
 
   if(!code||!shopId){
     mostrar('⚠️','Algo deu errado','Não recebemos o código de autorização da Shopee. Tente conectar novamente pelo sistema.',true);
@@ -70,7 +73,7 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
   }
 
   try{
-    const resp=await fetch(`${SHOPEE_API}?acao=trocar_codigo_por_token&code=${code}&shop_id=${shopId}`);
+    const resp=await fetch(`${SHOPEE_API}?acao=trocar_codigo_por_token&app=${app}&code=${code}&shop_id=${shopId}`);
     const data=await resp.json();
     if(!data.ok||!data.access_token){
       mostrar('❌','Erro ao conectar',data.erro||data.message||'A Shopee não retornou um token válido. Tente novamente.',true);
@@ -78,15 +81,16 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
     }
     const expiraEm=Date.now()+(data.expire_in*1000);
     await updateDoc(doc(db,"clientes",clienteId),{
-      shopeeShopId:Number(shopId),
-      shopeeAccessToken:data.access_token,
-      shopeeRefreshToken:data.refresh_token,
-      shopeeTokenExpiraEm:expiraEm,
-      shopeeConectadoEm:serverTimestamp()
+      [pre+'ShopId']:Number(shopId),
+      [pre+'AccessToken']:data.access_token,
+      [pre+'RefreshToken']:data.refresh_token,
+      [pre+'TokenExpiraEm']:expiraEm,
+      [pre+'ConectadoEm']:serverTimestamp()
     });
     localStorage.removeItem('shopee_auth_cliente_id');
     localStorage.removeItem('shopee_auth_cliente_nome');
-    mostrar('✅','Conectado com sucesso!',`A loja Shopee de <b style="color:var(--text)">${clienteNome}</b> foi conectada. Volte pro sistema e clique em "Atualizar GMV" pra ver os números.`,true);
+    localStorage.removeItem('shopee_auth_app');
+    mostrar('✅','Conectado com sucesso!',`O app <b style="color:var(--text)">${nomeApp}</b> foi conectado à loja de <b style="color:var(--text)">${clienteNome}</b>. Volte pro sistema pra usar.`,true);
   }catch(e){
     mostrar('❌','Erro ao conectar','Não foi possível salvar a conexão. Tente novamente ou avise o suporte técnico.',true);
   }
