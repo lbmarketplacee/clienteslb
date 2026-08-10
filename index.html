@@ -1909,6 +1909,22 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="ofertaModalOverlay">
+  <div class="modal" style="max-width:420px">
+    <h2 id="ofertaModalTitulo">Criar Oferta Relâmpago</h2>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px;line-height:1.5">Busca automaticamente até 20 produtos ativos da loja e aplica o desconto sobre o preço atual de cada um.</p>
+    <div class="form-row">
+      <div class="field"><label>Desconto (%)</label><input type="number" id="ofertaPercentual" value="5" min="1" max="90"></div>
+      <div class="field"><label>Unidades por produto</label><input type="number" id="ofertaQtd" value="5" min="1"></div>
+    </div>
+    <div class="field"><label>Quantidade de produtos (máx. 20)</label><input type="number" id="ofertaLimite" value="20" max="20" min="1"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="ofertaCancelarBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="ofertaCriarBtn">Criar Oferta</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="toast"></div>
 <script type="module">
@@ -3239,6 +3255,48 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
   }catch(e){showToast('Erro ao criar cupom.');}
   btn.disabled=false;btn.textContent='Criar Cupom';
 });
+/* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
+let ofertaClienteAtual=null;
+window.__abrirModalOferta=(clienteId,clienteNome)=>{
+  ofertaClienteAtual=clienteId;
+  document.getElementById('ofertaModalTitulo').textContent=`Criar Oferta Relâmpago — ${clienteNome}`;
+  document.getElementById('ofertaPercentual').value='5';
+  document.getElementById('ofertaQtd').value='5';
+  document.getElementById('ofertaLimite').value='20';
+  document.getElementById('ofertaModalOverlay').classList.remove('hidden');
+};
+document.getElementById('ofertaCancelarBtn')?.addEventListener('click',()=>document.getElementById('ofertaModalOverlay').classList.add('hidden'));
+document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
+  if(!ofertaClienteAtual)return;
+  const cliente=clientesCache.find(c=>c.id===ofertaClienteAtual);
+  if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
+  const btn=document.getElementById('ofertaCriarBtn');
+  btn.disabled=true;btn.textContent='Criando... (pode levar alguns segundos)';
+  try{
+    const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
+    const params=new URLSearchParams({
+      acao:'criar_oferta_relampago',
+      app:'mkt',
+      access_token:accessToken,
+      shop_id:cliente.shopeeMktShopId,
+      percentual:document.getElementById('ofertaPercentual').value,
+      qtd_por_produto:document.getElementById('ofertaQtd').value,
+      limite_produtos:document.getElementById('ofertaLimite').value
+    });
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Oferta Relâmpago debug]',cliente.nome,data);
+    if(!data.ok){
+      alert(`Não foi possível criar a oferta relâmpago de ${cliente.nome}:\\n\\n${data.erro||'Erro desconhecido.'}\\n\\nAbra o Console (F12) e veja "[Oferta Relâmpago debug]" pra mais detalhes.`);
+      btn.disabled=false;btn.textContent='Criar Oferta';
+      return;
+    }
+    showToast(`✓ Oferta relâmpago criada pra ${cliente.nome}! ${data.total_produtos} produto(s) incluído(s).`);
+    document.getElementById('ofertaModalOverlay').classList.add('hidden');
+  }catch(e){showToast('Erro ao criar oferta relâmpago.');console.error(e);}
+  btn.disabled=false;btn.textContent='Criar Oferta';
+});
+
 
 /* ================= TIKTOK SHOP — OFERTA RELÂMPAGO (ciclo de 3 dias) ================= */
 function ttRenderizar(){
@@ -3307,7 +3365,16 @@ function cmRenderOfertaShopee(){
   if(!el)return;
   const lista=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee'));
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`).join('');
+  el.innerHTML=lista.map(c=>{
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    let botaoShopee='';
+    if(c.shopeeMktShopId){
+      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar na Shopee</button>`;
+    }else{
+      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔗 Conectar Marketing</button>`;
+    }
+    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}${botaoShopee}</div>`;
+  }).join('');
 }
 function cmRenderDescontos(){
   const el=document.getElementById('cmDescontosLista');
