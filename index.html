@@ -3111,7 +3111,7 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
       if(erroShopee){
         msg+=`⚠️ A Shopee retornou um ERRO ao listar pedidos:\n"${erroShopee}"\n\nProvavelmente o token de acesso dessa loja expirou ou é inválido. Talvez seja necessário reconectar essa loja (botão "Conectar Shopee" de novo).`;
       }else if(Number(totalBruto)>0){
-        msg+=`Existem ${totalBruto} pedido(s) no período (qualquer status), mas 0 com status "COMPLETED".\n\nOu seja: os pedidos existem, mas nenhum chegou no status final de "concluído" ainda.`;
+        msg+=`Existem ${totalBruto} pedido(s) no período, mas todos parecem estar cancelados ou não pagos (por isso não entraram na soma do GMV).`;
       }else{
         msg+=`A Shopee não retornou NENHUM pedido nesse período — nem sem filtro de status.\n\nRequest ID: ${bruta?.request_id||'—'}\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`;
       }
