@@ -2998,21 +2998,28 @@ document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   window.__shopeeConectar(clienteId,clienteNome);
 });
 
-async function shopeeGarantirTokenValido(cliente){
+// app: 'gmv' (padrão, mantém compatibilidade) ou 'mkt' (app de Marketing — cupom/oferta relâmpago)
+async function shopeeGarantirTokenValido(cliente, app='gmv'){
+  const pre = app==='mkt' ? 'shopeeMkt' : 'shopee';
+  const shopId = cliente[pre+'ShopId'];
+  const accessToken = cliente[pre+'AccessToken'];
+  const refreshToken = cliente[pre+'RefreshToken'];
+  const expiraEmRaw = cliente[pre+'TokenExpiraEm'];
+  if(!shopId||!accessToken||!refreshToken) throw new Error(`Cliente não conectado ao app ${app==='mkt'?'Marketing':'GMV'} da Shopee.`);
   const agora=Date.now();
-  const expiraEm=cliente.shopeeTokenExpiraEm?.seconds?cliente.shopeeTokenExpiraEm.seconds*1000:cliente.shopeeTokenExpiraEm;
+  const expiraEm=expiraEmRaw?.seconds?expiraEmRaw.seconds*1000:expiraEmRaw;
   if(expiraEm&&agora<expiraEm-5*60*1000){
-    return cliente.shopeeAccessToken; // ainda válido (com 5min de folga)
+    return accessToken; // ainda válido (com 5min de folga)
   }
   // Expirado ou perto de expirar — renova usando o refresh_token
-  const resp=await fetch(`${SHOPEE_API}?acao=renovar_token&refresh_token=${cliente.shopeeRefreshToken}&shop_id=${cliente.shopeeShopId}`);
+  const resp=await fetch(`${SHOPEE_API}?acao=renovar_token&app=${app}&refresh_token=${refreshToken}&shop_id=${shopId}`);
   const data=await resp.json();
-  if(!data.ok||!data.access_token)throw new Error('Não foi possível renovar o token da Shopee.');
+  if(!data.ok||!data.access_token)throw new Error(`Não foi possível renovar o token da Shopee (${app}).`);
   const novaExpiraEm=Date.now()+(data.expire_in*1000);
   await updateDoc(doc(db,"clientes",cliente.id),{
-    shopeeAccessToken:data.access_token,
-    shopeeRefreshToken:data.refresh_token,
-    shopeeTokenExpiraEm:novaExpiraEm
+    [pre+'AccessToken']:data.access_token,
+    [pre+'RefreshToken']:data.refresh_token,
+    [pre+'TokenExpiraEm']:novaExpiraEm
   });
   return data.access_token;
 }
@@ -3068,11 +3075,12 @@ function sgmvRenderizar(){
 }
 
 /* --- Conectar (reutilizável, chamado da aba nova OU do modal) --- */
-window.__shopeeConectar=async(clienteId,clienteNome)=>{
+window.__shopeeConectar=async(clienteId,clienteNome,app='gmv')=>{
   try{
     localStorage.setItem('shopee_auth_cliente_id',clienteId);
     localStorage.setItem('shopee_auth_cliente_nome',clienteNome||'');
-    const resp=await fetch(`${SHOPEE_API}?acao=gerar_link_autorizacao&redirect=${encodeURIComponent(SHOPEE_CALLBACK_URL)}`);
+    localStorage.setItem('shopee_auth_app',app);
+    const resp=await fetch(`${SHOPEE_API}?acao=gerar_link_autorizacao&app=${app}&redirect=${encodeURIComponent(SHOPEE_CALLBACK_URL)}`);
     const data=await resp.json();
     if(!data.ok){showToast('Erro ao gerar link: '+(data.erro||'desconhecido'));return;}
     window.location.href=data.link;
@@ -3175,15 +3183,16 @@ document.getElementById('cupomCancelarBtn')?.addEventListener('click',()=>docume
 document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
   if(!cupomClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===cupomClienteAtual);
-  if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
+  if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee. Conecte primeiro.');return;}
   const btn=document.getElementById('cupomSalvarBtn');
   btn.disabled=true;btn.textContent='Criando...';
   try{
-    const accessToken=await shopeeGarantirTokenValido(cliente);
+    const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
     const params=new URLSearchParams({
       acao:'criar_cupom',
+      app:'mkt',
       access_token:accessToken,
-      shop_id:cliente.shopeeShopId,
+      shop_id:cliente.shopeeMktShopId,
       nome:document.getElementById('cupomNome').value.trim(),
       codigo:document.getElementById('cupomCodigo').value.trim().toUpperCase(),
       percentual:document.getElementById('cupomPercentual').value,
@@ -3282,8 +3291,13 @@ function cmRenderCupons(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    const botaoCriar=c.shopeeShopId?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button>`:'';
-    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}<button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button>${botaoCriar}</div>`;
+    let botaoShopee='';
+    if(c.shopeeMktShopId){
+      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button>`;
+    }else if((c.marketplaces||[]).includes('shopee')){
+      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔗 Conectar Marketing</button>`;
+    }
+    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}<button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button>${botaoShopee}</div>`;
   }).join('');
 }
 function cmRenderDevolucao(){
