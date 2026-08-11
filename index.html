@@ -3152,7 +3152,7 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente);
     const hoje=new Date();
-    const trintaDiasAtras=new Date(hoje.getTime()-29*24*60*60*1000);
+    const trintaDiasAtras=new Date(hoje.getTime()-6*24*60*60*1000); // TESTE TEMPORÁRIO: 7 dias em vez de 30
     const primeiroDia=trintaDiasAtras.toISOString().split('T')[0];
     const ultimoDia=hoje.toISOString().split('T')[0];
     const resp=await fetch(`${SHOPEE_API}?acao=buscar_gmv&access_token=${accessToken}&shop_id=${cliente.shopeeShopId}&data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
