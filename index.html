@@ -3400,7 +3400,17 @@ function cmRenderDescontos(){
   if(!el)return;
   const lista=(clientesCache||[]);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.descontoFixoFim)}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}')">✏️ Editar</button></div>`).join('');
+  el.innerHTML=lista.map(c=>{
+    let selo='';
+    if(c.shopeeMktShopId&&c.descontoAutoUltimaRenovacao){
+      const dt=c.descontoAutoUltimaRenovacao?.seconds?new Date(c.descontoAutoUltimaRenovacao.seconds*1000):new Date(c.descontoAutoUltimaRenovacao);
+      const proximoVenc=c.descontoAutoProximoVencimento?new Date(c.descontoAutoProximoVencimento):null;
+      selo=`<span class="cadastro-doc-pill ok" title="Renovado automaticamente em ${dt.toLocaleDateString('pt-BR')}${proximoVenc?' — válido até '+proximoVenc.toLocaleDateString('pt-BR'):''}">🤖 Auto-renovação ativa</span>`;
+    }else if(c.shopeeMktShopId){
+      selo=`<span class="cadastro-doc-pill" title="Conectado ao app Marketing, aguardando o robô semanal verificar">🤖 Monitorando</span>`;
+    }
+    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.descontoFixoFim)}${selo}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}')">✏️ Editar</button></div>`;
+  }).join('');
 }
 function cmRenderCupons(){
   const el=document.getElementById('cmCuponsLista');
