@@ -3285,15 +3285,19 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
   if(!ofertaClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===ofertaClienteAtual);
   if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
+  if(!cliente.shopeeShopId){showToast('Esse cliente também precisa estar conectado ao app GMV (a busca de produtos usa essas credenciais). Conecte o GMV primeiro.');return;}
   const btn=document.getElementById('ofertaCriarBtn');
   btn.disabled=true;btn.textContent='Criando... (pode levar alguns segundos)';
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
+    const accessTokenGmv=await shopeeGarantirTokenValido(cliente,'gmv');
     const params=new URLSearchParams({
       acao:'criar_oferta_relampago',
       app:'mkt',
       access_token:accessToken,
       shop_id:cliente.shopeeMktShopId,
+      access_token_gmv:accessTokenGmv,
+      shop_id_gmv:cliente.shopeeShopId,
       percentual:document.getElementById('ofertaPercentual').value,
       qtd_por_produto:document.getElementById('ofertaQtd').value,
       limite_produtos:document.getElementById('ofertaLimite').value
