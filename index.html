@@ -3151,31 +3151,37 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
   if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente);
+    // Busca os últimos 30 dias em 4 pedaços de ~7-8 dias cada, um de cada vez, e soma tudo.
+    // Isso evita que lojas com muitos pedidos estourem o tempo máximo de uma chamada só.
     const hoje=new Date();
-    const trintaDiasAtras=new Date(hoje.getTime()-6*24*60*60*1000); // TESTE TEMPORÁRIO: 7 dias em vez de 30
-    const primeiroDia=trintaDiasAtras.toISOString().split('T')[0];
-    const ultimoDia=hoje.toISOString().split('T')[0];
-    const resp=await fetch(`${SHOPEE_API}?acao=buscar_gmv&access_token=${accessToken}&shop_id=${cliente.shopeeShopId}&data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
-    const data=await resp.json();
-    if(!data.ok)throw new Error(data.erro||'Erro ao buscar GMV.');
-    await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:data.gmv,gmvShopeeAtualizadoEm:serverTimestamp()});
-    const bruta=data.debug?.respostaListaBruta;
-    const brutos=bruta?.response?.order_list?.length ?? 0;
-    const totalBruto=bruta?.response?.total_count ?? brutos;
-    const erroShopee=bruta?.error || bruta?.message || '';
-    console.log('[Shopee GMV debug]',cliente.nome,data.debug);
-    if(data.totalPedidos===0){
+    const PEDACOS=4;
+    const DIAS_TOTAL=30;
+    const DIAS_POR_PEDACO=Math.ceil(DIAS_TOTAL/PEDACOS);
+    let gmvTotal=0,pedidosTotal=0,ultimoDebug=null,algumErro=null;
+    for(let i=0;i<PEDACOS;i++){
+      const fimPedaco=new Date(hoje.getTime()-i*DIAS_POR_PEDACO*24*60*60*1000);
+      const inicioPedaco=new Date(hoje.getTime()-Math.min((i+1)*DIAS_POR_PEDACO,DIAS_TOTAL)*24*60*60*1000+24*60*60*1000);
+      const primeiroDia=inicioPedaco.toISOString().split('T')[0];
+      const ultimoDia=fimPedaco.toISOString().split('T')[0];
+      const resp=await fetch(`${SHOPEE_API}?acao=buscar_gmv&access_token=${accessToken}&shop_id=${cliente.shopeeShopId}&data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
+      const data=await resp.json();
+      ultimoDebug=data.debug;
+      if(!data.ok){algumErro=data.erro||'Erro ao buscar um dos pedaços do período.';continue;}
+      gmvTotal+=Number(data.gmv)||0;
+      pedidosTotal+=Number(data.totalPedidos)||0;
+    }
+    await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:gmvTotal,gmvShopeeAtualizadoEm:serverTimestamp()});
+    console.log('[Shopee GMV debug]',cliente.nome,ultimoDebug);
+    if(pedidosTotal===0){
       let msg=`Diagnóstico Shopee — ${cliente.nome}:\n\n`;
-      if(erroShopee){
-        msg+=`⚠️ A Shopee retornou um ERRO ao listar pedidos:\n"${erroShopee}"\n\nProvavelmente o token de acesso dessa loja expirou ou é inválido. Talvez seja necessário reconectar essa loja (botão "Conectar Shopee" de novo).`;
-      }else if(Number(totalBruto)>0){
-        msg+=`Existem ${totalBruto} pedido(s) no período, mas todos parecem estar cancelados ou não pagos (por isso não entraram na soma do GMV).`;
+      if(algumErro){
+        msg+=`⚠️ Um ou mais pedaços da busca falharam:\n"${algumErro}"\n\nProvavelmente o token de acesso dessa loja expirou ou é inválido. Talvez seja necessário reconectar essa loja (botão "Conectar Shopee" de novo).`;
       }else{
-        msg+=`A Shopee não retornou NENHUM pedido nesse período — nem sem filtro de status.\n\nRequest ID: ${bruta?.request_id||'—'}\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`;
+        msg+=`A Shopee não retornou nenhum pedido válido nesse período.\n\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`;
       }
       alert(msg);
     }
-    showToast(`✓ ${cliente.nome}: ${fmtR(data.gmv)} (${data.totalPedidos} pedidos concluídos)`);
+    showToast(`✓ ${cliente.nome}: ${fmtR(gmvTotal)} (${pedidosTotal} pedidos concluídos)`);
     return true;
   }catch(e){console.error(e);showToast(`Erro em ${cliente.nome}: `+e.message);return false;}
 };
