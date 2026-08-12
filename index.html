@@ -1411,6 +1411,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gerarad"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Anúncio com IA</div><span class="cm-tool-tag trafego">Aumente o tráfego</span><div class="cm-tool-desc">A IA cria título, destaques e descrição prontos pra publicar.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="saude"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">💚</div><div class="cm-tool-body"><div class="cm-tool-titulo">Saúde da Loja</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Nota geral, pontos de penalidade e pedidos atrasados de cada loja Shopee.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="ads"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">📢</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee Ads — Saldo</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Saldo automático de anúncios pagos de cada loja Shopee conectada.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gmv"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee GMV API</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Faturamento automático de cada loja Shopee conectada.</div></div></div>
         </div>
 
@@ -1461,6 +1462,11 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">💚</div><h3>Saúde da Loja — Shopee</h3></div>
           <div class="sgmv-list" id="saudeLojaLista"></div>
+        </div>
+                <div class="cm-secao cm-painel" data-cmpainel="ads">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">📢</div><h3>Shopee Ads — Saldo</h3></div>
+          <div class="sgmv-list" id="adsSaldoLista"></div>
         </div>
         <div class="cm-secao cm-painel" data-cmpainel="gmv">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -2010,7 +2016,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();cmRenderTudo();saudeLojaRenderizar();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();cmRenderTudo();saudeLojaRenderizar();adsRenderizar();}
 function renderSummary(){let da=0,ca=0,st=0;clientesCache.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesCache.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -3080,12 +3086,9 @@ document.getElementById('conectarShopeeAdsBtn')?.addEventListener('click',()=>{
   if(!clienteId){showToast('Salve o cliente primeiro antes de conectar.');return;}
   window.__shopeeConectar(clienteId,clienteNome,'ads');
 });
-document.getElementById('atualizarSaldoAdsBtn')?.addEventListener('click',async()=>{
-  const clienteId=document.getElementById('clientId').value;
+window.__shopeeAtualizarSaldoAds=async(clienteId)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
-  if(!cliente||!cliente.shopeeAdsShopId){showToast('Cliente não conectado ao app Ads.');return;}
-  const btn=document.getElementById('atualizarSaldoAdsBtn');
-  btn.disabled=true;btn.textContent='Buscando...';
+  if(!cliente||!cliente.shopeeAdsShopId){showToast('Cliente não conectado ao app Ads.');return false;}
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente,'ads');
     const resp=await fetch(`${SHOPEE_API}?acao=saldo_ads&app=ads&access_token=${accessToken}&shop_id=${cliente.shopeeAdsShopId}`);
@@ -3093,9 +3096,47 @@ document.getElementById('atualizarSaldoAdsBtn')?.addEventListener('click',async(
     if(!data.ok)throw new Error(data.erro||'Erro ao buscar saldo.');
     await updateDoc(doc(db,"clientes",clienteId),{saldoAds:data.saldo,saldoAdsAtualizadoEm:serverTimestamp()});
     showToast(`✓ Saldo Ads de ${cliente.nome}: ${fmtR(data.saldo)}`);
-  }catch(e){showToast('Erro: '+e.message);console.error(e);}
+    return true;
+  }catch(e){showToast('Erro: '+e.message);console.error(e);return false;}
+};
+document.getElementById('atualizarSaldoAdsBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('clientId').value;
+  const btn=document.getElementById('atualizarSaldoAdsBtn');
+  btn.disabled=true;btn.textContent='Buscando...';
+  await window.__shopeeAtualizarSaldoAds(clienteId);
   btn.disabled=false;btn.textContent='🔄 Atualizar Saldo';
 });
+
+/* ================= CENTRAL DE MARKETING — lista consolidada de Saldo Ads ================= */
+function adsRenderizar(){
+  const el=document.getElementById('adsSaldoLista');
+  if(!el)return;
+  const clientesShopee=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee'));
+  if(!clientesShopee.length){
+    el.innerHTML='<div class="sgmv-empty-connected"><div class="ico">📢</div><h3 style="color:var(--gold);font-family:\'Oswald\',sans-serif;text-transform:uppercase;margin-bottom:8px">Nenhum cliente com Shopee ainda</h3><p>Marque "Shopee" nos marketplaces de um cliente pra ele aparecer aqui.</p></div>';
+    return;
+  }
+  const conectados=clientesShopee.filter(c=>c.shopeeAdsShopId);
+  const pendentes=clientesShopee.filter(c=>!c.shopeeAdsShopId);
+  const ordenados=[...conectados,...pendentes];
+  el.innerHTML=ordenados.map(c=>{
+    const conectado=!!c.shopeeAdsShopId;
+    const dt=c.saldoAdsAtualizadoEm?.seconds?new Date(c.saldoAdsAtualizadoEm.seconds*1000).toLocaleDateString('pt-BR'):(c.saldoAdsAtualizadoEm?new Date(c.saldoAdsAtualizadoEm).toLocaleDateString('pt-BR'):'nunca');
+    return `<div class="sgmv-card ${conectado?'conectado':'pendente'}">
+      <div class="sgmv-ico">S</div>
+      <div class="sgmv-info">
+        <div class="sgmv-nome">${esc(c.nome)}</div>
+        <div class="sgmv-sub">${conectado?`Loja ${c.shopeeAdsShopId} · Atualizado em ${dt}`:'Ainda não autorizou o app Ads'}</div>
+      </div>
+      ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.saldoAds||0)}</div><div class="lbl">Saldo Ads</div></div>`:''}
+      <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
+      ${conectado
+        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarSaldoAds('${c.id}')">🔄 Atualizar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}','ads')">🔗 Conectar</button>`
+      }
+    </div>`;
+  }).join('');
+}
 
 document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
