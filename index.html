@@ -1593,6 +1593,16 @@ textarea{resize:vertical;min-height:70px;}
           </div>
         </div>
       </div>
+      <div class="field hidden" id="shopeeAdsIntegracaoField">
+        <label>📢 Saldo Shopee Ads (Automático)</label>
+        <div style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;">
+          <div id="shopeeAdsStatusTexto" style="font-size:13px;color:var(--text-dim);margin-bottom:10px">Verificando...</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeAdsBtn">🔗 Conectar Ads</button>
+            <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarSaldoAdsBtn">🔄 Atualizar Saldo</button>
+          </div>
+        </div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="cancelClientModal">Cancelar</button>
         <button type="submit" class="btn btn-gold">Salvar</button>
@@ -2058,7 +2068,7 @@ document.getElementById('fRespShopee').value=resp.shopee||'';
 document.getElementById('fRespML').value=resp.ml||'';
 document.getElementById('fRespTiktok').value=resp.tiktok||'';
 document.getElementById('fRespShein').value=resp.shein||'';
-shopeeAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
+shopeeAtualizarStatusModal(c);shopeeAdsAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
 document.getElementById('cancelClientModal').addEventListener('click',()=>{clientModalOverlay.classList.add('hidden');window.__cadastroOrigemAtual=null;});
@@ -3049,6 +3059,44 @@ function shopeeAtualizarStatusModal(c){
   }
 }
 
+function shopeeAdsAtualizarStatusModal(c){
+  const wrap=document.getElementById('shopeeAdsIntegracaoField');
+  const txt=document.getElementById('shopeeAdsStatusTexto');
+  const btnAtualizar=document.getElementById('atualizarSaldoAdsBtn');
+  if(!c||!c.id){wrap.classList.add('hidden');return;}
+  wrap.classList.remove('hidden');
+  if(c.shopeeAdsShopId){
+    const dt=c.saldoAdsAtualizadoEm?new Date(c.saldoAdsAtualizadoEm.seconds?c.saldoAdsAtualizadoEm.seconds*1000:c.saldoAdsAtualizadoEm).toLocaleString('pt-BR'):'ainda não atualizado';
+    txt.innerHTML=`✅ Conectado — Loja <b style="color:var(--text)">${c.shopeeAdsShopId}</b><br>Saldo atual: <b style="color:var(--green)">${fmtR(c.saldoAds||0)}</b><br><span style="font-size:11px">Última atualização: ${dt}</span>`;
+    btnAtualizar.classList.remove('hidden');
+  }else{
+    txt.textContent='Não conectado ao app Ads. Clique em "Conectar Ads" pra buscar o saldo automaticamente.';
+    btnAtualizar.classList.add('hidden');
+  }
+}
+document.getElementById('conectarShopeeAdsBtn')?.addEventListener('click',()=>{
+  const clienteId=document.getElementById('clientId').value;
+  const clienteNome=document.getElementById('fNome').value.trim();
+  if(!clienteId){showToast('Salve o cliente primeiro antes de conectar.');return;}
+  window.__shopeeConectar(clienteId,clienteNome,'ads');
+});
+document.getElementById('atualizarSaldoAdsBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('clientId').value;
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.shopeeAdsShopId){showToast('Cliente não conectado ao app Ads.');return;}
+  const btn=document.getElementById('atualizarSaldoAdsBtn');
+  btn.disabled=true;btn.textContent='Buscando...';
+  try{
+    const accessToken=await shopeeGarantirTokenValido(cliente,'ads');
+    const resp=await fetch(`${SHOPEE_API}?acao=saldo_ads&app=ads&access_token=${accessToken}&shop_id=${cliente.shopeeAdsShopId}`);
+    const data=await resp.json();
+    if(!data.ok)throw new Error(data.erro||'Erro ao buscar saldo.');
+    await updateDoc(doc(db,"clientes",clienteId),{saldoAds:data.saldo,saldoAdsAtualizadoEm:serverTimestamp()});
+    showToast(`✓ Saldo Ads de ${cliente.nome}: ${fmtR(data.saldo)}`);
+  }catch(e){showToast('Erro: '+e.message);console.error(e);}
+  btn.disabled=false;btn.textContent='🔄 Atualizar Saldo';
+});
+
 document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
   const clienteNome=document.getElementById('fNome').value.trim();
@@ -3058,7 +3106,7 @@ document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
 
 // app: 'gmv' (padrão, mantém compatibilidade) ou 'mkt' (app de Marketing — cupom/oferta relâmpago)
 async function shopeeGarantirTokenValido(cliente, app='gmv'){
-  const pre = app==='mkt' ? 'shopeeMkt' : 'shopee';
+  const pre = app==='mkt' ? 'shopeeMkt' : app==='ads' ? 'shopeeAds' : 'shopee';
   const shopId = cliente[pre+'ShopId'];
   const accessToken = cliente[pre+'AccessToken'];
   const refreshToken = cliente[pre+'RefreshToken'];
