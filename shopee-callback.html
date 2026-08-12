@@ -54,8 +54,8 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
   const clienteId=localStorage.getItem('shopee_auth_cliente_id');
   const clienteNome=localStorage.getItem('shopee_auth_cliente_nome')||'o cliente';
   const app=localStorage.getItem('shopee_auth_app')||'gmv';
-  const pre=app==='mkt'?'shopeeMkt':'shopee';
-  const nomeApp=app==='mkt'?'Marketing':'GMV';
+  const pre=app==='mkt'?'shopeeMkt':app==='ads'?'shopeeAds':'shopee';
+  const nomeApp=app==='mkt'?'Marketing':app==='ads'?'Ads':'GMV';
 
   if(!code||!shopId){
     mostrar('⚠️','Algo deu errado','Não recebemos o código de autorização da Shopee. Tente conectar novamente pelo sistema.',true);
