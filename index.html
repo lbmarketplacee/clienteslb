@@ -801,6 +801,44 @@ textarea{resize:vertical;min-height:70px;}
 .btn-login-google{background:#fff;color:#1f1f1f;width:100%;padding:13px;border-radius:11px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--border);cursor:pointer;margin-bottom:8px;}
 .btn-login-google:hover{background:#f5f5f5;}
 
+/* ===== CRM DE LEADS (dentro de Comercial & Marketing) ===== */
+.brd-tab.crm.active{color:var(--purple);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset;}
+.crm-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:0 0 18px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.crm-views{display:flex;gap:6px;}
+.crm-view-btn{font-family:'Oswald';font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);padding:7px 12px;border-radius:6px;cursor:pointer;}
+.crm-view-btn.on{background:var(--purple);color:#fff;border-color:var(--purple);}
+.crm-filters{display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:flex-end;}
+.crm-filters input,.crm-filters select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Montserrat';font-size:12px;padding:7px 9px;outline:none;}
+.crm-filters input:focus,.crm-filters select:focus{border-color:var(--purple);}
+.btn-newlead{font-family:'Oswald';font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:var(--purple);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;}
+.lead-form{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;}
+.lead-form .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px;}
+.lead-form .field label{display:block;font-family:'Oswald';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;}
+.lead-form .field input,.lead-form .field select,.lead-form .field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:'Montserrat';font-size:14px;outline:none;}
+.lead-form .field textarea{min-height:60px;resize:vertical;}
+.lead-form .field input:focus,.lead-form .field select:focus,.lead-form .field textarea:focus{border-color:var(--purple);}
+.lead-form-actions{display:flex;justify-content:flex-end;gap:8px;}
+.btn-delete-lead{margin-right:auto;background:transparent;border:1px solid var(--red);color:var(--red);padding:9px 14px;border-radius:6px;cursor:pointer;font-family:'Oswald';font-size:11px;letter-spacing:1px;text-transform:uppercase;}
+.btn-cancel{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:9px 14px;border-radius:6px;cursor:pointer;font-family:'Oswald';font-size:11px;letter-spacing:1px;text-transform:uppercase;}
+.btn-save{background:var(--purple);color:#fff;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-family:'Oswald';font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;overflow-x:auto;}
+.kcol{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:10px;min-height:120px;min-width:150px;}
+.kcol.dragover{border-color:var(--purple);background:var(--purple-bg);}
+.kcol-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-family:'Oswald';font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+.kcol-head .count{background:var(--bg);border-radius:99px;padding:1px 7px;color:var(--text-dim);font-size:10px;}
+.kcard{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;cursor:grab;}
+.kcard:hover{border-color:var(--border-strong);}
+.kname{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.ktag{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;margin:0 4px 4px 0;background:var(--bg);color:var(--text-dim);border:1px solid var(--border);}
+.kmeta{font-family:'Oswald';font-size:13px;color:var(--green);margin-top:4px;}
+.crm-table{width:100%;border-collapse:collapse;font-size:13px;}
+.crm-table th{text-align:left;padding:10px;font-family:'Oswald';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);border-bottom:1px solid var(--border);}
+.crm-table td{padding:10px;border-bottom:1px solid var(--border-soft);cursor:pointer;}
+.crm-table tr:hover td{background:var(--bg-card2);}
+.stage-pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;}
+.empty-crm{text-align:center;padding:40px;color:var(--text-dim);}
+@media(max-width:900px){.kanban{grid-template-columns:1fr;}}
+
 </style>
 </head>
 <body>
@@ -1372,9 +1410,11 @@ textarea{resize:vertical;min-height:70px;}
   <div class="brd-tabs">
     <button class="brd-tab active" id="brd-tab-marketing" onclick="brdSwitchBoard('marketing')">Marketing</button>
     <button class="brd-tab" id="brd-tab-comercial" onclick="brdSwitchBoard('comercial')">Comercial</button>
+    <button class="brd-tab" id="brd-tab-crm" onclick="brdSwitchBoard('crm')">CRM de Leads</button>
   </div>
   <div id="brd-board-marketing" class="brd-board active"></div>
   <div id="brd-board-comercial" class="brd-board com"></div>
+  <div id="board-crm" class="brd-board crm"></div>
 </div>
 
       </div>
@@ -2269,7 +2309,7 @@ document.getElementById('iaGerarBtn')?.addEventListener('click',async()=>{
     const r=await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto,marketplace:iaMarketplace,imagem:iaImagemB64})});
     const d=await r.json();
     if(!r.ok||d.erro){res.innerHTML=`<div class="ia-empty" style="color:var(--red)">⚠ ${esc(d.erro||'Erro ao gerar. Tente de novo.')}</div>`;return;}
-    const mkNome=iaMarketplace==='shopee'?'Shopee':'Mercado Livre';
+    const mkNome=iaMarketplace==='shopee'?'Shopee':iaMarketplace==='tiktok'?'TikTok Shop':'Mercado Livre';
     const bullets=(d.bullets||[]).map(b=>esc(b)).join('\n');
     res.innerHTML=`
       <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📌 Título — ${mkNome}</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(d.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(d.titulo||'')}</div><div class="ia-char">${(d.titulo||'').length} caracteres</div></div>
@@ -3925,8 +3965,11 @@ window.brdSwitchBoard=function(key){
   document.getElementById('brd-tab-marketing').classList.toggle('active',key==='marketing');
   document.getElementById('brd-tab-comercial').classList.toggle('active',key==='comercial');
   document.getElementById('brd-tab-comercial').classList.toggle('com',key==='comercial');
+  document.getElementById('brd-tab-crm').classList.toggle('active',key==='crm');
   document.getElementById('brd-board-marketing').classList.toggle('active',key==='marketing');
   document.getElementById('brd-board-comercial').classList.toggle('active',key==='comercial');
+  document.getElementById('board-crm').classList.toggle('active',key==='crm');
+  if(key==='crm')crmIniciar();
 }
 
 let brdIniciado=false;
@@ -3937,6 +3980,245 @@ async function brdIniciar(){
   brdRenderBoard('marketing');
   brdRenderBoard('comercial');
 }
+/* ================= CRM DE LEADS (dentro de Comercial & Marketing, com Firestore) ================= */
+const CRM_STAGES = [
+  {key:'novo', label:'Novo Lead', color:'var(--gold)'},
+  {key:'contato', label:'Em Contato', color:'#9fb6ff'},
+  {key:'agendado', label:'Agendado', color:'#3fa8f5'},
+  {key:'compareceu', label:'Compareceu', color:'#4dd6c0'},
+  {key:'fechado', label:'Fechado', color:'var(--green)'},
+  {key:'perdido', label:'Perdido', color:'var(--red)'}
+];
+const CRM_ORIGENS = ['Instagram Ads','Facebook Ads','Google Ads','Indicação','Orgânico','WhatsApp','Typebot','Outro'];
+const CRM_TIPOS_SERVICO = [
+  {key:'marketplace', label:'Gestão de Marketplace', color:'#3fa8f5'},
+  {key:'mentoria', label:'Mentoria', color:'var(--gold)'},
+  {key:'outro', label:'Outro', color:'var(--text-dim)'}
+];
+const CRM_NICHOS = ['Confecção de Roupas','Armarinhos','Aviamentos','Peso de Balança','Urso de Pelúcia','Roupa Masculina','Calçados','Brinquedos','Maquiagem','Corretor de Postura','Utensílios Domésticos','Acessórios','Roupa Infantil','Outros'];
+
+function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
+function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) || CRM_TIPOS_SERVICO[2]; }
+
+let crmLeads = [];
+let crmView = 'kanban';
+let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all'};
+let leadFormOpen = false;
+let editingLeadId = null;
+let dragLeadId = null;
+let crmUnsub = null;
+
+function crmIniciar(){
+  if(crmUnsub)return;
+  crmUnsub = onSnapshot(collection(db,"crmLeads"), snap=>{
+    crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderCRM();
+  });
+}
+
+function crmFilteredLeads(){
+  return crmLeads.filter(l=>{
+    if(crmFilter.stage!=='all' && l.stage!==crmFilter.stage) return false;
+    if(crmFilter.origem!=='all' && l.origem!==crmFilter.origem) return false;
+    if(crmFilter.tipoServico!=='all' && l.tipoServico!==crmFilter.tipoServico) return false;
+    if(crmFilter.nicho!=='all' && l.nicho!==crmFilter.nicho) return false;
+    if(crmFilter.search){
+      const q = crmFilter.search.toLowerCase();
+      const hay = [l.nome,l.whatsapp,l.email,l.instagram].filter(Boolean).join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+window.__crmSetView=(v)=>{ crmView = v; renderCRM(); };
+window.__crmToggleForm=(open)=>{ leadFormOpen = open; if(!open) editingLeadId = null; renderCRM(); };
+window.__crmOpenEdit=(id)=>{ editingLeadId = id; leadFormOpen = true; renderCRM(); };
+window.__crmToggleNichoOutro=()=>{
+  const sel=document.getElementById('lead-nicho');
+  const wrap=document.getElementById('nicho-outro-wrap');
+  if(wrap) wrap.style.display = sel.value === 'Outros' ? 'block' : 'none';
+};
+
+window.__crmSubmitForm=async()=>{
+  const nome=document.getElementById('lead-nome').value.trim();
+  if(!nome){document.getElementById('lead-nome').focus();return;}
+  const whatsapp=document.getElementById('lead-whatsapp').value.trim();
+  const email=document.getElementById('lead-email').value.trim();
+  const instagram=document.getElementById('lead-instagram').value.trim();
+  const nicho=document.getElementById('lead-nicho').value;
+  const nichoOutro=nicho==='Outros'?document.getElementById('lead-nicho-outro').value.trim():'';
+  const tipoServico=document.getElementById('lead-tiposervico').value;
+  const origem=document.getElementById('lead-origem').value;
+  const valor=BRD_PARSE_EDIT(document.getElementById('lead-valor').value);
+  const notas=document.getElementById('lead-notas').value.trim();
+  try{
+    if(editingLeadId){
+      await updateDoc(doc(db,"crmLeads",editingLeadId),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas});
+    }else{
+      await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
+    }
+    leadFormOpen=false;editingLeadId=null;
+    showToast('✓ Lead salvo.');
+  }catch(e){showToast('Erro ao salvar lead.');console.error(e);}
+};
+
+window.__crmDeleteLead=async(id)=>{
+  if(!confirm('Excluir esse lead?'))return;
+  try{await deleteDoc(doc(db,"crmLeads",id));leadFormOpen=false;editingLeadId=null;}catch(e){showToast('Erro ao excluir.');}
+};
+
+window.__crmMoveStage=async(id,stage)=>{
+  const lead=crmLeads.find(l=>l.id===id);
+  if(!lead)return;
+  try{
+    await updateDoc(doc(db,"crmLeads",id),{stage});
+    // Quando fecha um lead, cria automaticamente a proposta de contrato
+    if(stage==='fechado' && lead.stage!=='fechado'){
+      const hoje=new Date();
+      const mesAtual=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+      const nichoLabel=lead.nicho==='Outros'&&lead.nichoOutro?lead.nichoOutro:lead.nicho;
+      const obsAuto=`Lead fechado automaticamente pelo CRM.\\nContato: ${lead.whatsapp||lead.email||'—'}\\nNicho: ${nichoLabel||'—'}\\nServiço: ${lead.tipoServico?crmTipoServicoInfo(lead.tipoServico).label:'—'}\\nOrigem: ${lead.origem||'—'}${lead.valor?`\\nValor estimado: ${fmtR(lead.valor)}`:''}${lead.notas?`\\nNotas: ${lead.notas}`:''}`;
+      await addDoc(collection(db,"contratos"),{nomeCliente:lead.nome,indicadoPor:currentUser,mes:mesAtual,obs:obsAuto,status:'pendente',timestamp:serverTimestamp()});
+      showToast(`✓ ${lead.nome} fechado! Proposta de contrato criada automaticamente.`);
+    }
+  }catch(e){showToast('Erro ao mover lead.');console.error(e);}
+};
+
+window.__crmDragStart=(id)=>{ dragLeadId=id; };
+window.__crmDropStage=(stage,ev)=>{
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('dragover');
+  if(dragLeadId) window.__crmMoveStage(dragLeadId,stage);
+  dragLeadId=null;
+};
+
+function crmLeadFormHtml(){
+  const lead = editingLeadId ? crmLeads.find(l=>l.id===editingLeadId) : null;
+  const showOutro = lead && lead.nicho === 'Outros';
+  return `
+  <div class="lead-form">
+    <div class="form-grid">
+      <div class="field"><label>Nome</label><input type="text" id="lead-nome" value="${lead?esc(lead.nome):''}" placeholder="Nome do lead"></div>
+      <div class="field"><label>WhatsApp</label><input type="text" id="lead-whatsapp" value="${lead?esc(lead.whatsapp||''):''}" placeholder="(11) 90000-0000"></div>
+      <div class="field"><label>E-mail</label><input type="text" id="lead-email" value="${lead?esc(lead.email||''):''}" placeholder="email@exemplo.com"></div>
+      <div class="field"><label>Instagram</label><input type="text" id="lead-instagram" value="${lead?esc(lead.instagram||''):''}" placeholder="@perfil"></div>
+      <div class="field"><label>Nicho do Cliente</label>
+        <select id="lead-nicho" onchange="window.__crmToggleNichoOutro()">
+          <option value="">Selecione</option>
+          ${CRM_NICHOS.map(n=>`<option value="${n}" ${lead&&lead.nicho===n?'selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" id="nicho-outro-wrap" style="display:${showOutro?'block':'none'}">
+        <label>Especifique o nicho</label>
+        <input type="text" id="lead-nicho-outro" value="${lead?esc(lead.nichoOutro||''):''}" placeholder="Qual nicho?">
+      </div>
+      <div class="field"><label>Tipo de Serviço</label>
+        <select id="lead-tiposervico">
+          <option value="">Selecione</option>
+          ${CRM_TIPOS_SERVICO.map(s=>`<option value="${s.key}" ${lead&&lead.tipoServico===s.key?'selected':''}>${s.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Origem</label>
+        <select id="lead-origem">${CRM_ORIGENS.map(o=>`<option value="${o}" ${lead&&lead.origem===o?'selected':''}>${o}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>Valor Estimado</label><input type="text" id="lead-valor" value="${lead?fmtR(lead.valor).replace('R$ ',''):''}" placeholder="0"></div>
+    </div>
+    <div class="field" style="margin-bottom:12px;"><label>Notas</label><textarea id="lead-notas" placeholder="Observações...">${lead?esc(lead.notas||''):''}</textarea></div>
+    <div class="lead-form-actions">
+      ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
+      <button class="btn-cancel" onclick="window.__crmToggleForm(false)">Cancelar</button>
+      <button class="btn-save" onclick="window.__crmSubmitForm()">${lead?'Salvar alterações':'Adicionar lead'}</button>
+    </div>
+  </div>`;
+}
+
+function crmKanbanHtml(){
+  const leads = crmFilteredLeads();
+  return `<div class="kanban">
+    ${CRM_STAGES.map(s=>{
+      const inStage = leads.filter(l=>l.stage===s.key);
+      return `<div class="kcol" ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
+        ondragleave="event.currentTarget.classList.remove('dragover')" ondrop="window.__crmDropStage('${s.key}', event)">
+        <div class="kcol-head"><span class="name" style="color:${s.color}">${s.label}</span><span class="count">${inStage.length}</span></div>
+        ${inStage.map(l=>{
+          const tipo = l.tipoServico ? crmTipoServicoInfo(l.tipoServico) : null;
+          const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
+          return `
+          <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
+            <div class="kname">${esc(l.nome)}</div>
+            <div>
+              ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
+              ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
+            </div>
+            ${l.valor?`<div class="kmeta">${fmtR(l.valor)}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function crmListHtml(){
+  const leads = crmFilteredLeads();
+  if(!leads.length) return '<div class="empty-crm">Nenhum lead encontrado.</div>';
+  return `<table class="crm-table">
+    <thead><tr><th>Nome</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Valor</th><th>Criado em</th></tr></thead>
+    <tbody>
+      ${[...leads].sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||'')).map(l=>{
+        const s = crmStageInfo(l.stage);
+        const tipo = l.tipoServico ? crmTipoServicoInfo(l.tipoServico) : null;
+        const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
+        const partes = (l.createdDate||'').split('-');
+        return `<tr onclick="window.__crmOpenEdit('${l.id}')">
+          <td>${esc(l.nome)}</td>
+          <td>${esc(l.whatsapp||'—')}</td>
+          <td>${esc(nichoLabel||'—')}</td>
+          <td>${tipo?`<span class="stage-pill" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:'—'}</td>
+          <td><span class="stage-pill" style="color:${s.color};background:${s.color}22">${s.label}</span></td>
+          <td>${l.valor?fmtR(l.valor):'—'}</td>
+          <td>${partes.length===3?partes[2]+'/'+partes[1]:'—'}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderCRM(){
+  const container = document.getElementById('board-crm');
+  if(!container)return;
+  container.innerHTML = `
+  <div class="crm-toolbar">
+    <div class="crm-views">
+      <button class="crm-view-btn ${crmView==='kanban'?'on':''}" onclick="window.__crmSetView('kanban')">Kanban</button>
+      <button class="crm-view-btn ${crmView==='lista'?'on':''}" onclick="window.__crmSetView('lista')">Lista</button>
+    </div>
+    <div class="crm-filters">
+      <input type="text" placeholder="Buscar nome ou contato" value="${esc(crmFilter.search)}" oninput="crmFilter.search=this.value;renderCRM()">
+      <select onchange="crmFilter.stage=this.value;renderCRM()">
+        <option value="all">Todas as etapas</option>
+        ${CRM_STAGES.map(s=>`<option value="${s.key}" ${crmFilter.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
+      </select>
+      <select onchange="crmFilter.origem=this.value;renderCRM()">
+        <option value="all">Todas as origens</option>
+        ${CRM_ORIGENS.map(o=>`<option value="${o}" ${crmFilter.origem===o?'selected':''}>${o}</option>`).join('')}
+      </select>
+      <select onchange="crmFilter.tipoServico=this.value;renderCRM()">
+        <option value="all">Todos os tipos de serviço</option>
+        ${CRM_TIPOS_SERVICO.map(s=>`<option value="${s.key}" ${crmFilter.tipoServico===s.key?'selected':''}>${s.label}</option>`).join('')}
+      </select>
+      <select onchange="crmFilter.nicho=this.value;renderCRM()">
+        <option value="all">Todos os nichos</option>
+        ${CRM_NICHOS.map(n=>`<option value="${n}" ${crmFilter.nicho===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn-newlead" onclick="window.__crmToggleForm(true)">+ Novo Lead</button>
+  </div>
+  ${leadFormOpen ? crmLeadFormHtml() : ''}
+  ${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}
+  `;
+}
+
 
 /* ============ CALCULADORA INTERNA LB — gross-up padrão LB Precifica ============ */
 const ML_FRETE=[
