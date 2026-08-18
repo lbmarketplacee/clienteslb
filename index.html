@@ -839,6 +839,9 @@ textarea{resize:vertical;min-height:70px;}
 .empty-crm{text-align:center;padding:40px;color:var(--text-dim);}
 @media(max-width:900px){.kanban{grid-template-columns:1fr;}}
 
+.wa-btn{display:inline-block;margin-left:6px;text-decoration:none;font-size:13px;}
+.wa-btn:hover{filter:brightness(1.3);}
+
 </style>
 </head>
 <body>
@@ -2181,7 +2184,22 @@ document.getElementById('saveGmvBtn').addEventListener('click',async()=>{const c
 /* DESEMPENHO */
 function renderPerformanceTab(){const byMes={};gmvCache.forEach(g=>{if(!byMes[g.mes])byMes[g.mes]={gmv:0,ads:0,clients:new Set()};byMes[g.mes].gmv+=Number(g.gmv)||0;byMes[g.mes].ads+=Number(g.gastoAds)||0;byMes[g.mes].clients.add(g.clienteId);});const meses=Object.keys(byMes).sort();const gt=Object.values(byMes).reduce((a,m)=>a+m.gmv,0);const at=Object.values(byMes).reduce((a,m)=>a+m.ads,0);animateTo(document.getElementById('perfGmvTotal'),gt,v=>fmtR(v));animateTo(document.getElementById('perfAdsTotal'),at,v=>fmtR(v));animateTo(document.getElementById('perfMeses'),meses.length,v=>Math.round(v));const el=document.getElementById('gmvChart');if(!el)return;const ctx=el.getContext('2d');if(gmvChart)gmvChart.destroy();gmvChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(fmtMes),datasets:[{label:'GMV',data:meses.map(m=>byMes[m].gmv),backgroundColor:'rgba(92,184,138,0.7)',borderColor:'#5cb88a',borderWidth:1.5,borderRadius:6},{label:'Gasto Ads',data:meses.map(m=>byMes[m].ads),backgroundColor:'rgba(224,163,82,0.65)',borderColor:'#e0a352',borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#a8a39a',font:{family:'Montserrat',size:12}}}},scales:{x:{ticks:{color:'#a8a39a'},grid:{color:'#2a261c'}},y:{ticks:{color:'#a8a39a',callback:v=>fmtR(v)},grid:{color:'#2a261c'}}}}});const tbody=document.getElementById('perfTableBody');if(!meses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">Nenhum dado registrado ainda.</td></tr>';return;}tbody.innerHTML=meses.slice().reverse().map((m,i,arr)=>{const d=byMes[m];const roi=d.ads>0?(d.gmv/d.ads).toFixed(1)+'x':'—';const prev=arr[i+1]?byMes[arr[i+1]]:null;let var_='—';if(prev&&prev.gmv>0){const p=((d.gmv-prev.gmv)/prev.gmv*100).toFixed(1);var_=`<span class="${p>=0?'trend-up':'trend-down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span>`;}return`<tr><td><b>${fmtMes(m)}</b></td><td style="color:var(--green);font-weight:600">${fmtR(d.gmv)}</td><td style="color:var(--amber)">${fmtR(d.ads)}</td><td>${roi}</td><td>${d.clients.size}</td><td>${var_}</td></tr>`;}).join('');}
 /* CONTRATOS */
-function renderContratosTab(){notifRecalcular();const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccPaloma',aprovMes.filter(c=>c.indicadoPor==='Paloma').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${esc(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${esc(c.nomeCliente)}')">✗ Reprovar</button>`:'';return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} · ${fmtMes(c.mes)} · ${dt}${c.obs?` · ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
+function renderContratosTab(){notifRecalcular();const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccPaloma',aprovMes.filter(c=>c.indicadoPor==='Paloma').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${esc(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${esc(c.nomeCliente)}')">✗ Reprovar</button>`:(c.status==='aprovado'?`<button class="icon-btn" onclick="window.__copiarDadosContrato('${c.id}')" title="Copiar dados pra gerar o contrato">📋 Copiar dados</button>`:'');return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} · ${fmtMes(c.mes)} · ${dt}${c.obs?` · ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
+window.__copiarDadosContrato=(id)=>{
+  const c=contratosCache.find(x=>x.id===id);
+  if(!c){showToast('Contrato não encontrado.');return;}
+  const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'—';
+  const aprovDt=c.aprovadoEm?new Date(c.aprovadoEm.seconds*1000).toLocaleDateString('pt-BR'):'—';
+  const texto=`Nome do Cliente: ${c.nomeCliente}
+Indicado por: ${c.indicadoPor}
+Mês de entrada: ${fmtMes(c.mes)}
+Data da proposta: ${dt}
+Aprovado por: ${c.aprovadoPor||'—'}
+Aprovado em: ${aprovDt}
+Observações: ${c.obs||'—'}`;
+  window.__copy(texto);
+  showToast('✓ Dados copiados! Já pode colar no contrato.');
+};
 window.__aprov=async(id,nm)=>{if(!isLincoln()){showToast('Apenas Lincoln pode aprovar.');return;}try{await updateDoc(doc(db,"contratos",id),{status:'aprovado',aprovadoPor:currentUser,aprovadoEm:serverTimestamp()});showToast(`✅ Contrato de "${nm}" aprovado!`);}catch{showToast('Erro.');}};
 window.__reprov=async(id,nm)=>{if(!isLincoln()){showToast('Apenas Lincoln pode reprovar.');return;}try{await updateDoc(doc(db,"contratos",id),{status:'reprovado',reprovadoPor:currentUser,reprovadoEm:serverTimestamp()});showToast(`❌ Contrato de "${nm}" reprovado.`);}catch{showToast('Erro.');}};
 const contratoModalOverlay=document.getElementById('contratoModalOverlay');
@@ -3997,6 +4015,12 @@ const CRM_TIPOS_SERVICO = [
 ];
 const CRM_NICHOS = ['Confecção de Roupas','Armarinhos','Aviamentos','Peso de Balança','Urso de Pelúcia','Roupa Masculina','Calçados','Brinquedos','Maquiagem','Corretor de Postura','Utensílios Domésticos','Acessórios','Roupa Infantil','Outros'];
 
+function crmWhatsLink(numero){
+  const limpo=(numero||'').replace(/\D/g,'');
+  if(!limpo)return '';
+  const comDDI=limpo.length<=11?'55'+limpo:limpo;
+  return `https://wa.me/${comDDI}`;
+}
 function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
 function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) || CRM_TIPOS_SERVICO[2]; }
 
@@ -4055,8 +4079,10 @@ window.__crmSubmitForm=async()=>{
   try{
     if(editingLeadId){
       await updateDoc(doc(db,"crmLeads",editingLeadId),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas});
+      await log(editingLeadId,nome,'edição de lead',`Dados do lead atualizados por ${currentUser}.`);
     }else{
-      await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
+      const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
+      await log(ref.id,nome,'lead criado',`Lead criado por ${currentUser}, origem: ${origem||'—'}.`);
     }
     leadFormOpen=false;editingLeadId=null;
     showToast('✓ Lead salvo.');
@@ -4065,14 +4091,22 @@ window.__crmSubmitForm=async()=>{
 
 window.__crmDeleteLead=async(id)=>{
   if(!confirm('Excluir esse lead?'))return;
-  try{await deleteDoc(doc(db,"crmLeads",id));leadFormOpen=false;editingLeadId=null;}catch(e){showToast('Erro ao excluir.');}
+  const lead=crmLeads.find(l=>l.id===id);
+  try{
+    await log(id,lead?lead.nome:'—','exclusão de lead',`Lead excluído por ${currentUser}.`);
+    await deleteDoc(doc(db,"crmLeads",id));
+    leadFormOpen=false;editingLeadId=null;
+  }catch(e){showToast('Erro ao excluir.');}
 };
 
 window.__crmMoveStage=async(id,stage)=>{
   const lead=crmLeads.find(l=>l.id===id);
   if(!lead)return;
   try{
+    const stageAntiga=crmStageInfo(lead.stage).label;
+    const stageNova=crmStageInfo(stage).label;
     await updateDoc(doc(db,"crmLeads",id),{stage});
+    await log(id,lead.nome,'mudança de etapa',`${currentUser} moveu de "${stageAntiga}" para "${stageNova}".`);
     // Quando fecha um lead, cria automaticamente a proposta de contrato
     if(stage==='fechado' && lead.stage!=='fechado'){
       const hoje=new Date();
@@ -4100,7 +4134,7 @@ function crmLeadFormHtml(){
   <div class="lead-form">
     <div class="form-grid">
       <div class="field"><label>Nome</label><input type="text" id="lead-nome" value="${lead?esc(lead.nome):''}" placeholder="Nome do lead"></div>
-      <div class="field"><label>WhatsApp</label><input type="text" id="lead-whatsapp" value="${lead?esc(lead.whatsapp||''):''}" placeholder="(11) 90000-0000"></div>
+      <div class="field"><label>WhatsApp</label><input type="text" id="lead-whatsapp" value="${lead?esc(lead.whatsapp||''):''}" placeholder="(11) 90000-0000">${lead&&lead.whatsapp?`<a href="${crmWhatsLink(lead.whatsapp)}" target="_blank" style="font-size:11px;color:var(--green)">💬 Abrir conversa no WhatsApp</a>`:''}</div>
       <div class="field"><label>E-mail</label><input type="text" id="lead-email" value="${lead?esc(lead.email||''):''}" placeholder="email@exemplo.com"></div>
       <div class="field"><label>Instagram</label><input type="text" id="lead-instagram" value="${lead?esc(lead.instagram||''):''}" placeholder="@perfil"></div>
       <div class="field"><label>Nicho do Cliente</label>
@@ -4127,6 +4161,7 @@ function crmLeadFormHtml(){
     <div class="field" style="margin-bottom:12px;"><label>Notas</label><textarea id="lead-notas" placeholder="Observações...">${lead?esc(lead.notas||''):''}</textarea></div>
     <div class="lead-form-actions">
       ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
+      ${lead?`<button class="btn-cancel" onclick="window.__hist('${lead.id}','${esc(lead.nome).replace(/'/g,"\\'")}')" style="margin-right:auto">🕒 Ver histórico</button>`:''}
       <button class="btn-cancel" onclick="window.__crmToggleForm(false)">Cancelar</button>
       <button class="btn-save" onclick="window.__crmSubmitForm()">${lead?'Salvar alterações':'Adicionar lead'}</button>
     </div>
@@ -4146,7 +4181,7 @@ function crmKanbanHtml(){
           const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
           return `
           <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
-            <div class="kname">${esc(l.nome)}</div>
+            <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
             <div>
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
               ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
@@ -4171,8 +4206,8 @@ function crmListHtml(){
         const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
         const partes = (l.createdDate||'').split('-');
         return `<tr onclick="window.__crmOpenEdit('${l.id}')">
-          <td>${esc(l.nome)}</td>
-          <td>${esc(l.whatsapp||'—')}</td>
+          <td>${esc(l.nome)}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></td>
+          <td>${esc(l.whatsapp||'—')}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}</td>
           <td>${esc(nichoLabel||'—')}</td>
           <td>${tipo?`<span class="stage-pill" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:'—'}</td>
           <td><span class="stage-pill" style="color:${s.color};background:${s.color}22">${s.label}</span></td>
