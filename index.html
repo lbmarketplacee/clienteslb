@@ -1524,6 +1524,7 @@ textarea{resize:vertical;min-height:70px;}
                     <div class="cm-tool-card" data-cmtab="saude"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">💚</div><div class="cm-tool-body"><div class="cm-tool-titulo">Saúde da Loja</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Nota geral, pontos de penalidade e pedidos atrasados de cada loja Shopee.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="ads"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">📢</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee Ads — Saldo</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Saldo automático de anúncios pagos de cada loja Shopee conectada.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Diretor Criativo</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Funil de fotos comerciais gerado por IA — envie 1 foto real, receba até 8 imagens de anúncio.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gmv"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee GMV API</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Faturamento automático de cada loja Shopee conectada.</div></div></div>
         </div>
 
@@ -1590,6 +1591,26 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <button class="btn btn-gold btn-sm" id="relGerarBtn" style="margin-bottom:20px">📊 Gerar Relatório</button>
           <div id="relResultado"></div>
+        </div>
+                <div class="cm-secao cm-painel" data-cmpainel="diretor">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><h3>Diretor Criativo — Funil de Fotos</h3></div>
+          <div class="ia-mk-sel" style="margin-bottom:16px">
+            <button class="ia-mk-btn active" data-dirmk="shopee">Shopee</button>
+            <button class="ia-mk-btn" data-dirmk="ml">Mercado Livre</button>
+            <button class="ia-mk-btn" data-dirmk="tiktok">TikTok Shop</button>
+          </div>
+          <div class="field"><label>Fotos reais do produto (obrigatório pelo menos 1 — até 5, inclua as variações de cor se tiver)</label>
+            <div class="dz" id="dirDropZone" style="padding:20px">
+              <input type="file" id="dirFotoInput" accept="image/*" multiple style="display:none">
+              <div id="dirDropText">📷 Clique ou arraste até 5 fotos aqui (inclua as cores diferentes)</div>
+              <div id="dirFotosPreviewWrap" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
+            </div>
+          </div>
+          <div class="field"><label>Descrição do produto</label><textarea id="dirDescricao" placeholder="Descreva o produto com o máximo de detalhes reais possível..." style="min-height:80px"></textarea></div>
+          <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="8" min="1" max="8"></div>
+          <button class="btn btn-gold" id="dirGerarBtn">🎨 Gerar Funil de Fotos</button>
+          <div id="dirResultado" style="margin-top:24px"></div>
         </div>
         <div class="cm-secao cm-painel" data-cmpainel="gmv">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -4156,6 +4177,87 @@ function crmWhatsLink(numero){
   const comDDI=limpo.length<=11?'55'+limpo:limpo;
   return `https://wa.me/${comDDI}`;
 }
+/* ================= DIRETOR CRIATIVO — Funil de Fotos ================= */
+const DIRETOR_API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
+let dirMarketplace = 'shopee';
+let dirImagensB64 = []; // até 5 fotos
+
+document.querySelectorAll('[data-dirmk]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-dirmk]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  dirMarketplace = b.dataset.dirmk;
+}));
+
+function dirRenderPreviews(){
+  const wrap = document.getElementById('dirFotosPreviewWrap');
+  wrap.innerHTML = dirImagensB64.map((b64,i)=>`
+    <div style="position:relative">
+      <img src="${b64}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <span onclick="event.stopPropagation();window.__dirRemoverFoto(${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span>
+    </div>`).join('');
+  document.getElementById('dirDropText').textContent = dirImagensB64.length
+    ? `✓ ${dirImagensB64.length} foto(s) carregada(s) — clique pra adicionar mais`
+    : '📷 Clique ou arraste até 5 fotos aqui (inclua as cores diferentes)';
+}
+window.__dirRemoverFoto=(i)=>{ dirImagensB64.splice(i,1); dirRenderPreviews(); };
+
+function dirCarregarFotos(files){
+  const lista = Array.from(files||[]).filter(f=>f.type.startsWith('image/'));
+  const espacoRestante = 5 - dirImagensB64.length;
+  if(espacoRestante<=0){showToast('Máximo de 5 fotos.');return;}
+  lista.slice(0,espacoRestante).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{ dirImagensB64.push(e.target.result); dirRenderPreviews(); };
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById('dirDropZone')?.addEventListener('click', ()=>document.getElementById('dirFotoInput').click());
+document.getElementById('dirFotoInput')?.addEventListener('change', (e)=>dirCarregarFotos(e.target.files));
+document.getElementById('dirDropZone')?.addEventListener('dragover', (e)=>e.preventDefault());
+document.getElementById('dirDropZone')?.addEventListener('drop', (e)=>{e.preventDefault();dirCarregarFotos(e.dataTransfer.files);});
+
+document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
+  const produto = document.getElementById('dirDescricao').value.trim();
+  const qtd = document.getElementById('dirQtdFotos').value;
+  const resEl = document.getElementById('dirResultado');
+  if(!dirImagensB64.length){showToast('Envie pelo menos 1 foto real do produto.');return;}
+  if(!produto){showToast('Descreva o produto.');return;}
+  const btn = document.getElementById('dirGerarBtn');
+  btn.disabled = true; btn.textContent = '🎨 Gerando... (pode levar 1-2 minutos)';
+  resEl.innerHTML = '<div class="empty-state" style="padding:20px">Analisando o produto e gerando as fotos, aguarde...</div>';
+  try{
+    const resp = await fetch(DIRETOR_API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ produto, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })
+    });
+    const data = await resp.json();
+    if(!data.ok){
+      resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;
+      btn.disabled = false; btn.textContent = '🎨 Gerar Funil de Fotos';
+      return;
+    }
+    const fotosHtml = data.fotos.map((f,i)=>{
+      if(f.erro || !f.imagem) return `<div class="ia-block" style="padding:12px"><div class="ia-block-label">${i+1}. ${esc(f.tipo)}</div><div style="color:var(--red);font-size:12px">Erro ao gerar: ${esc(f.erro||'—')}</div></div>`;
+      return `<div class="ia-block" style="padding:12px">
+        <div class="ia-block-label" style="margin-bottom:8px">${i+1}. ${esc(f.tipo)}</div>
+        <img src="${f.imagem}" style="width:100%;border-radius:8px;margin-bottom:8px">
+        <a href="${f.imagem}" download="foto-${i+1}-${dirMarketplace}.png" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
+      </div>`;
+    }).join('');
+    resEl.innerHTML = `
+      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📌 Título</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.titulo||'')}</div></div>
+      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📝 Descrição</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.descricao||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.descricao||'')}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px">${fotosHtml}</div>
+    `;
+    showToast('✓ Funil de fotos gerado!');
+  }catch(e){
+    resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro de conexão: ${esc(e.message)}</div>`;
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = '🎨 Gerar Funil de Fotos';
+});
+
 function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
 function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) || CRM_TIPOS_SERVICO[2]; }
 
