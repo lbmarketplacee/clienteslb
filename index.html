@@ -4201,15 +4201,38 @@ function dirRenderPreviews(){
 }
 window.__dirRemoverFoto=(i)=>{ dirImagensB64.splice(i,1); dirRenderPreviews(); };
 
-function dirCarregarFotos(files){
+function dirComprimirImagem(file){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      img.onload = ()=>{
+        const MAX_LADO = 1280; // reduz fotos grandes de celular sem perder qualidade útil pra IA
+        let w = img.width, h = img.height;
+        if(w>MAX_LADO || h>MAX_LADO){
+          if(w>h){ h=Math.round(h*MAX_LADO/w); w=MAX_LADO; }
+          else{ w=Math.round(w*MAX_LADO/h); h=MAX_LADO; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', 0.82)); // comprime mantendo boa qualidade
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function dirCarregarFotos(files){
   const lista = Array.from(files||[]).filter(f=>f.type.startsWith('image/'));
   const espacoRestante = 5 - dirImagensB64.length;
   if(espacoRestante<=0){showToast('Máximo de 5 fotos.');return;}
-  lista.slice(0,espacoRestante).forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = (e)=>{ dirImagensB64.push(e.target.result); dirRenderPreviews(); };
-    reader.readAsDataURL(file);
-  });
+  for(const file of lista.slice(0,espacoRestante)){
+    const comprimida = await dirComprimirImagem(file);
+    dirImagensB64.push(comprimida);
+    dirRenderPreviews();
+  }
 }
 document.getElementById('dirDropZone')?.addEventListener('click', ()=>document.getElementById('dirFotoInput').click());
 document.getElementById('dirFotoInput')?.addEventListener('change', (e)=>dirCarregarFotos(e.target.files));
