@@ -2060,6 +2060,19 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="descontoMultiModalOverlay">
+  <div class="modal" style="max-width:440px">
+    <h2 id="descontoMultiTitulo">Descontos</h2>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px">Uma data de encerramento pra cada marketplace desse cliente.</p>
+    <div id="descontoMultiCampos"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="descontoMultiCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="descontoMultiSalvarBtn">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal-overlay hidden" id="cupomModalOverlay">
   <div class="modal" style="max-width:420px">
     <h2 id="cupomModalTitulo">Criar Cupom</h2>
@@ -3827,17 +3840,19 @@ function cmRenderDescontos(){
   el.innerHTML=lista.map(c=>{
     const mpsDoCliente=DESCONTO_MPS.filter(m=>(c.marketplaces||[]).includes(m.key));
     if(!mpsDoCliente.length)return '';
-    return mpsDoCliente.map(m=>{
-      let selo='';
-      if(m.key==='shopee'&&c.shopeeMktShopId&&c.descontoAutoUltimaRenovacao){
-        const dt=c.descontoAutoUltimaRenovacao?.seconds?new Date(c.descontoAutoUltimaRenovacao.seconds*1000):new Date(c.descontoAutoUltimaRenovacao);
-        const proximoVenc=c.descontoAutoProximoVencimento?new Date(c.descontoAutoProximoVencimento):null;
-        selo=`<span class="cadastro-doc-pill ok" title="Renovado automaticamente em ${dt.toLocaleDateString('pt-BR')}${proximoVenc?' — válido até '+proximoVenc.toLocaleDateString('pt-BR'):''}">🤖 Auto-renovação ativa</span>`;
-      }else if(m.key==='shopee'&&c.shopeeMktShopId){
-        selo=`<span class="cadastro-doc-pill" title="Conectado ao app Marketing, aguardando o robô semanal verificar">🤖 Monitorando</span>`;
-      }
-      return `<div class="cm-item"><span class="nome">${esc(c.nome)} <span style="color:var(--text-dim);font-size:11px">— ${m.label}</span></span>${statusBadge(c[m.campo])}${selo}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}','${m.campo}','${m.label}')">✏️ Editar</button></div>`;
-    }).join('');
+    // Mostra o status do marketplace com o vencimento mais urgente (menos dias restantes)
+    let maisUrgente=null,menorDias=Infinity;
+    mpsDoCliente.forEach(m=>{
+      const d=diffDias(c[m.campo]);
+      if(d!==null&&d<menorDias){menorDias=d;maisUrgente=m;}
+    });
+    const dataParaBadge=maisUrgente?c[maisUrgente.campo]:null;
+    const tagsMp=mpsDoCliente.map(m=>`<span class="cadastro-doc-pill" style="font-size:10px">${m.label}${c[m.campo]?'':' (sem data)'}</span>`).join('');
+    let seloAuto='';
+    if(mpsDoCliente.some(m=>m.key==='shopee')&&c.shopeeMktShopId&&c.descontoAutoUltimaRenovacao){
+      seloAuto=`<span class="cadastro-doc-pill ok" title="Shopee renovando automaticamente">🤖 Shopee auto</span>`;
+    }
+    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(dataParaBadge)}${tagsMp}${seloAuto}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}')">✏️ Editar</button></div>`;
   }).join('');
 }
 function cmRenderCupons(){
@@ -3866,15 +3881,29 @@ function cmRenderDevolucao(){
 function cmRenderTudo(){cmRenderOfertaShopee();cmRenderDescontos();cmRenderCupons();cmRenderDevolucao();}
 /* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
 let editarDataAlvo=null; // {clienteId, campo}
-window.__editarDataDesconto=(clienteId,campo,mpLabel)=>{
+window.__editarDataDesconto=(clienteId)=>{
   const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
-  const campoFinal=campo||'descontoFixoFim';
-  editarDataAlvo={clienteId,campo:campoFinal};
-  document.getElementById('editarDataTitulo').textContent=`Desconto ${mpLabel?'— '+mpLabel:''} — ${c.nome}`;
-  document.getElementById('editarDataLabel').textContent=`Encerramento do Desconto Fixo${mpLabel?' ('+mpLabel+')':''}`;
-  document.getElementById('editarDataInput').value=c[campoFinal]||'';
-  document.getElementById('editarDataModalOverlay').classList.remove('hidden');
+  const mpsDoCliente=DESCONTO_MPS.filter(m=>(c.marketplaces||[]).includes(m.key));
+  document.getElementById('descontoMultiTitulo').textContent=`Descontos — ${c.nome}`;
+  document.getElementById('descontoMultiCampos').innerHTML=mpsDoCliente.map(m=>`
+    <div class="field"><label>${m.label}</label><input type="datetime-local" id="descontoMulti-${m.campo}" value="${c[m.campo]||''}"></div>
+  `).join('');
+  document.getElementById('descontoMultiModalOverlay').dataset.clienteId=clienteId;
+  document.getElementById('descontoMultiModalOverlay').classList.remove('hidden');
 };
+document.getElementById('descontoMultiCancelBtn')?.addEventListener('click',()=>document.getElementById('descontoMultiModalOverlay').classList.add('hidden'));
+document.getElementById('descontoMultiSalvarBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('descontoMultiModalOverlay').dataset.clienteId;
+  const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
+  const mpsDoCliente=DESCONTO_MPS.filter(m=>(c.marketplaces||[]).includes(m.key));
+  const atualizacao={};
+  mpsDoCliente.forEach(m=>{ atualizacao[m.campo]=document.getElementById(`descontoMulti-${m.campo}`).value||null; });
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{...atualizacao,ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});
+    showToast('✓ Datas atualizadas.');
+    document.getElementById('descontoMultiModalOverlay').classList.add('hidden');
+  }catch(e){showToast('Erro ao salvar.');}
+});
 window.__editarDataCupom=(clienteId)=>{
   const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
   editarDataAlvo={clienteId,campo:'cupomFim'};
