@@ -3810,12 +3810,7 @@ function cmRenderOfertaShopee(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    let botaoShopee='';
-    if(c.shopeeMktShopId){
-      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar na Shopee</button>`;
-    }else{
-      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔗 Conectar Marketing</button>`;
-    }
+    let botaoShopee='<span style="font-size:11px;color:var(--text-dim)">⏸️ Pausado temporariamente (economia de banda)</span>';
     return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}${botaoShopee}</div>`;
   }).join('');
 }
