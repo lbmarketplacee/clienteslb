@@ -3814,21 +3814,30 @@ function cmRenderOfertaShopee(){
     return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}${botaoShopee}</div>`;
   }).join('');
 }
+const DESCONTO_MPS = [
+  {key:'shopee', campo:'descontoFixoFim', label:'Shopee'},
+  {key:'ml', campo:'descontoFixoFimMl', label:'Mercado Livre'},
+  {key:'tiktok', campo:'descontoFixoFimTiktok', label:'TikTok Shop'}
+];
 function cmRenderDescontos(){
   const el=document.getElementById('cmDescontosLista');
   if(!el)return;
   const lista=(clientesCache||[]);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>{
-    let selo='';
-    if(c.shopeeMktShopId&&c.descontoAutoUltimaRenovacao){
-      const dt=c.descontoAutoUltimaRenovacao?.seconds?new Date(c.descontoAutoUltimaRenovacao.seconds*1000):new Date(c.descontoAutoUltimaRenovacao);
-      const proximoVenc=c.descontoAutoProximoVencimento?new Date(c.descontoAutoProximoVencimento):null;
-      selo=`<span class="cadastro-doc-pill ok" title="Renovado automaticamente em ${dt.toLocaleDateString('pt-BR')}${proximoVenc?' — válido até '+proximoVenc.toLocaleDateString('pt-BR'):''}">🤖 Auto-renovação ativa</span>`;
-    }else if(c.shopeeMktShopId){
-      selo=`<span class="cadastro-doc-pill" title="Conectado ao app Marketing, aguardando o robô semanal verificar">🤖 Monitorando</span>`;
-    }
-    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.descontoFixoFim)}${selo}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}')">✏️ Editar</button></div>`;
+    const mpsDoCliente=DESCONTO_MPS.filter(m=>(c.marketplaces||[]).includes(m.key));
+    if(!mpsDoCliente.length)return '';
+    return mpsDoCliente.map(m=>{
+      let selo='';
+      if(m.key==='shopee'&&c.shopeeMktShopId&&c.descontoAutoUltimaRenovacao){
+        const dt=c.descontoAutoUltimaRenovacao?.seconds?new Date(c.descontoAutoUltimaRenovacao.seconds*1000):new Date(c.descontoAutoUltimaRenovacao);
+        const proximoVenc=c.descontoAutoProximoVencimento?new Date(c.descontoAutoProximoVencimento):null;
+        selo=`<span class="cadastro-doc-pill ok" title="Renovado automaticamente em ${dt.toLocaleDateString('pt-BR')}${proximoVenc?' — válido até '+proximoVenc.toLocaleDateString('pt-BR'):''}">🤖 Auto-renovação ativa</span>`;
+      }else if(m.key==='shopee'&&c.shopeeMktShopId){
+        selo=`<span class="cadastro-doc-pill" title="Conectado ao app Marketing, aguardando o robô semanal verificar">🤖 Monitorando</span>`;
+      }
+      return `<div class="cm-item"><span class="nome">${esc(c.nome)} <span style="color:var(--text-dim);font-size:11px">— ${m.label}</span></span>${statusBadge(c[m.campo])}${selo}<button class="icon-btn" onclick="window.__editarDataDesconto('${c.id}','${m.campo}','${m.label}')">✏️ Editar</button></div>`;
+    }).join('');
   }).join('');
 }
 function cmRenderCupons(){
@@ -3857,12 +3866,13 @@ function cmRenderDevolucao(){
 function cmRenderTudo(){cmRenderOfertaShopee();cmRenderDescontos();cmRenderCupons();cmRenderDevolucao();}
 /* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
 let editarDataAlvo=null; // {clienteId, campo}
-window.__editarDataDesconto=(clienteId)=>{
+window.__editarDataDesconto=(clienteId,campo,mpLabel)=>{
   const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
-  editarDataAlvo={clienteId,campo:'descontoFixoFim'};
-  document.getElementById('editarDataTitulo').textContent=`Desconto — ${c.nome}`;
-  document.getElementById('editarDataLabel').textContent='Encerramento do Desconto Fixo';
-  document.getElementById('editarDataInput').value=c.descontoFixoFim||'';
+  const campoFinal=campo||'descontoFixoFim';
+  editarDataAlvo={clienteId,campo:campoFinal};
+  document.getElementById('editarDataTitulo').textContent=`Desconto ${mpLabel?'— '+mpLabel:''} — ${c.nome}`;
+  document.getElementById('editarDataLabel').textContent=`Encerramento do Desconto Fixo${mpLabel?' ('+mpLabel+')':''}`;
+  document.getElementById('editarDataInput').value=c[campoFinal]||'';
   document.getElementById('editarDataModalOverlay').classList.remove('hidden');
 };
 window.__editarDataCupom=(clienteId)=>{
