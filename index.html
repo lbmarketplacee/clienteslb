@@ -1608,7 +1608,15 @@ textarea{resize:vertical;min-height:70px;}
             </div>
           </div>
           <div class="field"><label>Descrição do produto</label><textarea id="dirDescricao" placeholder="Descreva o produto com o máximo de detalhes reais possível..." style="min-height:80px"></textarea></div>
-          <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="8" min="1" max="8"></div>
+          <div class="form-row">
+            <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="8" min="1" max="8"></div>
+            <div class="field" style="max-width:220px"><label>Qualidade</label>
+              <select id="dirQualidade">
+                <option value="medium" selected>Medium (padrão, mais nítido)</option>
+                <option value="low">Low (mais barato, teste)</option>
+              </select>
+            </div>
+          </div>
           <button class="btn btn-gold" id="dirGerarBtn">🎨 Gerar Funil de Fotos</button>
           <div id="dirResultado" style="margin-top:24px"></div>
         </div>
@@ -4276,6 +4284,7 @@ document.getElementById('dirDropZone')?.addEventListener('drop', (e)=>{e.prevent
 document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   const produto = document.getElementById('dirDescricao').value.trim();
   const qtd = document.getElementById('dirQtdFotos').value;
+  const qualidade = document.getElementById('dirQualidade').value;
   const resEl = document.getElementById('dirResultado');
   if(!dirImagensB64.length){showToast('Envie pelo menos 1 foto real do produto.');return;}
   if(!produto){showToast('Descreva o produto.');return;}
@@ -4286,7 +4295,7 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
     const resp = await fetch(DIRETOR_API, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ produto, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })
+      body: JSON.stringify({ produto, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd, qualidade })
     });
     const data = await resp.json();
     if(!data.ok){
