@@ -2886,6 +2886,16 @@ async function tfFixasGerarDoDia(){
 }
 
 function tfSetupAcesso(){
+  const FELIPE_EMAIL='felipesoares@potencialmidia.com';
+  if(currentEmail===FELIPE_EMAIL){
+    // Felipe só pode ver a aba Comercial & Marketing — esconde todo o resto do menu
+    document.querySelectorAll('.nav-item[data-page]').forEach(btn=>{
+      if(btn.dataset.page!=='comercial')btn.classList.add('hidden');
+    });
+    document.querySelectorAll('.nav-item:not([data-page])').forEach(btn=>btn.classList.add('hidden')); // esconde a LBIA também
+    document.getElementById('lbiaBubbleBtn')?.classList.add('hidden');
+    document.querySelector('[data-page="comercial"]')?.click();
+  }
   document.getElementById('tarefasFixasBtn')?.classList.toggle('hidden',currentEmail!==LINCOLN_EMAIL);
   const btnEquipe=document.querySelector('[data-tfview="atribuidas"]');
   if(!btnEquipe)return;
