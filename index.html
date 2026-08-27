@@ -982,7 +982,7 @@ textarea{resize:vertical;min-height:70px;}
       
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item hidden" data-page="rh" id="navRhBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Financeiro RH 🔒</button>
-      <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
+      
       </nav>
     <div class="nav-premium">
       <div class="crown"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M2 20h20l-2-11-5 4-3-7-3 7-5-4z"/></svg></div>
@@ -1548,33 +1548,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
-<div class="page" id="page-gastos">
-        <div class="page-head">
-          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Gastos Mensais <span class="com-lock-badge">🔒 Só Você</span></h2><p class="page-sub">Custos fixos, incluindo pessoais — visível apenas para você.</p></div>
-        </div>
-        <div class="gastos-summary">
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">Total Fixo<br>Mensal</div></div><div class="sc-value" id="gtTotalMensal">R$ 0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Pagos<br>este Mês</div></div><div class="sc-value green" id="gtPagos">0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/></svg></div><div class="sc-label">Vencendo<br>em 3 dias</div></div><div class="sc-value" id="gtVencendo">0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><div class="sc-label">Atrasados</div></div><div class="sc-value" style="color:var(--red)" id="gtAtrasados">0</div></div>
-        </div>
-        <div class="toolbar">
-          <div class="spacer"></div>
-          <button class="btn btn-ghost btn-sm" id="gastoHistGlobalBtn">Histórico Geral</button>
-          <button class="btn btn-gold btn-sm" id="gastoNovoBtn">+ Novo Gasto Fixo</button>
-        </div>
-        <div class="table-wrap"><div class="table-scroll">
-          <table>
-            <thead><tr><th>Gasto</th><th>Valor</th><th>Forma Pagamento</th><th>Categoria</th><th>Próximo Vencimento</th><th>Ações</th></tr></thead>
-            <tbody id="gastosTableBody"></tbody>
-          </table>
-        </div>
-        <div id="gastosEmptyState" class="empty-state hidden"><h3>Nenhum gasto cadastrado</h3><p>Clique em "+ Novo Gasto Fixo" para começar.</p></div>
-        </div>
-      </div>
-
-            <div class="page" id="page-marketing">
+<div class="page" id="page-marketing">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Central de Marketing</h2><p class="page-sub">Tudo que precisa de ação em um lugar só — ofertas, descontos, cupons e devoluções.</p></div>
@@ -2973,43 +2947,61 @@ function rhRenderPagamento(c){
   const el=document.getElementById('rhTabPagamento');
   const faltas=(c.faltas||[]).filter(f=>f.mes===mesAtualStr());
   const descontoFaltas=faltas.length*((c.salarioBase||0)/30);
-  const valorFinal=Math.max(0,(c.salarioBase||0)-descontoFaltas);
+  const valorLiquido=Math.max(0,(c.salarioBase||0)-descontoFaltas);
+  const valorParcela=Math.round((valorLiquido/2)*100)/100;
+
+  // Confere se cada parcela desse mês já foi paga (procura no histórico por mês+parcela)
+  const pagamentosMes=(c.historicoPagamentos||[]).filter(p=>p.mes===mesAtualStr());
+  const parcela1Paga=pagamentosMes.some(p=>p.parcela===1&&p.status==='Enviado');
+  const parcela2Paga=pagamentosMes.some(p=>p.parcela===2&&p.status==='Enviado');
+
+  const botaoParcela=(numero,dia,paga)=>{
+    if(paga)return `<button class="btn btn-ghost btn-sm" disabled>✓ ${numero}ª parcela (dia ${dia}) já paga</button>`;
+    return `<button class="btn btn-gold btn-sm" ${!c.chavePix?'disabled':''} onclick="window.__rhAbrirConfirmarPagamento('${c.id}',${valorParcela},${numero})">💸 Pagar ${numero}ª parcela (dia ${dia}) — ${fmtR(valorParcela)}</button>`;
+  };
+
   el.innerHTML=`
-    <div class="cm-item"><span class="nome">Salário base</span><b>${fmtR(c.salarioBase||0)}</b></div>
+    <div class="cm-item"><span class="nome">Salário base (R$ 1.500, dividido em 2x)</span><b>${fmtR(c.salarioBase||0)}</b></div>
     <div class="cm-item"><span class="nome">Faltas esse mês (${faltas.length})</span><b style="color:var(--red)">-${fmtR(descontoFaltas)}</b></div>
-    <div class="cm-item"><span class="nome">Valor final a pagar</span><b style="color:var(--green)">${fmtR(valorFinal)}</b></div>
+    <div class="cm-item"><span class="nome">Valor líquido do mês</span><b style="color:var(--green)">${fmtR(valorLiquido)}</b></div>
+    <div class="cm-item"><span class="nome">Cada parcela (metade)</span><b>${fmtR(valorParcela)}</b></div>
     ${!c.chavePix?'<div class="step-alert" style="margin-top:12px">⚠️ Essa colaboradora não tem chave PIX cadastrada — edite o cadastro antes de pagar.</div>':''}
-    <button class="btn btn-gold" style="margin-top:16px" ${!c.chavePix?'disabled':''} onclick="window.__rhAbrirConfirmarPagamento('${c.id}',${valorFinal})">💸 Pagar via Asaas</button>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+      ${botaoParcela(1,5,parcela1Paga)}
+      ${botaoParcela(2,20,parcela2Paga)}
+    </div>
     <div class="brd-history" style="margin-top:20px">
       <div class="brd-history-title">Histórico de pagamentos</div>
-      ${(c.historicoPagamentos||[]).length?[...c.historicoPagamentos].reverse().map(p=>`<div class="brd-hrow"><div class="brd-hdate">${new Date(p.data).toLocaleDateString('pt-BR')}</div><div class="brd-hvals">${fmtR(p.valor)} — ${p.status}</div></div>`).join(''):'<div class="brd-empty-hist">Nenhum pagamento ainda.</div>'}
+      ${(c.historicoPagamentos||[]).length?[...c.historicoPagamentos].reverse().map(p=>`<div class="brd-hrow"><div class="brd-hdate">${new Date(p.data).toLocaleDateString('pt-BR')}</div><div class="brd-hvals">${p.parcela?p.parcela+'ª parcela — ':''}${fmtR(p.valor)} — ${p.status}</div></div>`).join(''):'<div class="brd-empty-hist">Nenhum pagamento ainda.</div>'}
     </div>
   `;
 }
 
-window.__rhAbrirConfirmarPagamento=(id,valor)=>{
+window.__rhAbrirConfirmarPagamento=(id,valor,parcela)=>{
   const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
-  document.getElementById('rhConfirmarPagtoTexto').innerHTML=`Pagar <b>${fmtR(valor)}</b> pra <b>${esc(c.nome)}</b>, via PIX (chave: ${esc(c.chavePix)})?`;
+  document.getElementById('rhConfirmarPagtoTexto').innerHTML=`Pagar a <b>${parcela}ª parcela</b>: <b>${fmtR(valor)}</b> pra <b>${esc(c.nome)}</b>, via PIX (chave: ${esc(c.chavePix)})?`;
   document.getElementById('rhConfirmarPagtoOverlay').dataset.id=id;
   document.getElementById('rhConfirmarPagtoOverlay').dataset.valor=valor;
+  document.getElementById('rhConfirmarPagtoOverlay').dataset.parcela=parcela;
   document.getElementById('rhConfirmarPagtoOverlay').classList.remove('hidden');
 };
 document.getElementById('rhConfirmarPagtoCancelBtn')?.addEventListener('click',()=>document.getElementById('rhConfirmarPagtoOverlay').classList.add('hidden'));
 document.getElementById('rhConfirmarPagtoOkBtn')?.addEventListener('click',async()=>{
   const id=document.getElementById('rhConfirmarPagtoOverlay').dataset.id;
   const valor=Number(document.getElementById('rhConfirmarPagtoOverlay').dataset.valor);
+  const parcela=Number(document.getElementById('rhConfirmarPagtoOverlay').dataset.parcela);
   const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
   const btn=document.getElementById('rhConfirmarPagtoOkBtn');
   btn.disabled=true;btn.textContent='Enviando...';
   try{
     const resp=await fetch(ASAAS_API,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({acao:'criar_transferencia',value:valor,pixAddressKey:c.chavePix,pixAddressKeyType:c.tipoPix||'CPF',description:`Salário ${c.nome} - ${mesAtualStr()}`,externalReference:`salario-${c.id}-${mesAtualStr()}`})
+      body:JSON.stringify({acao:'criar_transferencia',value:valor,pixAddressKey:c.chavePix,pixAddressKeyType:c.tipoPix||'CPF',description:`Salário ${c.nome} - ${parcela}ª parcela - ${mesAtualStr()}`,externalReference:`salario-${c.id}-${mesAtualStr()}-p${parcela}`})
     });
     const data=await resp.json();
-    const novoHistorico=[...(c.historicoPagamentos||[]),{data:new Date().toISOString(),valor,status:data.ok?'Enviado':'Falhou: '+(data.erro||'erro desconhecido')}];
+    const novoHistorico=[...(c.historicoPagamentos||[]),{data:new Date().toISOString(),valor,parcela,mes:mesAtualStr(),status:data.ok?'Enviado':'Falhou: '+(data.erro||'erro desconhecido')}];
     await updateDoc(doc(db,"colaboradoras",id),{historicoPagamentos:novoHistorico,ultimoPagamentoData:data.ok?new Date().toISOString():c.ultimoPagamentoData});
-    if(data.ok){showToast(`✓ Pagamento de ${fmtR(valor)} enviado pra ${c.nome}!`);}
+    if(data.ok){showToast(`✓ ${parcela}ª parcela de ${fmtR(valor)} enviada pra ${c.nome}!`);}
     else{showToast('Erro no pagamento: '+(data.erro||'desconhecido'));}
     document.getElementById('rhConfirmarPagtoOverlay').classList.add('hidden');
   }catch(e){showToast('Erro de conexão ao pagar.');console.error(e);}
