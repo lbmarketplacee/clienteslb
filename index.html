@@ -876,6 +876,8 @@ textarea{resize:vertical;min-height:70px;}
 .lbia-panel .chat-empty{padding:20px 10px;}
 @media(max-width:600px){.lbia-panel{right:16px;left:16px;width:auto;bottom:88px;}.lbia-bubble{bottom:16px;right:16px;}}
 
+.rh-tab-content{margin-top:6px;}
+
 </style>
 </head>
 <body>
@@ -979,6 +981,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
       
       <button class="nav-item" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
+      <button class="nav-item hidden" data-page="rh" id="navRhBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Financeiro RH 🔒</button>
       <button class="nav-item" data-page="gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Gastos Mensais 🔒</button>
       </nav>
     <div class="nav-premium">
@@ -1482,7 +1485,70 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 
       </div>
-      <div class="page" id="page-gastos">
+      <div class="page" id="page-rh">
+  <div class="page-head">
+    <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    <div class="page-head-text"><h2 class="page-title">Financeiro RH <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Salários, faltas, férias e décimo terceiro — pagamento via Asaas.</p></div>
+    <button class="btn btn-gold btn-sm" style="margin-left:auto" onclick="window.__rhNovaColaboradora()">+ Colaboradora</button>
+  </div>
+  <div id="rhLista"></div>
+</div>
+
+<div class="modal-overlay hidden" id="rhModalOverlay">
+  <div class="modal" style="max-width:480px">
+    <h2 id="rhModalTitulo">Colaboradora</h2>
+    <div class="form-row">
+      <div class="field"><label>Nome</label><input type="text" id="rhNome" placeholder="Nome"></div>
+      <div class="field"><label>Salário Base</label><input type="text" id="rhSalario" placeholder="0,00"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Tipo de Chave PIX</label>
+        <select id="rhTipoPix">
+          <option value="CPF">CPF</option>
+          <option value="EMAIL">E-mail</option>
+          <option value="PHONE">Telefone</option>
+          <option value="EVP">Aleatória</option>
+        </select>
+      </div>
+      <div class="field"><label>Chave PIX</label><input type="text" id="rhChavePix" placeholder="Chave PIX"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="rhCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="rhSalvarBtn">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="rhDetalheModalOverlay">
+  <div class="modal" style="max-width:560px">
+    <button class="chk-back-btn" onclick="document.getElementById('rhDetalheModalOverlay').classList.add('hidden')">← Voltar</button>
+    <h2 id="rhDetalheTitulo">Colaboradora</h2>
+    <div class="ia-mk-sel" style="margin:16px 0">
+      <button class="ia-mk-btn active" data-rhtab="pagamento">Pagamento</button>
+      <button class="ia-mk-btn" data-rhtab="faltas">Faltas</button>
+      <button class="ia-mk-btn" data-rhtab="ferias">Férias</button>
+      <button class="ia-mk-btn" data-rhtab="decimo">13º Salário</button>
+    </div>
+    <div id="rhTabPagamento" class="rh-tab-content"></div>
+    <div id="rhTabFaltas" class="rh-tab-content hidden"></div>
+    <div id="rhTabFerias" class="rh-tab-content hidden"></div>
+    <div id="rhTabDecimo" class="rh-tab-content hidden"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="rhConfirmarPagtoOverlay">
+  <div class="modal" style="max-width:420px">
+    <h2>Confirmar Pagamento</h2>
+    <div id="rhConfirmarPagtoTexto" style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:16px"></div>
+    <div class="step-alert" style="margin-bottom:16px">⚠️ Isso envia dinheiro DE VERDADE via PIX pelo Asaas. Confira o valor e a chave antes de confirmar — não pode ser desfeito.</div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="rhConfirmarPagtoCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="rhConfirmarPagtoOkBtn">Sim, pagar agora</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-gastos">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Gastos Mensais <span class="com-lock-badge">🔒 Só Você</span></h2><p class="page-sub">Custos fixos, incluindo pessoais — visível apenas para você.</p></div>
@@ -2210,7 +2276,7 @@ document.getElementById('loginForgotBtn')?.addEventListener('click',async()=>{
 
 document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
 onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
-comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();tfFixasGerarDoDia();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
+comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();tfFixasGerarDoDia();rhSetupAcesso();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startGastosListener();startGastosHistListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
@@ -2219,7 +2285,7 @@ function fecharMenuMobile(){document.getElementById('sidebar').classList.remove(
 function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
 document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
 document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -2810,6 +2876,226 @@ window.__abrirTarefasFixas=()=>{
   tfFixasRenderLista();
 };
 document.getElementById('tfFixasFecharBtn')?.addEventListener('click',()=>document.getElementById('tarefasFixasModalOverlay').classList.add('hidden'));
+
+/* ================= FINANCEIRO RH — colaboradoras, faltas, férias, 13º, pagamento Asaas ================= */
+const ASAAS_API = 'https://lb-asaas-rh.vercel.app/api/asaas';
+let colaboradorasCache=[];
+let unsubColaboradoras=null;
+let rhDetalheAtual=null;
+
+function rhSetupAcesso(){
+  document.getElementById('navRhBtn')?.classList.toggle('hidden',currentEmail!==LINCOLN_EMAIL);
+}
+
+function rhIniciar(){
+  if(unsubColaboradoras)return;
+  unsubColaboradoras=onSnapshot(collection(db,"colaboradoras"),snap=>{
+    colaboradorasCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    rhRenderLista();
+  });
+}
+
+function rhRenderLista(){
+  const el=document.getElementById('rhLista');
+  if(!el)return;
+  if(!colaboradorasCache.length){el.innerHTML='<div class="empty-state" style="padding:40px"><h3>Nenhuma colaboradora cadastrada</h3><p>Clica em "+ Colaboradora" pra começar.</p></div>';return;}
+  el.innerHTML=colaboradorasCache.map(c=>{
+    const pago=c.ultimoPagamentoData?`Último pagamento: ${new Date(c.ultimoPagamentoData).toLocaleDateString('pt-BR')}`:'Nenhum pagamento registrado ainda';
+    return `<div class="cm-item" style="cursor:pointer" onclick="window.__rhAbrirDetalhe('${c.id}')">
+      <span class="nome">${esc(c.nome)}</span>
+      <span style="color:var(--text-dim);font-size:12px">${fmtR(c.salarioBase||0)}/mês · ${pago}</span>
+      <button class="icon-btn" onclick="event.stopPropagation();window.__rhEditarColaboradora('${c.id}')">✏️ Editar</button>
+    </div>`;
+  }).join('');
+}
+
+window.__rhNovaColaboradora=()=>{
+  document.getElementById('rhModalTitulo').textContent='Nova Colaboradora';
+  document.getElementById('rhModalOverlay').dataset.id='';
+  document.getElementById('rhNome').value='';
+  document.getElementById('rhSalario').value='';
+  document.getElementById('rhTipoPix').value='CPF';
+  document.getElementById('rhChavePix').value='';
+  document.getElementById('rhModalOverlay').classList.remove('hidden');
+};
+window.__rhEditarColaboradora=(id)=>{
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  document.getElementById('rhModalTitulo').textContent='Editar Colaboradora';
+  document.getElementById('rhModalOverlay').dataset.id=id;
+  document.getElementById('rhNome').value=c.nome||'';
+  document.getElementById('rhSalario').value=c.salarioBase||'';
+  document.getElementById('rhTipoPix').value=c.tipoPix||'CPF';
+  document.getElementById('rhChavePix').value=c.chavePix||'';
+  document.getElementById('rhModalOverlay').classList.remove('hidden');
+};
+document.getElementById('rhCancelBtn')?.addEventListener('click',()=>document.getElementById('rhModalOverlay').classList.add('hidden'));
+document.getElementById('rhSalvarBtn')?.addEventListener('click',async()=>{
+  const id=document.getElementById('rhModalOverlay').dataset.id;
+  const nome=document.getElementById('rhNome').value.trim();
+  const salarioBase=BRD_PARSE_EDIT(document.getElementById('rhSalario').value);
+  const tipoPix=document.getElementById('rhTipoPix').value;
+  const chavePix=document.getElementById('rhChavePix').value.trim();
+  if(!nome){showToast('Escreve o nome.');return;}
+  try{
+    if(id){
+      await updateDoc(doc(db,"colaboradoras",id),{nome,salarioBase,tipoPix,chavePix});
+    }else{
+      await addDoc(collection(db,"colaboradoras"),{nome,salarioBase,tipoPix,chavePix,criadoEm:serverTimestamp()});
+    }
+    document.getElementById('rhModalOverlay').classList.add('hidden');
+    showToast('✓ Salvo.');
+  }catch(e){showToast('Erro ao salvar.');}
+});
+
+window.__rhAbrirDetalhe=(id)=>{
+  rhDetalheAtual=id;
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  document.getElementById('rhDetalheTitulo').textContent=c.nome;
+  document.getElementById('rhDetalheModalOverlay').classList.remove('hidden');
+  document.querySelectorAll('[data-rhtab]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-rhtab="pagamento"]').classList.add('active');
+  document.querySelectorAll('.rh-tab-content').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('rhTabPagamento').classList.remove('hidden');
+  rhRenderPagamento(c);
+  rhRenderFaltas(c);
+  rhRenderFerias(c);
+  rhRenderDecimo(c);
+};
+document.querySelectorAll('[data-rhtab]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-rhtab]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('.rh-tab-content').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('rhTab'+b.dataset.rhtab.charAt(0).toUpperCase()+b.dataset.rhtab.slice(1)).classList.remove('hidden');
+}));
+
+// --- PAGAMENTO ---
+function rhRenderPagamento(c){
+  const el=document.getElementById('rhTabPagamento');
+  const faltas=(c.faltas||[]).filter(f=>f.mes===mesAtualStr());
+  const descontoFaltas=faltas.length*((c.salarioBase||0)/30);
+  const valorFinal=Math.max(0,(c.salarioBase||0)-descontoFaltas);
+  el.innerHTML=`
+    <div class="cm-item"><span class="nome">Salário base</span><b>${fmtR(c.salarioBase||0)}</b></div>
+    <div class="cm-item"><span class="nome">Faltas esse mês (${faltas.length})</span><b style="color:var(--red)">-${fmtR(descontoFaltas)}</b></div>
+    <div class="cm-item"><span class="nome">Valor final a pagar</span><b style="color:var(--green)">${fmtR(valorFinal)}</b></div>
+    ${!c.chavePix?'<div class="step-alert" style="margin-top:12px">⚠️ Essa colaboradora não tem chave PIX cadastrada — edite o cadastro antes de pagar.</div>':''}
+    <button class="btn btn-gold" style="margin-top:16px" ${!c.chavePix?'disabled':''} onclick="window.__rhAbrirConfirmarPagamento('${c.id}',${valorFinal})">💸 Pagar via Asaas</button>
+    <div class="brd-history" style="margin-top:20px">
+      <div class="brd-history-title">Histórico de pagamentos</div>
+      ${(c.historicoPagamentos||[]).length?[...c.historicoPagamentos].reverse().map(p=>`<div class="brd-hrow"><div class="brd-hdate">${new Date(p.data).toLocaleDateString('pt-BR')}</div><div class="brd-hvals">${fmtR(p.valor)} — ${p.status}</div></div>`).join(''):'<div class="brd-empty-hist">Nenhum pagamento ainda.</div>'}
+    </div>
+  `;
+}
+
+window.__rhAbrirConfirmarPagamento=(id,valor)=>{
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  document.getElementById('rhConfirmarPagtoTexto').innerHTML=`Pagar <b>${fmtR(valor)}</b> pra <b>${esc(c.nome)}</b>, via PIX (chave: ${esc(c.chavePix)})?`;
+  document.getElementById('rhConfirmarPagtoOverlay').dataset.id=id;
+  document.getElementById('rhConfirmarPagtoOverlay').dataset.valor=valor;
+  document.getElementById('rhConfirmarPagtoOverlay').classList.remove('hidden');
+};
+document.getElementById('rhConfirmarPagtoCancelBtn')?.addEventListener('click',()=>document.getElementById('rhConfirmarPagtoOverlay').classList.add('hidden'));
+document.getElementById('rhConfirmarPagtoOkBtn')?.addEventListener('click',async()=>{
+  const id=document.getElementById('rhConfirmarPagtoOverlay').dataset.id;
+  const valor=Number(document.getElementById('rhConfirmarPagtoOverlay').dataset.valor);
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  const btn=document.getElementById('rhConfirmarPagtoOkBtn');
+  btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const resp=await fetch(ASAAS_API,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({acao:'criar_transferencia',value:valor,pixAddressKey:c.chavePix,pixAddressKeyType:c.tipoPix||'CPF',description:`Salário ${c.nome} - ${mesAtualStr()}`,externalReference:`salario-${c.id}-${mesAtualStr()}`})
+    });
+    const data=await resp.json();
+    const novoHistorico=[...(c.historicoPagamentos||[]),{data:new Date().toISOString(),valor,status:data.ok?'Enviado':'Falhou: '+(data.erro||'erro desconhecido')}];
+    await updateDoc(doc(db,"colaboradoras",id),{historicoPagamentos:novoHistorico,ultimoPagamentoData:data.ok?new Date().toISOString():c.ultimoPagamentoData});
+    if(data.ok){showToast(`✓ Pagamento de ${fmtR(valor)} enviado pra ${c.nome}!`);}
+    else{showToast('Erro no pagamento: '+(data.erro||'desconhecido'));}
+    document.getElementById('rhConfirmarPagtoOverlay').classList.add('hidden');
+  }catch(e){showToast('Erro de conexão ao pagar.');console.error(e);}
+  btn.disabled=false;btn.textContent='Sim, pagar agora';
+});
+
+// --- FALTAS ---
+function mesAtualStr(){const h=new Date();return `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}`;}
+function rhRenderFaltas(c){
+  const el=document.getElementById('rhTabFaltas');
+  el.innerHTML=`
+    <div class="form-row">
+      <div class="field"><label>Data da falta</label><input type="date" id="rhFaltaData"></div>
+      <div class="field"><label>Motivo (opcional)</label><input type="text" id="rhFaltaMotivo" placeholder="Motivo"></div>
+    </div>
+    <button class="btn btn-gold btn-sm" onclick="window.__rhAdicionarFalta('${c.id}')">+ Registrar Falta</button>
+    <div class="brd-history" style="margin-top:16px">
+      ${(c.faltas||[]).length?[...c.faltas].reverse().map((f,i)=>`<div class="brd-hrow"><div class="brd-hdate">${new Date(f.data).toLocaleDateString('pt-BR')}</div><div class="brd-hvals">${esc(f.motivo||'sem motivo')}</div><div class="brd-hdel" onclick="window.__rhRemoverFalta('${c.id}',${(c.faltas||[]).length-1-i})">✕</div></div>`).join(''):'<div class="brd-empty-hist">Nenhuma falta registrada.</div>'}
+    </div>
+  `;
+}
+window.__rhAdicionarFalta=async(id)=>{
+  const data=document.getElementById('rhFaltaData').value;
+  const motivo=document.getElementById('rhFaltaMotivo').value.trim();
+  if(!data){showToast('Escolhe a data.');return;}
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  const mes=data.slice(0,7);
+  const novasFaltas=[...(c.faltas||[]),{data,motivo,mes}];
+  try{await updateDoc(doc(db,"colaboradoras",id),{faltas:novasFaltas});showToast('✓ Falta registrada.');}catch(e){showToast('Erro.');}
+};
+window.__rhRemoverFalta=async(id,indice)=>{
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  const novasFaltas=(c.faltas||[]).filter((_,i)=>i!==indice);
+  try{await updateDoc(doc(db,"colaboradoras",id),{faltas:novasFaltas});}catch(e){showToast('Erro.');}
+};
+
+// --- FÉRIAS ---
+function rhRenderFerias(c){
+  const el=document.getElementById('rhTabFerias');
+  el.innerHTML=`
+    <div class="form-row">
+      <div class="field"><label>Início</label><input type="date" id="rhFeriasInicio"></div>
+      <div class="field"><label>Fim</label><input type="date" id="rhFeriasFim"></div>
+    </div>
+    <button class="btn btn-gold btn-sm" onclick="window.__rhAdicionarFerias('${c.id}')">+ Registrar Período de Férias</button>
+    <div class="brd-history" style="margin-top:16px">
+      ${(c.ferias||[]).length?[...c.ferias].reverse().map((f,i)=>{
+        const dias=Math.round((new Date(f.fim)-new Date(f.inicio))/86400000)+1;
+        return `<div class="brd-hrow"><div class="brd-hdate">${new Date(f.inicio).toLocaleDateString('pt-BR')}</div><div class="brd-hvals">até ${new Date(f.fim).toLocaleDateString('pt-BR')} (${dias} dias)</div><div class="brd-hdel" onclick="window.__rhRemoverFerias('${c.id}',${(c.ferias||[]).length-1-i})">✕</div></div>`;
+      }).join(''):'<div class="brd-empty-hist">Nenhuma férias registrada.</div>'}
+    </div>
+  `;
+}
+window.__rhAdicionarFerias=async(id)=>{
+  const inicio=document.getElementById('rhFeriasInicio').value;
+  const fim=document.getElementById('rhFeriasFim').value;
+  if(!inicio||!fim){showToast('Preenche início e fim.');return;}
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  const novasFerias=[...(c.ferias||[]),{inicio,fim}];
+  try{await updateDoc(doc(db,"colaboradoras",id),{ferias:novasFerias});showToast('✓ Férias registradas.');}catch(e){showToast('Erro.');}
+};
+window.__rhRemoverFerias=async(id,indice)=>{
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  const novasFerias=(c.ferias||[]).filter((_,i)=>i!==indice);
+  try{await updateDoc(doc(db,"colaboradoras",id),{ferias:novasFerias});}catch(e){showToast('Erro.');}
+};
+
+// --- 13º SALÁRIO ---
+function rhRenderDecimo(c){
+  const el=document.getElementById('rhTabDecimo');
+  const anoAtual=new Date().getFullYear();
+  const decimoAno=(c.decimoTerceiro||[]).find(d=>d.ano===anoAtual)||{ano:anoAtual,primeiraParcela:false,segundaParcela:false};
+  el.innerHTML=`
+    <div class="cm-item"><span class="nome">1ª parcela ${anoAtual} (até 30/11)</span><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="rhDecimo1" ${decimoAno.primeiraParcela?'checked':''}> Pago</label></div>
+    <div class="cm-item"><span class="nome">2ª parcela ${anoAtual} (até 20/12)</span><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="rhDecimo2" ${decimoAno.segundaParcela?'checked':''}> Pago</label></div>
+    <button class="btn btn-gold btn-sm" style="margin-top:12px" onclick="window.__rhSalvarDecimo('${c.id}',${anoAtual})">Salvar</button>
+  `;
+}
+window.__rhSalvarDecimo=async(id,ano)=>{
+  const c=colaboradorasCache.find(x=>x.id===id);if(!c)return;
+  const primeiraParcela=document.getElementById('rhDecimo1').checked;
+  const segundaParcela=document.getElementById('rhDecimo2').checked;
+  const outrosAnos=(c.decimoTerceiro||[]).filter(d=>d.ano!==ano);
+  const novoDecimo=[...outrosAnos,{ano,primeiraParcela,segundaParcela}];
+  try{await updateDoc(doc(db,"colaboradoras",id),{decimoTerceiro:novoDecimo});showToast('✓ Salvo.');}catch(e){showToast('Erro.');}
+};
 
 function tfFixasRenderLista(){
   const el=document.getElementById('tfFixasLista');
