@@ -1681,6 +1681,10 @@ textarea{resize:vertical;min-height:70px;}
         <div class="cm-secao cm-painel" data-cmpainel="ofertashopee">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><h3>Oferta Relâmpago — Shopee</h3></div>
+          <div class="form-row" style="align-items:flex-end;margin-bottom:16px">
+            <div class="field" style="max-width:220px"><label>Próxima data (a Shopee libera datas diferentes toda vez — defina manualmente)</label><input type="date" id="ofertaProximaDataInput"></div>
+            <button class="btn btn-gold btn-sm" id="ofertaProximaDataSalvarBtn">Salvar data pra todos</button>
+          </div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
         </div>
 
@@ -2250,7 +2254,7 @@ document.getElementById('loginForgotBtn')?.addEventListener('click',async()=>{
 
 document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
 onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
-comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();tfFixasGerarDoDia();rhSetupAcesso();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
+comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();tfFixasGerarDoDia();rhSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startGastosListener();startGastosHistListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
@@ -2284,7 +2288,8 @@ function proxMarco(from){const d=from?new Date(from):new Date();d.setHours(0,0,0
 function ultimoMarco(){const d=new Date();d.setHours(0,0,0,0);for(let i=0;i<=7;i++){const t=new Date(d);t.setDate(d.getDate()-i);if(t.getDay()===2||t.getDay()===5)return t;}return d;}
 function proxSex(from){return proxMarco(from);}
 function fmtBR(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}`;}
-function renderOfertaFlag(c){const ul=c.ofertaRelampago?.ultimaData||null;const um=ultimoMarco();const hoje=new Date();hoje.setHours(0,0,0,0);const uDt=ul?new Date(ul+'T00:00:00'):null;const feito=uDt&&uDt>=um;const pr=proxMarco();const ehHoje=um.getTime()===hoje.getTime();let cls,l,s;if(feito){cls='done';l='✓ Feito';s=`Próx: ${fmtBR(pr)}`;}else if(ehHoje){cls='warn';l='⚡ Marcar hoje';s=fmtBR(ymd(um));}else{cls='hot';l='⚠ Atrasada';s=`Era ${fmtBR(ymd(um))}`;}return`<button class="flag-btn ${cls}" onclick="window.__oferta('${c.id}','${esc(c.nome)}')"><span class="flag-label">${l}</span><span class="flag-sub">${s}</span></button>`;}
+let ofertaProximaDataManual=null;
+function renderOfertaFlag(c){const ul=c.ofertaRelampago?.ultimaData||null;const pr=ofertaProximaDataManual;if(!pr)return`<span style="font-size:11px;color:var(--text-dim)">Defina a próxima data acima</span>`;const hoje=new Date();hoje.setHours(0,0,0,0);const uDt=ul?new Date(ul+'T00:00:00'):null;const prDt=new Date(pr+'T00:00:00');const feito=uDt&&uDt>=prDt;const ehHoje=prDt.getTime()===hoje.getTime();const jaPassou=prDt<hoje;let cls,l,s;if(feito){cls='done';l='✓ Feito';s=`Data: ${fmtBR(pr)}`;}else if(ehHoje){cls='warn';l='⚡ Marcar hoje';s=fmtBR(pr);}else if(jaPassou){cls='hot';l='⚠ Atrasada';s=`Era ${fmtBR(pr)}`;}else{cls='';l='Marcar';s=`Prevista: ${fmtBR(pr)}`;}return`<button class="flag-btn ${cls}" onclick="window.__oferta('${c.id}','${esc(c.nome)}')"><span class="flag-label">${l}</span><span class="flag-sub">${s}</span></button>`;}
 function renderDevolucaoFlag(c){const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const dia=hoje.getDate();const m2=String(hoje.getMonth()+1).padStart(2,'0');const feito=c.notaDevolucao?.mesReferencia===ma;let cls,l,s;if(feito){cls='done';l='✓ Feito';s=`Dia 30/${m2}`;}else if(dia>=30){cls='hot';l='🔴 Hoje!';s=`Dia 30/${m2}`;}else if(dia>=27){cls='warn';l='⚠ Chegando';s=`Dia 30/${m2}`;}else{cls='';l='📋 Marcar';s=`Dia 30/${m2}`;}return`<button class="flag-btn ${cls}" onclick="window.__devol('${c.id}','${esc(c.nome)}')"><span class="flag-label">${l}</span><span class="flag-sub">${s}</span></button>`;}
 window.__oferta=async(id,nm)=>{const hoje=new Date();const hs=hoje.toISOString().split('T')[0];const pr=proxSex(hoje);try{await updateDoc(doc(db,"clientes",id),{ofertaRelampago:{ultimaData:hs,proximaData:pr},ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});await log(id,nm,'edição',`Oferta Relâmpago marcada em ${fmtBR(hs)} por ${currentUser}.`);showToast('⚡ Oferta Relâmpago marcada!');}catch{showToast('Erro.');}};
 window.__devol=async(id,nm)=>{const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const ml=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});try{await updateDoc(doc(db,"clientes",id),{notaDevolucao:{mesReferencia:ma},ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});await log(id,nm,'edição',`Nota de Devolução marcada em ${ml} por ${currentUser}.`);showToast('📋 Nota de Devolução marcada!');}catch{showToast('Erro.');}};
@@ -4218,6 +4223,24 @@ window.__marcarTiktokOferta=async(clienteId)=>{
   }catch(e){showToast('Erro ao marcar.');}
 };
 /* ================= CENTRAL DE MARKETING — seções de Oferta Shopee, Descontos, Cupons, Devolução ================= */
+let unsubOfertaConfig=null;
+function ofertaConfigIniciar(){
+  if(unsubOfertaConfig)return;
+  unsubOfertaConfig=onSnapshot(doc(db,"configuracoes","ofertaRelampagoShopee"),snap=>{
+    ofertaProximaDataManual=snap.exists()?(snap.data().proximaData||null):null;
+    const input=document.getElementById('ofertaProximaDataInput');
+    if(input&&ofertaProximaDataManual)input.value=ofertaProximaDataManual;
+    cmRenderOfertaShopee();
+  });
+}
+document.getElementById('ofertaProximaDataSalvarBtn')?.addEventListener('click',async()=>{
+  const valor=document.getElementById('ofertaProximaDataInput').value;
+  if(!valor){showToast('Escolhe uma data primeiro.');return;}
+  try{
+    await setDoc(doc(db,"configuracoes","ofertaRelampagoShopee"),{proximaData:valor,atualizadoPor:currentUser,atualizadoEm:serverTimestamp()});
+    showToast('✓ Data salva pra todos os clientes.');
+  }catch(e){showToast('Erro ao salvar.');}
+});
 function cmRenderOfertaShopee(){
   const el=document.getElementById('cmOfertaShopeeLista');
   if(!el)return;
