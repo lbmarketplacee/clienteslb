@@ -1415,6 +1415,15 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="links-grid">
           <div class="link-card">
+            <div class="link-head"><div class="link-ico" style="background:#ee4d2d20;color:#ee4d2d">📍</div><div><div class="link-nome">Ponto de Coleta Shopee</div><div class="link-tag">Consulta por CEP</div></div></div>
+            <div class="link-obs">Consulta o ponto de coleta da Shopee mais próximo do CEP do cliente.</div>
+            <div class="link-url">https://spx.com.br/service-point</div>
+            <div class="link-actions">
+              <button class="btn btn-gold btn-sm" onclick="window.open('https://spx.com.br/service-point','_blank')">Abrir</button>
+              <button class="btn btn-ghost btn-sm" onclick="window.__copy('https://spx.com.br/service-point')">Copiar</button>
+            </div>
+          </div>
+          <div class="link-card">
             <div class="link-head"><div class="link-ico" style="background:#6c5ce720;color:#a29bfe">US</div><div><div class="link-nome">UpSeller</div><div class="link-tag">Afiliado Interno LB</div></div></div>
             <div class="link-obs">⚠️ Todo cliente novo deve abrir a conta UpSeller <b>por este link</b>. É o link de afiliado da LB.</div>
             <div class="link-url">https://app.upseller.com/register?aff=2OEQWM4Y</div>
@@ -1781,6 +1790,7 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="field"><label>Saldo de Ads (R$)</label><input type="number" step="0.01" id="fSaldo" placeholder="0,00"></div>
       <div class="field"><label>Observações</label><textarea id="fObs" placeholder="Notas internas..."></textarea></div>
+      <div class="field" id="fDocumentosCadastroWrap" style="display:none"><label>Documentos do Cadastro</label><div id="fDocumentosCadastroLista" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
       <div class="field hidden" id="shopeeIntegracaoField">
         <label>🛒 Integração Shopee (GMV Automático)</label>
         <div id="shopeeStatusBox" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;">
@@ -2322,7 +2332,14 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){window.__cadastroOrigemAtual=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+function openClientModal(c){window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+const docs=c?.documentosCadastro;
+const fDocsWrap=document.getElementById('fDocumentosCadastroWrap'),fDocsLista=document.getElementById('fDocumentosCadastroLista');
+if(docs&&(docs.docFrente||docs.docVerso||docs.docCnpj)){
+  fDocsWrap.style.display='';
+  const itensDocs=[{l:'Doc. Frente',u:docs.docFrente},{l:'Doc. Verso',u:docs.docVerso},{l:'Doc. CNPJ',u:docs.docCnpj}].filter(i=>i.u);
+  fDocsLista.innerHTML=itensDocs.map(i=>`<a href="${i.u}" target="_blank" class="btn btn-ghost btn-sm">📄 ${i.l}</a>`).join('');
+}else{fDocsWrap.style.display='none';fDocsLista.innerHTML='';}
 const resp=c?.responsaveisPorMarketplace||{};
 document.getElementById('fRespShopee').value=resp.shopee||'';
 document.getElementById('fRespML').value=resp.ml||'';
@@ -2340,7 +2357,7 @@ const responsaveisPorMarketplace={
   tiktok:document.getElementById('fRespTiktok').value||null,
   shein:document.getElementById('fRespShein').value||null
 };
-const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),marketplaces:mps,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),marketplaces:mps,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
 function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
@@ -3651,7 +3668,7 @@ function renderCadastrosRecebidos(){
       <div class="cadastro-docs">
         <span class="cadastro-doc-pill ${c.urlDocFrente?'ok':''}">📄 Doc. Frente ${c.urlDocFrente?'✓':'—'}</span>
         <span class="cadastro-doc-pill ${c.urlDocVerso?'ok':''}">📄 Doc. Verso ${c.urlDocVerso?'✓':'—'}</span>
-        <span class="cadastro-doc-pill ${c.urlSelfie?'ok':''}">🤳 Selfie ${c.urlSelfie?'✓':'—'}</span>
+        <span class="cadastro-doc-pill ${c.urlDocCnpj?'ok':''}">🏢 Doc. CNPJ ${c.urlDocCnpj?'✓':'—'}</span>
       </div>
       <div class="actions-cell">
         <button class="btn btn-gold btn-sm" onclick="window.__verCadastro('${c.id}')">👁 Ver Detalhes</button>
@@ -3676,6 +3693,7 @@ window.__criarClienteDoCadastro=(id)=>{
     b.classList.toggle('on',(cad.plataformas||[]).includes(nomeCorrespondente));
   });
   window.__cadastroOrigemAtual=id;
+  window.__cadastroOrigemDocs={docFrente:cad.urlDocFrente||null,docVerso:cad.urlDocVerso||null,docCnpj:cad.urlDocCnpj||null};
   clientModalOverlay.classList.remove('hidden');
 };
 let cadastroDetalheAtual=null;
@@ -3687,7 +3705,7 @@ window.__verCadastro=(id)=>{
   const fotos=[
     {label:'Documento — Frente',url:cad.urlDocFrente},
     {label:'Documento — Verso',url:cad.urlDocVerso},
-    {label:'Selfie',url:cad.urlSelfie}
+    {label:'Documento — CNPJ',url:cad.urlDocCnpj}
   ];
   document.getElementById('cadDetCorpo').innerHTML=`
     <div class="cadastro-plataformas">${(cad.plataformas||[]).map(p=>`<span class="cadastro-plataforma-tag">${esc(p)}</span>`).join('')}</div>
