@@ -1144,7 +1144,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="page" id="page-cadastros">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Cadastros Recebidos</h2><p class="page-sub">Cadastros enviados pelo link público de onboarding — pendentes de análise.</p></div>
+          <div class="page-head-text"><h2 class="page-title">Cadastros Recebidos</h2><p class="page-sub">Cadastros enviados pelo link público de onboarding.</p></div>
+          <button class="btn btn-ghost btn-sm" id="cadastrosVerConvertidosBtn" style="margin-left:auto">👁 Ver Já Convertidos</button>
         </div>
         <div id="cadastrosRecebidos"><div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div></div>
       </div>
@@ -3643,16 +3644,23 @@ let cadastrosCache=[],unsubCadastros=null;
 function startCadastrosListener(){
   if(unsubCadastros)return;
   unsubCadastros=onSnapshot(query(collection(db,"cadastros"),orderBy("criadoEm","desc")),snap=>{
-    cadastrosCache=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.status==='pendente');
+    cadastrosCache=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderCadastrosRecebidos();
     notifRecalcular();
   });
 }
+let cadastrosMostrarConvertidos=false;
+document.getElementById('cadastrosVerConvertidosBtn')?.addEventListener('click',()=>{
+  cadastrosMostrarConvertidos=!cadastrosMostrarConvertidos;
+  document.getElementById('cadastrosVerConvertidosBtn').textContent=cadastrosMostrarConvertidos?'👁 Ver Pendentes':'👁 Ver Já Convertidos';
+  renderCadastrosRecebidos();
+});
 function renderCadastrosRecebidos(){
   const el=document.getElementById('cadastrosRecebidos');
   if(!el)return;
-  if(!cadastrosCache.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div>';return;}
-  el.innerHTML=cadastrosCache.map(c=>{
+  const lista=cadastrosCache.filter(c=>cadastrosMostrarConvertidos?c.status==='convertido':c.status==='pendente');
+  if(!lista.length){el.innerHTML=`<div class="empty-state" style="padding:20px">${cadastrosMostrarConvertidos?'Nenhum cadastro convertido ainda.':'Nenhum cadastro pendente.'}</div>`;return;}
+  el.innerHTML=lista.map(c=>{
     const dt=c.criadoEm?new Date(c.criadoEm.seconds*1000).toLocaleDateString('pt-BR'):'';
     return `<div class="cadastro-card">
       <div class="cadastro-card-top"><span class="cadastro-nome">${esc(c.nomeLoja)}</span><span class="cadastro-data">${dt}</span></div>
@@ -3672,7 +3680,7 @@ function renderCadastrosRecebidos(){
       </div>
       <div class="actions-cell">
         <button class="btn btn-gold btn-sm" onclick="window.__verCadastro('${c.id}')">👁 Ver Detalhes</button>
-        <button class="icon-btn danger" onclick="window.__descartarCadastro('${c.id}')">Descartar</button>
+        ${c.status==='convertido'?'<span class="cadastro-doc-pill ok">✓ Já é cliente</span>':`<button class="icon-btn danger" onclick="window.__descartarCadastro('${c.id}')">Descartar</button>`}
       </div>
     </div>`;
   }).join('');
