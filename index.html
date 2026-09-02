@@ -2527,7 +2527,7 @@ document.getElementById('iaGerarBtn')?.addEventListener('click',async()=>{
 });
 
 /* ================= COMERCIAL & MARKETING (restrito) ================= */
-const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com'];
+const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br'];
 const isComercialAllowed=()=>COMERCIAL_EMAILS.includes(currentEmail);
 let comEntriesCache=[],comMetasCache=null,comMesAtual='';
 function comSetupAcesso(){
@@ -3213,8 +3213,9 @@ document.getElementById('tfResponsavel')?.addEventListener('change',(e)=>{
 });
 function tfAplicarRestricaoResponsavel(){
   const sel=document.getElementById('tfResponsavel');
-  if(currentEmail!==LINCOLN_EMAIL){
-    // Colaboradoras só podem atribuir tarefa pra si mesmas — não umas pras outras, nem "Várias"
+  const CAROLINE_EMAIL='caroline@lbmarketplace.com.br';
+  if(currentEmail!==LINCOLN_EMAIL&&currentEmail!==CAROLINE_EMAIL){
+    // Colaboradoras (exceto Lincoln e Caroline) só podem atribuir tarefa pra si mesmas
     sel.value=currentEmail;
     sel.disabled=true;
     document.getElementById('tfVariasWrap').classList.add('hidden');
@@ -3293,7 +3294,10 @@ document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
       await updateDoc(doc(db,"tarefas",tarefaEditId),{...dadosBase,responsavelEmail:respEmail,responsavel:nome(respEmail)});
       showToast('Tarefa atualizada.');
     }else{
-      await addDoc(collection(db,"tarefas"),{...dadosBase,responsavelEmail:respEmail,responsavel:nome(respEmail),criadoPor:currentUser});
+      // Caroline atribuindo pra outra pessoa (não ela mesma) fica com autoria anônima — pedido do Lincoln
+      const CAROLINE_EMAIL='caroline@lbmarketplace.com.br';
+      const autoriaFinal=(currentEmail===CAROLINE_EMAIL&&respEmail!==CAROLINE_EMAIL)?'Coordenação':currentUser;
+      await addDoc(collection(db,"tarefas"),{...dadosBase,responsavelEmail:respEmail,responsavel:nome(respEmail),criadoPor:autoriaFinal});
       showToast('Tarefa criada.');
     }
     tarefaModalOverlay.classList.add('hidden');
