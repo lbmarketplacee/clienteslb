@@ -1,0 +1,411 @@
+/* ============================================================
+   LB MARKETPLACE — DESIGN SYSTEM MODERNIZADO
+   Aplicar em lb-sistema-novo.html
+   Mantém a paleta preto + dourado da marca, adiciona profundidade,
+   gradientes e glow. Sem quebrar a estrutura HTML existente —
+   é só trocar/adicionar estas classes nos elementos atuais.
+   ============================================================ */
+
+/* ---------- 1. FONTES (adicionar no <head>) ----------
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+--------------------------------------------------------------- */
+
+/* ---------- 2. TOKENS GLOBAIS ---------- */
+:root{
+  /* marca */
+  --gold:#d4a94a;
+  --gold-bright:#f0c869;
+  --gold-dim:#8a6f2f;
+
+  /* superfícies */
+  --bg-page:#08080b;
+  --bg-page-glow-1:rgba(212,169,74,0.07);
+  --bg-page-glow-2:rgba(155,126,240,0.05);
+  --bg-card:#111116;
+  --bg-card-2:#0d0d10;
+  --bg-card-hover:#15151b;
+
+  /* bordas */
+  --border-hair:rgba(255,255,255,0.08);
+  --border-hair-strong:rgba(255,255,255,0.14);
+  --border-accent:rgba(212,169,74,0.35);
+
+  /* texto */
+  --text-primary:#f5f4f0;
+  --text-secondary:#9b9aa3;
+  --text-muted:#5c5b64;
+
+  /* semânticas / categorias (usar 1 cor por tipo de dado, não decorativo) */
+  --purple:#9b7ef0;
+  --purple-bright:#c9a8ff;
+  --teal:#4fd6c4;
+  --teal-bright:#7fe8da;
+  --coral:#f0725a;
+  --amber:#f0b84f;
+  --green:#4fbf7a;
+  --red:#f0574f;
+
+  /* elevação / raio */
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+  --shadow-card:0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -12px rgba(0,0,0,0.6);
+}
+
+/* ---------- 3. BASE DA PÁGINA ---------- */
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -5%, var(--bg-page-glow-1), transparent 60%),
+    radial-gradient(ellipse 700px 450px at 100% 20%, var(--bg-page-glow-2), transparent 55%),
+    var(--bg-page);
+  color:var(--text-primary);
+  font-family:'Inter',sans-serif;
+}
+
+h1,h2,h3,.brand-title{
+  font-family:'Oswald',sans-serif;
+}
+
+/* título "Bem-vindo de volta, Lincoln" com leve gradiente no texto */
+.welcome-title{
+  font-family:'Oswald',sans-serif;
+  font-weight:600;
+  background:linear-gradient(135deg,#ffffff,#d8d6e0);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+/* ---------- 4. SIDEBAR ---------- */
+.sidebar{
+  background:linear-gradient(180deg, #0b0b0f, #08080b);
+  border-right:1px solid var(--border-hair);
+}
+
+.sidebar-item{
+  border-radius:var(--radius-sm);
+  color:var(--text-secondary);
+  transition:background .15s ease, color .15s ease, transform .15s ease;
+}
+.sidebar-item:hover{
+  background:rgba(255,255,255,0.04);
+  color:var(--text-primary);
+  transform:translateX(2px);
+}
+.sidebar-item.active{
+  background:linear-gradient(135deg, rgba(212,169,74,0.16), rgba(212,169,74,0.04));
+  border:1px solid var(--border-accent);
+  color:var(--gold-bright);
+  box-shadow:0 0 24px -10px rgba(212,169,74,0.5);
+}
+.sidebar-item.locked{
+  opacity:0.55;
+}
+
+/* categorias colapsáveis — quando o menu crescer, agrupar aqui */
+.sidebar-group-label{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.08em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  margin:20px 0 8px;
+  padding-left:8px;
+}
+
+/* status do Drive no rodapé — mais visível quando desconectado */
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--text-secondary);
+}
+.status-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--text-muted);
+}
+.status-dot.offline{
+  background:var(--red);
+  box-shadow:0 0 8px rgba(240,87,79,0.7);
+}
+.status-dot.online{
+  background:var(--green);
+  box-shadow:0 0 8px rgba(79,191,122,0.6);
+}
+
+/* ---------- 5. TOPO (botões Histórico, Migrar, Importar) ---------- */
+.topbar-btn{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border-hair);
+  border-radius:var(--radius-sm);
+  color:var(--text-primary);
+  transition:border-color .15s ease, background .15s ease;
+}
+.topbar-btn:hover{
+  border-color:var(--border-hair-strong);
+  background:rgba(255,255,255,0.06);
+}
+.topbar-btn.primary{
+  background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+  color:#1a1305;
+  border:none;
+  font-weight:600;
+  box-shadow:0 4px 20px -6px rgba(212,169,74,0.6);
+}
+.topbar-btn.primary:hover{
+  filter:brightness(1.08);
+}
+
+.notif-bell{
+  position:relative;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border-hair);
+  border-radius:var(--radius-sm);
+}
+.notif-badge{
+  position:absolute; top:-6px; right:-6px;
+  background:linear-gradient(135deg,#ff6a5c,#e0392c);
+  box-shadow:0 0 10px rgba(224,57,44,0.7);
+  border-radius:100px;
+  font-size:10px; font-weight:700;
+  padding:2px 5px;
+  color:#fff;
+}
+
+/* ---------- 6. CARDS DE MÉTRICA (Clientes, Descontos, Cupons, Saldo, GMV) ----------
+   Uso: <div class="metric-card glow-gold"> ... </div>
+   Trocar "glow-gold" por glow-teal / glow-purple / glow-coral / glow-neutral
+   conforme a categoria do dado (não decorativo — mesma cor = mesma família de métrica) */
+.metric-card{
+  position:relative;
+  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  border:1px solid var(--border-hair);
+  border-radius:var(--radius-md);
+  padding:18px 20px;
+  backdrop-filter:blur(6px);
+  box-shadow:var(--shadow-card);
+  transition:transform .18s ease, border-color .18s ease;
+}
+.metric-card:hover{
+  transform:translateY(-2px);
+  border-color:var(--border-hair-strong);
+}
+.metric-card.glow-gold{ box-shadow:0 0 34px -10px rgba(212,169,74,0.28) inset, var(--shadow-card); }
+.metric-card.glow-teal{ box-shadow:0 0 34px -10px rgba(79,214,196,0.24) inset, var(--shadow-card); }
+.metric-card.glow-purple{ box-shadow:0 0 34px -10px rgba(155,126,240,0.24) inset, var(--shadow-card); }
+.metric-card.glow-coral{ box-shadow:0 0 34px -10px rgba(240,114,90,0.24) inset, var(--shadow-card); }
+.metric-card.glow-neutral{ box-shadow:0 0 20px -10px rgba(255,255,255,0.08) inset, var(--shadow-card); }
+
+.metric-card.highlight{
+  border-color:var(--border-accent);
+}
+
+.metric-icon{
+  width:38px;height:38px;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:14px;
+}
+.metric-icon.gold{ background:linear-gradient(150deg, rgba(212,169,74,0.35), rgba(212,169,74,0.08)); box-shadow:0 0 18px -4px rgba(212,169,74,0.5); color:var(--gold-bright); }
+.metric-icon.teal{ background:linear-gradient(150deg, rgba(79,214,196,0.32), rgba(79,214,196,0.07)); box-shadow:0 0 18px -4px rgba(79,214,196,0.45); color:var(--teal-bright); }
+.metric-icon.purple{ background:linear-gradient(150deg, rgba(155,126,240,0.32), rgba(155,126,240,0.07)); box-shadow:0 0 18px -4px rgba(155,126,240,0.45); color:var(--purple-bright); }
+.metric-icon.coral{ background:linear-gradient(150deg, rgba(240,114,90,0.32), rgba(240,114,90,0.07)); box-shadow:0 0 18px -4px rgba(240,114,90,0.45); color:var(--coral); }
+
+.metric-label{
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-secondary);
+  margin-bottom:8px;
+}
+.metric-value{
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  font-family:'Inter',sans-serif;
+  background:linear-gradient(135deg,#ffffff,#c9c7d4);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.metric-hint{
+  font-size:12px;
+  font-weight:500;
+  margin-top:8px;
+}
+.metric-hint.positive{ color:var(--teal-bright); }
+.metric-hint.warning{ color:var(--amber); }
+.metric-hint.empty{ color:var(--text-muted); font-weight:400; }
+
+/* mini sparkline dentro do card de saldo/GMV */
+.metric-spark{
+  width:100%; height:32px; margin-top:10px; display:block;
+}
+
+/* ---------- 7. GRÁFICO GMV ACUMULADO (linha) ---------- */
+.chart-card{
+  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  border:1px solid var(--border-hair);
+  border-radius:var(--radius-lg);
+  padding:22px 24px;
+  box-shadow:var(--shadow-card);
+}
+.chart-title{
+  font-size:15px;
+  font-weight:600;
+  color:var(--text-primary);
+}
+.chart-subtitle{
+  font-size:12px;
+  color:var(--text-muted);
+}
+.chart-axis-label{
+  font-size:11px;
+  fill:var(--text-muted);
+}
+/* usar como gradiente no <linearGradient> do SVG/lib de gráfico:
+   stop 0%  -> #7f6be0
+   stop 100% -> #c9a8ff
+   e para a área preenchida: stop 0% opacity .35 -> stop 100% opacity 0, cor #9b7ef0 */
+
+/* ---------- 8. DONUT GMV POR MARKETPLACE ---------- */
+.donut-card{
+  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  border:1px solid var(--border-hair);
+  border-radius:var(--radius-lg);
+  padding:22px 24px;
+  box-shadow:var(--shadow-card);
+}
+.donut-total-label{
+  font-size:11px;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+}
+.donut-total-value{
+  font-size:22px;
+  font-weight:700;
+  color:var(--text-primary);
+}
+/* cores por marketplace — manter consistente em todo o sistema, não só aqui */
+.mk-shopee{ color:var(--coral); }
+.mk-tiktok{ color:var(--teal); }
+.mk-mercadolivre{ color:var(--amber); }
+.mk-shein{ color:var(--purple); }
+
+.legend-row{
+  display:flex; align-items:center; gap:10px;
+  padding:6px 0;
+}
+.legend-dot{
+  width:9px;height:9px;border-radius:50%;
+  box-shadow:0 0 8px currentColor;
+}
+.legend-name{ font-size:13px; font-weight:600; color:var(--text-primary); }
+.legend-value{ font-size:12px; color:var(--text-secondary); }
+.legend-pct{ font-size:13px; font-weight:700; margin-left:auto; }
+
+/* ---------- 9. DESEMPENHO GERAL (lista de KPIs) ---------- */
+.kpi-row{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border-hair);
+}
+.kpi-row:last-child{ border-bottom:none; }
+.kpi-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border-hair);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-secondary);
+}
+.kpi-label{ font-size:12.5px; color:var(--text-secondary); }
+.kpi-value{ font-size:17px; font-weight:700; color:var(--text-primary); }
+
+/* ---------- 10. BUSCA E FILTROS DE CLIENTE ---------- */
+.search-input{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border-hair);
+  border-radius:var(--radius-sm);
+  color:var(--text-primary);
+  transition:border-color .15s ease;
+}
+.search-input:focus{
+  border-color:var(--border-accent);
+  outline:none;
+  box-shadow:0 0 0 3px rgba(212,169,74,0.12);
+}
+
+.filter-chip{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border-hair);
+  border-radius:100px;
+  color:var(--text-secondary);
+  padding:8px 16px;
+  font-size:13px;
+  font-weight:500;
+  transition:all .15s ease;
+}
+.filter-chip:hover{
+  border-color:var(--border-hair-strong);
+  color:var(--text-primary);
+}
+.filter-chip.active{
+  background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+  border-color:transparent;
+  color:#1a1305;
+  font-weight:700;
+}
+
+/* ---------- 11. TABELA DE CLIENTES ---------- */
+.data-table{
+  width:100%;
+  border-collapse:collapse;
+}
+.data-table thead th{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  text-align:left;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border-hair);
+}
+.data-table tbody td{
+  padding:14px 16px;
+  font-size:13.5px;
+  color:var(--text-primary);
+  border-bottom:1px solid var(--border-hair);
+}
+.data-table tbody tr{
+  transition:background .12s ease;
+}
+.data-table tbody tr:hover{
+  background:rgba(255,255,255,0.025);
+}
+
+/* badge de marketplace dentro da tabela */
+.mk-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:600;
+  padding:3px 9px;
+  border-radius:100px;
+}
+.mk-badge.shopee{ background:rgba(240,114,90,0.14); color:var(--coral); }
+.mk-badge.tiktok{ background:rgba(79,214,196,0.14); color:var(--teal); }
+.mk-badge.mercadolivre{ background:rgba(240,184,79,0.14); color:var(--amber); }
+.mk-badge.shein{ background:rgba(155,126,240,0.14); color:var(--purple); }
+
+/* ---------- 12. ANIMAÇÃO DE ENTRADA (usar 1x no load da página, não por card) ---------- */
+@keyframes lb-fade-up{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.page-enter{
+  animation:lb-fade-up .4s ease both;
+}
