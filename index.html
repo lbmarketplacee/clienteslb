@@ -386,6 +386,11 @@ textarea{resize:vertical;min-height:70px;}
 .kanban-add:hover{border-color:var(--gold);color:var(--gold);}
 .kanban-cards{display:flex;flex-direction:column;gap:10px;min-height:60px;}
 .kanban-card{background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:13px 14px;cursor:grab;transition:border-color .15s,transform .15s;}
+.kanban-card-fixa{border-left:3px solid var(--gold);cursor:default;}
+.kb-fixa-pendente{background:transparent;border:1px solid var(--border);cursor:pointer;}
+.kb-fixa-feito{background:var(--green-bg,#1a2e22);color:var(--green,#5cb88a);border:1px solid var(--green,#5cb88a);cursor:pointer;}
+.kanban-feito-toggle{width:100%;background:transparent;border:1px dashed var(--border);color:var(--text-dim);padding:10px;border-radius:8px;cursor:pointer;font-size:12.5px;margin-bottom:8px;text-align:left;}
+.kanban-feito-toggle:hover{border-color:var(--gold-dim);color:var(--gold);}
 .kanban-card:hover{border-color:var(--gold-dim);}
 .kanban-card.dragging{opacity:.4;}
 .kanban-card-title{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4;}
@@ -2262,7 +2267,7 @@ document.getElementById('loginForgotBtn')?.addEventListener('click',async()=>{
 
 document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
 onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
-comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();tfFixasGerarDoDia();rhSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
+comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
@@ -2698,6 +2703,10 @@ function startTarefasListener(){
     tfAtualizarLista();
     tfRenderBoard();
   });
+  onSnapshot(collection(db,"tarefasFixas"),snap=>{
+    tarefasFixasCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    tfRenderBoard();
+  });
 }
 let tarefaBuscaTexto='';
 function tfAtualizarLista(){
@@ -2740,6 +2749,22 @@ document.querySelectorAll('[data-tfpessoa]').forEach(b=>b.addEventListener('clic
   tarefaPessoaFiltro=b.dataset.tfpessoa;
   tfAtualizarLista();tfRenderBoard();
 }));
+function tfCardFixaHtml(f){
+  const hoje=new Date().toISOString().slice(0,10);
+  const feitoHoje=f.feitoHojeData===hoje;
+  return `<div class="kanban-card kanban-card-fixa" data-fixaid="${f.id}">
+    <div class="kanban-card-title">🔁 ${esc(f.titulo)}</div>
+    <div class="kanban-card-meta">
+      <button class="kb-badge ${feitoHoje?'kb-fixa-feito':'kb-fixa-pendente'}" onclick="window.__toggleFixaHoje('${f.id}')">${feitoHoje?'✓ Feito hoje':'○ Marcar feito hoje'}</button>
+    </div>
+  </div>`;
+}
+window.__toggleFixaHoje=async(fixaId)=>{
+  const f=tarefasFixasCache.find(x=>x.id===fixaId);if(!f)return;
+  const hoje=new Date().toISOString().slice(0,10);
+  const jaFeito=f.feitoHojeData===hoje;
+  try{await updateDoc(doc(db,"tarefasFixas",fixaId),{feitoHojeData:jaFeito?null:hoje});}catch(e){showToast('Erro.');}
+};
 function tfCardHtml(t){
   const prio={baixa:'kb-prio-baixa',media:'kb-prio-media',alta:'kb-prio-alta'}[t.prioridade]||'kb-prio-media';
   const prioLabel={baixa:'Baixa',media:'Média',alta:'Alta'}[t.prioridade]||'Média';
@@ -2754,6 +2779,7 @@ function tfCardHtml(t){
     <div class="kanban-card-meta"><span class="kb-badge ${prio}">${prioLabel}</span>${prazoHtml}${respHtml}${criadorHtml}${cliHtml}</div>
   </div>`;
 }
+let tfFeitoAberto=false;
 function tfRenderBoard(){
   const cols={afazer:[],fazendo:[],feito:[]};
   tarefasCache.forEach(t=>{(cols[t.coluna]||cols.afazer).push(t);});
@@ -2762,10 +2788,23 @@ function tfRenderBoard(){
   Object.keys(cols).forEach(k=>{
     const el=document.getElementById(ids[k]);
     document.getElementById(counts[k]).textContent=cols[k].length;
-    el.innerHTML=cols[k].length?cols[k].map(tfCardHtml).join(''):'<div class="kanban-empty">Nenhuma tarefa aqui.</div>';
+    if(k==='afazer'){
+      const fixasDoUsuario=(tarefasFixasCache||[]).filter(f=>f.responsavelEmail===currentEmail&&tarefaView==='meu');
+      const pinadas=fixasDoUsuario.map(tfCardFixaHtml).join('');
+      const resto=cols[k].length?cols[k].map(tfCardHtml).join(''):(fixasDoUsuario.length?'':'<div class="kanban-empty">Nenhuma tarefa aqui.</div>');
+      el.innerHTML=pinadas+resto;
+    }else if(k==='feito'){
+      if(!cols[k].length){el.innerHTML='<div class="kanban-empty">Nenhuma tarefa aqui.</div>';}
+      else{
+        el.innerHTML=`<button class="kanban-feito-toggle" onclick="window.__toggleFeitoAberto()">${tfFeitoAberto?'▾':'▸'} ${cols[k].length} concluída${cols[k].length>1?'s':''}</button>`+(tfFeitoAberto?cols[k].map(tfCardHtml).join(''):'');
+      }
+    }else{
+      el.innerHTML=cols[k].length?cols[k].map(tfCardHtml).join(''):'<div class="kanban-empty">Nenhuma tarefa aqui.</div>';
+    }
   });
   tfAttachDragEvents();
 }
+window.__toggleFeitoAberto=()=>{tfFeitoAberto=!tfFeitoAberto;tfRenderBoard();};
 function tfAttachDragEvents(){
   if(tarefaView!=='meu')return;
   document.querySelectorAll('.kanban-card').forEach(card=>{
