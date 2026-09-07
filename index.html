@@ -1585,6 +1585,9 @@ textarea{resize:vertical;min-height:70px;}
                     <div class="cm-tool-card" data-cmtab="ads"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">📢</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee Ads — Saldo</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Saldo automático de anúncios pagos de cada loja Shopee conectada.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Diretor Criativo</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Funil de fotos comerciais gerado por IA — envie 1 foto real, receba até 8 imagens de anúncio.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="logotipo"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Logotipo</div><div class="cm-tool-desc">Cria um logotipo comercial pro cliente, só com nome da loja e estilo desejado.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="guiatamanhos"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📏</div><div class="cm-tool-body"><div class="cm-tool-titulo">Guia de Tamanhos Avulso</div><div class="cm-tool-desc">Gera só a tabela de medidas, sem precisar rodar o funil completo de novo.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="video"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎬</div><div class="cm-tool-body"><div class="cm-tool-titulo">Vídeo do Produto</div><span class="cm-tool-tag vendas">Novo — Beta</span><div class="cm-tool-desc">Gera um vídeo curto do produto com IA, formato vertical, pronto pra Shopee Video.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gmv"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee GMV API</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Faturamento automático de cada loja Shopee conectada.</div></div></div>
         </div>
 
@@ -1656,9 +1659,9 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><h3>Diretor Criativo — Funil de Fotos</h3></div>
           <div class="ia-mk-sel" style="margin-bottom:16px">
-            <button class="ia-mk-btn active" data-dirmk="shopee">Shopee</button>
-            <button class="ia-mk-btn" data-dirmk="ml">Mercado Livre</button>
-            <button class="ia-mk-btn" data-dirmk="tiktok">TikTok Shop</button>
+            <button class="ia-mk-btn active" data-dirmk="shopee"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/shopee.svg" alt="" style="width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:invert(48%) sepia(64%) saturate(2476%) hue-rotate(332deg);"> Shopee</button>
+            <button class="ia-mk-btn" data-dirmk="ml"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/mercadolibre.svg" alt="" style="width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:invert(72%) sepia(45%) saturate(1000%) hue-rotate(1deg);"> Mercado Livre</button>
+            <button class="ia-mk-btn" data-dirmk="tiktok"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tiktok.svg" alt="" style="width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:brightness(0) saturate(100%) invert(78%) sepia(28%) saturate(841%) hue-rotate(118deg);"> TikTok Shop</button>
           </div>
           <div class="field"><label>Fotos reais do produto (obrigatório pelo menos 1 — até 5, inclua as variações de cor se tiver)</label>
             <div class="dz" id="dirDropZone" style="padding:20px">
@@ -1673,6 +1676,22 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <button class="btn btn-gold" id="dirGerarBtn">🎨 Gerar Funil de Fotos</button>
           <div id="dirResultado" style="margin-top:24px"></div>
+        </div>
+                <div class="cm-secao cm-painel" data-cmpainel="video">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">🎬</div><h3>Vídeo do Produto (Beta)</h3></div>
+          <div class="step-alert" style="margin-bottom:16px">⚠️ Ferramenta nova — a geração demora entre 30 segundos e alguns minutos. Não feche essa tela enquanto gera.</div>
+          <div class="field"><label>Foto do produto (opcional, ajuda a IA a ser mais fiel)</label>
+            <div class="dz" id="videoDropZone" style="padding:20px">
+              <input type="file" id="videoFotoInput" accept="image/*" style="display:none">
+              <div id="videoDropText">📷 Clique ou arraste a foto aqui</div>
+              <img id="videoFotoPreview" style="display:none;max-width:160px;border-radius:8px;margin-top:8px">
+            </div>
+          </div>
+          <div class="field"><label>Descrição do produto</label><textarea id="videoDescricao" placeholder="Descreva o produto e como ele deveria aparecer no vídeo..." style="min-height:80px"></textarea></div>
+          <button class="btn btn-gold" id="videoGerarBtn">🎬 Gerar Vídeo (8 segundos)</button>
+          <div id="videoStatusTxt" style="margin-top:12px;font-size:13px;color:var(--text-dim)"></div>
+          <div id="videoResultado" style="margin-top:20px"></div>
         </div>
         <div class="cm-secao cm-painel" data-cmpainel="gmv">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -4804,6 +4823,114 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
     console.error(e);
   }
   btn.disabled = false; btn.textContent = '🎨 Gerar Funil de Fotos';
+});
+
+/* ================= VÍDEO DO PRODUTO (Veo 3.1 — assíncrono, com polling) ================= */
+const VIDEO_API = 'https://lb-video-produto.vercel.app/api/video';
+let videoFotoB64 = null;
+let videoBase64Gerado = null;
+
+document.getElementById('videoDropZone')?.addEventListener('click', ()=>document.getElementById('videoFotoInput').click());
+document.getElementById('videoFotoInput')?.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file || !file.type.startsWith('image/'))return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    videoFotoB64 = ev.target.result;
+    document.getElementById('videoFotoPreview').src = videoFotoB64;
+    document.getElementById('videoFotoPreview').style.display = 'block';
+    document.getElementById('videoDropText').textContent = '✓ Foto carregada';
+  };
+  reader.readAsDataURL(file);
+});
+
+// Fica perguntando de tempos em tempos se o vídeo já ficou pronto (a geração é demorada)
+async function videoEsperarPronto(operationName, statusEl){
+  let tentativas = 0;
+  while(tentativas < 40){ // até uns 6-7 minutos de espera (40 x 10s)
+    await new Promise(r=>setTimeout(r, 10000));
+    tentativas++;
+    statusEl.textContent = `⏳ Gerando... (${tentativas*10}s, pode levar alguns minutos)`;
+    try{
+      const resp = await fetch(VIDEO_API, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({acao:'checar_status', operationName})
+      });
+      const data = await resp.json();
+      if(data.pronto){
+        if(!data.ok) return {erro: data.erro||'A geração falhou.'};
+        return {video: data.video, videoParaEstender: data.videoParaEstender};
+      }
+    }catch(e){ /* tenta de novo na próxima volta */ }
+  }
+  return {erro: 'Demorou demais e não terminou. Tenta de novo mais tarde.'};
+}
+
+document.getElementById('videoGerarBtn')?.addEventListener('click', async ()=>{
+  const produto = document.getElementById('videoDescricao').value.trim();
+  const statusEl = document.getElementById('videoStatusTxt');
+  const resultadoEl = document.getElementById('videoResultado');
+  if(!produto){showToast('Descreve o produto primeiro.');return;}
+  const btn = document.getElementById('videoGerarBtn');
+  btn.disabled = true; btn.textContent = '🎬 Gerando...';
+  resultadoEl.innerHTML = '';
+  statusEl.textContent = '⏳ Iniciando a geração...';
+  try{
+    const respInicio = await fetch(VIDEO_API, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({acao:'iniciar_video', produto, imagem: videoFotoB64})
+    });
+    const dataInicio = await respInicio.json();
+    if(!dataInicio.ok){
+      statusEl.textContent = '';
+      resultadoEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(dataInicio.erro||'desconhecido')}</div>`;
+      btn.disabled=false; btn.textContent='🎬 Gerar Vídeo (8 segundos)';
+      return;
+    }
+    const resultado = await videoEsperarPronto(dataInicio.operationName, statusEl);
+    statusEl.textContent = '';
+    if(resultado.erro){
+      resultadoEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(resultado.erro)}</div>`;
+    }else{
+      videoBase64Gerado = resultado.videoParaEstender;
+      resultadoEl.innerHTML = `
+        <video src="${resultado.video}" controls style="width:100%;max-width:340px;border-radius:10px;display:block;margin:0 auto"></video>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
+          <a href="${resultado.video}" download="video-produto.mp4" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
+          <button class="btn btn-gold btn-sm" id="videoEstenderBtn">➕ Estender (+7s)</button>
+        </div>
+      `;
+      document.getElementById('videoEstenderBtn')?.addEventListener('click', async ()=>{
+        const btnEst = document.getElementById('videoEstenderBtn');
+        btnEst.disabled = true; btnEst.textContent = 'Estendendo...';
+        statusEl.textContent = '⏳ Iniciando a extensão...';
+        try{
+          const respEst = await fetch(VIDEO_API, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({acao:'estender_video', produto, videoBase64: videoBase64Gerado})
+          });
+          const dataEst = await respEst.json();
+          if(!dataEst.ok){ showToast('Erro ao estender: '+(dataEst.erro||'desconhecido')); statusEl.textContent=''; return; }
+          const resultadoEst = await videoEsperarPronto(dataEst.operationName, statusEl);
+          statusEl.textContent = '';
+          if(resultadoEst.erro){ showToast('Erro: '+resultadoEst.erro); return; }
+          videoBase64Gerado = resultadoEst.videoParaEstender;
+          resultadoEl.innerHTML = `
+            <video src="${resultadoEst.video}" controls style="width:100%;max-width:340px;border-radius:10px;display:block;margin:0 auto"></video>
+            <div style="display:flex;justify-content:center;margin-top:12px">
+              <a href="${resultadoEst.video}" download="video-produto-estendido.mp4" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
+            </div>
+          `;
+          showToast('✓ Vídeo estendido!');
+        }catch(e){ showToast('Erro de conexão ao estender.'); statusEl.textContent=''; }
+      });
+      showToast('✓ Vídeo gerado!');
+    }
+  }catch(e){
+    statusEl.textContent = '';
+    resultadoEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro de conexão: ${esc(e.message)}</div>`;
+  }
+  btn.disabled = false; btn.textContent = '🎬 Gerar Vídeo (8 segundos)';
 });
 
 function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
