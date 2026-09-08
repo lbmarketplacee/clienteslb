@@ -4826,15 +4826,30 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   const querFotos = dirGerarSel.fotos;
   const querGuiaAvulso = dirGerarSel.guia && !dirGerarSel.fotos; // se o funil já roda, a Tabela de Medidas já vem como uma das fotos
   const querTexto = dirGerarSel.titulo || dirGerarSel.descricao;
-  btn.disabled = true; btn.textContent = '✨ Gerando... (pode levar 1-2 minutos)';
+  const soTexto = querTexto && !querFotos; // sem fotos, usa o motor leve (rápido) em vez do funil pesado
+  btn.disabled = true; btn.textContent = soTexto ? '✨ Gerando...' : '✨ Gerando... (pode levar 1-2 minutos)';
   resEl.innerHTML = '<div class="empty-state" style="padding:20px">Gerando o que foi selecionado, aguarde...</div>';
   try{
     let data = null;
-    if(querFotos || querTexto){
+    if(soTexto){
+      // Texto sem foto: usa o mesmo motor leve do "Gerar Anúncio com IA" — rápido, sem processar imagem
+      const resp = await fetch(IA_ENDPOINT, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ produto, marketplace: dirMarketplace, imagem: dirImagensB64[0] || null })
+      });
+      data = await resp.json();
+      if(!resp.ok || data.erro){
+        resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;
+        btn.disabled = false; btn.textContent = '✨ Gerar';
+        return;
+      }
+      data.ok = true;
+    }else if(querFotos){
       const resp = await fetch(DIRETOR_API, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ produto, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: querFotos ? qtd : 0 })
+        body: JSON.stringify({ produto, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })
       });
       data = await resp.json();
       if(!data.ok){
@@ -5347,7 +5362,7 @@ function calcRefreshFields(){
 document.querySelectorAll('.calc-mp-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mp-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');calcMp=b.dataset.cmp;calcRefreshFields();}));
 document.querySelectorAll('.calc-mode-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mode-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');calcMode=b.dataset.mode;calcRefreshFields();}));
 document.querySelectorAll('.calc-mltipo').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.calc-mltipo').forEach(x=>x.classList.remove('on'));b.classList.add('on');calcMlTipo=b.dataset.tipo;}));
-document.querySelectorAll('.calc-toggle').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');calcToggles[b.dataset.t]=b.classList.contains('on');}));
+document.querySelectorAll('.calc-toggle:not([data-dirgerar])').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');calcToggles[b.dataset.t]=b.classList.contains('on');}));
 document.getElementById('calcBtn').addEventListener('click',()=>{
   const imposto=parseFloat(document.getElementById('calcImposto').value)||0;
   const peso=parseFloat(document.getElementById('calcPeso').value)||0;
