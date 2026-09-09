@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conectando TikTok Shop — LB Marketplace</title>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<style>
+:root{--bg:#0a0a09;--gold:#d4a94a;--text:#f3f0e8;--text-dim:#a39d8c;--green:#5cb88a;--red:#e0525a;}
+body{background:var(--bg);color:var(--text);font-family:Montserrat,Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:20px;}
+.card{max-width:420px;}
+.spinner{width:36px;height:36px;border:3px solid #2a261c;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+h2{color:var(--gold);}
+a{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="card" id="conteudo">
+  <div class="spinner"></div>
+  <h2>Conectando TikTok Shop...</h2>
+  <p id="status">Aguarde um instante.</p>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",
+  authDomain: "lb-gestao-clientes.firebaseapp.com",
+  projectId: "lb-gestao-clientes",
+  storageBucket: "lb-gestao-clientes.firebasestorage.app",
+  messagingSenderId: "344033285587",
+  appId: "1:344033285587:web:fbdae7d44eaf5bac760b26"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function mostrarErro(msg) {
+  document.getElementById('conteudo').innerHTML = `
+    <h2 style="color:var(--red)">❌ Erro na conexão</h2>
+    <p>${msg}</p>
+    <p><a href="https://sistema.lbmarketplace.com.br/">← Voltar ao sistema</a></p>
+  `;
+}
+function mostrarSucesso(nomeLoja) {
+  document.getElementById('conteudo').innerHTML = `
+    <h2 style="color:var(--green)">✓ TikTok Shop conectado!</h2>
+    <p>${nomeLoja ? 'Loja: <strong>'+nomeLoja+'</strong>' : ''}</p>
+    <p><a href="https://sistema.lbmarketplace.com.br/">← Voltar ao sistema</a></p>
+  `;
+}
+
+async function processarCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const clienteId = params.get('state');
+  if (!code) { mostrarErro('Código de autorização não encontrado na URL.'); return; }
+  if (!clienteId) { mostrarErro('Não sei pra qual cliente é essa conexão (state ausente).'); return; }
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) { mostrarErro('Usuário não autenticado. Volta ao sistema e tenta de novo.'); return; }
+
+    try {
+      const resp = await fetch('https://lb-tiktok-shop.vercel.app/api/tiktok-shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'trocar_codigo', code })
+      });
+      const data = await resp.json();
+      if (!data.ok) { mostrarErro(data.erro || 'Falha ao trocar o código por token.'); return; }
+
+      await db.collection('clientes').doc(clienteId).update({
+        tiktokAccessToken: data.access_token,
+        tiktokRefreshToken: data.refresh_token,
+        tiktokShopId: data.shop_id || null,
+        tiktokConectadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      mostrarSucesso(data.shop_id);
+    } catch (e) {
+      mostrarErro('Erro de conexão: ' + e.message);
+    }
+  });
+}
+processarCallback();
+</script>
+</body>
+</html>
