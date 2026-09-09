@@ -158,6 +158,16 @@ async function processCallback() {
       return;
     }
     
+    // Salva numa configuração ÚNICA e compartilhada da LB (não é por cliente — é 1 conta só)
+    await db.collection('configuracoes').doc('whatsapp').set({
+      waba_id: data.waba_id,
+      phone_number_id: data.phone_number_id,
+      phone_number: data.phone_number,
+      access_token: data.access_token,
+      conectadoPor: user.email,
+      conectadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
     // Se deu certo, mostra sucesso e redireciona
     showSuccess('WhatsApp conectado com sucesso!', data.phone_number);
     
