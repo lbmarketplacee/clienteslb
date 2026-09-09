@@ -12,6 +12,7 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v20.0"></script>
 <style>
 :root{--bg:#0a0a09;--bg-sidebar:#111110;--bg-card:#111110;--bg-card2:#171613;--gold:#d4a94a;--gold-soft:#d4a94a30;--gold-dim:#a8863c;--gold-bright:#f0d791;--text:#f3efe4;--text-dim:#a39d8c;--text-dim2:#6e6a5d;--border:#282722;--border-soft:#1e1d19;--border-strong:#3a3728;--btn-text-dark:#181712;--red:#e0525a;--red-bg:#e0525a20;--amber:#e0a352;--amber-bg:#e0a35220;--green:#5fbf7a;--green-bg:#5fbf7a20;--purple:#a855f7;--purple-bg:#a855f720;--teal:#69c9d0;--shopee:#ee4d2d;--ml:#ffe156;--tiktok:#69c9d0;--shein:#a855f7;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1587,6 +1588,7 @@ textarea{resize:vertical;min-height:70px;}
                     <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central Criativa IA</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Título, descrição, funil de fotos e logotipo — tudo gerado por IA num só lugar.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="video"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎬</div><div class="cm-tool-body"><div class="cm-tool-titulo">Vídeo do Produto</div><span class="cm-tool-tag vendas">Novo — Beta</span><div class="cm-tool-desc">Gera um vídeo curto do produto com IA, formato vertical, pronto pra Shopee Video.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gmv"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee GMV API</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Faturamento automático de cada loja Shopee conectada.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="whatsapp"><div class="cm-tool-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><div class="cm-tool-body"><div class="cm-tool-titulo">Conectar WhatsApp Business</div><span class="cm-tool-tag vendas">Comunicação</span><div class="cm-tool-desc">Vincule sua conta WhatsApp Business pra receber e responder mensagens pela API.</div></div></div>
         </div>
 
 
@@ -1725,6 +1727,18 @@ textarea{resize:vertical;min-height:70px;}
           <button class="btn btn-gold btn-sm" id="sgmvAtualizarTodosBtn">🔄 Atualizar Todas as Lojas</button>
         </div>
         <div class="sgmv-list" id="sgmvLista"></div>
+        </div>
+
+        <div class="cm-secao cm-painel" data-cmpainel="whatsapp">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><h3>Conectar WhatsApp Business</h3></div>
+          <div style="padding:20px;background:var(--bg-card);border-radius:10px;margin-bottom:20px;border:1px solid var(--border)">
+            <p style="margin-bottom:12px;color:var(--text-dim)">Clique no botão abaixo pra conectar sua conta WhatsApp Business. Depois disso, você receberá mensagens de clientes via API.</p>
+            <button class="btn btn-gold" id="whatsappEmbeddedBtn">Conectar WhatsApp Business</button>
+            <div id="whatsappStatus" style="margin-top:12px;padding:12px;background:var(--border);border-radius:6px;display:none;text-align:center">
+              <div id="whatsappStatusText"></div>
+            </div>
+          </div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="ofertashopee">
@@ -5399,6 +5413,90 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
   res.innerHTML=bigHtml+br;
 });
 calcRefreshFields();
+
+/* ================= WhatsApp Embedded Signup ================= */
+const FACEBOOK_APP_ID = '2147903903008381';
+const WHATSAPP_CONFIG_ID = '2173394113579291';
+const WHATSAPP_API_URL = 'https://lb-whatsapp-webhook.vercel.app/api/whatsapp-callback';
+
+// Inicializa o Embedded Signup quando clica no botão
+document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => {
+  if (!window.FacebookEmbeddedSignup) {
+    alert('SDK do Facebook ainda está carregando... Tenta novamente em alguns segundos.');
+    return;
+  }
+  
+  FacebookEmbeddedSignup.login({
+    config_id: WHATSAPP_CONFIG_ID,
+    redirect_uri: window.location.origin + '/whatsapp-callback',
+    on_event: (event, data) => {
+      console.log('Embedded Signup event:', event, data);
+      if (event === 'success') {
+        handleWhatsAppSuccess(data);
+      } else if (event === 'error') {
+        handleWhatsAppError(data);
+      }
+    }
+  });
+});
+
+async function handleWhatsAppSuccess(data) {
+  const statusEl = document.getElementById('whatsappStatus');
+  const statusText = document.getElementById('whatsappStatusText');
+  
+  try {
+    // O "data" contém:
+    // - access_token: token pra API
+    // - waba_id: ID da conta WhatsApp Business
+    // - phone_number_id: ID do número de telefone
+    // - phone_number: o número em si
+    
+    console.log('WhatsApp Authorization Success:', data);
+    
+    // Salva no Firestore
+    if (currentUser && currentUserDoc) {
+      await updateDoc(doc(db, "clientes", currentUserDoc), {
+        whatsappIntegration: {
+          waba_id: data.waba_id,
+          phone_number_id: data.phone_number_id,
+          phone_number: data.phone_number,
+          access_token: data.access_token,
+          connected_at: serverTimestamp()
+        }
+      });
+      
+      statusEl.style.display = 'block';
+      statusText.innerHTML = `✓ WhatsApp Business conectado com sucesso!<br><strong>${data.phone_number}</strong><br><small style="color:var(--text-dim)">Você agora recebe mensagens via API</small>`;
+      statusEl.style.background = 'var(--green-bg)';
+      statusEl.style.color = 'var(--green)';
+      
+      // Desabilita o botão
+      document.getElementById('whatsappEmbeddedBtn').disabled = true;
+      document.getElementById('whatsappEmbeddedBtn').textContent = '✓ Conectado';
+      
+      showToast('✓ WhatsApp Business conectado!');
+    }
+  } catch (e) {
+    console.error('Erro ao salvar WhatsApp no Firestore:', e);
+    statusEl.style.display = 'block';
+    statusText.innerHTML = `⚠ Erro ao salvar a conexão: ${e.message}`;
+    statusEl.style.background = 'var(--red-bg)';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function handleWhatsAppError(error) {
+  const statusEl = document.getElementById('whatsappStatus');
+  const statusText = document.getElementById('whatsappStatusText');
+  
+  console.error('WhatsApp Authorization Error:', error);
+  statusEl.style.display = 'block';
+  statusText.innerHTML = `✗ Erro: ${error?.message || 'Falha ao conectar WhatsApp'}`;
+  statusEl.style.background = 'var(--red-bg)';
+  statusEl.style.color = 'var(--red)';
+  
+  showToast('Erro ao conectar WhatsApp');
+}
 
 </script>
 </body>
