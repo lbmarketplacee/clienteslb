@@ -142,7 +142,7 @@ async function processCallback() {
     }
     
     // Chama o backend pra trocar o code por um token permanente
-    const response = await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-exchange-token', {
+    const response = await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
