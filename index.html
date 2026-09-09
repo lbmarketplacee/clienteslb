@@ -5477,7 +5477,12 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
   }, {
     config_id: WHATSAPP_CONFIG_ID,
     response_type: 'code',
-    override_default_response_type: true
+    override_default_response_type: true,
+    extras: {
+      setup: {},
+      featureType: '',
+      sessionInfoVersion: '3'
+    }
   });
 });
 
