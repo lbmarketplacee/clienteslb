@@ -1577,7 +1577,7 @@ textarea{resize:vertical;min-height:70px;}
 
         <div class="cm-card-grid" id="cmCardGrid">
           <div class="cm-tool-card" data-cmtab="ofertashopee"><div class="cm-tool-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Marque o marco semanal (terça/sexta) de cada cliente com Shopee.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 3 em 3 dias pra cada cliente com TikTok Shop.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 30 em 30 dias pra cada cliente com TikTok Shop.</div></div></div>
           <div class="cm-tool-card" data-cmtab="descontos"><div class="cm-tool-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Descontos</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do desconto fixo de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="cupons"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Cupons</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do cupom de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
@@ -4332,7 +4332,7 @@ window.__marcarTiktokOferta=async(clienteId)=>{
   if(!cliente)return;
   const hoje=new Date();
   const proxima=new Date(hoje);
-  proxima.setDate(proxima.getDate()+3);
+  proxima.setDate(proxima.getDate()+30);
   const proximaStr=`${proxima.getFullYear()}-${String(proxima.getMonth()+1).padStart(2,'0')}-${String(proxima.getDate()).padStart(2,'0')}`;
   try{
     await updateDoc(doc(db,"clientes",clienteId),{tiktokOfertaProxima:proximaStr,tiktokOfertaUltimaMarcacao:serverTimestamp()});
@@ -5477,12 +5477,7 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
   }, {
     config_id: WHATSAPP_CONFIG_ID,
     response_type: 'code',
-    override_default_response_type: true,
-    extras: {
-      setup: {},
-      featureType: 'whatsapp_business_app_onboarding',
-      sessionInfoVersion: '3'
-    }
+    override_default_response_type: true
   });
 });
 
