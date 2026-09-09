@@ -5414,75 +5414,18 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
 });
 calcRefreshFields();
 
-/* ================= WhatsApp Embedded Signup ================= */
+/* ================= WhatsApp — Conectar via redirecionamento (compatível com whatsapp-callback.html) ================= */
 const FACEBOOK_APP_ID = '2147903903008381';
 const WHATSAPP_CONFIG_ID = '2173394113579291';
-const WHATSAPP_API_URL = 'https://lb-whatsapp-webhook.vercel.app/api/whatsapp-callback';
 
-// Inicializa o Embedded Signup quando clica no botão
+// Clica no botão → manda direto pra tela de login/permissão da Meta.
+// Depois que autoriza, a Meta redireciona pra whatsapp-callback.html?code=XXXX,
+// que já troca esse código pelo token de verdade no backend (com segurança).
 document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => {
-  if (!window.FacebookEmbeddedSignup) {
-    alert('SDK do Facebook ainda está carregando... Tenta novamente em alguns segundos.');
-    return;
-  }
-  
-  FacebookEmbeddedSignup.login({
-    config_id: WHATSAPP_CONFIG_ID,
-    redirect_uri: window.location.origin + '/whatsapp-callback',
-    on_event: (event, data) => {
-      console.log('Embedded Signup event:', event, data);
-      if (event === 'success') {
-        handleWhatsAppSuccess(data);
-      } else if (event === 'error') {
-        handleWhatsAppError(data);
-      }
-    }
-  });
+  const redirectUri = window.location.origin + '/whatsapp-callback.html';
+  const urlAutorizacao = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&config_id=${WHATSAPP_CONFIG_ID}&response_type=code`;
+  window.location.href = urlAutorizacao;
 });
-
-async function handleWhatsAppSuccess(data) {
-  const statusEl = document.getElementById('whatsappStatus');
-  const statusText = document.getElementById('whatsappStatusText');
-  statusEl.style.display = 'block';
-  statusText.innerHTML = 'Conectando, aguarde...';
-  try {
-    // Por segurança, NUNCA salvamos token direto do navegador — mandamos o código
-    // pro backend, que troca pelo token de verdade do lado de dentro (seguro) e salva.
-    // É UMA conta só da LB (não por cliente), então salva numa config compartilhada.
-    const resp = await fetch(WHATSAPP_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ acao: 'trocar_codigo', code: data.code, waba_id: data.waba_id, phone_number_id: data.phone_number_id })
-    });
-    const resultado = await resp.json();
-    if (!resultado.ok) throw new Error(resultado.erro || 'Falha ao processar a conexão.');
-
-    statusText.innerHTML = `✓ WhatsApp Business conectado com sucesso!<br><strong>${esc(resultado.phone_number || '')}</strong><br><small style="color:var(--text-dim)">A LB agora recebe mensagens via API</small>`;
-    statusEl.style.background = 'var(--green-bg)';
-    statusEl.style.color = 'var(--green)';
-    document.getElementById('whatsappEmbeddedBtn').disabled = true;
-    document.getElementById('whatsappEmbeddedBtn').textContent = '✓ Conectado';
-    showToast('✓ WhatsApp Business conectado!');
-  } catch (e) {
-    console.error('Erro ao conectar WhatsApp:', e);
-    statusText.innerHTML = `⚠ Erro ao conectar: ${esc(e.message)}`;
-    statusEl.style.background = 'var(--red-bg)';
-    statusEl.style.color = 'var(--red)';
-  }
-}
-
-function handleWhatsAppError(error) {
-  const statusEl = document.getElementById('whatsappStatus');
-  const statusText = document.getElementById('whatsappStatusText');
-  
-  console.error('WhatsApp Authorization Error:', error);
-  statusEl.style.display = 'block';
-  statusText.innerHTML = `✗ Erro: ${error?.message || 'Falha ao conectar WhatsApp'}`;
-  statusEl.style.background = 'var(--red-bg)';
-  statusEl.style.color = 'var(--red)';
-  
-  showToast('Erro ao conectar WhatsApp');
-}
 
 </script>
 </body>
