@@ -5414,17 +5414,71 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
 });
 calcRefreshFields();
 
-/* ================= WhatsApp — Conectar via redirecionamento (compatível com whatsapp-callback.html) ================= */
+/* ================= WhatsApp — Embedded Signup via SDK do JavaScript (jeito oficial da Meta) ================= */
 const FACEBOOK_APP_ID = '2147903903008381';
 const WHATSAPP_CONFIG_ID = '2173394113579291';
 
-// Clica no botão → manda direto pra tela de login/permissão da Meta.
-// Depois que autoriza, a Meta redireciona pra whatsapp-callback.html?code=XXXX,
-// que já troca esse código pelo token de verdade no backend (com segurança).
+window.fbAsyncInit = function() {
+  FB.init({ appId: FACEBOOK_APP_ID, cookie: true, xfbml: true, version: 'v23.0' });
+};
+(function(d, s, id){
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/en_US/sdk.js';
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+
+async function whatsappTrocarCodePorToken(code) {
+  const statusEl = document.getElementById('whatsappStatus');
+  const statusText = document.getElementById('whatsappStatusText');
+  statusEl.style.display = 'block';
+  statusText.innerHTML = 'Conectando, aguarde...';
+  try {
+    const resp = await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.erro || 'Falha ao trocar o código por token.');
+
+    await setDoc(doc(db, "configuracoes", "whatsapp"), {
+      waba_id: data.waba_id || null,
+      phone_number_id: data.phone_number_id || null,
+      phone_number: data.phone_number || null,
+      access_token: data.access_token || null,
+      conectadoPor: currentUser,
+      conectadoEm: serverTimestamp()
+    });
+
+    statusText.innerHTML = `✓ WhatsApp Business conectado com sucesso!${data.phone_number ? '<br><strong>'+esc(data.phone_number)+'</strong>' : ''}`;
+    statusEl.style.background = 'var(--green-bg)';
+    statusEl.style.color = 'var(--green)';
+    document.getElementById('whatsappEmbeddedBtn').disabled = true;
+    document.getElementById('whatsappEmbeddedBtn').textContent = '✓ Conectado';
+    showToast('✓ WhatsApp Business conectado!');
+  } catch (e) {
+    console.error('Erro ao conectar WhatsApp:', e);
+    statusText.innerHTML = `⚠ Erro ao conectar: ${esc(e.message)}`;
+    statusEl.style.background = 'var(--red-bg)';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
 document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => {
-  const redirectUri = window.location.origin + '/whatsapp-callback.html';
-  const urlAutorizacao = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&config_id=${WHATSAPP_CONFIG_ID}&response_type=code`;
-  window.location.href = urlAutorizacao;
+  if (!window.FB) { showToast('O SDK do Facebook ainda está carregando, tenta de novo em alguns segundos.'); return; }
+  FB.login((response) => {
+    if (response.authResponse && response.authResponse.code) {
+      whatsappTrocarCodePorToken(response.authResponse.code);
+    } else {
+      showToast('Conexão cancelada ou não autorizada.');
+    }
+  }, {
+    config_id: WHATSAPP_CONFIG_ID,
+    response_type: 'code',
+    override_default_response_type: true
+  });
 });
 
 </script>
