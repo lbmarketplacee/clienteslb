@@ -1374,6 +1374,10 @@ textarea{resize:vertical;min-height:70px;}
               <div class="cl-step-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
               <div class="cl-step-body"><div class="cl-step-title">5. Personalizar etiquetas de envio <span class="cl-step-badge">Quando necessário</span></div><div class="cl-step-desc">Ir em <b>Configurações</b> → <b>Configurações de Envio</b>.<br>Selecionar o marketplace desejado → <b>Configurações de Etiqueta</b>.<br>Escolher o formato <b>10x15</b> ou <b>A4 Sulfite</b>, conforme a impressora do cliente.</div></div>
             </div>
+            <div class="cl-step" data-cl="upseller" data-step="6" onclick="window.__clToggle(this)">
+              <div class="cl-step-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="cl-step-body"><div class="cl-step-title">6. Como migrar anúncio pelos SKUs <span class="cl-step-badge">Quando necessário</span></div><div class="cl-step-desc">Pra copiar anúncios de um marketplace de origem (ex: Shopee) pra virarem rascunhos em outro (ex: TikTok Shop) da mesma loja.<br><br><b>Produtos → Migrar de</b> → escolhe a plataforma de <b>ORIGEM</b>.<br>Se tiver mais de uma loja, filtra em "Todas Lojas" pela loja certa.<br>No filtro de busca, troca o critério pra <b>"SKU"</b> → abre "Pesquisar em Massa".<br>Cola todos os SKUs, um por linha (até 300 por busca — se for mais, divide em lotes).<br>Clica em <b>Buscar</b> e confere se o "Total" bate com a quantidade de SKUs (SKU não encontrado = não existe naquela loja/plataforma).<br>Marca a checkbox do cabeçalho pra selecionar tudo.<br>Clica em <b>"Copiar para Lojas"</b>, escolhe a plataforma/loja de <b>DESTINO</b> e confirma.<br>Espera chegar a 100% e confere o resumo (Total / Sucesso / Falhou) — anota os SKUs que falharem pra tratar manualmente.<br><b>Antes de publicar:</b> revisa cada anúncio migrado (título, categoria, imagens, preço) em <b>Produtos → [destino] → Rascunhos</b> — publicar sem revisar pode gerar violação de anúncio duplicado.<br>Depois de revisado, publica (individual ou em massa).<br><br><i>O anúncio original nunca é alterado — é sempre por cópia, e sempre entra como rascunho.</i></div></div>
+            </div>
           </div>
           <button class="btn btn-ghost btn-sm cl-restart" onclick="window.__clReiniciar('upseller')">↺ Reiniciar checklist</button>
         </div>
@@ -1859,6 +1863,8 @@ textarea{resize:vertical;min-height:70px;}
             <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeBtn">🔗 Conectar Shopee</button>
             <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarGmvBtn">🔄 Atualizar GMV (mês atual)</button>
           </div>
+          <div id="tiktokStatusTexto" style="font-size:13px;color:var(--text-dim);margin:14px 0 10px">Verificando TikTok Shop...</div>
+          <button type="button" class="btn btn-gold btn-sm" id="conectarTiktokBtn">🔗 Conectar TikTok Shop</button>
         </div>
       </div>
       <div class="field hidden" id="shopeeAdsIntegracaoField">
@@ -2405,7 +2411,7 @@ document.getElementById('fRespShopee').value=resp.shopee||'';
 document.getElementById('fRespML').value=resp.ml||'';
 document.getElementById('fRespTiktok').value=resp.tiktok||'';
 document.getElementById('fRespShein').value=resp.shein||'';
-shopeeAtualizarStatusModal(c);shopeeAdsAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
+shopeeAtualizarStatusModal(c);shopeeAdsAtualizarStatusModal(c);tiktokAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
 document.getElementById('cancelClientModal').addEventListener('click',()=>{clientModalOverlay.classList.add('hidden');window.__cadastroOrigemAtual=null;});
@@ -3846,6 +3852,19 @@ window.__descartarCadastro=async(id)=>{
 };
 
 /* ================= INTEGRAÇÃO SHOPEE — GMV automático por cliente ================= */
+function tiktokAtualizarStatusModal(c){
+  const txt=document.getElementById('tiktokStatusTexto');
+  const btnConectar=document.getElementById('conectarTiktokBtn');
+  if(!txt||!btnConectar)return;
+  if(!c||!c.id){txt.textContent='Salve o cliente primeiro.';return;}
+  if(c.tiktokShopId){
+    txt.innerHTML=`✅ Conectado — Loja <b style="color:var(--text)">${esc(c.tiktokShopId)}</b>`;
+    btnConectar.textContent='🔄 Reconectar TikTok Shop';
+  }else{
+    txt.textContent='Não conectado. Clique em "Conectar TikTok Shop" e peça pro cliente autorizar o acesso.';
+    btnConectar.textContent='🔗 Conectar TikTok Shop';
+  }
+}
 const SHOPEE_API = 'https://lb-shopee-gmv.vercel.app/api/shopee';
 const SHOPEE_CALLBACK_URL = 'https://sistema.lbmarketplace.com.br/shopee-callback.html';
 
@@ -4008,7 +4027,17 @@ document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
   const clienteNome=document.getElementById('fNome').value.trim();
   if(!clienteId){showToast('Salve o cliente primeiro antes de conectar a Shopee.');return;}
-  window.__shopeeConectar(clienteId,clienteNome);
+  window.__shopeeConectar(clienteId,clienteNome);});
+
+document.getElementById('conectarTiktokBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('clientId').value;
+  if(!clienteId){showToast('Salve o cliente primeiro antes de conectar o TikTok Shop.');return;}
+  try{
+    const resp=await fetch('https://lb-tiktok-shop.vercel.app/api/tiktok-shop?acao=gerar_link_autorizacao&clienteId='+encodeURIComponent(clienteId));
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
+    window.location.href=data.url;
+  }catch(e){showToast('Erro de conexão ao gerar o link.');}
 });
 
 // app: 'gmv' (padrão, mantém compatibilidade) ou 'mkt' (app de Marketing — cupom/oferta relâmpago)
