@@ -4056,7 +4056,7 @@ async function shopeeGarantirTokenValido(cliente, app='gmv'){
   // Expirado ou perto de expirar — renova usando o refresh_token
   const resp=await fetch(`${SHOPEE_API}?acao=renovar_token&app=${app}&refresh_token=${refreshToken}&shop_id=${shopId}`);
   const data=await resp.json();
-  if(!data.ok||!data.access_token)throw new Error(`Não foi possível renovar o token da Shopee (${app}).`);
+  if(!data.ok||!data.access_token)throw new Error(`Não foi possível renovar o token da Shopee (${app}): ${data.erro||data.message||JSON.stringify(data).slice(0,150)}`);
   const novaExpiraEm=Date.now()+(data.expire_in*1000);
   await updateDoc(doc(db,"clientes",cliente.id),{
     [pre+'AccessToken']:data.access_token,
