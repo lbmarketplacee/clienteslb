@@ -998,6 +998,7 @@ textarea{resize:vertical;min-height:70px;}
       
       <button class="nav-item sidebar-item locked" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item sidebar-item locked hidden" data-page="rh" id="navRhBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Financeiro RH 🔒</button>
+      <button class="nav-item sidebar-item locked hidden" data-page="dre" id="navDreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> DRE 🔒</button>
       
       </nav>
     <div class="drive-status drive-off status-pill" id="driveStatus" style="cursor:pointer" title="Conectar Google Drive">
@@ -1573,7 +1574,31 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
-<div class="page" id="page-marketing">
+      <div class="page" id="page-dre">
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">DRE <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Demonstrativo de Resultado — dados reais puxados direto do Asaas.</p></div>
+          <div style="display:flex;gap:8px;margin-left:auto">
+            <input type="month" id="dreMesInput" style="max-width:160px">
+            <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">🔄 Atualizar</button>
+          </div>
+        </div>
+        <div class="sgmv-summary">
+          <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Receita<br>(Clientes)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
+          <div class="summary-card metric-card glow-coral"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Despesas<br>(Colaboradoras)</div></div></div><div class="sc-value metric-value" id="dreDespesas">R$ 0</div></div>
+          <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Resultado<br>Líquido</div></div></div><div class="sc-value metric-value" id="dreResultado">R$ 0</div></div>
+        </div>
+        <div class="cm-secao" style="margin-top:20px">
+          <h3 style="margin-bottom:14px">📊 Receita por Cliente</h3>
+          <div id="dreListaClientes"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
+        </div>
+        <div class="cm-secao" style="margin-top:20px">
+          <h3 style="margin-bottom:14px">👤 Despesas por Colaboradora</h3>
+          <div id="dreListaColaboradoras"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-marketing">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Central de Marketing</h2><p class="page-sub">Tudo que precisa de ação em um lugar só — ofertas, descontos, cupons e devoluções.</p></div>
@@ -2324,7 +2349,7 @@ document.getElementById('loginForgotBtn')?.addEventListener('click',async()=>{
 
 document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
 onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
-comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
+comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();dreSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
 /* NAV */
@@ -2333,7 +2358,7 @@ function fecharMenuMobile(){document.getElementById('sidebar').classList.remove(
 function abrirMenuMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
 document.getElementById('mobileMenuBtn')?.addEventListener('click',abrirMenuMobile);
 document.getElementById('sidebarOverlay')?.addEventListener('click',fecharMenuMobile);
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],dre:['DRE','Demonstrativo de Resultado — dados reais do Asaas.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -2969,6 +2994,62 @@ document.getElementById('tfFixasFecharBtn')?.addEventListener('click',()=>docume
 
 /* ================= FINANCEIRO RH — colaboradoras, faltas, férias, 13º, pagamento Asaas ================= */
 const ASAAS_API = 'https://lb-asaas-rh.vercel.app/api/asaas';
+
+/* ================= DRE — puxa dados reais do Asaas ================= */
+function dreSetupAcesso(){
+  document.getElementById('navDreBtn')?.classList.toggle('hidden',currentEmail!==LINCOLN_EMAIL);
+  const input=document.getElementById('dreMesInput');
+  if(input&&!input.value){const hoje=new Date();input.value=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;}
+}
+window.__dreAtualizar=async()=>{
+  const mes=document.getElementById('dreMesInput').value;
+  if(!mes){showToast('Escolhe o mês primeiro.');return;}
+  const [ano,mesNum]=mes.split('-');
+  const dataInicio=`${ano}-${mesNum}-01`;
+  const ultimoDia=new Date(Number(ano),Number(mesNum),0).getDate();
+  const dataFim=`${ano}-${mesNum}-${ultimoDia}`;
+
+  document.getElementById('dreListaClientes').innerHTML='<div class="empty-state" style="padding:20px">Buscando...</div>';
+  document.getElementById('dreListaColaboradoras').innerHTML='<div class="empty-state" style="padding:20px">Buscando...</div>';
+
+  try{
+    const [respCobrancas,respTransfer]=await Promise.all([
+      fetch(`${ASAAS_API}?acao=listar_cobrancas&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
+      fetch(`${ASAAS_API}?acao=listar_transferencias&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json())
+    ]);
+
+    if(!respCobrancas.ok){showToast('Erro ao buscar cobranças: '+(respCobrancas.erro||'desconhecido'));return;}
+    if(!respTransfer.ok){showToast('Erro ao buscar transferências: '+(respTransfer.erro||'desconhecido'));return;}
+
+    // Só conta cobrança realmente recebida (não conta pendente/vencida como receita ainda)
+    const cobrancasRecebidas=(respCobrancas.cobrancas||[]).filter(c=>c.status==='RECEIVED'||c.status==='CONFIRMED'||c.status==='RECEIVED_IN_CASH');
+    const receitaTotal=cobrancasRecebidas.reduce((s,c)=>s+(Number(c.value)||0),0);
+
+    const transferenciasFeitas=(respTransfer.transferencias||[]).filter(t=>t.status==='DONE');
+    const despesaTotal=transferenciasFeitas.reduce((s,t)=>s+(Number(t.value)||0),0);
+
+    animateTo(document.getElementById('dreReceita'),receitaTotal,v=>fmtR(v));
+    animateTo(document.getElementById('dreDespesas'),despesaTotal,v=>fmtR(v));
+    animateTo(document.getElementById('dreResultado'),receitaTotal-despesaTotal,v=>fmtR(v));
+
+    // Agrupa receita por cliente (nome vem direto do cadastro do cliente no Asaas)
+    const porCliente={};
+    cobrancasRecebidas.forEach(c=>{const nome=c.customerName||c.customer||'Sem nome';porCliente[nome]=(porCliente[nome]||0)+(Number(c.value)||0);});
+    const listaClientes=Object.entries(porCliente).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('dreListaClientes').innerHTML=listaClientes.length
+      ?listaClientes.map(([nome,valor])=>`<div class="cm-item"><span class="nome">${esc(nome)}</span><b style="color:var(--green)">${fmtR(valor)}</b></div>`).join('')
+      :'<div class="empty-state" style="padding:20px">Nenhuma cobrança recebida nesse mês.</div>';
+
+    // Agrupa despesa por colaboradora (usando a descrição da transferência, que já inclui o nome)
+    const porColab={};
+    transferenciasFeitas.forEach(t=>{const desc=t.description||'Sem descrição';porColab[desc]=(porColab[desc]||0)+(Number(t.value)||0);});
+    const listaColab=Object.entries(porColab).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('dreListaColaboradoras').innerHTML=listaColab.length
+      ?listaColab.map(([desc,valor])=>`<div class="cm-item"><span class="nome">${esc(desc)}</span><b style="color:var(--red)">-${fmtR(valor)}</b></div>`).join('')
+      :'<div class="empty-state" style="padding:20px">Nenhuma transferência feita nesse mês.</div>';
+
+  }catch(e){showToast('Erro de conexão ao buscar o DRE.');console.error(e);}
+};
 let colaboradorasCache=[];
 let unsubColaboradoras=null;
 let rhDetalheAtual=null;
