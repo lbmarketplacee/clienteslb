@@ -1888,7 +1888,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="fDuracaoMeses" placeholder="12"></div>
         <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="fDiaVencimento" min="1" max="31" placeholder="5"></div>
       </div>
-      <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">📄 Gerar Contrato (.docx)</button>
+      <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">📄 Gerar Contrato (.pdf)</button>
       <div class="field"><label>Marketplaces</label><div class="chip-toggle-group">
         <button type="button" class="chip-toggle" data-val="shopee">Shopee</button>
         <button type="button" class="chip-toggle" data-val="ml">Mercado Livre</button>
@@ -4230,12 +4230,12 @@ document.getElementById('gerarContratoBtn')?.addEventListener('click',async()=>{
     const blob=await resp.blob();
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download=`Contrato - ${nomeCliente}.docx`;
+    a.href=url;a.download=`Contrato - ${nomeCliente}.pdf`;
     document.body.appendChild(a);a.click();a.remove();
     URL.revokeObjectURL(url);
     showToast('✓ Contrato gerado e baixado!');
   }catch(e){showToast('Erro: '+e.message);console.error(e);}
-  btn.disabled=false;btn.textContent='📄 Gerar Contrato (.docx)';
+  btn.disabled=false;btn.textContent='📄 Gerar Contrato (.pdf)';
 });
 document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
