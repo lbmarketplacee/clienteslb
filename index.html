@@ -1169,6 +1169,22 @@ textarea{resize:vertical;min-height:70px;}
                 <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
         <div class="contratos-section"><h3>✅ Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
         <div class="contratos-section"><h3>❌ Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
+        <div class="contratos-section">
+          <h3>📄 Gerar Contrato (PDF)</h3>
+          <div class="field"><label>Nome do cliente/empresa</label><input type="text" id="caNome" placeholder="Nome completo ou razão social"></div>
+          <div class="field"><label>CNPJ/CPF</label><input type="text" id="caCnpjCpf" placeholder="00.000.000/0000-00"></div>
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>E-mail</label><input type="email" id="caEmail" placeholder="email@cliente.com"></div>
+            <div class="field" style="flex:1"><label>WhatsApp</label><input type="text" id="caWhatsapp" placeholder="(11) 90000-0000"></div>
+          </div>
+          <div class="field"><label>Endereço</label><input type="text" id="caEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="number" id="caMensalidade" step="0.01" placeholder="0,00"></div>
+            <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="caDuracaoMeses" placeholder="12"></div>
+            <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="caDiaVencimento" min="1" max="31" placeholder="5"></div>
+          </div>
+          <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">📄 Gerar Contrato (.pdf)</button>
+        </div>
       </div>
       <!-- ===== PÁGINA: CADASTROS RECEBIDOS ===== -->
       <div class="page" id="page-cadastros">
@@ -1687,7 +1703,7 @@ textarea{resize:vertical;min-height:70px;}
           </div>
         </div>
         </div>
-                <div class="cm-secao cm-painel" data-cmpainel="saude">
+                        <div class="cm-secao cm-painel" data-cmpainel="saude">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">💚</div><h3>Saúde da Loja — Shopee</h3></div>
           <div class="sgmv-list" id="saudeLojaLista"></div>
@@ -4223,6 +4239,46 @@ document.getElementById('gerarContratoBtn')?.addEventListener('click',async()=>{
         mensalidade:mensalidade?mensalidade.toFixed(2).replace('.',','):'',
         valorTotal:(mensalidade&&duracaoMeses)?(mensalidade*duracaoMeses).toFixed(2).replace('.',','):'',
         diaVencimento:document.getElementById('fDiaVencimento').value,
+        dataAssinatura:hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+      })
+    });
+    if(!resp.ok){const err=await resp.json().catch(()=>({}));throw new Error(err.erro||'Erro ao gerar.');}
+    const blob=await resp.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`Contrato - ${nomeCliente}.pdf`;
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+    showToast('✓ Contrato gerado e baixado!');
+  }catch(e){showToast('Erro: '+e.message);console.error(e);}
+  btn.disabled=false;btn.textContent='📄 Gerar Contrato (.pdf)';
+});
+document.getElementById('gerarContratoAvulsoBtn')?.addEventListener('click',async()=>{
+  const nomeCliente=document.getElementById('caNome').value.trim();
+  if(!nomeCliente){showToast('Preenche o nome do cliente primeiro.');return;}
+  const btn=document.getElementById('gerarContratoAvulsoBtn');
+  btn.disabled=true;btn.textContent='Gerando...';
+  try{
+    const mensalidade=parseFloat(document.getElementById('caMensalidade').value)||0;
+    const duracaoMeses=parseInt(document.getElementById('caDuracaoMeses').value)||0;
+    const hoje=new Date();
+    const fim=new Date(hoje);fim.setMonth(fim.getMonth()+duracaoMeses);
+    const fmtDataBR=(d)=>d.toLocaleDateString('pt-BR');
+    const resp=await fetch('https://lb-gerador-contrato.vercel.app/api/gerar-contrato',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        nomeCliente,
+        cnpjCpfCliente:document.getElementById('caCnpjCpf').value.trim(),
+        emailCliente:document.getElementById('caEmail').value.trim(),
+        whatsappCliente:document.getElementById('caWhatsapp').value.trim(),
+        enderecoCliente:document.getElementById('caEndereco').value.trim(),
+        duracaoMeses,
+        dataInicio:fmtDataBR(hoje),
+        dataFim:duracaoMeses?fmtDataBR(fim):'',
+        mensalidade:mensalidade?mensalidade.toFixed(2).replace('.',','):'',
+        valorTotal:(mensalidade&&duracaoMeses)?(mensalidade*duracaoMeses).toFixed(2).replace('.',','):'',
+        diaVencimento:document.getElementById('caDiaVencimento').value,
         dataAssinatura:hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
       })
     });
