@@ -3013,13 +3013,17 @@ window.__dreAtualizar=async()=>{
   document.getElementById('dreListaColaboradoras').innerHTML='<div class="empty-state" style="padding:20px">Buscando...</div>';
 
   try{
-    const [respCobrancas,respTransfer]=await Promise.all([
+    const [respCobrancas,respTransfer,respClientes]=await Promise.all([
       fetch(`${ASAAS_API}?acao=listar_cobrancas&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
-      fetch(`${ASAAS_API}?acao=listar_transferencias&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json())
+      fetch(`${ASAAS_API}?acao=listar_transferencias&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
+      fetch(`${ASAAS_API}?acao=listar_clientes_asaas`).then(r=>r.json())
     ]);
 
     if(!respCobrancas.ok){showToast('Erro ao buscar cobranças: '+(respCobrancas.erro||'desconhecido'));return;}
     if(!respTransfer.ok){showToast('Erro ao buscar transferências: '+(respTransfer.erro||'desconhecido'));return;}
+
+    const mapaNomesClientes={};
+    (respClientes.clientes||[]).forEach(c=>{mapaNomesClientes[c.id]=c.nome;});
 
     // Só conta cobrança realmente recebida (não conta pendente/vencida como receita ainda)
     const cobrancasRecebidas=(respCobrancas.cobrancas||[]).filter(c=>c.status==='RECEIVED'||c.status==='CONFIRMED'||c.status==='RECEIVED_IN_CASH');
@@ -3034,7 +3038,7 @@ window.__dreAtualizar=async()=>{
 
     // Agrupa receita por cliente (nome vem direto do cadastro do cliente no Asaas)
     const porCliente={};
-    cobrancasRecebidas.forEach(c=>{const nome=c.customerName||c.customer||'Sem nome';porCliente[nome]=(porCliente[nome]||0)+(Number(c.value)||0);});
+    cobrancasRecebidas.forEach(c=>{const nome=mapaNomesClientes[c.customer]||c.customerName||c.customer||'Sem nome';porCliente[nome]=(porCliente[nome]||0)+(Number(c.value)||0);});
     const listaClientes=Object.entries(porCliente).sort((a,b)=>b[1]-a[1]);
     document.getElementById('dreListaClientes').innerHTML=listaClientes.length
       ?listaClientes.map(([nome,valor])=>`<div class="cm-item"><span class="nome">${esc(nome)}</span><b style="color:var(--green)">${fmtR(valor)}</b></div>`).join('')
