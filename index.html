@@ -1880,6 +1880,15 @@ textarea{resize:vertical;min-height:70px;}
       <div class="field"><label>Nome do Cliente</label><input type="text" id="fNome" required></div>
       <div class="field"><label>E-mail (opcional)</label><input type="email" id="fEmail" placeholder="cliente@email.com"></div>
       <div class="field"><label>Pasta no Google Drive (link) — opcional</label><input type="url" id="fDrive" placeholder="https://drive.google.com/drive/folders/..."></div>
+      <div class="cm-secao-titulo" style="margin-top:18px;margin-bottom:6px"><h3 style="font-size:14px">📄 Dados do Contrato</h3></div>
+      <div class="field"><label>CNPJ/CPF</label><input type="text" id="fCnpjCpf" placeholder="00.000.000/0000-00"></div>
+      <div class="field"><label>Endereço</label><input type="text" id="fEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
+      <div style="display:flex;gap:10px">
+        <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="number" id="fMensalidade" step="0.01" placeholder="0,00"></div>
+        <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="fDuracaoMeses" placeholder="12"></div>
+        <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="fDiaVencimento" min="1" max="31" placeholder="5"></div>
+      </div>
+      <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">📄 Gerar Contrato (.docx)</button>
       <div class="field"><label>Marketplaces</label><div class="chip-toggle-group">
         <button type="button" class="chip-toggle" data-val="shopee">Shopee</button>
         <button type="button" class="chip-toggle" data-val="ml">Mercado Livre</button>
@@ -2446,7 +2455,7 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+function openClientModal(c){window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c?(c.mensalidade||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
 const docs=c?.documentosCadastro;
 const fDocsWrap=document.getElementById('fDocumentosCadastroWrap'),fDocsLista=document.getElementById('fDocumentosCadastroLista');
 if(docs&&(docs.docFrente||docs.docVerso||docs.docCnpj)){
@@ -2471,7 +2480,7 @@ const responsaveisPorMarketplace={
   tiktok:document.getElementById('fRespTiktok').value||null,
   shein:document.getElementById('fRespShein').value||null
 };
-const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),marketplaces:mps,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:parseFloat(document.getElementById('fMensalidade').value)||0,duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,marketplaces:mps,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
 function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
@@ -4189,6 +4198,45 @@ document.getElementById('relGerarBtn')?.addEventListener('click',async()=>{
 });
 
 
+document.getElementById('gerarContratoBtn')?.addEventListener('click',async()=>{
+  const nomeCliente=document.getElementById('fNome').value.trim();
+  if(!nomeCliente){showToast('Preenche o nome do cliente primeiro.');return;}
+  const btn=document.getElementById('gerarContratoBtn');
+  btn.disabled=true;btn.textContent='Gerando...';
+  try{
+    const mensalidade=parseFloat(document.getElementById('fMensalidade').value)||0;
+    const duracaoMeses=parseInt(document.getElementById('fDuracaoMeses').value)||0;
+    const hoje=new Date();
+    const fim=new Date(hoje);fim.setMonth(fim.getMonth()+duracaoMeses);
+    const fmtDataBR=(d)=>d.toLocaleDateString('pt-BR');
+    const resp=await fetch('https://lb-gerador-contrato.vercel.app/api/gerar-contrato',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        nomeCliente,
+        cnpjCpfCliente:document.getElementById('fCnpjCpf').value.trim(),
+        emailCliente:document.getElementById('fEmail').value.trim(),
+        enderecoCliente:document.getElementById('fEndereco').value.trim(),
+        duracaoMeses,
+        dataInicio:fmtDataBR(hoje),
+        dataFim:duracaoMeses?fmtDataBR(fim):'',
+        mensalidade:mensalidade?mensalidade.toFixed(2).replace('.',','):'',
+        valorTotal:(mensalidade&&duracaoMeses)?(mensalidade*duracaoMeses).toFixed(2).replace('.',','):'',
+        diaVencimento:document.getElementById('fDiaVencimento').value,
+        dataAssinatura:hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+      })
+    });
+    if(!resp.ok){const err=await resp.json().catch(()=>({}));throw new Error(err.erro||'Erro ao gerar.');}
+    const blob=await resp.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`Contrato - ${nomeCliente}.docx`;
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+    showToast('✓ Contrato gerado e baixado!');
+  }catch(e){showToast('Erro: '+e.message);console.error(e);}
+  btn.disabled=false;btn.textContent='📄 Gerar Contrato (.docx)';
+});
 document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
   const clienteNome=document.getElementById('fNome').value.trim();
