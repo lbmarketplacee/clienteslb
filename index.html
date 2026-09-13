@@ -1605,6 +1605,11 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Receita<br>(Clientes)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
           <div class="summary-card metric-card glow-coral"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Despesas<br>(Colaboradoras)</div></div></div><div class="sc-value metric-value" id="dreDespesas">R$ 0</div></div>
           <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Resultado<br>Líquido</div></div></div><div class="sc-value metric-value" id="dreResultado">R$ 0</div></div>
+          <div class="summary-card metric-card glow-purple"><div class="sc-top"><div class="sc-icon purple metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div><div class="sc-label">MRR<br>(Recorrência Ativa)</div></div></div><div class="sc-value metric-value" id="dreMrr">R$ 0</div><div class="sc-foot" id="dreMrrFoot">&nbsp;</div></div>
+        </div>
+        <div class="cm-secao" style="margin-top:20px">
+          <h3 style="margin-bottom:14px">📅 Vencimentos — Próximas Cobranças Recorrentes</h3>
+          <div id="dreListaVencimentos"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
         </div>
         <div class="cm-secao" style="margin-top:20px">
           <h3 style="margin-bottom:14px">📊 Receita por Cliente</h3>
@@ -3031,10 +3036,11 @@ window.__dreAtualizar=async()=>{
   document.getElementById('dreListaColaboradoras').innerHTML='<div class="empty-state" style="padding:20px">Buscando...</div>';
 
   try{
-    const [respCobrancas,respTransfer,respClientes]=await Promise.all([
+    const [respCobrancas,respTransfer,respClientes,respAssinaturas]=await Promise.all([
       fetch(`${ASAAS_API}?acao=listar_cobrancas&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
       fetch(`${ASAAS_API}?acao=listar_transferencias&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
-      fetch(`${ASAAS_API}?acao=listar_clientes_asaas`).then(r=>r.json())
+      fetch(`${ASAAS_API}?acao=listar_clientes_asaas`).then(r=>r.json()),
+      fetch(`${ASAAS_API}?acao=listar_assinaturas`).then(r=>r.json())
     ]);
 
     if(!respCobrancas.ok){showToast('Erro ao buscar cobranças: '+(respCobrancas.erro||'desconhecido'));return;}
@@ -3042,6 +3048,31 @@ window.__dreAtualizar=async()=>{
 
     const mapaNomesClientes={};
     (respClientes.clientes||[]).forEach(c=>{mapaNomesClientes[c.id]=c.nome;});
+
+    // MRR e vencimentos — só calcula se a busca de assinaturas deu certo (não trava o resto do DRE se falhar)
+    if(respAssinaturas.ok){
+      const assinaturasAtivas=respAssinaturas.assinaturas||[];
+      const mrrTotal=assinaturasAtivas.reduce((s,a)=>s+(Number(a.value)||0),0);
+      animateTo(document.getElementById('dreMrr'),mrrTotal,v=>fmtR(v));
+      document.getElementById('dreMrrFoot').textContent=`${assinaturasAtivas.length} assinatura(s) ativa(s)`;
+
+      const hoje=new Date();
+      const vencimentosOrdenados=assinaturasAtivas
+        .filter(a=>a.nextDueDate)
+        .sort((a,b)=>new Date(a.nextDueDate)-new Date(b.nextDueDate));
+      document.getElementById('dreListaVencimentos').innerHTML=vencimentosOrdenados.length
+        ?vencimentosOrdenados.map(a=>{
+          const nomeCliente=mapaNomesClientes[a.customer]||'Sem nome';
+          const dias=Math.ceil((new Date(a.nextDueDate)-hoje)/(1000*60*60*24));
+          const corDias=dias<0?'var(--red)':dias<=5?'var(--amber)':'var(--text-dim)';
+          const txtDias=dias<0?`Venceu há ${Math.abs(dias)}d`:dias===0?'Vence hoje':`Vence em ${dias}d`;
+          return `<div class="cm-item"><span class="nome">${esc(nomeCliente)}</span><span style="color:${corDias};font-size:12px;margin-right:12px">${txtDias} (${fmtDate(a.nextDueDate)})</span><b>${fmtR(a.value)}</b></div>`;
+        }).join('')
+        :'<div class="empty-state" style="padding:20px">Nenhuma assinatura ativa encontrada.</div>';
+    }else{
+      document.getElementById('dreMrrFoot').textContent='Não foi possível buscar (erro: '+(respAssinaturas.erro||'desconhecido')+')';
+      document.getElementById('dreListaVencimentos').innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar assinaturas.</div>';
+    }
 
     // Só conta cobrança realmente recebida (não conta pendente/vencida como receita ainda)
     const cobrancasRecebidas=(respCobrancas.cobrancas||[]).filter(c=>c.status==='RECEIVED'||c.status==='CONFIRMED'||c.status==='RECEIVED_IN_CASH');
