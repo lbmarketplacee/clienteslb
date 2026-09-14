@@ -1646,6 +1646,8 @@ textarea{resize:vertical;min-height:70px;}
         <div class="cm-card-grid" id="cmCardGrid">
           <div class="cm-tool-card" data-cmtab="ofertashopee"><div class="cm-tool-ico" style="background:var(--red-bg);color:var(--red)">⚡</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Marque o marco semanal (terça/sexta) de cada cliente com Shopee.</div></div></div>
           <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 30 em 30 dias pra cada cliente com TikTok Shop.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="ofertaml"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">🛒</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — Mercado Livre</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo diário pra cada cliente com Mercado Livre.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="grossupml"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">💰</div><div class="cm-tool-body"><div class="cm-tool-titulo">Desconto Gross Up — Mercado Livre</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Renova a cada 14 dias pra cada cliente com Mercado Livre.</div></div></div>
           <div class="cm-tool-card" data-cmtab="descontos"><div class="cm-tool-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Descontos</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do desconto fixo de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="cupons"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Cupons</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do cupom de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
@@ -1831,6 +1833,34 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>TikTok Shop</div></div><div class="sc-value" id="ttTotal">0</div></div>
         </div>
         <div class="tt-list" id="ttLista"></div>
+        </div>
+
+        <div class="cm-secao cm-painel" data-cmpainel="ofertaml">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)">🛒</div><h3>Oferta Relâmpago — Mercado Livre</h3></div>
+
+        
+        <div class="sgmv-summary">
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="mlOfEmDia">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Programar<br>Hoje</div></div><div class="sc-value" id="mlOfHoje">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/></svg></div><div class="sc-label">Atrasadas</div></div><div class="sc-value" style="color:var(--red)" id="mlOfAtrasadas">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>Mercado Livre</div></div><div class="sc-value" id="mlOfTotal">0</div></div>
+        </div>
+        <div class="tt-list" id="mlOfLista"></div>
+        </div>
+
+        <div class="cm-secao cm-painel" data-cmpainel="grossupml">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)">💰</div><h3>Desconto Gross Up — Mercado Livre</h3></div>
+
+        
+        <div class="sgmv-summary">
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="guEmDia">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Renovar<br>Hoje</div></div><div class="sc-value" id="guHoje">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/></svg></div><div class="sc-label">Atrasadas</div></div><div class="sc-value" style="color:var(--red)" id="guAtrasadas">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>Mercado Livre</div></div><div class="sc-value" id="guTotal">0</div></div>
+        </div>
+        <div class="tt-list" id="guLista"></div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="descontos">
@@ -2315,6 +2345,12 @@ textarea{resize:vertical;min-height:70px;}
         </select>
       </div>
       <div class="field" style="flex:2"><label>Título da tarefa</label><input type="text" id="tfFixaTitulo" placeholder="Ex: Postar story de bom dia"></div>
+      <div class="field"><label>Repete</label>
+        <select id="tfFixaPeriodicidade">
+          <option value="diaria">Todo dia</option>
+          <option value="mensal">1x por mês</option>
+        </select>
+      </div>
     </div>
     <button class="btn btn-gold btn-sm" id="tfFixaAdicionarBtn" style="margin-bottom:16px">+ Adicionar Tarefa Fixa</button>
     <div id="tfFixasLista"></div>
@@ -2418,7 +2454,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();cmRenderTudo();saudeLojaRenderizar();adsRenderizar();relPreencherClientes();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();ttRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();saudeLojaRenderizar();adsRenderizar();relPreencherClientes();}
 function renderSummary(){let da=0,ca=0,st=0;const clientesAtivos=clientesCache.filter(c=>c.ativo!==false);clientesAtivos.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesAtivos.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -2880,20 +2916,23 @@ document.querySelectorAll('[data-tfpessoa]').forEach(b=>b.addEventListener('clic
   tfAtualizarLista();tfRenderBoard();
 }));
 function tfCardFixaHtml(f){
-  const hoje=new Date().toISOString().slice(0,10);
-  const feitoHoje=f.feitoHojeData===hoje;
+  const mensal=f.periodicidade==='mensal';
+  const chaveAtual=mensal?new Date().toISOString().slice(0,7):new Date().toISOString().slice(0,10);
+  const feito=f.feitoHojeData===chaveAtual;
+  const labelBadge=mensal?(feito?'✓ Feito este mês':'○ Marcar feito este mês'):(feito?'✓ Feito hoje':'○ Marcar feito hoje');
   return `<div class="kanban-card kanban-card-fixa" data-fixaid="${f.id}">
-    <div class="kanban-card-title">🔁 ${esc(f.titulo)}</div>
+    <div class="kanban-card-title">🔁 ${esc(f.titulo)}${mensal?' <span class="kb-badge" style="opacity:.65">mensal</span>':''}</div>
     <div class="kanban-card-meta">
-      <button class="kb-badge ${feitoHoje?'kb-fixa-feito':'kb-fixa-pendente'}" onclick="window.__toggleFixaHoje('${f.id}')">${feitoHoje?'✓ Feito hoje':'○ Marcar feito hoje'}</button>
+      <button class="kb-badge ${feito?'kb-fixa-feito':'kb-fixa-pendente'}" onclick="window.__toggleFixaHoje('${f.id}')">${labelBadge}</button>
     </div>
   </div>`;
 }
 window.__toggleFixaHoje=async(fixaId)=>{
   const f=tarefasFixasCache.find(x=>x.id===fixaId);if(!f)return;
-  const hoje=new Date().toISOString().slice(0,10);
-  const jaFeito=f.feitoHojeData===hoje;
-  try{await updateDoc(doc(db,"tarefasFixas",fixaId),{feitoHojeData:jaFeito?null:hoje});}catch(e){showToast('Erro.');}
+  const mensal=f.periodicidade==='mensal';
+  const chaveAtual=mensal?new Date().toISOString().slice(0,7):new Date().toISOString().slice(0,10);
+  const jaFeito=f.feitoHojeData===chaveAtual;
+  try{await updateDoc(doc(db,"tarefasFixas",fixaId),{feitoHojeData:jaFeito?null:chaveAtual});}catch(e){showToast('Erro.');}
 };
 function tfCardHtml(t){
   const prio={baixa:'kb-prio-baixa',media:'kb-prio-media',alta:'kb-prio-alta'}[t.prioridade]||'kb-prio-media';
@@ -3406,9 +3445,10 @@ function tfFixasRenderLista(){
 document.getElementById('tfFixaAdicionarBtn')?.addEventListener('click',async()=>{
   const responsavelEmail=document.getElementById('tfFixaResponsavel').value;
   const titulo=document.getElementById('tfFixaTitulo').value.trim();
+  const periodicidade=document.getElementById('tfFixaPeriodicidade').value;
   if(!titulo){showToast('Escreve o título da tarefa.');return;}
   try{
-    await addDoc(collection(db,"tarefasFixas"),{titulo,responsavelEmail,criadoEm:serverTimestamp(),criadoPor:currentUser});
+    await addDoc(collection(db,"tarefasFixas"),{titulo,responsavelEmail,periodicidade,criadoEm:serverTimestamp(),criadoPor:currentUser});
     document.getElementById('tfFixaTitulo').value='';
     showToast('✓ Tarefa fixa adicionada.');
   }catch(e){showToast('Erro ao adicionar.');}
@@ -4625,6 +4665,139 @@ function ttRenderizar(){
     </div>`;
   }).join('');
 }
+
+/* ================= MERCADO LIVRE — OFERTA RELÂMPAGO (ciclo diário) ================= */
+function mlOfRenderizar(){
+  const lista=document.getElementById('mlOfLista');
+  if(!lista)return;
+  const clientesMl=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml'));
+
+  let emDia=0,hojeCount=0,atrasadas=0;
+  clientesMl.forEach(c=>{
+    const d=c.mlOfertaProxima?diffDias(c.mlOfertaProxima):null;
+    if(d===null||d<0)atrasadas++;
+    else if(d===0)hojeCount++;
+    else emDia++;
+  });
+  animateTo(document.getElementById('mlOfEmDia'),emDia,v=>Math.round(v));
+  animateTo(document.getElementById('mlOfHoje'),hojeCount,v=>Math.round(v));
+  animateTo(document.getElementById('mlOfAtrasadas'),atrasadas,v=>Math.round(v));
+  animateTo(document.getElementById('mlOfTotal'),clientesMl.length,v=>Math.round(v));
+
+  if(!clientesMl.length){
+    lista.innerHTML=`<div class="sgmv-empty-connected"><div class="ico">🛒</div><h3 style="color:var(--gold);font-family:'Oswald',sans-serif;margin-bottom:8px">Nenhum cliente com Mercado Livre ainda</h3><p>Marque "Mercado Livre" nos marketplaces de um cliente pra ele aparecer aqui.</p></div>`;
+    return;
+  }
+
+  const comStatus=clientesMl.map(c=>{
+    const d=c.mlOfertaProxima?diffDias(c.mlOfertaProxima):null;
+    let status='atrasada';
+    if(d!==null&&d===0)status='hoje';
+    else if(d!==null&&d>0)status='ok';
+    return {c,d,status};
+  });
+  const ordem={atrasada:0,hoje:1,ok:2};
+  comStatus.sort((a,b)=>ordem[a.status]-ordem[b.status]);
+
+  lista.innerHTML=comStatus.map(({c,d,status})=>{
+    let sub;
+    if(status==='atrasada')sub=c.mlOfertaProxima?`Venceu em ${fmtDate(c.mlOfertaProxima)} — ${Math.abs(d)}d atrás`:'Nunca programada';
+    else if(status==='hoje')sub='Programar hoje!';
+    else sub=`Próxima em ${fmtDate(c.mlOfertaProxima)} (em ${d}d)`;
+    const label={atrasada:'⚠ Atrasada',hoje:'⚡ Hoje',ok:'✓ Em dia'}[status];
+    return `<div class="tt-card ${status}">
+      <div class="tt-ico">🛒</div>
+      <div class="tt-info"><div class="tt-nome">${esc(c.nome)}</div><div class="tt-sub">${sub}</div></div>
+      <span class="tt-status-pill ${status}">${label}</span>
+      <button class="btn btn-gold btn-sm" onclick="window.__marcarMlOferta('${c.id}')">✓ Marcar Programada</button>
+    </div>`;
+  }).join('');
+}
+window.__marcarMlOferta=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente)return;
+  const hoje=new Date();
+  const proxima=new Date(hoje);
+  proxima.setDate(proxima.getDate()+1);
+  const proximaStr=`${proxima.getFullYear()}-${String(proxima.getMonth()+1).padStart(2,'0')}-${String(proxima.getDate()).padStart(2,'0')}`;
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{mlOfertaProxima:proximaStr,mlOfertaUltimaMarcacao:serverTimestamp()});
+    showToast(`✓ ${cliente.nome}: próxima oferta amanhã`);
+  }catch(e){showToast('Erro ao marcar.');}
+};
+
+/* ================= MERCADO LIVRE — DESCONTO GROSS UP (ciclo de 14 dias, com marcar/desmarcar) ================= */
+function guRenderizar(){
+  const lista=document.getElementById('guLista');
+  if(!lista)return;
+  const clientesMl=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml'));
+
+  let emDia=0,hojeCount=0,atrasadas=0;
+  clientesMl.forEach(c=>{
+    const d=c.mlGrossUpProxima?diffDias(c.mlGrossUpProxima):null;
+    if(d===null||d<0)atrasadas++;
+    else if(d===0)hojeCount++;
+    else emDia++;
+  });
+  animateTo(document.getElementById('guEmDia'),emDia,v=>Math.round(v));
+  animateTo(document.getElementById('guHoje'),hojeCount,v=>Math.round(v));
+  animateTo(document.getElementById('guAtrasadas'),atrasadas,v=>Math.round(v));
+  animateTo(document.getElementById('guTotal'),clientesMl.length,v=>Math.round(v));
+
+  if(!clientesMl.length){
+    lista.innerHTML=`<div class="sgmv-empty-connected"><div class="ico">💰</div><h3 style="color:var(--gold);font-family:'Oswald',sans-serif;margin-bottom:8px">Nenhum cliente com Mercado Livre ainda</h3><p>Marque "Mercado Livre" nos marketplaces de um cliente pra ele aparecer aqui.</p></div>`;
+    return;
+  }
+
+  const comStatus=clientesMl.map(c=>{
+    const d=c.mlGrossUpProxima?diffDias(c.mlGrossUpProxima):null;
+    let status='atrasada';
+    if(d!==null&&d===0)status='hoje';
+    else if(d!==null&&d>0)status='ok';
+    return {c,d,status};
+  });
+  const ordem={atrasada:0,hoje:1,ok:2};
+  comStatus.sort((a,b)=>ordem[a.status]-ordem[b.status]);
+
+  lista.innerHTML=comStatus.map(({c,d,status})=>{
+    let sub;
+    if(status==='atrasada')sub=c.mlGrossUpProxima?`Venceu em ${fmtDate(c.mlGrossUpProxima)} — ${Math.abs(d)}d atrás`:'Nunca ativado';
+    else if(status==='hoje')sub='Renovar hoje!';
+    else sub=`Renova em ${fmtDate(c.mlGrossUpProxima)} (em ${d}d)`;
+    const label={atrasada:'⚠ Atrasado',hoje:'⚡ Hoje',ok:'✓ Ativo'}[status];
+    const jaAtivo=!!c.mlGrossUpProxima;
+    const botao=jaAtivo
+      ?`<button class="icon-btn danger" onclick="window.__desmarcarGrossUpMl('${c.id}')" title="Desmarcar (desconto acabou)">✕ Desmarcar</button>`
+      :'';
+    return `<div class="tt-card ${status}">
+      <div class="tt-ico">💰</div>
+      <div class="tt-info"><div class="tt-nome">${esc(c.nome)}</div><div class="tt-sub">${sub}</div></div>
+      <span class="tt-status-pill ${status}">${label}</span>
+      <button class="btn btn-gold btn-sm" onclick="window.__marcarGrossUpMl('${c.id}')">✓ Marcar Feito</button>
+      ${botao}
+    </div>`;
+  }).join('');
+}
+window.__marcarGrossUpMl=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente)return;
+  const hoje=new Date();
+  const proxima=new Date(hoje);
+  proxima.setDate(proxima.getDate()+14);
+  const proximaStr=`${proxima.getFullYear()}-${String(proxima.getMonth()+1).padStart(2,'0')}-${String(proxima.getDate()).padStart(2,'0')}`;
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{mlGrossUpProxima:proximaStr,mlGrossUpUltimaMarcacao:serverTimestamp()});
+    showToast(`✓ ${cliente.nome}: gross up renovado, próxima em 14 dias`);
+  }catch(e){showToast('Erro ao marcar.');}
+};
+window.__desmarcarGrossUpMl=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente)return;
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{mlGrossUpProxima:null});
+    showToast(`${cliente.nome}: gross up desmarcado`);
+  }catch(e){showToast('Erro ao desmarcar.');}
+};
 
 window.__marcarTiktokOferta=async(clienteId)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
