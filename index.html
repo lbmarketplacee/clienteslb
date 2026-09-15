@@ -4470,6 +4470,7 @@ document.getElementById('mlMargemCarregarBtn')?.addEventListener('click',async()
   if(!clienteId){showToast('Escolhe um cliente primeiro.');return;}
   const cliente=clientesCache.find(c=>c.id===clienteId);
   if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
   const btn=document.getElementById('mlMargemCarregarBtn');
   const lista=document.getElementById('margemLista');
   btn.disabled=true;btn.textContent='Carregando produtos...';
@@ -4551,6 +4552,23 @@ window.__mlSalvarCustoProduto=async(clienteId,itemId,valor,preco,comissao)=>{
     }
   }catch(e){showToast('Erro ao salvar custo.');}
 };
+async function mlGarantirTokenValido(cliente){
+  const expiraEm=cliente.mlTokenExpiraEm?.seconds?cliente.mlTokenExpiraEm.seconds*1000:cliente.mlTokenExpiraEm;
+  const aindaValido=expiraEm&&Date.now()<(expiraEm-5*60*1000); // 5 min de folga
+  if(aindaValido)return cliente.mlAccessToken;
+  if(!cliente.mlRefreshToken)return cliente.mlAccessToken; // não tem como renovar, tenta com o que tem
+  try{
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=renovar_token&refresh_token=${cliente.mlRefreshToken}`);
+    const data=await resp.json();
+    if(!data.ok)return cliente.mlAccessToken;
+    const novaExpiraEm=Date.now()+(data.expires_in*1000);
+    await updateDoc(doc(db,"clientes",cliente.id),{mlAccessToken:data.access_token,mlRefreshToken:data.refresh_token,mlTokenExpiraEm:novaExpiraEm});
+    cliente.mlAccessToken=data.access_token;
+    cliente.mlRefreshToken=data.refresh_token;
+    cliente.mlTokenExpiraEm=novaExpiraEm;
+    return data.access_token;
+  }catch(e){return cliente.mlAccessToken;}
+}
 function mlApiRenderizar(){
   const lista=document.getElementById('mlApiLista');
   if(!lista)return;
@@ -4595,6 +4613,7 @@ let mlc360ClienteAtual=null;
 window.__mlCliente360=async(clienteId)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
   if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
   mlc360ClienteAtual=clienteId;
   document.getElementById('mlc360Nome').textContent=cliente.nome;
   document.getElementById('mlc360Avatar').textContent=avatarInicial(cliente.nome);
@@ -4637,6 +4656,7 @@ document.getElementById('mlc360ConvitesBtn')?.addEventListener('click',async()=>
   if(!mlc360ClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===mlc360ClienteAtual);
   if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
   const btn=document.getElementById('mlc360ConvitesBtn');
   btn.disabled=true;btn.textContent='Buscando...';
   try{
@@ -4676,6 +4696,7 @@ window.__mlConectar=async(clienteId)=>{
 window.__mlAtualizarGmv=async(clienteId)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
   if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
   try{
     const hoje=new Date();
     const primeiroDia=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-01`;
@@ -4723,6 +4744,7 @@ document.getElementById('mlCupomCriarAgoraBtn')?.addEventListener('click',async(
   if(!mlCupomClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===mlCupomClienteAtual);
   if(!cliente||!cliente.mlAccessToken){showToast('Cliente não conectado ao Mercado Livre.');return;}
+  await mlGarantirTokenValido(cliente);
   const tipo=document.getElementById('mlCupomTipo').value;
   const valor=document.getElementById('mlCupomValor').value;
   const valorMin=document.getElementById('mlCupomValorMin').value;
