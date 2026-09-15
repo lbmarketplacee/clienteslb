@@ -4490,6 +4490,7 @@ window.__mlConectar=async(clienteId)=>{
     const resp=await fetch('https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=gerar_link_autorizacao&clienteId='+encodeURIComponent(clienteId));
     const data=await resp.json();
     if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
+    localStorage.setItem('ml_code_verifier',data.code_verifier);
     window.location.href=data.url;
   }catch(e){showToast('Erro de conexão ao gerar o link.');}
 };
