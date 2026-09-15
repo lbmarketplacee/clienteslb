@@ -1789,6 +1789,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-gold btn-sm ml-subtab-btn active" data-mlsub="gmv" onclick="window.__mlSubTab('gmv')">📊 Conectar / GMV</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="oferta" onclick="window.__mlSubTab('oferta')">⚡ Oferta Relâmpago</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">💰 Gross Up</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="margem" onclick="window.__mlSubTab('margem')">🚦 Margem</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -1826,6 +1827,17 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>Mercado Livre</div></div><div class="sc-value" id="guTotal">0</div></div>
         </div>
         <div class="tt-list" id="guLista"></div>
+          </div>
+          <div class="ml-subpanel" data-mlsubpanel="margem" style="display:none">
+            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver a margem real de cada produto (usa a comissão de verdade do Mercado Livre, calculada por categoria e preço).</p>
+            <select id="mlMargemClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
+            <button class="btn btn-gold btn-sm" id="mlMargemCarregarBtn" style="margin-bottom:16px">🔄 Carregar Produtos</button>
+            <div class="sgmv-summary">
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Margem<br>Saudável</div></div><div class="sc-value green" id="margemVerde">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Margem<br>Apertada</div></div><div class="sc-value" id="margemAmarela">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Margem<br>Negativa</div></div><div class="sc-value" style="color:var(--red)" id="margemVermelha">0</div></div>
+            </div>
+            <div id="margemLista"></div>
           </div>
         </div>
 
@@ -4438,6 +4450,106 @@ window.__mlSubTab=(nome)=>{
   document.querySelectorAll('.ml-subpanel').forEach(p=>{
     p.style.display=p.dataset.mlsubpanel===nome?'':'none';
   });
+  if(nome==='margem')mlMargemPopularSelect();
+};
+function mlMargemPopularSelect(){
+  const sel=document.getElementById('mlMargemClienteSelect');
+  if(!sel)return;
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.mlUserId);
+  const valorAtual=sel.value;
+  sel.innerHTML='<option value="">Escolha um cliente conectado...</option>'+conectados.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  if(valorAtual)sel.value=valorAtual;
+}
+function mlMargemSemaforo(margemPct){
+  if(margemPct>=20)return{cor:'green',label:'Saudável',emoji:'🟢'};
+  if(margemPct>=5)return{cor:'amber',label:'Apertada',emoji:'🟡'};
+  return{cor:'red',label:'Negativa',emoji:'🔴'};
+}
+document.getElementById('mlMargemCarregarBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('mlMargemClienteSelect').value;
+  if(!clienteId){showToast('Escolhe um cliente primeiro.');return;}
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  const btn=document.getElementById('mlMargemCarregarBtn');
+  const lista=document.getElementById('margemLista');
+  btn.disabled=true;btn.textContent='Carregando produtos...';
+  lista.innerHTML='<div class="empty-state" style="padding:20px">Buscando produtos...</div>';
+  try{
+    const respProd=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_produtos&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`);
+    const dataProd=await respProd.json();
+    if(!dataProd.ok){showToast('Erro: '+(dataProd.erro||'desconhecido'));btn.disabled=false;btn.textContent='🔄 Carregar Produtos';return;}
+    const produtos=dataProd.produtos||[];
+    if(!produtos.length){lista.innerHTML='<div class="empty-state" style="padding:20px">Nenhum produto ativo encontrado.</div>';btn.disabled=false;btn.textContent='🔄 Carregar Produtos';return;}
+
+    btn.textContent=`Calculando comissão (0/${produtos.length})...`;
+    const custosGuardados=cliente.produtosCusto||{};
+    let processados=0;
+    const produtosComTaxa=[];
+    // Processa em grupos de 5 em paralelo, pra não sobrecarregar
+    for(let i=0;i<produtos.length;i+=5){
+      const grupo=produtos.slice(i,i+5);
+      const resultados=await Promise.all(grupo.map(async(p)=>{
+        try{
+          const respTaxa=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_taxa_venda&access_token=${cliente.mlAccessToken}&price=${p.price}&category_id=${p.category_id}`);
+          const dataTaxa=await respTaxa.json();
+          return {...p,taxaVenda:dataTaxa.ok?dataTaxa.taxa_venda:null};
+        }catch(e){return {...p,taxaVenda:null};}
+      }));
+      produtosComTaxa.push(...resultados);
+      processados+=grupo.length;
+      btn.textContent=`Calculando comissão (${processados}/${produtos.length})...`;
+    }
+
+    mlMargemRenderizarLista(clienteId,produtosComTaxa,custosGuardados);
+  }catch(e){showToast('Erro de conexão ao carregar produtos.');}
+  btn.disabled=false;btn.textContent='🔄 Carregar Produtos';
+});
+let mlMargemProdutosCache=[];
+let mlMargemClienteCache=null;
+function mlMargemRenderizarLista(clienteId,produtos,custosGuardados){
+  mlMargemProdutosCache=produtos;
+  mlMargemClienteCache=clienteId;
+  const lista=document.getElementById('margemLista');
+  let verde=0,amarela=0,vermelha=0;
+  const linhas=produtos.map(p=>{
+    const custo=custosGuardados[p.id]||0;
+    const preco=Number(p.price)||0;
+    const comissao=p.taxaVenda!=null?Number(p.taxaVenda):null;
+    let margemHtml='<span style="color:var(--text-dim)">Digite o custo →</span>';
+    let semaforoHtml='';
+    if(comissao!=null&&custo>0){
+      const margemReais=preco-comissao-custo;
+      const margemPct=preco>0?(margemReais/preco*100):0;
+      const sem=mlMargemSemaforo(margemPct);
+      if(sem.cor==='green')verde++;else if(sem.cor==='amber')amarela++;else vermelha++;
+      margemHtml=`<b style="color:var(--${sem.cor==='green'?'green':sem.cor==='amber'?'amber':'red'})">${fmtR(margemReais)} (${margemPct.toFixed(1)}%)</b>`;
+      semaforoHtml=`<span class="tt-status-pill ${sem.cor==='green'?'ok':sem.cor==='amber'?'hoje':'atrasada'}">${sem.emoji} ${sem.label}</span>`;
+    }
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+      <span class="nome" style="flex:2;min-width:200px">${esc(p.title)}</span>
+      <span style="font-size:12px;color:var(--text-dim)">Preço: ${fmtR(preco)}</span>
+      <span style="font-size:12px;color:var(--text-dim)">Comissão: ${comissao!=null?fmtR(comissao):'—'}</span>
+      <input type="number" placeholder="Custo R$" value="${custo||''}" style="width:100px;padding:6px" onchange="window.__mlSalvarCustoProduto('${clienteId}','${p.id}',this.value,${preco},${comissao||0})">
+      ${margemHtml}
+      ${semaforoHtml}
+    </div>`;
+  }).join('');
+  lista.innerHTML=linhas;
+  document.getElementById('margemVerde').textContent=verde;
+  document.getElementById('margemAmarela').textContent=amarela;
+  document.getElementById('margemVermelha').textContent=vermelha;
+}
+window.__mlSalvarCustoProduto=async(clienteId,itemId,valor,preco,comissao)=>{
+  const custo=parseFloat(valor)||0;
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{[`produtosCusto.${itemId}`]:custo});
+    const cliente=clientesCache.find(c=>c.id===clienteId);
+    if(cliente){if(!cliente.produtosCusto)cliente.produtosCusto={};cliente.produtosCusto[itemId]=custo;}
+    // Re-renderiza só a lista local (já tem tudo em cache), sem precisar buscar de novo
+    if(mlMargemClienteCache===clienteId){
+      mlMargemRenderizarLista(clienteId,mlMargemProdutosCache,cliente?.produtosCusto||{});
+    }
+  }catch(e){showToast('Erro ao salvar custo.');}
 };
 function mlApiRenderizar(){
   const lista=document.getElementById('mlApiLista');
