@@ -62,10 +62,11 @@ async function processarCallback() {
     if (!user) { mostrarErro('Usuário não autenticado. Volta ao sistema e tenta de novo.'); return; }
 
     try {
+      const codeVerifier = localStorage.getItem('ml_code_verifier');
       const resp = await fetch('https://lb-mercadolivre.vercel.app/api/mercadolivre', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ acao: 'trocar_codigo', code })
+        body: JSON.stringify({ acao: 'trocar_codigo', code, code_verifier: codeVerifier })
       });
       const data = await resp.json();
       if (!data.ok) { mostrarErro(data.erro || 'Falha ao trocar o código por token.'); return; }
