@@ -1968,6 +1968,8 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <div id="tiktokStatusTexto" style="font-size:13px;color:var(--text-dim);margin:14px 0 10px">Verificando TikTok Shop...</div>
           <button type="button" class="btn btn-gold btn-sm" id="conectarTiktokBtn">🔗 Conectar TikTok Shop</button>
+          <div id="mlStatusTexto" style="font-size:13px;color:var(--text-dim);margin:14px 0 10px">Verificando Mercado Livre...</div>
+          <button type="button" class="btn btn-gold btn-sm" id="conectarMlBtn">🔗 Conectar Mercado Livre</button>
         </div>
       </div>
       <div class="field hidden" id="shopeeAdsIntegracaoField">
@@ -2520,7 +2522,7 @@ document.getElementById('fRespShopee').value=resp.shopee||'';
 document.getElementById('fRespML').value=resp.ml||'';
 document.getElementById('fRespTiktok').value=resp.tiktok||'';
 document.getElementById('fRespShein').value=resp.shein||'';
-shopeeAtualizarStatusModal(c);shopeeAdsAtualizarStatusModal(c);tiktokAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
+shopeeAtualizarStatusModal(c);shopeeAdsAtualizarStatusModal(c);tiktokAtualizarStatusModal(c);mlAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
 document.getElementById('cancelClientModal').addEventListener('click',()=>{clientModalOverlay.classList.add('hidden');window.__cadastroOrigemAtual=null;});
@@ -4083,6 +4085,19 @@ window.__descartarCadastro=async(id)=>{
 };
 
 /* ================= INTEGRAÇÃO SHOPEE — GMV automático por cliente ================= */
+function mlAtualizarStatusModal(c){
+  const txt=document.getElementById('mlStatusTexto');
+  const btnConectar=document.getElementById('conectarMlBtn');
+  if(!txt||!btnConectar)return;
+  if(!c||!c.id){txt.textContent='Salve o cliente primeiro.';return;}
+  if(c.mlUserId){
+    txt.innerHTML=`✅ Conectado — Usuário <b style="color:var(--text)">${esc(String(c.mlUserId))}</b>`;
+    btnConectar.textContent='🔄 Reconectar Mercado Livre';
+  }else{
+    txt.textContent='Não conectado. Clique em "Conectar Mercado Livre" e peça pro cliente autorizar o acesso.';
+    btnConectar.textContent='🔗 Conectar Mercado Livre';
+  }
+}
 function tiktokAtualizarStatusModal(c){
   const txt=document.getElementById('tiktokStatusTexto');
   const btnConectar=document.getElementById('conectarTiktokBtn');
@@ -4344,6 +4359,16 @@ document.getElementById('conectarTiktokBtn')?.addEventListener('click',async()=>
   if(!clienteId){showToast('Salve o cliente primeiro antes de conectar o TikTok Shop.');return;}
   try{
     const resp=await fetch('https://lb-tiktok-shop.vercel.app/api/tiktok-shop?acao=gerar_link_autorizacao&clienteId='+encodeURIComponent(clienteId));
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
+    window.location.href=data.url;
+  }catch(e){showToast('Erro de conexão ao gerar o link.');}
+});
+document.getElementById('conectarMlBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('clientId').value;
+  if(!clienteId){showToast('Salve o cliente primeiro antes de conectar o Mercado Livre.');return;}
+  try{
+    const resp=await fetch('https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=gerar_link_autorizacao&clienteId='+encodeURIComponent(clienteId));
     const data=await resp.json();
     if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
     window.location.href=data.url;
