@@ -4479,7 +4479,10 @@ function mlApiRenderizar(){
       ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.gmvMlAutomatico||0)}</div><div class="lbl">GMV mês atual</div></div>`:''}
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
-        ?`<button class="btn btn-ghost btn-sm" onclick="window.__mlAtualizarGmv('${c.id}')">🔄 Atualizar</button>`
+        ?`<button class="btn btn-ghost btn-sm" onclick="window.__mlAtualizarGmv('${c.id}')">🔄 Atualizar</button>
+        <button class="icon-btn" onclick="window.__mlVerReputacao('${c.id}')" title="Ver reputação">👤</button>
+        <button class="icon-btn" onclick="window.__mlVerPromocoes('${c.id}')" title="Ver cupons/promoções">🎟️</button>
+        <button class="icon-btn" onclick="window.__mlVerLimitesAds('${c.id}')" title="Ver limites de Ads">📢</button>`
         :`<button class="btn btn-gold btn-sm" onclick="window.__mlConectar('${c.id}')">🔗 Conectar</button>`
       }
     </div>`;
@@ -4508,6 +4511,42 @@ window.__mlAtualizarGmv=async(clienteId)=>{
     await updateDoc(doc(db,"clientes",clienteId),{gmvMlAutomatico:data.gmv,gmvMlAtualizadoEm:serverTimestamp()});
     showToast(`✓ ${cliente.nome}: GMV atualizado (${fmtR(data.gmv)})`);
   }catch(e){showToast('Erro de conexão ao atualizar GMV.');}
+};
+window.__mlVerReputacao=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  try{
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_reputacao&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
+    const r=data.reputacao;
+    if(!r){showToast(`${cliente.nome}: sem dados de reputação ainda.`);return;}
+    const nivel=r.level_id||'sem nível';
+    const status=r.power_seller_status||'nenhum';
+    showToast(`${cliente.nome}: nível ${nivel} — status ${status}`);
+  }catch(e){showToast('Erro de conexão.');}
+};
+window.__mlVerPromocoes=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  try{
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_promocoes&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
+    const lista=data.promocoes||[];
+    if(!lista.length){showToast(`${cliente.nome}: nenhuma promoção/cupom ativo no momento.`);return;}
+    showToast(`${cliente.nome}: ${lista.length} promoção(ões) ativa(s) — ${lista.map(p=>p.type).join(', ')}`);
+  }catch(e){showToast('Erro de conexão.');}
+};
+window.__mlVerLimitesAds=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  try{
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_limites_ads&access_token=${cliente.mlAccessToken}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));return;}
+    showToast(`${cliente.nome}: investimento diário entre ${fmtR(data.minimo)} e ${fmtR(data.maximo)}`);
+  }catch(e){showToast('Erro de conexão.');}
 };
 document.getElementById('mlApiAtualizarTodosBtn')?.addEventListener('click',async()=>{
   const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.mlUserId);
