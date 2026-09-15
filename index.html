@@ -4521,6 +4521,26 @@ document.getElementById('mlc360CupomBtn')?.addEventListener('click',()=>{
   window.__closeMlCliente360();
   window.__mlAbrirCupomConfig(mlc360ClienteAtual);
 });
+document.getElementById('mlc360ConvitesBtn')?.addEventListener('click',async()=>{
+  if(!mlc360ClienteAtual)return;
+  const cliente=clientesCache.find(c=>c.id===mlc360ClienteAtual);
+  if(!cliente||!cliente.mlAccessToken)return;
+  const btn=document.getElementById('mlc360ConvitesBtn');
+  btn.disabled=true;btn.textContent='Buscando...';
+  try{
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_convites_promocoes&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro: '+(data.erro||'desconhecido'));btn.disabled=false;btn.textContent='⚡ Ver Convites de Oferta Relâmpago';return;}
+    const lightning=data.convites_oferta_relampago||[];
+    if(!lightning.length){
+      showToast(`${cliente.nome}: nenhum convite de Oferta Relâmpago disponível agora.`);
+    }else{
+      showToast(`${cliente.nome}: ${lightning.length} convite(s) de Oferta Relâmpago disponível(is)!`);
+      console.log('Convites de Oferta Relâmpago:',lightning);
+    }
+  }catch(e){showToast('Erro de conexão.');}
+  btn.disabled=false;btn.textContent='⚡ Ver Convites de Oferta Relâmpago';
+});
 
 window.__mlConectar=async(clienteId)=>{
   try{
@@ -6192,7 +6212,7 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
       </div>
       <div class="c360-grid">
         <div class="c360-card"><h3>Cupons/Promoções ativas</h3><div id="mlc360ListaPromocoes"><div class="c360-empty">Carregando...</div></div></div>
-        <div class="c360-card"><h3>Ações rápidas</h3><div class="c360-actions" style="flex-direction:column"><button class="btn btn-gold btn-sm" id="mlc360AtualizarGmvBtn">🔄 Atualizar GMV</button><button class="btn btn-ghost btn-sm" id="mlc360CupomBtn">🎯 Configurar Cupom Automático</button></div></div>
+        <div class="c360-card"><h3>Ações rápidas</h3><div class="c360-actions" style="flex-direction:column"><button class="btn btn-gold btn-sm" id="mlc360AtualizarGmvBtn">🔄 Atualizar GMV</button><button class="btn btn-ghost btn-sm" id="mlc360CupomBtn">🎯 Configurar Cupom Automático</button><button class="btn btn-ghost btn-sm" id="mlc360ConvitesBtn">⚡ Ver Convites de Oferta Relâmpago</button></div></div>
       </div>
     </div>
   </div>
