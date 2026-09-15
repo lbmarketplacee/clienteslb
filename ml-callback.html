@@ -75,6 +75,7 @@ async function processarCallback() {
         mlAccessToken: data.access_token,
         mlRefreshToken: data.refresh_token,
         mlUserId: data.user_id,
+        mlTokenExpiraEm: Date.now() + (data.expires_in * 1000),
         mlConectadoEm: firebase.firestore.FieldValue.serverTimestamp()
       });
 
