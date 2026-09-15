@@ -1790,6 +1790,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="oferta" onclick="window.__mlSubTab('oferta')">⚡ Oferta Relâmpago</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">💰 Gross Up</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="margem" onclick="window.__mlSubTab('margem')">🚦 Margem</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="ads" onclick="window.__mlSubTab('ads')">📢 Ads</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -1838,6 +1839,17 @@ textarea{resize:vertical;min-height:70px;}
               <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Margem<br>Negativa</div></div><div class="sc-value" style="color:var(--red)" id="margemVermelha">0</div></div>
             </div>
             <div id="margemLista"></div>
+          </div>
+          <div class="ml-subpanel" data-mlsubpanel="ads" style="display:none">
+            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver as campanhas de Product Ads dele, com ROAS, ACOS e CVR reais (últimos 30 dias).</p>
+            <select id="mlAdsClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
+            <button class="btn btn-gold btn-sm" id="mlAdsCarregarBtn" style="margin-bottom:16px">🔄 Carregar Campanhas</button>
+            <div class="sgmv-summary">
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div><div class="sc-label">Escalar</div></div><div class="sc-value green" id="adsEscalar">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Observar</div></div><div class="sc-value" id="adsObservar">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div class="sc-label">Revisar/Cortar</div></div><div class="sc-value" style="color:var(--red)" id="adsRevisar">0</div></div>
+            </div>
+            <div id="adsLista"></div>
           </div>
         </div>
 
@@ -4451,7 +4463,70 @@ window.__mlSubTab=(nome)=>{
     p.style.display=p.dataset.mlsubpanel===nome?'':'none';
   });
   if(nome==='margem')mlMargemPopularSelect();
+  if(nome==='ads')mlAdsPopularSelect();
 };
+function mlAdsPopularSelect(){
+  const sel=document.getElementById('mlAdsClienteSelect');
+  if(!sel)return;
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.mlUserId);
+  const valorAtual=sel.value;
+  sel.innerHTML='<option value="">Escolha um cliente conectado...</option>'+conectados.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  if(valorAtual)sel.value=valorAtual;
+}
+function mlAdsClassificar(roas,acos){
+  // Regra própria da LB (ajustável depois): baseada em ROAS e ACOS juntos
+  if(roas>=8||acos<=12)return{cor:'green',label:'Escalar',emoji:'📈'};
+  if(roas>=4||acos<=25)return{cor:'amber',label:'Observar',emoji:'👀'};
+  return{cor:'red',label:'Revisar/Cortar',emoji:'✂️'};
+}
+document.getElementById('mlAdsCarregarBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('mlAdsClienteSelect').value;
+  if(!clienteId){showToast('Escolhe um cliente primeiro.');return;}
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
+  const btn=document.getElementById('mlAdsCarregarBtn');
+  const lista=document.getElementById('adsLista');
+  btn.disabled=true;btn.textContent='Buscando...';
+  lista.innerHTML='<div class="empty-state" style="padding:20px">Buscando campanhas...</div>';
+  try{
+    const respAdv=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_advertiser_id&access_token=${cliente.mlAccessToken}`);
+    const dataAdv=await respAdv.json();
+    if(!dataAdv.ok){lista.innerHTML=`<div class="empty-state" style="padding:20px">${esc(dataAdv.erro||'Erro ao buscar Ads.')}</div>`;btn.disabled=false;btn.textContent='🔄 Carregar Campanhas';return;}
+
+    const hoje=new Date();
+    const trintaAtras=new Date(hoje);trintaAtras.setDate(trintaAtras.getDate()-30);
+    const fmtD=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+    const respCamp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_campanhas_ads&access_token=${cliente.mlAccessToken}&advertiser_id=${dataAdv.advertiser_id}&data_inicio=${fmtD(trintaAtras)}&data_fim=${fmtD(hoje)}`);
+    const dataCamp=await respCamp.json();
+    if(!dataCamp.ok){lista.innerHTML=`<div class="empty-state" style="padding:20px">${esc(dataCamp.erro||'Erro ao buscar campanhas.')}</div>`;btn.disabled=false;btn.textContent='🔄 Carregar Campanhas';return;}
+
+    const campanhas=dataCamp.campanhas||[];
+    if(!campanhas.length){lista.innerHTML='<div class="empty-state" style="padding:20px">Nenhuma campanha encontrada nos últimos 30 dias.</div>';document.getElementById('adsEscalar').textContent='0';document.getElementById('adsObservar').textContent='0';document.getElementById('adsRevisar').textContent='0';btn.disabled=false;btn.textContent='🔄 Carregar Campanhas';return;}
+
+    let escalar=0,observar=0,revisar=0;
+    lista.innerHTML=campanhas.map(c=>{
+      const m=c.metrics||{};
+      const roas=Number(m.roas)||0;
+      const acos=Number(m.acos)||0;
+      const cls=mlAdsClassificar(roas,acos);
+      if(cls.cor==='green')escalar++;else if(cls.cor==='amber')observar++;else revisar++;
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+        <span class="nome" style="flex:2;min-width:180px">${esc(c.name)}</span>
+        <span style="font-size:12px;color:var(--text-dim)">Custo: ${fmtR(m.cost||0)}</span>
+        <span style="font-size:12px;color:var(--text-dim)">ROAS: <b>${roas.toFixed(1)}x</b></span>
+        <span style="font-size:12px;color:var(--text-dim)">ACOS: <b>${acos.toFixed(1)}%</b></span>
+        <span style="font-size:12px;color:var(--text-dim)">CVR: ${(Number(m.cvr)||0).toFixed(1)}%</span>
+        <span class="tt-status-pill ${cls.cor==='green'?'ok':cls.cor==='amber'?'hoje':'atrasada'}">${cls.emoji} ${cls.label}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('adsEscalar').textContent=escalar;
+    document.getElementById('adsObservar').textContent=observar;
+    document.getElementById('adsRevisar').textContent=revisar;
+  }catch(e){showToast('Erro de conexão ao carregar Ads.');}
+  btn.disabled=false;btn.textContent='🔄 Carregar Campanhas';
+});
 function mlMargemPopularSelect(){
   const sel=document.getElementById('mlMargemClienteSelect');
   if(!sel)return;
