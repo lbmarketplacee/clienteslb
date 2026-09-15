@@ -4535,8 +4535,18 @@ document.getElementById('mlc360ConvitesBtn')?.addEventListener('click',async()=>
     if(!lightning.length){
       showToast(`${cliente.nome}: nenhum convite de Oferta Relâmpago disponível agora.`);
     }else{
-      showToast(`${cliente.nome}: ${lightning.length} convite(s) de Oferta Relâmpago disponível(is)!`);
-      console.log('Convites de Oferta Relâmpago:',lightning);
+      showToast(`${cliente.nome}: ${lightning.length} convite(s)! Buscando produtos candidatos...`);
+      const primeiroConvite=lightning[0];
+      try{
+        const respItens=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_itens_candidatos&access_token=${cliente.mlAccessToken}&promotion_id=${primeiroConvite.id}`);
+        const dataItens=await respItens.json();
+        if(!dataItens.ok){showToast('Erro ao buscar produtos: '+(dataItens.erro||'desconhecido'));}
+        else{
+          const itens=dataItens.itens||[];
+          console.log('Produtos candidatos da promoção '+primeiroConvite.id+':',itens);
+          showToast(itens.length?`${itens.length} produto(s) candidato(s) encontrado(s)! (veja o Console)`:'Nenhum produto candidato nessa promoção.');
+        }
+      }catch(e){showToast('Erro ao buscar produtos candidatos.');}
     }
   }catch(e){showToast('Erro de conexão.');}
   btn.disabled=false;btn.textContent='⚡ Ver Convites de Oferta Relâmpago';
