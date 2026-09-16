@@ -6383,8 +6383,14 @@ calcRefreshFields();
 const FACEBOOK_APP_ID = '2147903903008381';
 const WHATSAPP_CONFIG_ID = '2173394113579291';
 
-window.fbAsyncInit = function() {
+let fbJaInicializado = false;
+function fbGarantirInicializado() {
+  if (fbJaInicializado || !window.FB) return;
   FB.init({ appId: FACEBOOK_APP_ID, cookie: true, xfbml: true, version: 'v20.0' });
+  fbJaInicializado = true;
+}
+window.fbAsyncInit = function() {
+  fbGarantirInicializado();
 };
 
 async function whatsappTrocarCodePorToken(code) {
@@ -6424,8 +6430,14 @@ async function whatsappTrocarCodePorToken(code) {
   }
 }
 
-document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => {
-  if (!window.FB) { showToast('O SDK do Facebook ainda está carregando, tenta de novo em alguns segundos.'); return; }
+document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', async () => {
+  if (!window.FB) {
+    showToast('O SDK do Facebook ainda está carregando, aguarda...');
+    let tentativas = 0;
+    while (!window.FB && tentativas < 20) { await new Promise(r => setTimeout(r, 250)); tentativas++; }
+    if (!window.FB) { showToast('Não consegui carregar o SDK do Facebook. Recarrega a página e tenta de novo.'); return; }
+  }
+  fbGarantirInicializado();
   FB.login((response) => {
     if (response.authResponse && response.authResponse.code) {
       whatsappTrocarCodePorToken(response.authResponse.code);
