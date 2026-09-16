@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- LB WhatsApp Coexistência: frontend corrigido -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LB Marketplace · Gestão</title>
@@ -8,7 +9,20 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23080808'/%3E%3Crect x='1' y='1' width='62' height='62' rx='13' fill='none' stroke='%23d4a94a' stroke-width='2'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-weight='bold' font-size='28' fill='%23d4a94a' text-anchor='middle'%3ELB%3C/text%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v20.0"></script>
+<script>
+  // Facebook SDK — WhatsApp Embedded Signup / Coexistência
+  window.fbAsyncInit = function () {
+    if (window.FB) {
+      window.FB.init({
+        appId: '2147903903008381',
+        cookie: true,
+        xfbml: true,
+        version: 'v23.0'
+      });
+    }
+  };
+</script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
@@ -6379,34 +6393,79 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
 });
 calcRefreshFields();
 
-/* ================= WhatsApp — Token Permanente (Usuário de Sistema), sem Embedded Signup ================= */
-/* ================= WhatsApp — Embedded Signup, modo Coexistência ================= */
+/* ================= WhatsApp — Embedded Signup / Coexistência ================= */
 const FACEBOOK_APP_ID = '2147903903008381';
 const WHATSAPP_CONFIG_ID = '2173394113579291';
 
 let fbJaInicializado = false;
+
 function fbGarantirInicializado() {
-  if (fbJaInicializado || !window.FB) return;
-  FB.init({ appId: FACEBOOK_APP_ID, cookie: true, xfbml: true, version: 'v20.0' });
-  fbJaInicializado = true;
+  if (!window.FB) return false;
+  if (!fbJaInicializado) {
+    try {
+      FB.init({
+        appId: FACEBOOK_APP_ID,
+        cookie: true,
+        xfbml: true,
+        version: 'v23.0'
+      });
+      fbJaInicializado = true;
+    } catch (e) {
+      console.error('Erro ao inicializar Facebook SDK:', e);
+      return false;
+    }
+  }
+  return true;
 }
-window.fbAsyncInit = function() {
-  fbGarantirInicializado();
-};
+
+/*
+ * A Meta envia informações de sessão do Embedded Signup por postMessage.
+ * No fluxo de Coexistência, o evento esperado é:
+ * FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING
+ */
+window.addEventListener('message', (event) => {
+  if (event.origin !== 'https://www.facebook.com') return;
+  const data = event.data;
+  if (!data || data.type !== 'WA_EMBEDDED_SIGNUP') return;
+
+  console.log('WhatsApp Embedded Signup:', data);
+
+  if (data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+    const wabaId = data.data?.waba_id || null;
+    if (wabaId) {
+      console.log('WABA da Coexistência:', wabaId);
+    }
+  }
+
+  if (data.event === 'CANCEL') {
+    console.warn('Embedded Signup cancelado:', data.data);
+  }
+
+  if (data.event === 'ERROR') {
+    console.error('Erro no Embedded Signup:', data.data);
+  }
+});
 
 async function whatsappTrocarCodePorToken(code) {
   const statusEl = document.getElementById('whatsappStatus');
   const statusText = document.getElementById('whatsappStatusText');
+  if (!statusEl || !statusText) return;
+
   statusEl.style.display = 'block';
   statusText.innerHTML = 'Conectando, aguarde...';
+
   try {
     const resp = await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
     });
+
     const data = await resp.json();
-    if (!data.ok) throw new Error(data.erro || 'Falha ao trocar o código por token.');
+
+    if (!resp.ok || !data.ok) {
+      throw new Error(data.erro || 'Falha ao trocar o código por token.');
+    }
 
     await setDoc(doc(db, "configuracoes", "whatsapp"), {
       waba_id: data.waba_id || null,
@@ -6420,31 +6479,51 @@ async function whatsappTrocarCodePorToken(code) {
     statusText.innerHTML = `✓ WhatsApp Business conectado com sucesso!${data.phone_number ? '<br><strong>'+esc(data.phone_number)+'</strong>' : ''}`;
     statusEl.style.background = 'var(--green-bg)';
     statusEl.style.color = 'var(--green)';
-    document.getElementById('whatsappEmbeddedBtn').disabled = true;
-    document.getElementById('whatsappEmbeddedBtn').textContent = '✓ Conectado';
+
+    const btn = document.getElementById('whatsappEmbeddedBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '✓ Conectado';
+    }
+
     showToast('✓ WhatsApp Business conectado!');
   } catch (e) {
     console.error('Erro ao conectar WhatsApp:', e);
-    statusText.innerHTML = `⚠ Erro ao conectar: ${esc(e.message)}`;
+    statusText.innerHTML = `⚠ Erro ao conectar: ${esc(e.message || e)}`;
     statusEl.style.background = 'var(--red-bg)';
     statusEl.style.color = 'var(--red)';
   }
 }
 
-document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', async () => {
-  if (!window.FB) {
-    showToast('O SDK do Facebook ainda está carregando, aguarda...');
-    let tentativas = 0;
-    while (!window.FB && tentativas < 20) { await new Promise(r => setTimeout(r, 250)); tentativas++; }
-    if (!window.FB) { showToast('Não consegui carregar o SDK do Facebook. Recarrega a página e tenta de novo.'); return; }
+document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => {
+  /*
+   * IMPORTANTE:
+   * FB.login precisa ser chamado diretamente dentro do clique.
+   * Não usamos await antes dele, para evitar bloqueio do popup pelo navegador.
+   */
+  if (!fbGarantirInicializado()) {
+    showToast('O SDK do Facebook ainda está carregando. Recarregue a página e tente novamente.');
+    return;
   }
-  fbGarantirInicializado();
+
   FB.login((response) => {
-    if (response.authResponse && response.authResponse.code) {
+    console.log('Resposta do WhatsApp Embedded Signup:', response);
+
+    if (response?.authResponse?.code) {
       whatsappTrocarCodePorToken(response.authResponse.code);
-    } else {
-      showToast('Conexão cancelada ou não autorizada.');
+      return;
     }
+
+    if (response?.status === 'unknown') {
+      showToast('A janela do Facebook foi fechada ou a autorização foi cancelada.');
+      return;
+    }
+
+    if (response?.authResponse?.accessToken) {
+      console.warn('Meta retornou accessToken em vez de code. Verifique a configuração de Login for Business.');
+    }
+
+    showToast('Conexão cancelada ou não autorizada.');
   }, {
     config_id: WHATSAPP_CONFIG_ID,
     response_type: 'code',
