@@ -8,11 +8,11 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23080808'/%3E%3Crect x='1' y='1' width='62' height='62' rx='13' fill='none' stroke='%23d4a94a' stroke-width='2'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-weight='bold' font-size='28' fill='%23d4a94a' text-anchor='middle'%3ELB%3C/text%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v20.0"></script>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v20.0"></script>
 <style>
 :root{--bg:#0a0a09;--bg-sidebar:#111110;--bg-card:#111110;--bg-card2:#171613;--gold:#d4a94a;--gold-soft:#d4a94a30;--gold-dim:#a8863c;--gold-bright:#f0d791;--text:#f3efe4;--text-dim:#a39d8c;--text-dim2:#6e6a5d;--border:#282722;--border-soft:#1e1d19;--border-strong:#3a3728;--btn-text-dark:#181712;--red:#e0525a;--red-bg:#e0525a20;--amber:#e0a352;--amber-bg:#e0a35220;--green:#5fbf7a;--green-bg:#5fbf7a20;--purple:#a855f7;--purple-bg:#a855f720;--teal:#69c9d0;--shopee:#ee4d2d;--ml:#ffe156;--tiktok:#69c9d0;--shein:#a855f7;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1866,7 +1866,7 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><h3>Conectar WhatsApp Business</h3></div>
           <div style="padding:20px;background:var(--bg-card);border-radius:10px;margin-bottom:20px;border:1px solid var(--border)">
-            <p style="margin-bottom:12px;color:var(--text-dim)">Clique no botão abaixo pra conectar sua conta WhatsApp Business. Depois disso, você receberá mensagens de clientes via API.</p>
+            <p style="margin-bottom:12px;color:var(--text-dim)">Clica no botão abaixo pra conectar — mantém o WhatsApp funcionando no celular também (Coexistência).</p>
             <button class="btn btn-gold" id="whatsappEmbeddedBtn">Conectar WhatsApp Business</button>
             <div id="whatsappStatus" style="margin-top:12px;padding:12px;background:var(--border);border-radius:6px;display:none;text-align:center">
               <div id="whatsappStatusText"></div>
@@ -6379,7 +6379,8 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
 });
 calcRefreshFields();
 
-/* ================= WhatsApp — Embedded Signup via SDK do JavaScript (jeito oficial da Meta) ================= */
+/* ================= WhatsApp — Token Permanente (Usuário de Sistema), sem Embedded Signup ================= */
+/* ================= WhatsApp — Embedded Signup, modo Coexistência ================= */
 const FACEBOOK_APP_ID = '2147903903008381';
 const WHATSAPP_CONFIG_ID = '2173394113579291';
 
@@ -6447,7 +6448,12 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', async 
   }, {
     config_id: WHATSAPP_CONFIG_ID,
     response_type: 'code',
-    override_default_response_type: true
+    override_default_response_type: true,
+    extras: {
+      setup: {},
+      featureType: 'whatsapp_business_app_onboarding',
+      sessionInfoVersion: '3'
+    }
   });
 });
 
