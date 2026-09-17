@@ -5340,7 +5340,7 @@ document.getElementById('ofertaProximaDataSalvarBtn')?.addEventListener('click',
 function cmRenderOfertaShopee(){
   const el=document.getElementById('cmOfertaShopeeLista');
   if(!el)return;
-  const lista=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee'));
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee'));
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
     return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`;
@@ -5354,7 +5354,7 @@ const DESCONTO_MPS = [
 function cmRenderDescontos(){
   const el=document.getElementById('cmDescontosLista');
   if(!el)return;
-  const lista=(clientesCache||[]);
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const mpsDoCliente=DESCONTO_MPS.filter(m=>(c.marketplaces||[]).includes(m.key));
@@ -5377,7 +5377,7 @@ function cmRenderDescontos(){
 function cmRenderCupons(){
   const el=document.getElementById('cmCuponsLista');
   if(!el)return;
-  const lista=(clientesCache||[]);
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
@@ -5393,7 +5393,7 @@ function cmRenderCupons(){
 function cmRenderDevolucao(){
   const el=document.getElementById('cmDevolucaoLista');
   if(!el)return;
-  const lista=(clientesCache||[]);
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
