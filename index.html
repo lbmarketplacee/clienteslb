@@ -6178,6 +6178,17 @@ function crmLeadFormHtml(){
       </div>
       <div class="field"><label>Valor Estimado</label><input type="text" id="lead-valor" value="${lead?fmtR(lead.valor).replace('R$ ',''):''}" placeholder="0"></div>
     </div>
+    ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? `
+    <div class="field" style="margin-bottom:12px;">
+      <label>📋 Respostas do Typebot</label>
+      <div style="background:var(--bg2,#1a1a1a);border:1px solid var(--border,#333);border-radius:8px;padding:12px;display:grid;gap:8px;">
+        ${Object.keys(lead.respostasTypebot).map(chave=>`
+          <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;border-bottom:1px solid var(--border,#333);padding-bottom:6px;">
+            <span style="opacity:.65;text-transform:capitalize;">${esc(chave)}</span>
+            <span style="font-weight:500;text-align:right;">${esc(lead.respostasTypebot[chave])}</span>
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
     <div class="field" style="margin-bottom:12px;"><label>Notas</label><textarea id="lead-notas" placeholder="Observações...">${lead?esc(lead.notas||''):''}</textarea></div>
     <div class="lead-form-actions">
       ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
@@ -6201,7 +6212,7 @@ function crmKanbanHtml(){
           const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
           return `
           <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
-            <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
+            <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}${l.respostasTypebot&&Object.keys(l.respostasTypebot).length?`<span class="wa-btn" title="Tem respostas do Typebot">📋</span>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
             <div>
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
               ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
