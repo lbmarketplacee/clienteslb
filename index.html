@@ -6506,8 +6506,7 @@ async function whatsappTrocarCodePorToken(code) {
 
     const btn = document.getElementById('whatsappEmbeddedBtn');
     if (btn) {
-      btn.disabled = true;
-      btn.textContent = '✓ Conectado';
+      btn.textContent = '✓ Conectado (clique para reconectar/parear)';
     }
 
     showToast('✓ WhatsApp Business conectado!');
@@ -6558,7 +6557,7 @@ async function whatsappConectarManual() {
     showToast('✓ WhatsApp Business conectado!');
 
     const btnPrincipal = document.getElementById('whatsappEmbeddedBtn');
-    if (btnPrincipal) { btnPrincipal.disabled = true; btnPrincipal.textContent = '✓ Conectado'; }
+    if (btnPrincipal) { btnPrincipal.textContent = '✓ Conectado (clique para reconectar/parear)'; }
   } catch (e) {
     console.error('Erro ao conectar manualmente:', e);
     statusEl.style.color = 'var(--red)';
@@ -6578,7 +6577,7 @@ async function whatsappChecarConexaoExistente() {
         const btn = document.getElementById('whatsappEmbeddedBtn');
         const statusEl = document.getElementById('whatsappStatus');
         const statusText = document.getElementById('whatsappStatusText');
-        if (btn) { btn.disabled = true; btn.textContent = '✓ Conectado'; }
+        if (btn) { btn.textContent = '✓ Conectado (clique para reconectar/parear)'; }
         if (statusEl && statusText) {
           statusEl.style.display = 'block';
           statusEl.style.background = 'var(--green-bg)';
