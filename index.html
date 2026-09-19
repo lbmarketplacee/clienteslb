@@ -2513,7 +2513,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();saudeLojaRenderizar();adsRenderizar();relPreencherClientes();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
 function renderSummary(){let da=0,ca=0,st=0;const clientesAtivos=clientesCache.filter(c=>c.ativo!==false);clientesAtivos.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesAtivos.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';}
@@ -5462,6 +5462,9 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   const alvo=b.dataset.cmtab;
   document.getElementById('cmCardGrid').classList.add('hidden');
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
+  // Saúde da Loja consome a API da Shopee (via Fixie) pra cada cliente conectado —
+  // por isso só carrega quando o usuário realmente abre essa aba, nunca automático.
+  if(alvo==='saude') saudeLojaRenderizar();
 }));
 window.__irParaMarketing=(painel)=>{
   document.querySelector('[data-page="marketing"]')?.click();
