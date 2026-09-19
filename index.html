@@ -1885,6 +1885,16 @@ textarea{resize:vertical;min-height:70px;}
             <div id="whatsappStatus" style="margin-top:12px;padding:12px;background:var(--border);border-radius:6px;display:none;text-align:center">
               <div id="whatsappStatusText"></div>
             </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+              <a href="javascript:void(0)" onclick="document.getElementById('whatsappManualForm').style.display='block';this.style.display='none'" style="font-size:13px;color:var(--text-dim);text-decoration:underline">Ou conectar manualmente com token (sem popup)</a>
+              <div id="whatsappManualForm" style="display:none;margin-top:14px;">
+                <div class="field" style="margin-bottom:10px;"><label>Token de Acesso (permanente ou de 60 dias)</label><input type="text" id="wa-manual-token" placeholder="EAA..."></div>
+                <div class="field" style="margin-bottom:10px;"><label>Identificação do Número de Telefone (Phone Number ID)</label><input type="text" id="wa-manual-phoneid" placeholder="Ex: 1338327456026202"></div>
+                <div class="field" style="margin-bottom:10px;"><label>WhatsApp Business Account ID (opcional)</label><input type="text" id="wa-manual-waba" placeholder="Ex: 1077193375274300"></div>
+                <button class="btn btn-gold" id="wa-manual-btn" onclick="whatsappConectarManual()">Conectar manualmente</button>
+                <div id="whatsappManualStatus" style="margin-top:10px;font-size:13px;"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -6475,7 +6485,10 @@ async function whatsappTrocarCodePorToken(code) {
     const data = await resp.json();
 
     if (!resp.ok || !data.ok) {
-      throw new Error(data.erro || 'Falha ao trocar o código por token.');
+      const motivo = data.detalhe
+        ? (typeof data.detalhe === 'string' ? data.detalhe : JSON.stringify(data.detalhe))
+        : (data.erro || 'Falha ao trocar o código por token.');
+      throw new Error(motivo);
     }
 
     await setDoc(doc(db, "configuracoes", "whatsapp"), {
@@ -6503,6 +6516,55 @@ async function whatsappTrocarCodePorToken(code) {
     statusText.innerHTML = `⚠ Erro ao conectar: ${esc(e.message || e)}`;
     statusEl.style.background = 'var(--red-bg)';
     statusEl.style.color = 'var(--red)';
+  }
+}
+
+async function whatsappConectarManual() {
+  const statusEl = document.getElementById('whatsappManualStatus');
+  const token = document.getElementById('wa-manual-token').value.trim();
+  const phoneId = document.getElementById('wa-manual-phoneid').value.trim();
+  const wabaId = document.getElementById('wa-manual-waba').value.trim();
+  const btn = document.getElementById('wa-manual-btn');
+
+  if (!token || !phoneId) {
+    statusEl.innerHTML = '⚠ Preencha pelo menos o Token e o Phone Number ID.';
+    statusEl.style.color = 'var(--red)';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.style.color = 'var(--text-dim)';
+  statusEl.innerHTML = 'Validando token com a Meta, aguarde...';
+
+  try {
+    const resp = await fetch(`https://graph.facebook.com/v23.0/${encodeURIComponent(phoneId)}?fields=id,display_phone_number,verified_name&access_token=${encodeURIComponent(token)}`);
+    const data = await resp.json();
+
+    if (data.error) {
+      throw new Error(data.error.message || 'Token ou Phone Number ID inválidos.');
+    }
+
+    await setDoc(doc(db, "configuracoes", "whatsapp"), {
+      waba_id: wabaId || null,
+      phone_number_id: phoneId,
+      phone_number: data.display_phone_number || null,
+      access_token: token,
+      conectadoPor: currentUser,
+      conectadoEm: serverTimestamp()
+    });
+
+    statusEl.style.color = 'var(--green)';
+    statusEl.innerHTML = `✓ Conectado com sucesso!${data.display_phone_number ? '<br><strong>'+esc(data.display_phone_number)+'</strong> ('+esc(data.verified_name||'')+')' : ''}`;
+    showToast('✓ WhatsApp Business conectado!');
+
+    const btnPrincipal = document.getElementById('whatsappEmbeddedBtn');
+    if (btnPrincipal) { btnPrincipal.disabled = true; btnPrincipal.textContent = '✓ Conectado'; }
+  } catch (e) {
+    console.error('Erro ao conectar manualmente:', e);
+    statusEl.style.color = 'var(--red)';
+    statusEl.innerHTML = `⚠ ${esc(e.message || e)}`;
+  } finally {
+    btn.disabled = false;
   }
 }
 
