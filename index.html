@@ -6569,6 +6569,30 @@ async function whatsappConectarManual() {
 }
 window.whatsappConectarManual = whatsappConectarManual;
 
+async function whatsappChecarConexaoExistente() {
+  try {
+    const snap = await getDoc(doc(db, "configuracoes", "whatsapp"));
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.access_token && d.phone_number_id) {
+        const btn = document.getElementById('whatsappEmbeddedBtn');
+        const statusEl = document.getElementById('whatsappStatus');
+        const statusText = document.getElementById('whatsappStatusText');
+        if (btn) { btn.disabled = true; btn.textContent = '✓ Conectado'; }
+        if (statusEl && statusText) {
+          statusEl.style.display = 'block';
+          statusEl.style.background = 'var(--green-bg)';
+          statusEl.style.color = 'var(--green)';
+          statusText.innerHTML = `✓ WhatsApp Business conectado${d.phone_number ? '<br><strong>'+esc(d.phone_number)+'</strong>' : ''}`;
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Erro ao checar conexão existente do WhatsApp:', e);
+  }
+}
+whatsappChecarConexaoExistente();
+
 document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => {
   /*
    * IMPORTANTE:
