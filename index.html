@@ -1814,6 +1814,8 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">💰 Gross Up</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="margem" onclick="window.__mlSubTab('margem')">🚦 Margem</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="ads" onclick="window.__mlSubTab('ads')">📢 Ads</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="qualidade" onclick="window.__mlSubTab('qualidade')">💚 Qualidade dos Anúncios</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="roi" onclick="window.__mlSubTab('roi')">📈 ROI por Produto</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -1873,6 +1875,28 @@ textarea{resize:vertical;min-height:70px;}
               <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div class="sc-label">Revisar/Cortar</div></div><div class="sc-value" style="color:var(--red)" id="adsRevisar">0</div></div>
             </div>
             <div id="adsLista"></div>
+          </div>
+          <div class="ml-subpanel" data-mlsubpanel="qualidade" style="display:none">
+            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver a "saúde" de cada anúncio ativo (ficha técnica, título, fotos) — quanto mais completo, melhor o ranqueamento no Mercado Livre.</p>
+            <select id="mlQualidadeClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
+            <button class="btn btn-gold btn-sm" id="mlQualidadeCarregarBtn" style="margin-bottom:16px">🔄 Carregar Anúncios</button>
+            <div class="sgmv-summary">
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Ótimo</div></div><div class="sc-value green" id="qualidadeVerde">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Pode melhorar</div></div><div class="sc-value" id="qualidadeAmarela">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Precisa de atenção</div></div><div class="sc-value" style="color:var(--red)" id="qualidadeVermelha">0</div></div>
+            </div>
+            <div id="qualidadeLista"></div>
+          </div>
+          <div class="ml-subpanel" data-mlsubpanel="roi" style="display:none">
+            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver, produto por produto, quanto foi investido em Ads e quanto voltou em vendas atribuídas (últimos 30 dias).</p>
+            <select id="mlRoiClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
+            <button class="btn btn-gold btn-sm" id="mlRoiCarregarBtn" style="margin-bottom:16px">🔄 Carregar ROI</button>
+            <div class="sgmv-summary">
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div><div class="sc-label">Vale investir</div></div><div class="sc-value green" id="roiEscalar">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Observar</div></div><div class="sc-value" id="roiObservar">0</div></div>
+              <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div class="sc-label">Não compensa</div></div><div class="sc-value" style="color:var(--red)" id="roiRevisar">0</div></div>
+            </div>
+            <div id="roiLista"></div>
           </div>
         </div>
 
@@ -4567,6 +4591,8 @@ window.__mlSubTab=(nome)=>{
   });
   if(nome==='margem')mlMargemPopularSelect();
   if(nome==='ads')mlAdsPopularSelect();
+  if(nome==='qualidade')mlQualidadePopularSelect();
+  if(nome==='roi')mlRoiPopularSelect();
 };
 function mlAdsPopularSelect(){
   const sel=document.getElementById('mlAdsClienteSelect');
@@ -4629,6 +4655,106 @@ document.getElementById('mlAdsCarregarBtn')?.addEventListener('click',async()=>{
     document.getElementById('adsRevisar').textContent=revisar;
   }catch(e){showToast('Erro de conexão ao carregar Ads.');}
   btn.disabled=false;btn.textContent='🔄 Carregar Campanhas';
+});
+function mlQualidadePopularSelect(){
+  const sel=document.getElementById('mlQualidadeClienteSelect');
+  if(!sel)return;
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.mlUserId);
+  const valorAtual=sel.value;
+  sel.innerHTML='<option value="">Escolha um cliente conectado...</option>'+conectados.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  if(valorAtual)sel.value=valorAtual;
+}
+document.getElementById('mlQualidadeCarregarBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('mlQualidadeClienteSelect').value;
+  if(!clienteId){showToast('Escolhe um cliente primeiro.');return;}
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
+  const btn=document.getElementById('mlQualidadeCarregarBtn');
+  const lista=document.getElementById('qualidadeLista');
+  btn.disabled=true;btn.textContent='Analisando anúncios...';
+  lista.innerHTML='<div class="empty-state" style="padding:20px">Analisando cada anúncio, pode levar um minuto se tiver muitos produtos...</div>';
+  try{
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=verificar_qualidade_anuncios&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`);
+    const data=await resp.json();
+    if(!data.ok){lista.innerHTML=`<div class="empty-state" style="padding:20px">${esc(data.erro||'Erro ao verificar qualidade.')}</div>`;btn.disabled=false;btn.textContent='🔄 Carregar Anúncios';return;}
+    const itens=data.itens||[];
+    if(!itens.length){lista.innerHTML='<div class="empty-state" style="padding:20px">Nenhum anúncio ativo encontrado.</div>';document.getElementById('qualidadeVerde').textContent='0';document.getElementById('qualidadeAmarela').textContent='0';document.getElementById('qualidadeVermelha').textContent='0';btn.disabled=false;btn.textContent='🔄 Carregar Anúncios';return;}
+    let verde=0,amarelo=0,vermelho=0;
+    lista.innerHTML=itens.map(it=>{
+      const nota=it.health!=null?Math.round(it.health*100):null;
+      let cor,label;
+      if(nota==null){cor='amber';label='Sem dado';}
+      else if(nota>=80){cor='green';label='Ótimo';verde++;}
+      else if(nota>=50){cor='amber';label='Pode melhorar';amarelo++;}
+      else{cor='red';label='Precisa de atenção';vermelho++;}
+      const pendencias=(it.acoes_pendentes||[]).slice(0,3);
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:flex-start">
+        <span class="nome" style="flex:2;min-width:200px">${it.permalink?`<a href="${esc(it.permalink)}" target="_blank" style="color:inherit;text-decoration:underline">${esc(it.title)}</a>`:esc(it.title)}</span>
+        <span class="tt-status-pill ${cor==='green'?'ok':cor==='amber'?'hoje':'atrasada'}">${nota!=null?nota+'% — ':''}${label}</span>
+        ${pendencias.length?`<div style="flex-basis:100%;font-size:12px;color:var(--text-dim)">Melhorar: ${pendencias.map(esc).join(' • ')}</div>`:''}
+      </div>`;
+    }).join('');
+    document.getElementById('qualidadeVerde').textContent=verde;
+    document.getElementById('qualidadeAmarela').textContent=amarelo;
+    document.getElementById('qualidadeVermelha').textContent=vermelho;
+  }catch(e){showToast('Erro de conexão ao verificar qualidade dos anúncios.');}
+  btn.disabled=false;btn.textContent='🔄 Carregar Anúncios';
+});
+function mlRoiPopularSelect(){
+  const sel=document.getElementById('mlRoiClienteSelect');
+  if(!sel)return;
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.mlUserId);
+  const valorAtual=sel.value;
+  sel.innerHTML='<option value="">Escolha um cliente conectado...</option>'+conectados.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  if(valorAtual)sel.value=valorAtual;
+}
+document.getElementById('mlRoiCarregarBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('mlRoiClienteSelect').value;
+  if(!clienteId){showToast('Escolhe um cliente primeiro.');return;}
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.mlAccessToken)return;
+  await mlGarantirTokenValido(cliente);
+  const btn=document.getElementById('mlRoiCarregarBtn');
+  const lista=document.getElementById('roiLista');
+  btn.disabled=true;btn.textContent='Buscando...';
+  lista.innerHTML='<div class="empty-state" style="padding:20px">Buscando ROI por produto...</div>';
+  try{
+    const respAdv=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_advertiser_id&access_token=${cliente.mlAccessToken}`);
+    const dataAdv=await respAdv.json();
+    if(!dataAdv.ok){lista.innerHTML=`<div class="empty-state" style="padding:20px">${esc(dataAdv.erro||'Erro ao buscar Ads.')}</div>`;btn.disabled=false;btn.textContent='🔄 Carregar ROI';return;}
+
+    const hoje=new Date();
+    const trintaAtras=new Date(hoje);trintaAtras.setDate(trintaAtras.getDate()-30);
+    const fmtD=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+    const resp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_roi_produtos&access_token=${cliente.mlAccessToken}&advertiser_id=${dataAdv.advertiser_id}&data_inicio=${fmtD(trintaAtras)}&data_fim=${fmtD(hoje)}`);
+    const data=await resp.json();
+    if(!data.ok){lista.innerHTML=`<div class="empty-state" style="padding:20px">${esc(data.erro||'Erro ao buscar ROI.')}</div>`;btn.disabled=false;btn.textContent='🔄 Carregar ROI';return;}
+
+    const produtos=data.produtos||[];
+    if(!produtos.length){lista.innerHTML='<div class="empty-state" style="padding:20px">Nenhum produto com investimento em Ads nos últimos 30 dias.</div>';document.getElementById('roiEscalar').textContent='0';document.getElementById('roiObservar').textContent='0';document.getElementById('roiRevisar').textContent='0';btn.disabled=false;btn.textContent='🔄 Carregar ROI';return;}
+
+    let escalar=0,observar=0,revisar=0;
+    lista.innerHTML=produtos.map(p=>{
+      const m=p.metrics||p;
+      const roas=Number(m.roas)||0;
+      const acos=Number(m.acos)||0;
+      const cls=mlAdsClassificar(roas,acos);
+      if(cls.cor==='green')escalar++;else if(cls.cor==='amber')observar++;else revisar++;
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+        <span class="nome" style="flex:2;min-width:200px">${esc(p.title||p.item_id||'')}</span>
+        <span style="font-size:12px;color:var(--text-dim)">Investido: ${fmtR(m.cost||0)}</span>
+        <span style="font-size:12px;color:var(--text-dim)">Vendido: ${fmtR(m.total_amount||0)}</span>
+        <span style="font-size:12px;color:var(--text-dim)">ROAS: <b>${roas.toFixed(1)}x</b></span>
+        <span class="tt-status-pill ${cls.cor==='green'?'ok':cls.cor==='amber'?'hoje':'atrasada'}">${cls.emoji} ${cls.label}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('roiEscalar').textContent=escalar;
+    document.getElementById('roiObservar').textContent=observar;
+    document.getElementById('roiRevisar').textContent=revisar;
+  }catch(e){showToast('Erro de conexão ao carregar ROI por produto.');}
+  btn.disabled=false;btn.textContent='🔄 Carregar ROI';
 });
 function mlMargemPopularSelect(){
   const sel=document.getElementById('mlMargemClienteSelect');
