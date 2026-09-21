@@ -4627,7 +4627,7 @@ document.getElementById('mlAdsCarregarBtn')?.addEventListener('click',async()=>{
     const trintaAtras=new Date(hoje);trintaAtras.setDate(trintaAtras.getDate()-30);
     const fmtD=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
-    const respCamp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_campanhas_ads&access_token=${cliente.mlAccessToken}&advertiser_id=${dataAdv.advertiser_id}&data_inicio=${fmtD(trintaAtras)}&data_fim=${fmtD(hoje)}`);
+    const respCamp=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_campanhas_ads&access_token=${cliente.mlAccessToken}&advertiser_id=${dataAdv.advertiser_id}&site_id=${dataAdv.site_id}&data_inicio=${fmtD(trintaAtras)}&data_fim=${fmtD(hoje)}`);
     const dataCamp=await respCamp.json();
     if(!dataCamp.ok){lista.innerHTML=`<div class="empty-state" style="padding:20px">${esc(dataCamp.erro||'Erro ao buscar campanhas.')}</div>`;btn.disabled=false;btn.textContent='🔄 Carregar Campanhas';return;}
 
