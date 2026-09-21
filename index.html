@@ -1816,6 +1816,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="ads" onclick="window.__mlSubTab('ads')">📢 Ads</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="qualidade" onclick="window.__mlSubTab('qualidade')">💚 Qualidade dos Anúncios</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="roi" onclick="window.__mlSubTab('roi')">📈 ROI por Produto</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="publicacao" onclick="window.__mlSubTab('publicacao')">🚀 Publicação em Massa</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -1897,6 +1898,12 @@ textarea{resize:vertical;min-height:70px;}
               <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div class="sc-label">Não compensa</div></div><div class="sc-value" style="color:var(--red)" id="roiRevisar">0</div></div>
             </div>
             <div id="roiLista"></div>
+          </div>
+          <div class="ml-subpanel" data-mlsubpanel="publicacao" style="display:none">
+            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe o cliente, adiciona os produtos (nome, preço, estoque, link de foto) e clica em "Gerar" pra cada um — o sistema descobre a categoria certa, busca a ficha técnica obrigatória e a IA já escreve título e descrição. Nada publica sem você clicar em "Publicar".</p>
+            <select id="mlPubClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
+            <button class="btn btn-ghost btn-sm" id="mlPubAddBtn" style="margin-bottom:16px">+ Adicionar produto</button>
+            <div id="mlPubLista"></div>
           </div>
         </div>
 
@@ -4603,6 +4610,7 @@ window.__mlSubTab=(nome)=>{
   if(nome==='ads')mlAdsPopularSelect();
   if(nome==='qualidade')mlQualidadePopularSelect();
   if(nome==='roi')mlRoiPopularSelect();
+  if(nome==='publicacao')mlPubPopularSelect();
 };
 function mlAdsPopularSelect(){
   const sel=document.getElementById('mlAdsClienteSelect');
@@ -4766,6 +4774,115 @@ document.getElementById('mlRoiCarregarBtn')?.addEventListener('click',async()=>{
   }catch(e){showToast('Erro de conexão ao carregar ROI por produto.');}
   btn.disabled=false;btn.textContent='🔄 Carregar ROI';
 });
+
+/* ---- Publicação em Massa (Mercado Livre) ---- */
+let mlPubLinhas=[];
+let mlPubSeq=0;
+function mlPubPopularSelect(){
+  const sel=document.getElementById('mlPubClienteSelect');
+  if(!sel)return;
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.mlUserId);
+  const valorAtual=sel.value;
+  sel.innerHTML='<option value="">Escolha um cliente conectado...</option>'+conectados.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  if(valorAtual)sel.value=valorAtual;
+}
+function mlPubRenderizar(){
+  const el=document.getElementById('mlPubLista');
+  if(!el)return;
+  if(!mlPubLinhas.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum produto adicionado ainda. Clica em "+ Adicionar produto".</div>';return;}
+  el.innerHTML=mlPubLinhas.map(l=>{
+    const atributosHtml=(l.atributos||[]).map((a,ai)=>`
+      <div class="field" style="margin-bottom:6px">
+        <label style="font-size:11px">${esc(a.nome)} ${a.obrigatorio?'*':''}</label>
+        ${a.valores_possiveis&&a.valores_possiveis.length
+          ? `<select onchange="window.__mlPubAtributo('${l.id}',${ai},this.value)"><option value="">Escolha...</option>${a.valores_possiveis.map(v=>`<option value="${esc(v.id)}" ${a.value_id===v.id?'selected':''}>${esc(v.nome)}</option>`).join('')}</select>`
+          : `<input type="text" value="${esc(a.value_name||'')}" placeholder="Preenche aqui..." onchange="window.__mlPubAtributoTexto('${l.id}',${ai},this.value)">`}
+      </div>`).join('');
+    return `<div class="cm-item" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input type="text" placeholder="Nome do produto" value="${esc(l.nome)}" style="flex:2;min-width:200px" onchange="window.__mlPubCampo('${l.id}','nome',this.value)">
+        <input type="number" placeholder="Preço" value="${l.preco||''}" style="width:110px" onchange="window.__mlPubCampo('${l.id}','preco',this.value)">
+        <input type="number" placeholder="Estoque" value="${l.estoque||''}" style="width:100px" onchange="window.__mlPubCampo('${l.id}','estoque',this.value)">
+        <input type="text" placeholder="Link da foto (https://...)" value="${esc(l.fotoUrl||'')}" style="flex:2;min-width:200px" onchange="window.__mlPubCampo('${l.id}','fotoUrl',this.value)">
+        <button class="btn btn-ghost btn-sm" onclick="window.__mlPubRemover('${l.id}')">🗑️</button>
+      </div>
+      ${l.categoryName?`<div style="font-size:12px;color:var(--text-dim)">📁 Categoria: <b>${esc(l.categoryName)}</b></div>`:''}
+      ${atributosHtml?`<div style="background:var(--border);border-radius:6px;padding:10px">${atributosHtml}</div>`:''}
+      ${l.titulo?`<div class="ia-block"><div class="ia-block-label">📌 Título gerado</div><div class="ia-block-txt">${esc(l.titulo)}</div></div>`:''}
+      ${l.descricao?`<div class="ia-block"><div class="ia-block-label">📝 Descrição gerada</div><div class="ia-block-txt">${esc(l.descricao)}</div></div>`:''}
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost btn-sm" onclick="window.__mlPubGerar('${l.id}')">✨ Gerar</button>
+        <button class="btn btn-gold btn-sm" ${l.status==='publicado'?'disabled':''} onclick="window.__mlPubPublicar('${l.id}')">${l.status==='publicado'?'✓ Publicado':'🚀 Publicar'}</button>
+        ${l.erro?`<span style="color:var(--red);font-size:12px">${esc(l.erro)}</span>`:''}
+        ${l.permalink?`<a href="${esc(l.permalink)}" target="_blank" style="font-size:12px;text-decoration:underline">Ver anúncio →</a>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('mlPubAddBtn')?.addEventListener('click',()=>{
+  mlPubSeq++;
+  mlPubLinhas.push({id:'pub'+mlPubSeq,nome:'',preco:'',estoque:'',fotoUrl:'',atributos:[],titulo:'',descricao:'',categoryId:null,categoryName:'',status:'',erro:''});
+  mlPubRenderizar();
+});
+window.__mlPubCampo=(id,campo,valor)=>{const l=mlPubLinhas.find(x=>x.id===id);if(l)l[campo]=valor;};
+window.__mlPubAtributo=(id,idx,valorId)=>{const l=mlPubLinhas.find(x=>x.id===id);if(l&&l.atributos[idx]){l.atributos[idx].value_id=valorId;l.atributos[idx].value_name=null;}};
+window.__mlPubAtributoTexto=(id,idx,texto)=>{const l=mlPubLinhas.find(x=>x.id===id);if(l&&l.atributos[idx]){l.atributos[idx].value_name=texto;l.atributos[idx].value_id=null;}};
+window.__mlPubRemover=(id)=>{mlPubLinhas=mlPubLinhas.filter(x=>x.id!==id);mlPubRenderizar();};
+
+window.__mlPubGerar=async(id)=>{
+  const l=mlPubLinhas.find(x=>x.id===id);
+  const clienteId=document.getElementById('mlPubClienteSelect').value;
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente){showToast('Escolhe um cliente primeiro.');return;}
+  if(!l.nome){showToast('Preenche o nome do produto primeiro.');return;}
+  await mlGarantirTokenValido(cliente);
+  l.erro='';mlPubRenderizar();
+  try{
+    // 1) descobrir categoria
+    const respCat=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=descobrir_categoria&access_token=${cliente.mlAccessToken}&produto=${encodeURIComponent(l.nome)}`);
+    const dataCat=await respCat.json();
+    if(!dataCat.ok){l.erro=dataCat.erro||'Erro ao descobrir categoria.';mlPubRenderizar();return;}
+    l.categoryId=dataCat.category_id;l.categoryName=dataCat.category_name;
+
+    // 2) buscar atributos obrigatórios dessa categoria
+    const respAttr=await fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_atributos_categoria&access_token=${cliente.mlAccessToken}&category_id=${l.categoryId}`);
+    const dataAttr=await respAttr.json();
+    l.atributos=(dataAttr.ok?dataAttr.atributos:[]).map(a=>({...a,obrigatorio:true,value_id:null,value_name:null}));
+
+    // 3) gerar título e descrição com a IA (motor leve, sem funil de fotos pesado)
+    const respIa=await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:l.nome,marketplace:'mercadolivre',imagem:null})});
+    const dataIa=await respIa.json();
+    if(respIa.ok&&!dataIa.erro){l.titulo=dataIa.titulo||l.nome;l.descricao=dataIa.descricao||'';}
+    else{l.titulo=l.nome;}
+
+    showToast('✓ Gerado! Confere os campos obrigatórios antes de publicar.');
+  }catch(e){l.erro='Erro de conexão: '+e.message;}
+  mlPubRenderizar();
+};
+
+window.__mlPubPublicar=async(id)=>{
+  const l=mlPubLinhas.find(x=>x.id===id);
+  const clienteId=document.getElementById('mlPubClienteSelect').value;
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente){showToast('Escolhe um cliente primeiro.');return;}
+  if(!l.categoryId){showToast('Clica em "Gerar" primeiro.');return;}
+  if(!l.preco||!l.estoque){l.erro='Preenche preço e estoque antes de publicar.';mlPubRenderizar();return;}
+  const faltando=(l.atributos||[]).filter(a=>a.obrigatorio&&!a.value_id&&!a.value_name);
+  if(faltando.length){l.erro=`Falta preencher: ${faltando.map(f=>f.nome).join(', ')}`;mlPubRenderizar();return;}
+  await mlGarantirTokenValido(cliente);
+  l.erro='';mlPubRenderizar();
+  try{
+    const resp=await fetch('https://lb-mercadolivre.vercel.app/api/mercadolivre',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({acao:'criar_anuncio',access_token:cliente.mlAccessToken,titulo:l.titulo||l.nome,category_id:l.categoryId,preco:l.preco,estoque:l.estoque,descricao:l.descricao,fotos_urls:l.fotoUrl?[l.fotoUrl]:[],atributos:l.atributos})
+    });
+    const data=await resp.json();
+    if(!data.ok){l.erro=data.erro||'Erro ao publicar.';mlPubRenderizar();return;}
+    l.status='publicado';l.permalink=data.permalink;
+    showToast('🚀 Anúncio publicado com sucesso!');
+  }catch(e){l.erro='Erro de conexão: '+e.message;}
+  mlPubRenderizar();
+};
 function mlMargemPopularSelect(){
   const sel=document.getElementById('mlMargemClienteSelect');
   if(!sel)return;
