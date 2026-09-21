@@ -5606,6 +5606,19 @@ window.__irParaMarketing=(painel)=>{
   document.querySelector('[data-page="marketing"]')?.click();
   setTimeout(()=>{document.querySelector(`.cm-tool-card[data-cmtab="${painel}"]`)?.click();},50);
 };
+window.__migrarPalomaGuilherme=async()=>{
+  if(!confirm('Isso vai trocar TODAS as tarefas da Paloma pro Guilherme. Confirma?'))return;
+  let total=0;
+  for(const colecao of ['tarefas','tarefasFixas']){
+    const q=query(collection(db,colecao),where('responsavelEmail','==','paloma@lbmarketplace.com.br'));
+    const snap=await getDocs(q);
+    for(const d of snap.docs){
+      await updateDoc(doc(db,colecao,d.id),{responsavelEmail:'guilherme@lbmarketplace.com.br',responsavel:'Guilherme'});
+      total++;
+    }
+  }
+  alert(`Pronto! ${total} tarefa(s) migrada(s) da Paloma pro Guilherme.`);
+};
 window.__cmVoltar=()=>{
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.remove('active'));
   document.getElementById('cmCardGrid').classList.remove('hidden');
