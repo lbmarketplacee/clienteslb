@@ -6242,6 +6242,12 @@ window.__crmSubmitForm=async()=>{
     }else{
       const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
       await log(ref.id,nome,'lead criado',`Lead criado por ${currentUser}, origem: ${origem||'—'}.`);
+      // Dispara a mensagem de qualificação automática via WhatsApp (não trava o salvamento se falhar)
+      if(whatsapp){
+        const telefoneDigits=whatsapp.replace(/\D/g,'');
+        const telefoneComDDI=telefoneDigits.startsWith('55')?telefoneDigits:`55${telefoneDigits}`;
+        fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'qualificar_lead_novo',telefone:telefoneComDDI,nome,nicho:nicho===('Outros')?nichoOutro:nicho,tipoServico})}).catch(e=>console.error('Falha ao disparar qualificação via WhatsApp:',e));
+      }
     }
     leadFormOpen=false;editingLeadId=null;
     showToast('✓ Lead salvo.');
