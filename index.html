@@ -2515,7 +2515,17 @@ document.getElementById('loginForgotBtn')?.addEventListener('click',async()=>{
 });
 
 document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
-onAuthStateChanged(auth,user=>{if(user){currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
+onAuthStateChanged(auth,user=>{if(user){
+  if(!USERS_MAP[user.email]){
+    // Segurança: mesmo que o login tenha passado no Google/Firebase, se o e-mail
+    // não está na lista de autorizados, desloga na hora e nunca mostra o app.
+    signOut(auth);
+    loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');
+    const errEl=document.getElementById('loginError');
+    if(errEl){errEl.style.color='var(--red)';errEl.textContent='Esse e-mail não tem acesso ao sistema. Fala com o Lincoln pra liberar.';}
+    return;
+  }
+  currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
 comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();dreSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
