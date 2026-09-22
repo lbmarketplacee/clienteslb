@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Segurança da Informação — LB Marketplace</title>
+<style>
+:root{--bg:#0a0a09;--gold:#d4a94a;--text:#f3f0e8;--text-dim:#a39d8c;--border:#2a261c;}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Montserrat',Arial,sans-serif;max-width:760px;margin:0 auto;padding:48px 24px;line-height:1.7;}
+h1{color:var(--gold);font-size:26px;margin-bottom:6px;}
+.atualizado{color:var(--text-dim);font-size:13px;margin-bottom:32px;}
+h2{color:var(--gold);font-size:18px;margin-top:32px;margin-bottom:10px;}
+p,li{font-size:14.5px;color:var(--text);}
+ul{padding-left:20px;}
+a{color:var(--gold);}
+.contato{background:#141310;border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-top:32px;}
+</style>
+</head>
+<body>
+<h1>Política de Segurança da Informação — LB Marketplace</h1>
+<p class="atualizado">Última atualização: setembro de 2026</p>
+
+<p>Esta política descreve as práticas de segurança da informação adotadas pela <strong>LB Marketplace Assessoria</strong> na operação do seu sistema interno de gestão e das integrações com parceiros de marketplace e mensageria (Shopee, Mercado Livre, TikTok Shop, Shein, WhatsApp Business).</p>
+
+<h2>1. Programa de segurança da informação</h2>
+<p>A LB Marketplace opera uma infraestrutura 100% em nuvem, sobre provedores de nível empresarial (Google Cloud/Firebase, Vercel, GitHub), o que nos permite herdar controles de segurança físicos, de rede e de infraestrutura desses provedores (certificados sob padrões como ISO 27001 e SOC 2). Nossa equipe segue práticas de acesso restrito, autenticação forte e revisão periódica de permissões, descritas abaixo.</p>
+
+<h2>2. Segregação e proteção de ambiente</h2>
+<p>Por não operarmos servidores ou rede própria (toda a infraestrutura é SaaS/cloud gerenciada por terceiros certificados), a segregação de rede e o monitoramento de ameaças de infraestrutura são de responsabilidade e garantidos pelos próprios provedores (Google Cloud, Vercel). No nível de aplicação, cada ambiente (produção do sistema, funções de backend por integração) é isolado em projetos/serviços distintos, com credenciais próprias e não compartilhadas entre si.</p>
+
+<h2>3. Controles de segurança de terminais e acesso</h2>
+<ul>
+<li>Todos os computadores da equipe possuem software antivírus ativo.</li>
+<li>Autenticação multifator (MFA) é utilizada nas contas principais de acesso (Google Workspace, GitHub, provedores de nuvem).</li>
+<li>Login no sistema interno da LB Marketplace é feito exclusivamente via conta Google corporativa (SSO), com lista de e-mails autorizados controlada a nível de aplicação e de banco de dados — ninguém fora dessa lista consegue autenticar ou ler qualquer dado, mesmo que tente.</li>
+<li>Senhas de acesso a sistemas internos seguem requisitos de complexidade mínima exigidos pelos próprios provedores (Google, GitHub).</li>
+</ul>
+
+<h2>4. Controle de acesso e privilégio mínimo</h2>
+<p>O acesso a dados pessoais é restrito por perfil: cada colaborador só acessa os dados dos clientes sob sua responsabilidade direta na operação, e funcionalidades administrativas/financeiras são restritas exclusivamente à liderança da agência. O acesso é controlado tanto na camada de aplicação (permissões de tela) quanto na camada de banco de dados (regras de segurança do Firestore, que bloqueiam qualquer leitura/escrita de e-mails não autorizados, independentemente da tela usada).</p>
+
+<h2>5. Classificação e proteção de dados</h2>
+<p>Dados pessoais e comerciais sensíveis (documentos de identificação, dados de faturamento, tokens de acesso a APIs de terceiros) são tratados como confidenciais. Todos os dados são criptografados em trânsito (HTTPS/TLS em 100% das conexões) e em repouso (criptografia nativa do Google Firebase/Firestore). Tokens de acesso a APIs de terceiros (Shopee, Mercado Livre, TikTok Shop, Meta/WhatsApp) são armazenados de forma restrita, nunca expostos publicamente, e usados apenas pelos serviços de backend autorizados.</p>
+
+<h2>6. Resposta a incidentes</h2>
+<p>Em caso de incidente de segurança ou suspeita de violação de dados, o responsável pela LB Marketplace (Lincoln Henrique, <a href="mailto:lincoln@lbmarketplace.com.br">lincoln@lbmarketplace.com.br</a>) é o ponto único de contato e responsável por: (i) conter o incidente, (ii) avaliar o escopo e os dados afetados, (iii) notificar os parceiros/plataformas impactados (incluindo TikTok Shop, quando aplicável) e os titulares de dados afetados, quando exigido por lei, em prazo razoável após a identificação do incidente, e (iv) documentar o ocorrido e as medidas corretivas tomadas.</p>
+
+<h2>7. Gestão de vulnerabilidades</h2>
+<p>Dependências de software e integrações são mantidas atualizadas conforme disponibilizado pelos fornecedores. Alterações no sistema passam por teste antes de entrarem em produção. Provedores de infraestrutura (Google Cloud, Vercel, GitHub) são responsáveis pela aplicação de patches de segurança na camada de plataforma.</p>
+
+<h2>8. Exclusão de dados ao fim da relação</h2>
+<p>Ao término da relação contratual com um cliente ou parceiro (incluindo integrações via TikTok Shop), os dados pessoais coletados em seu nome são excluídos da nossa base em prazo razoável, exceto quando sua retenção for exigida por lei, obrigação fiscal/contábil ou para exercício regular de direitos.</p>
+
+<h2>9. Localização dos dados</h2>
+<p>Os dados são armazenados e processados em infraestrutura do Google Cloud/Firebase e Vercel, cujos data centers utilizados por essas plataformas para clientes brasileiros estão localizados nos Estados Unidos.</p>
+
+<h2>Documento relacionado</h2>
+<p>Para informações sobre quais dados coletamos, como usamos e os direitos dos titulares, consulte nossa <a href="https://sistema.lbmarketplace.com.br/politica-privacidade.html">Política de Privacidade</a>.</p>
+
+<div class="contato">
+<strong>Contato de segurança e proteção de dados:</strong><br>
+Lincoln Henrique — <a href="mailto:lincoln@lbmarketplace.com.br">lincoln@lbmarketplace.com.br</a><br>
+LB Marketplace Assessoria — CNPJ 58.943.847/0001-90
+</div>
+
+</body>
+</html>
