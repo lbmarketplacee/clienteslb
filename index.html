@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<!-- LB WhatsApp Coexistência: frontend corrigido -->
+<!-- LB WhatsApp: frontend do popup de conexão (Embedded Signup) -->
+<!-- Hoje o WhatsApp da LB está conectado via chip novo + token manual ("Conectar manualmente"),
+     não por este popup — mas ele fica aqui funcionando, pra caso de precisar conectar via
+     Embedded Signup no futuro (com ou sem Coexistência). -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LB Marketplace · Gestão</title>
@@ -10,7 +13,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script>
-  // Facebook SDK — WhatsApp Embedded Signup / Coexistência
+  // Facebook SDK — WhatsApp Embedded Signup (popup, não é o método usado hoje)
   window.fbAsyncInit = function () {
     if (window.FB) {
       window.FB.init({
@@ -1917,7 +1920,7 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><h3>Conectar WhatsApp Business</h3></div>
           <div style="padding:20px;background:var(--bg-card);border-radius:10px;margin-bottom:20px;border:1px solid var(--border)">
-            <p style="margin-bottom:12px;color:var(--text-dim)">Clica no botão abaixo pra conectar — mantém o WhatsApp funcionando no celular também (Coexistência).</p>
+            <p style="margin-bottom:12px;color:var(--text-dim)">Clica no botão abaixo pra conectar o número via popup do Facebook.</p>
             <button class="btn btn-gold" id="whatsappEmbeddedBtn">Conectar WhatsApp Business</button>
             <div id="whatsappStatus" style="margin-top:12px;padding:12px;background:var(--border);border-radius:6px;display:none;text-align:center">
               <div id="whatsappStatusText"></div>
@@ -6795,7 +6798,7 @@ document.getElementById('calcBtn').addEventListener('click',()=>{
 });
 calcRefreshFields();
 
-/* ================= WhatsApp — Embedded Signup / Coexistência ================= */
+/* ================= WhatsApp — Embedded Signup (popup, código reserva — não é o método em uso) ================= */
 const FACEBOOK_APP_ID = '2147903903008381';
 const WHATSAPP_CONFIG_ID = '28407034932256696';
 
