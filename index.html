@@ -1076,7 +1076,6 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="sc-label">Clientes<br>Ativos</div></div></div><div class="sc-value metric-value" id="sumTotal">0</div><div class="sc-foot" id="sumTotalFoot">&nbsp;</div></div>
           <div class="summary-card metric-card glow-coral" style="cursor:pointer" onclick="window.__irParaMarketing('descontos')" title="Clique pra ver e corrigir"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg></div><div><div class="sc-label">Descontos<br>Vencendo 7d</div></div></div><div class="sc-value metric-value" id="sumDesconto">0</div><div class="sc-foot" id="sumDescontoFoot">&nbsp;</div></div>
           <div class="summary-card metric-card glow-coral" style="cursor:pointer" onclick="window.__irParaMarketing('cupons')" title="Clique pra ver e corrigir"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><div class="sc-label">Cupons<br>Vencendo 7d</div></div></div><div class="sc-value metric-value" id="sumCupom">0</div><div class="sc-foot" id="sumCupomFoot">&nbsp;</div></div>
-          <div class="summary-card metric-card glow-coral" style="cursor:pointer" onclick="window.__irParaMarketing('mercadolivre','grossup')" title="Clique pra ver e corrigir"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="sc-label">Gross Up ML<br>Pendente</div></div></div><div class="sc-value metric-value" id="sumGrossUp">0</div><div class="sc-foot" id="sumGrossUpFoot">&nbsp;</div></div>
           <div class="summary-card metric-card glow-purple"><div class="sc-top"><div class="sc-icon purple metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saldo Total<br>em Ads</div></div></div><div class="sc-value green metric-value" id="sumSaldo">R$ 0</div><svg class="sc-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,18 15,15 30,17 45,10 60,12 75,5 100,3" fill="none" stroke="var(--green)" stroke-width="2"/></svg></div>
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">GMV Total<br>Acumulado</div></div></div><div class="sc-value green metric-value" id="sumGmv">R$ 0</div><div class="sc-foot" id="sumGmvFoot">&nbsp;</div></div>
         </div>
@@ -1821,7 +1820,6 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="qualidade" onclick="window.__mlSubTab('qualidade')">💚 Qualidade dos Anúncios</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="roi" onclick="window.__mlSubTab('roi')">📈 ROI por Produto</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="publicacao" onclick="window.__mlSubTab('publicacao')">🚀 Publicação em Massa</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">🎯 Gross Up 30 dias</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -1909,10 +1907,6 @@ textarea{resize:vertical;min-height:70px;}
             <select id="mlPubClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
             <button class="btn btn-ghost btn-sm" id="mlPubAddBtn" style="margin-bottom:16px">+ Adicionar produto</button>
             <div id="mlPubLista"></div>
-          </div>
-          <div class="ml-subpanel" data-mlsubpanel="grossup" style="display:none">
-            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Controle da estratégia Gross Up (preço mais alto + desconto de 30 dias) por cliente. Quando marcar "feito", conta 30 dias a partir de hoje pro próximo alerta automaticamente.</p>
-            <div id="mlGrossUpLista"></div>
           </div>
         </div>
 
@@ -2561,12 +2555,6 @@ function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecal
 function renderSummary(){let da=0,ca=0,st=0;const clientesAtivos=clientesCache.filter(c=>c.ativo!==false);clientesAtivos.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesAtivos.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
-// Gross Up ML pendente — mesmo ciclo fixo (dia 30) usado na aba Mercado Livre
-const inicioCicloGU=mlGrossUpCicloAtualInicio();
-const clientesMlAtivos=clientesAtivos.filter(c=>(c.marketplaces||[]).includes('ml'));
-const guPendentes=clientesMlAtivos.filter(c=>{const feitoEm=c.mlGrossUpFeitoEm?new Date(c.mlGrossUpFeitoEm+'T00:00:00'):null;return !(feitoEm&&feitoEm>=inicioCicloGU);}).length;
-const elGu=document.getElementById('sumGrossUp'),elGuFoot=document.getElementById('sumGrossUpFoot');
-if(elGu){animateTo(elGu,guPendentes,v=>Math.round(v));elGuFoot.innerHTML=guPendentes===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Precisa renovar</span>';}
 }
 function clienteRowHtml(c){const respMp=c.responsaveisPorMarketplace||{};const MK_MAP={shopee:'mk-shopee',ml:'mk-mercadolivre',tiktok:'mk-tiktok',shein:'mk-shein'};const badges=(c.marketplaces||[]).map(m=>{const respEmail=respMp[m];const respIni=respEmail?nome(respEmail).charAt(0).toUpperCase():'';return `<span class="mp-badge mk-badge ${MP_C[m]||''} ${MK_MAP[m]||''}" title="${respEmail?'Gerenciado por '+nome(respEmail):'Sem responsável definido'}">${MP_ICON[m]||''}${MP_L[m]||m}${respIni?` <b style="opacity:.7">(${respIni})</b>`:''}</span>`;}).join('');const editMeta=c.ultimaEdicaoPor?`<span class="edit-meta"><b>${c.ultimaEdicaoPor}</b><br>${c.ultimaEdicaoEm?new Date(c.ultimaEdicaoEm.seconds*1000).toLocaleString('pt-BR'):''}</span>`:'<span class="edit-meta">—</span>';const gmvShopee=c.gmvShopeeAutomatico||0;const gmvManual=gmvCache.filter(g=>g.clienteId===c.id).reduce((a,g)=>a+(Number(g.gmv)||0),0);const gmvStr=gmvShopee>0?`<div class="cli-gmv">🛒 GMV Shopee: ${fmtR(gmvShopee)}</div>`:(gmvManual>0?`<div class="cli-gmv">GMV: ${fmtR(gmvManual)}</div>`:'');const email=c.email?`<div class="cli-email">${esc(c.email)}</div>`:'';return`<tr><td${c.ativo===false?" style=\"opacity:.5\"":""}><div class="cli-cell"><div class="cli-avatar">${esc(avatarInicial(c.nome))}</div><div><div class="cli-name" data-client360-id="${esc(c.id)}" role="button" tabindex="0" title="Abrir Cliente 360">${esc(c.nome)}${c.ativo===false?' <span style="font-size:10px;color:var(--red);border:1px solid var(--red);padding:1px 6px;border-radius:5px;margin-left:6px">INATIVO</span>':''}</div>${email}${gmvStr}</div></div></td><td><div class="mp-badges">${badges||'<span class="status-none">—</span>'}</div></td><td class="saldo-val">${fmtR(c.saldoAds)}</td><td>${editMeta}</td><td><div class="actions-cell"><button class="icon-act" onclick="window.__vault('${c.id}','${esc(c.nome)}')" title="Acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button><button class="icon-act" onclick="window.__drive('${c.id}','${esc(c.nome)}')" title="Arquivos no Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></button><button class="icon-act" onclick="window.__gmv('${c.id}','${esc(c.nome)}')" title="GMV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></button><button class="icon-act" onclick="window.__edit('${c.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button><button class="icon-act" onclick="window.__hist('${c.id}','${esc(c.nome)}')" title="Histórico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></button>${c.ativo===false?`<button class="icon-act" onclick="window.__reativar('${c.id}','${esc(c.nome)}')" title="Reativar cliente" style="color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v5h5"/></svg></button>`:`<button class="icon-act" onclick="window.__desativar('${c.id}','${esc(c.nome)}')" title="Desativar cliente (sai da gestão, mas mantém o histórico)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg></button>`}
 <button class="icon-act danger" onclick="window.__del('${c.id}','${esc(c.nome)}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>`;}
@@ -4625,7 +4613,6 @@ window.__mlSubTab=(nome)=>{
   if(nome==='qualidade')mlQualidadePopularSelect();
   if(nome==='roi')mlRoiPopularSelect();
   if(nome==='publicacao')mlPubPopularSelect();
-  if(nome==='grossup')mlGrossUpRenderizar();
 };
 function mlAdsPopularSelect(){
   const sel=document.getElementById('mlAdsClienteSelect');
@@ -4900,53 +4887,6 @@ window.__mlPubPublicar=async(id)=>{
 };
 
 /* ---- Gross Up Mercado Livre (ciclo fixo: todo dia 30) ---- */
-function mlGrossUpCicloAtualInicio(){
-  // Acha o "dia 30" mais recente (ou o último dia do mês, se o mês não tiver 30) — isso é o início do ciclo atual.
-  const hoje=new Date();hoje.setHours(0,0,0,0);
-  let ano=hoje.getFullYear(),mes=hoje.getMonth();
-  const diaHoje=hoje.getDate();
-  const ultimoDiaMesAtual=new Date(ano,mes+1,0).getDate();
-  const diaCicloMesAtual=Math.min(30,ultimoDiaMesAtual);
-  if(diaHoje>=diaCicloMesAtual)return new Date(ano,mes,diaCicloMesAtual);
-  let mesAnt=mes-1,anoAnt=ano;if(mesAnt<0){mesAnt=11;anoAnt--;}
-  const ultimoDiaMesAnt=new Date(anoAnt,mesAnt+1,0).getDate();
-  return new Date(anoAnt,mesAnt,Math.min(30,ultimoDiaMesAnt));
-}
-function mlGrossUpProximoCiclo(inicioAtual){
-  let ano=inicioAtual.getFullYear(),mes=inicioAtual.getMonth()+1;
-  if(mes>11){mes=0;ano++;}
-  const ultimoDiaProxMes=new Date(ano,mes+1,0).getDate();
-  return new Date(ano,mes,Math.min(30,ultimoDiaProxMes));
-}
-function mlGrossUpRenderizar(){
-  const el=document.getElementById('mlGrossUpLista');
-  if(!el)return;
-  const clientesMl=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.ativo!==false);
-  if(!clientesMl.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Mercado Livre conectado.</div>';return;}
-  const inicioCiclo=mlGrossUpCicloAtualInicio();
-  const proxCiclo=mlGrossUpProximoCiclo(inicioCiclo);
-  const fmtCurta=d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-  el.innerHTML=clientesMl.map(c=>{
-    const feitoEm=c.mlGrossUpFeitoEm?new Date(c.mlGrossUpFeitoEm+'T00:00:00'):null;
-    const emDia=feitoEm&&feitoEm>=inicioCiclo;
-    const status=emDia?`✓ Feito — próxima renovação dia ${fmtCurta(proxCiclo)}`:`⚠ Pendente — renovar (venceu dia ${fmtCurta(inicioCiclo)})`;
-    const cor=emDia?'ok':'atrasada';
-    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
-      <span class="nome" style="flex:2;min-width:180px">${esc(c.nome)}${c.responsavelGeral?` <span style="opacity:.6;font-size:12px">(${esc(nome(c.responsavelGeral))})</span>`:''}</span>
-      <span class="tt-status-pill ${cor==='ok'?'ok':'atrasada'}">${status}</span>
-      ${emDia?'':`<button class="btn btn-gold btn-sm" onclick="window.__mlGrossUpMarcar('${c.id}')">✓ Marcar feito</button>`}
-    </div>`;
-  }).join('');
-}
-window.__mlGrossUpMarcar=async(clienteId)=>{
-  const hoje=new Date().toISOString().split('T')[0];
-  try{
-    await updateDoc(doc(db,"clientes",clienteId),{mlGrossUpFeitoEm:hoje});
-    showToast('✓ Marcado! Fica verde até o próximo dia 30.');
-    const c=clientesCache.find(x=>x.id===clienteId);if(c){c.mlGrossUpFeitoEm=hoje;}
-    mlGrossUpRenderizar();
-  }catch(e){showToast('Erro ao marcar.');}
-};
 function mlMargemPopularSelect(){
   const sel=document.getElementById('mlMargemClienteSelect');
   if(!sel)return;
