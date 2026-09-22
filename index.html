@@ -1817,6 +1817,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="qualidade" onclick="window.__mlSubTab('qualidade')">💚 Qualidade dos Anúncios</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="roi" onclick="window.__mlSubTab('roi')">📈 ROI por Produto</button>
             <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="publicacao" onclick="window.__mlSubTab('publicacao')">🚀 Publicação em Massa</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">🎯 Gross Up 30 dias</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -1904,6 +1905,10 @@ textarea{resize:vertical;min-height:70px;}
             <select id="mlPubClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
             <button class="btn btn-ghost btn-sm" id="mlPubAddBtn" style="margin-bottom:16px">+ Adicionar produto</button>
             <div id="mlPubLista"></div>
+          </div>
+          <div class="ml-subpanel" data-mlsubpanel="grossup" style="display:none">
+            <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Controle da estratégia Gross Up (preço mais alto + desconto de 30 dias) por cliente. Quando marcar "feito", conta 30 dias a partir de hoje pro próximo alerta automaticamente.</p>
+            <div id="mlGrossUpLista"></div>
           </div>
         </div>
 
@@ -2431,7 +2436,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="field"><label>Repete</label>
         <select id="tfFixaPeriodicidade">
           <option value="diaria">Todo dia</option>
-          <option value="mensal">1x por mês</option>
+          <option value="semanal">1x por semana (toda segunda)</option>
+          <option value="mensal">1x por mês (todo dia 1º)</option>
         </select>
       </div>
     </div>
@@ -3652,6 +3658,12 @@ async function tfFixasGerarDoDia(){
 
     for(const fixa of fixas){
       if(idsFixasJaCriadasHoje.has(fixa.id))continue;
+      // Respeita a periodicidade: diária sempre gera; semanal só na segunda-feira; mensal só no dia 1º.
+      const diaSemana=new Date().getDay(); // 0=domingo, 1=segunda...
+      const diaMes=new Date().getDate();
+      const periodicidade=fixa.periodicidade||'diaria';
+      if(periodicidade==='semanal'&&diaSemana!==1)continue;
+      if(periodicidade==='mensal'&&diaMes!==1)continue;
       await addDoc(collection(db,"tarefas"),{
         titulo:'🔁 '+fixa.titulo,
         descricao:'',
@@ -4602,6 +4614,7 @@ window.__mlSubTab=(nome)=>{
   if(nome==='qualidade')mlQualidadePopularSelect();
   if(nome==='roi')mlRoiPopularSelect();
   if(nome==='publicacao')mlPubPopularSelect();
+  if(nome==='grossup')mlGrossUpRenderizar();
 };
 function mlAdsPopularSelect(){
   const sel=document.getElementById('mlAdsClienteSelect');
@@ -4873,6 +4886,55 @@ window.__mlPubPublicar=async(id)=>{
     showToast('🚀 Anúncio publicado com sucesso!');
   }catch(e){l.erro='Erro de conexão: '+e.message;}
   mlPubRenderizar();
+};
+
+/* ---- Gross Up Mercado Livre (ciclo fixo: todo dia 30) ---- */
+function mlGrossUpCicloAtualInicio(){
+  // Acha o "dia 30" mais recente (ou o último dia do mês, se o mês não tiver 30) — isso é o início do ciclo atual.
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  let ano=hoje.getFullYear(),mes=hoje.getMonth();
+  const diaHoje=hoje.getDate();
+  const ultimoDiaMesAtual=new Date(ano,mes+1,0).getDate();
+  const diaCicloMesAtual=Math.min(30,ultimoDiaMesAtual);
+  if(diaHoje>=diaCicloMesAtual)return new Date(ano,mes,diaCicloMesAtual);
+  let mesAnt=mes-1,anoAnt=ano;if(mesAnt<0){mesAnt=11;anoAnt--;}
+  const ultimoDiaMesAnt=new Date(anoAnt,mesAnt+1,0).getDate();
+  return new Date(anoAnt,mesAnt,Math.min(30,ultimoDiaMesAnt));
+}
+function mlGrossUpProximoCiclo(inicioAtual){
+  let ano=inicioAtual.getFullYear(),mes=inicioAtual.getMonth()+1;
+  if(mes>11){mes=0;ano++;}
+  const ultimoDiaProxMes=new Date(ano,mes+1,0).getDate();
+  return new Date(ano,mes,Math.min(30,ultimoDiaProxMes));
+}
+function mlGrossUpRenderizar(){
+  const el=document.getElementById('mlGrossUpLista');
+  if(!el)return;
+  const clientesMl=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.ativo!==false);
+  if(!clientesMl.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Mercado Livre conectado.</div>';return;}
+  const inicioCiclo=mlGrossUpCicloAtualInicio();
+  const proxCiclo=mlGrossUpProximoCiclo(inicioCiclo);
+  const fmtCurta=d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  el.innerHTML=clientesMl.map(c=>{
+    const feitoEm=c.mlGrossUpFeitoEm?new Date(c.mlGrossUpFeitoEm+'T00:00:00'):null;
+    const emDia=feitoEm&&feitoEm>=inicioCiclo;
+    const status=emDia?`✓ Feito — próxima renovação dia ${fmtCurta(proxCiclo)}`:`⚠ Pendente — renovar (venceu dia ${fmtCurta(inicioCiclo)})`;
+    const cor=emDia?'ok':'atrasada';
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+      <span class="nome" style="flex:2;min-width:180px">${esc(c.nome)}${c.responsavelGeral?` <span style="opacity:.6;font-size:12px">(${esc(nome(c.responsavelGeral))})</span>`:''}</span>
+      <span class="tt-status-pill ${cor==='ok'?'ok':'atrasada'}">${status}</span>
+      ${emDia?'':`<button class="btn btn-gold btn-sm" onclick="window.__mlGrossUpMarcar('${c.id}')">✓ Marcar feito</button>`}
+    </div>`;
+  }).join('');
+}
+window.__mlGrossUpMarcar=async(clienteId)=>{
+  const hoje=new Date().toISOString().split('T')[0];
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{mlGrossUpFeitoEm:hoje});
+    showToast('✓ Marcado! Fica verde até o próximo dia 30.');
+    const c=clientesCache.find(x=>x.id===clienteId);if(c){c.mlGrossUpFeitoEm=hoje;}
+    mlGrossUpRenderizar();
+  }catch(e){showToast('Erro ao marcar.');}
 };
 function mlMargemPopularSelect(){
   const sel=document.getElementById('mlMargemClienteSelect');
@@ -5716,6 +5778,32 @@ window.__migrarPalomaGuilherme=async()=>{
     }
   }
   alert(`Pronto! ${total} tarefa(s) migrada(s) da Paloma pro Guilherme.`);
+};
+window.__gerarTarefasFixasPorCliente=async()=>{
+  if(!confirm('Isso vai criar tarefas fixas automáticas pra cada cliente (Oferta Relâmpago TikTok, Relatório Mensal, Saldo Ads Shopee), atribuídas ao responsável de cada um. Confirma?'))return;
+  let criadas=0;
+  for(const c of clientesCache){
+    if(!c.responsavelGeral)continue;
+    const mps=c.marketplaces||[];
+
+    // Oferta Relâmpago TikTok — todo dia, só quem tem TikTok conectado
+    // (Shopee já tem a data de liberação conectada automaticamente no sistema, não precisa de tarefa manual)
+    if(mps.includes('tiktok')){
+      await addDoc(collection(db,"tarefasFixas"),{titulo:`Oferta Relâmpago TikTok — ${c.nome}`,responsavelEmail:c.responsavelGeral,periodicidade:'diaria',clienteId:c.id,criadoEm:serverTimestamp(),criadoPor:'sistema'});
+      criadas++;
+    }
+
+    // Relatório Mensal — todo dia 1º, pra todos os clientes
+    await addDoc(collection(db,"tarefasFixas"),{titulo:`Relatório Mensal (Upseller) — ${c.nome}`,responsavelEmail:c.responsavelGeral,periodicidade:'mensal',clienteId:c.id,criadoEm:serverTimestamp(),criadoPor:'sistema'});
+    criadas++;
+
+    // Saldo Ads Shopee — toda semana, só quem tem Shopee conectado
+    if(mps.includes('shopee')){
+      await addDoc(collection(db,"tarefasFixas"),{titulo:`Atualizar Saldo Ads Shopee — ${c.nome}`,responsavelEmail:c.responsavelGeral,periodicidade:'semanal',clienteId:c.id,criadoEm:serverTimestamp(),criadoPor:'sistema'});
+      criadas++;
+    }
+  }
+  alert(`Pronto! ${criadas} tarefas fixas criadas.`);
 };
 window.__migrarCarteiraClientes=async()=>{
   if(!confirm('Isso vai definir 1 responsável único por cliente, substituindo o modelo antigo (1 por marketplace). Confirma?'))return;
