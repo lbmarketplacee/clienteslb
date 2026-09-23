@@ -5711,7 +5711,7 @@ function cmRenderCupons(){
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     let botaoShopee='';
     if(c.shopeeMktShopId){
-      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button>`;
+      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button><button class="icon-btn" title="Reconectar Marketing (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄</button>`;
     }else if((c.marketplaces||[]).includes('shopee')){
       botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔗 Conectar Marketing</button>`;
     }
