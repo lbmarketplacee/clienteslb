@@ -5671,7 +5671,9 @@ function cmRenderOfertaShopee(){
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee'));
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
-    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`;
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    const podeBotaoApi=c.shopeeMktShopId&&c.shopeeShopId;
+    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}${podeBotaoApi?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar Oferta (via API)</button>`:''}</div>`;
   }).join('');
 }
 const DESCONTO_MPS = [
