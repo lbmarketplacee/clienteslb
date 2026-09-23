@@ -1674,7 +1674,6 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 30 em 30 dias pra cada cliente com TikTok Shop.</div></div></div>
           <div class="cm-tool-card" data-cmtab="mercadolivre"><div class="cm-tool-ico" style="background:#fff16020;color:#ffe600">🛍️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Mercado Livre</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">GMV, conexão, oferta relâmpago e gross up — tudo num só lugar.</div></div></div>
           <div class="cm-tool-card" data-cmtab="descontos"><div class="cm-tool-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Descontos</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do desconto fixo de cada cliente.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="cupons"><div class="cm-tool-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Cupons</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do cupom de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="gerarad"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Anúncio com IA</div><span class="cm-tool-tag trafego">Aumente o tráfego</span><div class="cm-tool-desc">A IA cria título, destaques e descrição prontos pra publicar.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
@@ -1785,6 +1784,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">⚡ Oferta Relâmpago</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">💚 Saúde da Loja</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">📢 Ads — Saldo</button>
+            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">🎟️ Cupons</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">⚠️ Erros <span id="shopeeErrosContador" style="display:none"></span></button>
           </div>
 
@@ -1820,6 +1820,10 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-gold btn-sm" id="shopeeAdsAtualizarTodosBtn">🔄 Atualizar Todos os Saldos</button>
           </div>
           <div class="sgmv-list" id="adsSaldoLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="cupons" style="display:none">
+          <div class="cm-lista-simples" id="cmCuponsLista"></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="erros" style="display:none">
@@ -1975,12 +1979,6 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><h3>Descontos</h3></div>
           <div class="cm-lista-simples" id="cmDescontosLista"></div>
-        </div>
-
-        <div class="cm-secao cm-painel" data-cmpainel="cupons">
-          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--green-bg);color:var(--green)">🎟️</div><h3>Cupons</h3></div>
-          <div class="cm-lista-simples" id="cmCuponsLista"></div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="devolucao">
@@ -2403,13 +2401,8 @@ textarea{resize:vertical;min-height:70px;}
 <div class="modal-overlay hidden" id="cupomModalOverlay">
   <div class="modal" style="max-width:420px">
     <h2 id="cupomModalTitulo">Criar Cupom</h2>
-    <div class="field"><label>Nome do Cupom</label><input type="text" id="cupomNome" placeholder="Ex: Cupom 5% - Loja"></div>
-    <div class="field"><label>Código</label><input type="text" id="cupomCodigo" placeholder="Ex: LB5OF (máx. 5 caracteres)" style="text-transform:uppercase" maxlength="5" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
-    <div class="form-row">
-      <div class="field"><label>Desconto (%)</label><input type="number" id="cupomPercentual" value="5" min="1" max="90"></div>
-      <div class="field"><label>Valor mínimo compra (R$)</label><input type="number" id="cupomValorMinimo" placeholder="0"></div>
-    </div>
-    <div class="field"><label>Validade (dias) — máximo 90, exigido pela Shopee</label><input type="number" id="cupomDias" value="90" max="90" min="1"></div>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-top:-8px;margin-bottom:16px">Regra fixa da LB Marketplace: <b>Cupom Fixo - LB Marketplace</b>, 3% de desconto, mínimo R$15, sem limite máximo, 5.000 cupons, 90 dias de validade.</p>
+    <div class="field"><label>Código (sugerido a partir do nome do cliente — pode ajustar)</label><input type="text" id="cupomCodigo" placeholder="Ex: LB5OF (máx. 5 caracteres)" style="text-transform:uppercase" maxlength="5" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="cupomCancelarBtn">Cancelar</button>
       <button type="button" class="btn btn-gold" id="cupomSalvarBtn">Criar Cupom</button>
@@ -5365,14 +5358,16 @@ async function saudeLojaRenderizar(){
 
 /* ================= CRIAR CUPOM (Shopee) ================= */
 let cupomClienteAtual=null;
+function gerarCodigoCupomSugerido(nomeCliente){
+  const base=(nomeCliente||'LB').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');
+  const agora=new Date();
+  const sufixo=(agora.getMonth()+1).toString(36).toUpperCase()+(agora.getFullYear()%10);
+  return (base.slice(0,5-sufixo.length)+sufixo).slice(0,5)||'LB'+sufixo;
+}
 window.__abrirModalCupom=(clienteId,clienteNome)=>{
   cupomClienteAtual=clienteId;
   document.getElementById('cupomModalTitulo').textContent=`Criar Cupom — ${clienteNome}`;
-  document.getElementById('cupomNome').value='';
-  document.getElementById('cupomCodigo').value='';
-  document.getElementById('cupomPercentual').value='5';
-  document.getElementById('cupomValorMinimo').value='';
-  document.getElementById('cupomDias').value='90';
+  document.getElementById('cupomCodigo').value=gerarCodigoCupomSugerido(clienteNome);
   document.getElementById('cupomModalOverlay').classList.remove('hidden');
 };
 document.getElementById('cupomCancelarBtn')?.addEventListener('click',()=>document.getElementById('cupomModalOverlay').classList.add('hidden'));
@@ -5380,32 +5375,34 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
   if(!cupomClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===cupomClienteAtual);
   if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee. Conecte primeiro.');return;}
+  const codigo=document.getElementById('cupomCodigo').value.trim().toUpperCase();
+  if(!codigo){showToast('Preenche o código do cupom.');return;}
   const btn=document.getElementById('cupomSalvarBtn');
   btn.disabled=true;btn.textContent='Criando...';
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
+    // Regra fixa da LB Marketplace — sempre os mesmos valores, não editáveis
     const params=new URLSearchParams({
       acao:'criar_cupom',
       app:'mkt',
       access_token:accessToken,
       shop_id:cliente.shopeeMktShopId,
-      nome:document.getElementById('cupomNome').value.trim(),
-      codigo:document.getElementById('cupomCodigo').value.trim().toUpperCase(),
-      percentual:document.getElementById('cupomPercentual').value,
-      valor_minimo:document.getElementById('cupomValorMinimo').value||'0',
-      dias_validade:document.getElementById('cupomDias').value
+      nome:'Cupom Fixo - LB Marketplace',
+      codigo:codigo,
+      percentual:'3',
+      valor_minimo:'15',
+      dias_validade:'90'
     });
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
-    if(!data.ok||data.error){showToast('Erro: '+(data.message||data.error||'não foi possível criar.'));btn.disabled=false;btn.textContent='Criar Cupom';return;}
-    // Preenche automaticamente a data de vencimento do cupom (já usada nos alertas da Central de Marketing)
-    const diasValidade=Number(document.getElementById('cupomDias').value||90);
-    const dataFim=new Date(Date.now()+diasValidade*24*60*60*1000);
-    const cupomFimStr=dataFim.toISOString().slice(0,16); // formato datetime-local (YYYY-MM-DDTHH:mm)
+    if(!data.ok||data.error){showToast('Erro: '+(data.message||data.error||'não foi possível criar.'));console.error('[Criar Cupom] Resposta completa:',data);btn.disabled=false;btn.textContent='Criar Cupom';return;}
+    const dataFim=new Date(Date.now()+90*24*60*60*1000);
+    const cupomFimStr=dataFim.toISOString().slice(0,16);
     await updateDoc(doc(db,"clientes",cupomClienteAtual),{cupomFim:cupomFimStr});
     showToast(`✓ Cupom criado pra ${cliente.nome}! Data de vencimento atualizada automaticamente.`);
     document.getElementById('cupomModalOverlay').classList.add('hidden');
-  }catch(e){showToast('Erro ao criar cupom.');}
+    cmRenderCupons();
+  }catch(e){showToast('Erro ao criar cupom.');console.error(e);}
   btn.disabled=false;btn.textContent='Criar Cupom';
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
