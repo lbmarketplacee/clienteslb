@@ -1785,6 +1785,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">⚡ Oferta Relâmpago</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">💚 Saúde da Loja</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">📢 Ads — Saldo</button>
+            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">⚠️ Erros <span id="shopeeErrosContador" style="display:none"></span></button>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="gmv">
@@ -1814,7 +1815,20 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="ads" style="display:none">
+          <div class="toolbar">
+            <div class="spacer"></div>
+            <button class="btn btn-gold btn-sm" id="shopeeAdsAtualizarTodosBtn">🔄 Atualizar Todos os Saldos</button>
+          </div>
           <div class="sgmv-list" id="adsSaldoLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="erros" style="display:none">
+          <div class="toolbar">
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0">Erros das últimas atualizações em massa (Saldo Ads, GMV) — fica registrado aqui até você limpar.</p>
+            <div class="spacer"></div>
+            <button class="btn btn-ghost btn-sm" id="shopeeErrosLimparBtn">🗑️ Limpar</button>
+          </div>
+          <div id="shopeeErrosLista"></div>
           </div>
         </div>
 
@@ -4312,19 +4326,63 @@ document.getElementById('conectarShopeeAdsBtn')?.addEventListener('click',()=>{
   if(!clienteId){showToast('Salve o cliente primeiro antes de conectar.');return;}
   window.__shopeeConectar(clienteId,clienteNome,'ads');
 });
-window.__shopeeAtualizarSaldoAds=async(clienteId)=>{
+window.__shopeeErros=[];
+function shopeeErroRegistrar(cliente,acao,mensagem){
+  window.__shopeeErros.unshift({cliente,acao,mensagem,quando:new Date()});
+  const contador=document.getElementById('shopeeErrosContador');
+  if(contador){contador.style.display='';contador.textContent=window.__shopeeErros.length;}
+}
+function shopeeErrosRenderizar(){
+  const el=document.getElementById('shopeeErrosLista');
+  if(!el)return;
+  const contador=document.getElementById('shopeeErrosContador');
+  if(contador)contador.style.display=window.__shopeeErros.length?'':'none';
+  if(!window.__shopeeErros.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum erro registrado. Tudo certo! 🎉</div>';return;}
+  el.innerHTML=window.__shopeeErros.map(e=>`<div class="cm-item" style="flex-wrap:wrap;gap:8px">
+    <span class="nome" style="flex:2;min-width:160px">${esc(e.cliente)}</span>
+    <span style="font-size:12px;color:var(--text-dim)">${esc(e.acao)}</span>
+    <span style="font-size:12px;color:var(--red)">${esc(e.mensagem)}</span>
+    <span style="font-size:11px;color:var(--text-dim);margin-left:auto">${e.quando.toLocaleString('pt-BR')}</span>
+  </div>`).join('');
+}
+document.getElementById('shopeeErrosLimparBtn')?.addEventListener('click',()=>{
+  window.__shopeeErros=[];
+  shopeeErrosRenderizar();
+});
+
+window.__shopeeAtualizarSaldoAds=async(clienteId,silencioso=false)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
-  if(!cliente||!cliente.shopeeAdsShopId){showToast('Cliente não conectado ao app Ads.');return false;}
+  if(!cliente||!cliente.shopeeAdsShopId){if(!silencioso)showToast('Cliente não conectado ao app Ads.');return false;}
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente,'ads');
     const resp=await fetch(`${SHOPEE_API}?acao=saldo_ads&app=ads&access_token=${accessToken}&shop_id=${cliente.shopeeAdsShopId}`);
     const data=await resp.json();
     if(!data.ok)throw new Error(data.erro||'Erro ao buscar saldo.');
     await updateDoc(doc(db,"clientes",clienteId),{saldoAds:data.saldo,saldoAdsAtualizadoEm:serverTimestamp()});
-    showToast(`✓ Saldo Ads de ${cliente.nome}: ${fmtR(data.saldo)}`);
+    if(!silencioso)showToast(`✓ Saldo Ads de ${cliente.nome}: ${fmtR(data.saldo)}`);
     return true;
-  }catch(e){showToast('Erro: '+e.message);console.error(e);return false;}
+  }catch(e){
+    if(silencioso)shopeeErroRegistrar(cliente.nome,'Saldo Ads',e.message);
+    else showToast('Erro: '+e.message);
+    console.error(e);
+    return false;
+  }
 };
+document.getElementById('shopeeAdsAtualizarTodosBtn')?.addEventListener('click',async()=>{
+  const btn=document.getElementById('shopeeAdsAtualizarTodosBtn');
+  const clientesShopeeAds=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeAdsShopId);
+  if(!clientesShopeeAds.length){showToast('Nenhum cliente conectado ao app Ads.');return;}
+  btn.disabled=true;
+  let ok=0,falhou=0;
+  for(let i=0;i<clientesShopeeAds.length;i++){
+    btn.textContent=`Atualizando ${i+1}/${clientesShopeeAds.length}...`;
+    const sucesso=await window.__shopeeAtualizarSaldoAds(clientesShopeeAds[i].id,true);
+    if(sucesso)ok++;else falhou++;
+  }
+  btn.disabled=false;btn.textContent='🔄 Atualizar Todos os Saldos';
+  showToast(falhou?`✓ ${ok} atualizados, ${falhou} com erro (confira a aba Erros)`:`✓ ${ok} saldos atualizados com sucesso!`);
+  adsRenderizar();
+});
 document.getElementById('atualizarSaldoAdsBtn')?.addEventListener('click',async()=>{
   const clienteId=document.getElementById('clientId').value;
   const btn=document.getElementById('atualizarSaldoAdsBtn');
@@ -4628,6 +4686,7 @@ window.__shopeeSubTab=(nome)=>{
   // Saúde da Loja consome a API da Shopee pra cada cliente conectado —
   // só carrega quando o usuário realmente abre essa aba, nunca automático.
   if(nome==='saude')saudeLojaRenderizar();
+  if(nome==='erros')shopeeErrosRenderizar();
 };
 function mlAdsPopularSelect(){
   const sel=document.getElementById('mlAdsClienteSelect');
