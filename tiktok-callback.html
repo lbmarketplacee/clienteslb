@@ -75,6 +75,8 @@ async function processarCallback() {
         tiktokAccessToken: data.access_token,
         tiktokRefreshToken: data.refresh_token,
         tiktokShopId: data.shop_id || null,
+        tiktokShopCipher: data.shop_cipher || null,
+        tiktokShopName: data.shop_name || null,
         tiktokConectadoEm: firebase.firestore.FieldValue.serverTimestamp()
       });
 
