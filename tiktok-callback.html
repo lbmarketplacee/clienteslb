@@ -4,27 +4,164 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conectando TikTok Shop — LB Marketplace</title>
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
 <style>
-:root{--bg:#0a0a09;--gold:#d4a94a;--text:#f3f0e8;--text-dim:#a39d8c;--green:#5cb88a;--red:#e0525a;}
-body{background:var(--bg);color:var(--text);font-family:Montserrat,Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:20px;}
-.card{max-width:420px;}
-.spinner{width:36px;height:36px;border:3px solid #2a261c;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-h2{color:var(--gold);}
-a{color:var(--gold);}
+:root{
+  --bg:#0a0a09;
+  --gold:#d4a94a;
+  --text:#f3f0e8;
+  --text-dim:#a39d8c;
+  --green:#5cb88a;
+  --red:#e0525a;
+  --card:#12110f;
+  --border:#2a261c;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Montserrat,Arial,sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  margin:0;
+  text-align:center;
+  padding:20px;
+}
+
+.card{
+  width:100%;
+  max-width:520px;
+}
+
+.spinner{
+  width:36px;
+  height:36px;
+  border:3px solid #2a261c;
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:0 auto 20px;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+h2{
+  color:var(--gold);
+  margin-bottom:12px;
+}
+
+p{
+  color:var(--text-dim);
+  line-height:1.5;
+}
+
+a{
+  color:var(--gold);
+  text-decoration:none;
+}
+
+a:hover{
+  text-decoration:underline;
+}
+
+.diagnostico{
+  margin-top:25px;
+  text-align:left;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+}
+
+.diagnostico-titulo{
+  color:var(--gold);
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:15px;
+}
+
+.linha{
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.linha:last-child{
+  border-bottom:none;
+}
+
+.label{
+  display:block;
+  color:var(--text-dim);
+  font-size:12px;
+  margin-bottom:4px;
+}
+
+.valor{
+  display:block;
+  color:var(--text);
+  font-size:14px;
+  word-break:break-word;
+}
+
+.codigo{
+  font-family:monospace;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:6px;
+  background:#211e18;
+  color:var(--gold);
+  font-size:12px;
+}
+
+.botao{
+  display:inline-block;
+  margin-top:20px;
+  padding:11px 18px;
+  border:1px solid var(--gold);
+  border-radius:8px;
+  color:var(--gold);
+}
+
+.botao:hover{
+  background:#1b1811;
+  text-decoration:none;
+}
 </style>
 </head>
+
 <body>
+
 <div class="card" id="conteudo">
+
   <div class="spinner"></div>
+
   <h2>Conectando TikTok Shop...</h2>
-  <p id="status">Aguarde um instante.</p>
+
+  <p id="status">
+    Aguarde um instante.
+  </p>
+
 </div>
 
 <script>
+
 const firebaseConfig = {
   apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",
   authDomain: "lb-gestao-clientes.firebaseapp.com",
@@ -33,60 +170,458 @@ const firebaseConfig = {
   messagingSenderId: "344033285587",
   appId: "1:344033285587:web:fbdae7d44eaf5bac760b26"
 };
+
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-function mostrarErro(msg) {
-  document.getElementById('conteudo').innerHTML = `
-    <h2 style="color:var(--red)">❌ Erro na conexão</h2>
-    <p>${msg}</p>
-    <p><a href="https://sistema.lbmarketplace.com.br/">← Voltar ao sistema</a></p>
-  `;
-}
-function mostrarSucesso(nomeLoja) {
-  document.getElementById('conteudo').innerHTML = `
-    <h2 style="color:var(--green)">✓ TikTok Shop conectado!</h2>
-    <p>${nomeLoja ? 'Loja: <strong>'+nomeLoja+'</strong>' : ''}</p>
-    <p><a href="https://sistema.lbmarketplace.com.br/">← Voltar ao sistema</a></p>
-  `;
+
+/* =========================================================
+   SEGURANÇA — ESCAPA HTML ANTES DE MOSTRAR DADOS EXTERNOS
+========================================================= */
+
+function esc(valor){
+
+  if(
+    valor === null ||
+    valor === undefined ||
+    valor === ''
+  ){
+    return 'Não informado';
+  }
+
+  return String(valor)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
 }
 
-async function processarCallback() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const clienteId = params.get('state');
-  if (!code) { mostrarErro('Código de autorização não encontrado na URL.'); return; }
-  if (!clienteId) { mostrarErro('Não sei pra qual cliente é essa conexão (state ausente).'); return; }
+
+/* =========================================================
+   ERRO SIMPLES
+========================================================= */
+
+function mostrarErro(msg){
+
+  document.getElementById('conteudo').innerHTML = `
+
+    <h2 style="color:var(--red)">
+      ❌ Erro na conexão
+    </h2>
+
+    <p>
+      ${esc(msg)}
+    </p>
+
+    <a
+      class="botao"
+      href="https://sistema.lbmarketplace.com.br/"
+    >
+      ← Voltar ao sistema
+    </a>
+
+  `;
+
+}
+
+
+/* =========================================================
+   ERRO COM DIAGNÓSTICO DO TIKTOK
+========================================================= */
+
+function mostrarErroDiagnostico(data){
+
+  const lojas =
+    data.resposta_tiktok_lojas || {};
+
+  const quantidadeLojas =
+    lojas.data &&
+    typeof lojas.data.shops_count !== 'undefined'
+      ? lojas.data.shops_count
+      : 'Não informado';
+
+  const scopes =
+    Array.isArray(data.granted_scopes)
+      ? data.granted_scopes.join(', ')
+      : (
+          data.granted_scopes ||
+          'Não informado'
+        );
+
+  document.getElementById('conteudo').innerHTML = `
+
+    <h2 style="color:var(--red)">
+      ❌ TikTok não retornou a loja
+    </h2>
+
+    <p>
+      O código foi processado, mas precisamos verificar
+      a resposta da API para descobrir onde está o problema.
+    </p>
+
+
+    <div class="diagnostico">
+
+      <div class="diagnostico-titulo">
+        🔎 Diagnóstico da conexão
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Etapa
+        </span>
+
+        <span class="valor">
+          ${esc(data.etapa)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Token obtido
+        </span>
+
+        <span class="valor">
+
+          ${
+            data.token_obtido
+              ? '<span class="badge">SIM</span>'
+              : '<span class="badge">NÃO</span>'
+          }
+
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Código TikTok
+        </span>
+
+        <span class="valor codigo">
+          ${esc(lojas.code)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Mensagem TikTok
+        </span>
+
+        <span class="valor">
+          ${esc(lojas.message)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          HTTP Status
+        </span>
+
+        <span class="valor">
+          ${esc(lojas.http_status)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Request ID
+        </span>
+
+        <span class="valor codigo">
+          ${esc(lojas.request_id)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Quantidade de lojas retornadas
+        </span>
+
+        <span class="valor">
+          ${esc(quantidadeLojas)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Granted Scopes
+        </span>
+
+        <span class="valor">
+          ${esc(scopes)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          User ID
+        </span>
+
+        <span class="valor codigo">
+          ${esc(data.user_id)}
+        </span>
+
+      </div>
+
+
+      <div class="linha">
+
+        <span class="label">
+          Token expira em
+        </span>
+
+        <span class="valor">
+          ${esc(data.token_expira_em)}
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <a
+      class="botao"
+      href="https://sistema.lbmarketplace.com.br/"
+    >
+      ← Voltar ao sistema
+    </a>
+
+  `;
+
+}
+
+
+/* =========================================================
+   SUCESSO
+========================================================= */
+
+function mostrarSucesso(nomeLoja){
+
+  document.getElementById('conteudo').innerHTML = `
+
+    <h2 style="color:var(--green)">
+      ✓ TikTok Shop conectado!
+    </h2>
+
+    ${
+      nomeLoja
+        ? '<p>Loja: <strong>' + esc(nomeLoja) + '</strong></p>'
+        : ''
+    }
+
+    <p>
+      A conexão foi concluída com sucesso.
+    </p>
+
+    <a
+      class="botao"
+      href="https://sistema.lbmarketplace.com.br/"
+    >
+      ← Voltar ao sistema
+    </a>
+
+  `;
+
+}
+
+
+/* =========================================================
+   PROCESSAR CALLBACK
+========================================================= */
+
+async function processarCallback(){
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const code =
+    params.get('code');
+
+
+  const clienteId =
+    params.get('state');
+
+
+  /* -------------------------------------------------------
+     VERIFICA CODE
+  ------------------------------------------------------- */
+
+  if(!code){
+
+    mostrarErro(
+      'Código de autorização não encontrado na URL.'
+    );
+
+    return;
+  }
+
+
+  /* -------------------------------------------------------
+     VERIFICA STATE / CLIENTE
+  ------------------------------------------------------- */
+
+  if(!clienteId){
+
+    mostrarErro(
+      'Não sei pra qual cliente é essa conexão (state ausente).'
+    );
+
+    return;
+  }
+
+
+  /* -------------------------------------------------------
+     VERIFICA LOGIN FIREBASE
+  ------------------------------------------------------- */
 
   auth.onAuthStateChanged(async (user) => {
-    if (!user) { mostrarErro('Usuário não autenticado. Volta ao sistema e tenta de novo.'); return; }
 
-    try {
-      const resp = await fetch('https://lb-tiktok-shop.vercel.app/api/tiktok-shop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ acao: 'trocar_codigo', code })
-      });
-      const data = await resp.json();
-      if (!data.ok) { mostrarErro(data.erro || 'Falha ao trocar o código por token.'); return; }
+    if(!user){
 
-      await db.collection('clientes').doc(clienteId).update({
-        tiktokAccessToken: data.access_token,
-        tiktokRefreshToken: data.refresh_token,
-        tiktokShopId: data.shop_id || null,
-        tiktokShopCipher: data.shop_cipher || null,
-        tiktokShopName: data.shop_name || null,
-        tiktokConectadoEm: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      mostrarErro(
+        'Usuário não autenticado. Volta ao sistema e tenta de novo.'
+      );
 
-      mostrarSucesso(data.shop_id);
-    } catch (e) {
-      mostrarErro('Erro de conexão: ' + e.message);
+      return;
     }
+
+
+    try{
+
+      /* ---------------------------------------------------
+         TROCAR CODE POR TOKEN
+      --------------------------------------------------- */
+
+      const resp =
+        await fetch(
+          'https://lb-tiktok-shop.vercel.app/api/tiktok-shop',
+          {
+            method:'POST',
+
+            headers:{
+              'Content-Type':'application/json'
+            },
+
+            body:JSON.stringify({
+
+              acao:'trocar_codigo',
+
+              code:code
+
+            })
+
+          }
+        );
+
+
+      const data =
+        await resp.json();
+
+
+      /* ---------------------------------------------------
+         SE DEU ERRO, MOSTRA DIAGNÓSTICO
+      --------------------------------------------------- */
+
+      if(!data.ok){
+
+        mostrarErroDiagnostico(data);
+
+        return;
+      }
+
+
+      /* ---------------------------------------------------
+         SALVAR DADOS DA LOJA NO FIRESTORE
+      --------------------------------------------------- */
+
+      await db
+        .collection('clientes')
+        .doc(clienteId)
+        .update({
+
+          tiktokAccessToken:
+            data.access_token,
+
+          tiktokRefreshToken:
+            data.refresh_token,
+
+          tiktokShopId:
+            data.shop_id || null,
+
+          tiktokShopCipher:
+            data.shop_cipher || null,
+
+          tiktokShopName:
+            data.shop_name || null,
+
+          tiktokConectadoEm:
+            firebase.firestore.FieldValue.serverTimestamp()
+
+        });
+
+
+      /* ---------------------------------------------------
+         SUCESSO
+      --------------------------------------------------- */
+
+      mostrarSucesso(
+        data.shop_name || data.shop_id
+      );
+
+
+    }catch(e){
+
+      mostrarErro(
+        'Erro de conexão: ' + e.message
+      );
+
+    }
+
   });
+
 }
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
 processarCallback();
+
 </script>
+
 </body>
 </html>
