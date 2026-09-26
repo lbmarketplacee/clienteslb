@@ -1671,7 +1671,7 @@ textarea{resize:vertical;min-height:70px;}
 
         <div class="cm-card-grid" id="cmCardGrid">
           <div class="cm-tool-card" data-cmtab="shopee"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛍️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">GMV, oferta relâmpago, saúde da loja e saldo de Ads — tudo num só lugar.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="ofertatiktok"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">Oferta Relâmpago — TikTok</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Ciclo de 30 em 30 dias pra cada cliente com TikTok Shop.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="tiktokshop"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">TikTok Shop</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Conectar loja, GMV e oferta relâmpago via API.</div></div></div>
           <div class="cm-tool-card" data-cmtab="mercadolivre"><div class="cm-tool-ico" style="background:#fff16020;color:#ffe600">🛍️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Mercado Livre</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">GMV, conexão, oferta relâmpago e gross up — tudo num só lugar.</div></div></div>
           <div class="cm-tool-card" data-cmtab="descontos"><div class="cm-tool-ico" style="background:var(--amber-bg);color:var(--amber)">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Descontos</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Acompanhe e edite o vencimento do desconto fixo de cada cliente.</div></div></div>
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
@@ -1961,18 +1961,33 @@ textarea{resize:vertical;min-height:70px;}
           </div>
         </div>
 
-        <div class="cm-secao cm-painel" data-cmpainel="ofertatiktok">
+        <div class="cm-secao cm-painel" data-cmpainel="tiktokshop">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>Oferta Relâmpago — TikTok Shop</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>TikTok Shop</h3></div>
 
-        
-        <div class="sgmv-summary">
+          <div style="display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap">
+            <button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">📊 Conectar / GMV</button>
+            <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">⚡ Oferta Relâmpago</button>
+          </div>
+
+          <div class="tiktok-subpanel" data-tiktoksubpanel="gmv">
+          <div class="sgmv-summary">
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">GMV via API<br>(mês atual)</div></div><div class="sc-value green" id="ttGmvTotal">R$ 0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Lojas<br>Conectadas</div></div><div class="sc-value" id="ttGmvConectadas">0</div></div>
+          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Aguardando<br>Conexão</div></div><div class="sc-value" id="ttGmvPendentes">0</div></div>
+          </div>
+          <div class="tt-list" id="ttGmvLista"></div>
+          </div>
+
+          <div class="tiktok-subpanel" data-tiktoksubpanel="oferta" style="display:none">
+          <div class="sgmv-summary">
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="ttEmDia">0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Programar<br>Hoje</div></div><div class="sc-value" id="ttHoje">0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/></svg></div><div class="sc-label">Atrasadas</div></div><div class="sc-value" style="color:var(--red)" id="ttAtrasadas">0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>TikTok Shop</div></div><div class="sc-value" id="ttTotal">0</div></div>
-        </div>
-        <div class="tt-list" id="ttLista"></div>
+          </div>
+          <div class="tt-list" id="ttLista"></div>
+          </div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="descontos">
@@ -2559,7 +2574,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
+function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();ttGmvRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
 function renderSummary(){let da=0,ca=0,st=0;const clientesAtivos=clientesCache.filter(c=>c.ativo!==false);clientesAtivos.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesAtivos.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
@@ -4277,6 +4292,80 @@ function tiktokAtualizarStatusModal(c){
   }
 }
 const SHOPEE_API = 'https://lb-shopee-gmv.vercel.app/api/shopee';
+const TIKTOK_API = 'https://lb-tiktok-shop.vercel.app/api/tiktok-shop';
+
+window.__tiktokSubTab=(nome)=>{
+  document.querySelectorAll('.tiktok-subtab-btn').forEach(b=>{
+    const ativo=b.dataset.tiktoksub===nome;
+    b.classList.toggle('btn-gold',ativo);
+    b.classList.toggle('btn-ghost',!ativo);
+    b.classList.toggle('active',ativo);
+  });
+  document.querySelectorAll('.tiktok-subpanel').forEach(p=>{
+    p.style.display=p.dataset.tiktoksubpanel===nome?'':'none';
+  });
+};
+
+window.__tiktokConectar=async(clienteId,clienteNome)=>{
+  try{
+    const resp=await fetch(`${TIKTOK_API}?acao=gerar_link_autorizacao&clienteId=${clienteId}`);
+    const data=await resp.json();
+    if(!data.ok||!data.url){showToast('Erro ao gerar link: '+(data.erro||'desconhecido'));return;}
+    window.open(data.url,'_blank');
+  }catch(e){showToast('Erro ao conectar TikTok.');console.error(e);}
+};
+
+window.__tiktokAtualizarGmv=async(clienteId)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.tiktokAccessToken){showToast('Cliente não conectado ao TikTok Shop.');return;}
+  try{
+    const hoje=new Date();
+    const inicioMes=new Date(hoje.getFullYear(),hoje.getMonth(),1).toISOString().slice(0,10);
+    const fimStr=hoje.toISOString().slice(0,10);
+    const params=new URLSearchParams({
+      acao:'buscar_gmv',
+      access_token:cliente.tiktokAccessToken,
+      shop_id:cliente.tiktokShopId,
+      shop_cipher:cliente.tiktokShopCipher,
+      data_inicio:inicioMes,
+      data_fim:fimStr
+    });
+    const resp=await fetch(`${TIKTOK_API}?${params.toString()}`);
+    const data=await resp.json();
+    if(!data.ok){showToast('Erro TikTok: '+(data.erro||'desconhecido'));return false;}
+    await updateDoc(doc(db,"clientes",clienteId),{tiktokGmv:data.gmv,tiktokGmvAtualizadoEm:serverTimestamp()});
+    showToast(`✓ GMV TikTok de ${cliente.nome}: ${fmtR(data.gmv)}`);
+    return true;
+  }catch(e){showToast('Erro ao buscar GMV do TikTok.');console.error(e);return false;}
+};
+
+function ttGmvRenderizar(){
+  const el=document.getElementById('ttGmvLista');
+  if(!el)return;
+  const clientesTiktok=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('tiktok'));
+  if(!clientesTiktok.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com TikTok Shop ainda.</div>';return;}
+  const conectados=clientesTiktok.filter(c=>c.tiktokShopId);
+  document.getElementById('ttGmvConectadas').textContent=conectados.length;
+  document.getElementById('ttGmvPendentes').textContent=clientesTiktok.length-conectados.length;
+  const gmvTotal=conectados.reduce((a,c)=>a+(Number(c.tiktokGmv)||0),0);
+  document.getElementById('ttGmvTotal').textContent=fmtR(gmvTotal);
+  el.innerHTML=clientesTiktok.map(c=>{
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    if(c.tiktokShopId){
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+        <span class="nome" style="flex:2;min-width:180px">${esc(c.nome)}</span>
+        <span class="tt-status-pill ok">✅ Conectado</span>
+        <span style="font-size:13px;color:var(--text-dim)">GMV: ${fmtR(Number(c.tiktokGmv)||0)}</span>
+        <button class="btn btn-ghost btn-sm" onclick="window.__tiktokAtualizarGmv('${c.id}')">🔄 Atualizar GMV</button>
+      </div>`;
+    }
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+      <span class="nome" style="flex:2;min-width:180px">${esc(c.nome)}</span>
+      <span class="tt-status-pill atrasada">⚠ Não conectado</span>
+      <button class="btn btn-gold btn-sm" onclick="window.__tiktokConectar('${c.id}','${nomeEsc}')">🔗 Conectar Loja</button>
+    </div>`;
+  }).join('');
+}
 const SHOPEE_CALLBACK_URL = 'https://sistema.lbmarketplace.com.br/shopee-callback.html';
 
 function shopeeAtualizarStatusModal(c){
@@ -5783,6 +5872,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   document.getElementById('cmCardGrid').classList.add('hidden');
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
   if(alvo==='shopee')window.__shopeeSubTab('gmv');
+  if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
 }));
 window.__irParaMarketing=(painel,subtab)=>{
   document.querySelector('[data-page="marketing"]')?.click();
