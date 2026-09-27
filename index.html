@@ -3312,11 +3312,16 @@ document.getElementById('waModalEnviarBtn')?.addEventListener('click',async()=>{
   const btn=document.getElementById('waModalEnviarBtn');
   btn.disabled=true;
   try{
-    await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{
+    const resp=await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({acao:'enviar_mensagem',telefone:waConversaAtualTelefone,texto})
     });
-    document.getElementById('waModalTexto').value='';
+    const data=await resp.json();
+    if(!resp.ok||data.ok===false){
+      showToast(data.erro||'Erro ao enviar mensagem.');
+    }else{
+      document.getElementById('waModalTexto').value='';
+    }
   }catch(e){showToast('Erro ao enviar mensagem.');}
   btn.disabled=false;
 });
