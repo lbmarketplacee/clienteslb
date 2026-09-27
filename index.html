@@ -1210,6 +1210,21 @@ textarea{resize:vertical;min-height:70px;}
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Conversas WhatsApp</h2><p class="page-sub">Leads que entraram em contato — a IA responde as primeiras mensagens, depois passa pra equipe.</p></div>
         </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="waFiltroModo">
+          <button class="btn btn-gold btn-sm wa-filtro-btn active" data-wafiltro="todas" onclick="window.__waFiltrarModo('todas')">Todas</button>
+          <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="aguardando_humano" onclick="window.__waFiltrarModo('aguardando_humano')">⏳ Aguardando você <span id="waContadorPendentes" class="tt-status-pill atrasada" style="margin-left:4px">0</span></button>
+          <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="auto" onclick="window.__waFiltrarModo('auto')">🤖 IA respondendo</button>
+          <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="humano" onclick="window.__waFiltrarModo('humano')">🙋 Você respondendo</button>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <input type="text" id="waBusca" placeholder="🔎 Buscar por nome ou telefone..." style="flex:1;min-width:220px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text)" oninput="window.__waRenderizarComFiltro()">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-dim);cursor:pointer;white-space:nowrap">
+            <input type="checkbox" id="waEsconderNaoQualificado" onchange="window.__waRenderizarComFiltro()"> Esconder "Não qualificado"
+          </label>
+        </div>
+
         <div id="whatsappConversasLista"><div class="empty-state" style="padding:20px">Nenhuma conversa ainda.</div></div>
       </div>
 
@@ -3214,18 +3229,57 @@ function whatsappIniciar(){
     if(waConversaAtualTelefone)waAbrirConversa(waConversaAtualTelefone);
   });
 }
+let waFiltroModoAtual='todas';
+const WA_LABEL_QUALIF={qualificado:'✅ Qualificado',nao_qualificado:'❌ Não qualificado',cliente:'💰 Virou cliente'};
+window.__waFiltrarModo=(modo)=>{
+  waFiltroModoAtual=modo;
+  document.querySelectorAll('.wa-filtro-btn').forEach(b=>{
+    const ativo=b.dataset.wafiltro===modo;
+    b.classList.toggle('btn-gold',ativo);
+    b.classList.toggle('btn-ghost',!ativo);
+    b.classList.toggle('active',ativo);
+  });
+  whatsappRenderizarLista();
+};
+window.__waRenderizarComFiltro=()=>whatsappRenderizarLista();
+window.__waSalvarQualificacao=async(conversaId,valor)=>{
+  try{
+    await updateDoc(doc(db,"whatsappConversas",conversaId),{qualificacao:valor||null});
+  }catch(e){showToast('Erro ao salvar qualificação.');console.error(e);}
+};
 function whatsappRenderizarLista(){
   const el=document.getElementById('whatsappConversasLista');
   if(!el)return;
-  if(!whatsappConversasCache.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhuma conversa ainda.</div>';return;}
   const labelModo={auto:'🤖 IA respondendo',aguardando_humano:'⏳ Aguardando você',humano:'🙋 Você está respondendo'};
   const corModo={auto:'ok',aguardando_humano:'hoje',humano:'atrasada'};
-  el.innerHTML=whatsappConversasCache.map(c=>{
+
+  const pendentesCount=whatsappConversasCache.filter(c=>c.modo==='aguardando_humano').length;
+  const badgeContador=document.getElementById('waContadorPendentes');
+  if(badgeContador)badgeContador.textContent=pendentesCount;
+
+  const termoBusca=(document.getElementById('waBusca')?.value||'').trim().toLowerCase();
+  const esconderNaoQualif=document.getElementById('waEsconderNaoQualificado')?.checked;
+
+  let lista=whatsappConversasCache.slice();
+  if(waFiltroModoAtual!=='todas')lista=lista.filter(c=>c.modo===waFiltroModoAtual);
+  if(esconderNaoQualif)lista=lista.filter(c=>c.qualificacao!=='nao_qualificado');
+  if(termoBusca)lista=lista.filter(c=>(c.nome||'').toLowerCase().includes(termoBusca)||(c.telefone||c.id||'').toLowerCase().includes(termoBusca));
+  // aguardando_humano sempre sobe pro topo, independente da ordenação por última mensagem
+  lista.sort((a,b)=>(b.modo==='aguardando_humano')-(a.modo==='aguardando_humano'));
+
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhuma conversa encontrada.</div>';return;}
+  el.innerHTML=lista.map(c=>{
     const msgs=c.mensagens||[];
     const ultima=msgs[msgs.length-1];
-    return `<div class="cm-item" style="cursor:pointer" onclick="window.__waAbrirConversa('${c.id}')">
-      <span class="nome">${esc(c.telefone||c.id)}</span>
-      <span style="font-size:12px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ultima?esc(ultima.texto):''}</span>
+    return `<div class="cm-item" style="cursor:pointer;flex-wrap:wrap;gap:8px" onclick="window.__waAbrirConversa('${c.id}')">
+      <span class="nome">${esc(c.nome||c.telefone||c.id)}</span>
+      <span style="font-size:12px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:120px">${ultima?esc(ultima.texto):''}</span>
+      <select onclick="event.stopPropagation()" onchange="window.__waSalvarQualificacao('${c.id}',this.value)" style="font-size:12px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--text)">
+        <option value="" ${!c.qualificacao?'selected':''}>Não avaliado</option>
+        <option value="qualificado" ${c.qualificacao==='qualificado'?'selected':''}>✅ Qualificado</option>
+        <option value="nao_qualificado" ${c.qualificacao==='nao_qualificado'?'selected':''}>❌ Não qualificado</option>
+        <option value="cliente" ${c.qualificacao==='cliente'?'selected':''}>💰 Virou cliente</option>
+      </select>
       <span class="tt-status-pill ${corModo[c.modo]||'ok'}">${labelModo[c.modo]||c.modo}</span>
     </div>`;
   }).join('');
