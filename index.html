@@ -1026,7 +1026,7 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item sidebar-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item sidebar-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
       <button class="nav-item sidebar-item" data-page="contratos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Contratos</button>
-      <button class="nav-item sidebar-item" data-page="whatsapp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Conversas WhatsApp</button>
+      <button class="nav-item sidebar-item" data-page="whatsapp" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Conversas WhatsApp<span id="waNavBadge" style="display:none;position:absolute;top:6px;right:10px;background:#25D366;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1"></span></button>
       <button class="nav-item sidebar-item" data-page="cadastros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros</button>
       <button class="nav-item sidebar-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
       <button class="nav-item sidebar-item" data-page="checklisthub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist</button>
@@ -2570,7 +2570,7 @@ onAuthStateChanged(auth,user=>{if(user){
   currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
 comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();dreSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
-function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});}
+function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
 /* NAV */
 /* ===== MENU MOBILE (abrir/fechar) ===== */
 function fecharMenuMobile(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
@@ -3256,6 +3256,12 @@ function whatsappRenderizarLista(){
   const pendentesCount=whatsappConversasCache.filter(c=>c.modo==='aguardando_humano').length;
   const badgeContador=document.getElementById('waContadorPendentes');
   if(badgeContador)badgeContador.textContent=pendentesCount;
+  const badgeNav=document.getElementById('waNavBadge');
+  if(badgeNav){
+    if(pendentesCount>0){badgeNav.textContent=pendentesCount>99?'99+':pendentesCount;badgeNav.style.display='flex';}
+    else{badgeNav.style.display='none';}
+  }
+  document.title=pendentesCount>0?`(${pendentesCount}) Sistema LB Marketplace`:'Sistema LB Marketplace';
 
   const termoBusca=(document.getElementById('waBusca')?.value||'').trim().toLowerCase();
   const esconderNaoQualif=document.getElementById('waEsconderNaoQualificado')?.checked;
