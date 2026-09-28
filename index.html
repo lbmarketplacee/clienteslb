@@ -2453,12 +2453,13 @@ textarea{resize:vertical;min-height:70px;}
 <div class="modal-overlay hidden" id="ofertaModalOverlay">
   <div class="modal" style="max-width:420px">
     <h2 id="ofertaModalTitulo">Criar Oferta Relâmpago</h2>
-    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px;line-height:1.5">Pega até 20 produtos do <b>desconto fixo</b> da loja e aplica o desconto sobre o preço que eles já têm com o desconto fixo. A loja precisa ter um desconto em andamento (aba Descontos).</p>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px;line-height:1.5">Cria <b>uma oferta em cada horário livre</b> que a Shopee liberou. Cada oferta pega até 20 produtos do <b>desconto fixo</b> da loja (grupos diferentes a cada horário) com o desconto aplicado sobre o preço que eles já têm. Horários em que a loja já tem oferta são pulados. A loja precisa ter um desconto em andamento (aba Descontos).</p>
     <div class="form-row">
       <div class="field"><label>Desconto (%)</label><input type="number" id="ofertaPercentual" value="5" min="1" max="90"></div>
       <div class="field"><label>Unidades por produto</label><input type="number" id="ofertaQtd" value="5" min="1"></div>
     </div>
-    <div class="field"><label>Quantidade de produtos (máx. 20)</label><input type="number" id="ofertaLimite" value="20" max="20" min="1"></div>
+    <div class="field"><label>Produtos por oferta (máx. 20)</label><input type="number" id="ofertaLimite" value="20" max="20" min="1"></div>
+    <div class="field"><label>Horários a preencher (máx.)</label><input type="number" id="ofertaMaxHorarios" value="14" max="30" min="1"></div>
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="ofertaCancelarBtn">Cancelar</button>
       <button type="button" class="btn btn-gold" id="ofertaCriarBtn">Criar Oferta</button>
@@ -5577,6 +5578,7 @@ window.__abrirModalOferta=(clienteId,clienteNome)=>{
   document.getElementById('ofertaPercentual').value='5';
   document.getElementById('ofertaQtd').value='5';
   document.getElementById('ofertaLimite').value='20';
+  document.getElementById('ofertaMaxHorarios').value='14';
   document.getElementById('ofertaModalOverlay').classList.remove('hidden');
 };
 document.getElementById('ofertaCancelarBtn')?.addEventListener('click',()=>document.getElementById('ofertaModalOverlay').classList.add('hidden'));
@@ -5596,7 +5598,8 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
       discount_id:cliente.shopeeDescontoFixoId||'',
       percentual:document.getElementById('ofertaPercentual').value,
       qtd_por_produto:document.getElementById('ofertaQtd').value,
-      limite_produtos:document.getElementById('ofertaLimite').value
+      limite_produtos:document.getElementById('ofertaLimite').value,
+      max_horarios:document.getElementById('ofertaMaxHorarios').value
     });
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
@@ -5606,8 +5609,14 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
       btn.disabled=false;btn.textContent='Criar Oferta';
       return;
     }
-    showToast(`✓ Oferta relâmpago criada pra ${cliente.nome}! ${data.total_produtos} produto(s) incluído(s).`);
-    if(data.falhas&&data.falhas.length)alert(`Atenção: ${data.falhas.length} produto(s) não entraram na oferta (a Shopee recusou). Veja o Console (F12) → "[Oferta Relâmpago debug]".`);
+    const fmtH=s=>s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11);
+    const dias=(data.criadas||[]).map(o=>fmtH(o.inicio)).join(', ');
+    let resumo=`✓ ${data.total_ofertas} oferta(s) relâmpago criada(s) pra ${cliente.nome} (${data.total_produtos} produto(s) no total).\n\nHorários: ${dias}`;
+    if(data.ja_existiam)resumo+=`\n\n${data.ja_existiam} horário(s) já tinham oferta e foram pulados.`;
+    if(data.puladas&&data.puladas.length)resumo+=`\n\n${data.puladas.length} horário(s) não deu(ram) pra criar:\n`+data.puladas.slice(0,3).map(p=>`• ${fmtH(p.inicio)}: ${p.motivo}`).join('\n');
+    if(data.falhas&&data.falhas.length)resumo+=`\n\nA Shopee recusou alguns produtos. Exemplo:\n${JSON.stringify(data.falhas[0]).slice(0,240)}`;
+    showToast(`✓ ${data.total_ofertas} oferta(s) criada(s) pra ${cliente.nome}.`);
+    alert(resumo);
     document.getElementById('ofertaModalOverlay').classList.add('hidden');
   }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao criar oferta relâmpago: '+(e.message||'desconhecido'));}
   btn.disabled=false;btn.textContent='Criar Oferta';
