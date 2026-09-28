@@ -5611,7 +5611,7 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
     }
     showToast(`✓ Oferta relâmpago criada pra ${cliente.nome}! ${data.total_produtos} produto(s) incluído(s).`);
     document.getElementById('ofertaModalOverlay').classList.add('hidden');
-  }catch(e){showToast('Erro ao criar oferta relâmpago.');console.error(e);}
+  }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao criar oferta relâmpago: '+(e.message||'desconhecido'));}
   btn.disabled=false;btn.textContent='Criar Oferta';
 });
 
@@ -5851,6 +5851,8 @@ function dataLocalBR(unix){
   return `${g('year')}-${g('month')}-${g('day')}T${g('hour')}:${g('minute')}`;
 }
 function fmtDataHoraBR(unix){return new Date(unix*1000).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function erroTokenShopee(e){return /refresh_token|expired|token/i.test((e&&e.message)||'');}
+function msgErroTokenMkt(nome){return `O acesso do app Marketing de ${nome} expirou (a Shopee só mantém a autorização por 30 dias sem renovar). Clique no botão 🔄 ao lado do cliente pra reconectar e autorizar de novo.`;}
 // Uma aba de Descontos por marketplace — mesmas datas e mesmos clientes de antes (campos no banco não mudaram).
 function cmRenderDescontosMp(key,elId,extrasFn){
   const el=document.getElementById(elId);
@@ -5873,7 +5875,7 @@ function cmDescontoExtrasShopee(c){
     :'<span class="cadastro-doc-pill" style="font-size:10px">nenhum desconto marcado</span>';
   const auto=c.descontoAutoUltimaRenovacao?'<span class="cadastro-doc-pill ok" title="Já renovado automaticamente">🤖 auto</span>':'';
   const dup=c.shopeeDescontoFixoId?`<button class="btn btn-gold btn-sm" onclick="window.__duplicarDescontoFixo('${c.id}')">🔁 Duplicar</button>`:'';
-  return `${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__descontosLoja('${c.id}')">🔍 Descontos da loja</button>${dup}`;
+  return `${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__descontosLoja('${c.id}')">🔍 Descontos da loja</button>${dup}<button class="icon-btn" title="Reconectar Marketing (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄</button>`;
 }
 function cmRenderDescontosTodos(){
   cmRenderDescontosMp('shopee','cmDescontosShopeeLista',cmDescontoExtrasShopee);
@@ -5951,7 +5953,12 @@ window.__descontosLoja=async(clienteId)=>{
     if(!data.ok){corpo.innerHTML=`<div class="empty-state" style="padding:20px">Erro da Shopee: ${esc(data.erro||'desconhecido')}<br><small>Se for token vencido, use o botão 🔄 de reconectar Marketing.</small></div>`;return;}
     descLojaCache=data.descontos||[];
     descLojaRenderizar();
-  }catch(e){corpo.innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar os descontos.</div>';console.error(e);}
+  }catch(e){
+    console.error(e);
+    const venceu=erroTokenShopee(e);
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?msgErroTokenMkt(c.nome):('Erro ao buscar os descontos: '+(e.message||'desconhecido')))}${venceu?`<br><br><button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄 Reconectar Marketing</button>`:''}</div>`;
+  }
 };
 window.__marcarDescontoFixo=async(idx)=>{
   const d=descLojaCache[idx];const c=clientesCache.find(x=>x.id===descLojaClienteId);
@@ -5982,7 +5989,7 @@ async function duplicarDescontoCore(c,discountId,nome){
     showToast(`✓ Desconto duplicado pra ${c.nome}! ${data.totalProdutos} produto(s) copiado(s).`);
     if(data.falhas&&data.falhas.length)alert(`Atenção: ${data.falhas.length} produto(s) não entraram no desconto novo. Veja o Console (F12) → "[Duplicar desconto debug]".`);
     if(!document.getElementById('descontoLojaModalOverlay').classList.contains('hidden'))window.__descontosLoja(c.id);
-  }catch(e){showToast('Erro ao duplicar o desconto.');console.error(e);}
+  }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(c.nome));else showToast('Erro ao duplicar o desconto: '+(e.message||'desconhecido'));}
 }
 window.__duplicarDescontoLoja=(idx)=>{
   const d=descLojaCache[idx];const c=clientesCache.find(x=>x.id===descLojaClienteId);
