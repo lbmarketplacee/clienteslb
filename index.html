@@ -1794,7 +1794,8 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛍️</div><h3>Shopee</h3></div>
 
           <div style="display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap">
-            <button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">📊 Conectar / GMV</button>
+            <button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">🔌 APIs</button>
+            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">📊 GMV</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">⚡ Oferta Relâmpago</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">💚 Saúde da Loja</button>
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">📢 Ads — Saldo</button>
@@ -1803,7 +1804,12 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">⚠️ Erros <span id="shopeeErrosContador" style="display:none"></span></button>
           </div>
 
-          <div class="shopee-subpanel" data-shopeesubpanel="gmv">
+          <div class="shopee-subpanel" data-shopeesubpanel="apis">
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Conecte as 3 APIs da Shopee de cada cliente num lugar só: <b>GMV</b> (faturamento), <b>Marketing</b> (cupom, desconto, oferta relâmpago) e <b>Ads</b> (saldo). Cupom, desconto e oferta relâmpago já rodam sozinhos assim que o Marketing estiver conectado — o botão manual continua disponível a qualquer momento nas abas ao lado.</p>
+          <div class="cm-lista-simples" id="cmApisShopeeLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="gmv" style="display:none">
         <div class="sgmv-summary">
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">GMV via API<br>(mês atual)</div></div><div class="sc-value green" id="sgmvTotal">R$ 0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Lojas<br>Conectadas</div></div><div class="sc-value" id="sgmvConectadas">0</div></div>
@@ -5614,7 +5620,8 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
     let resumo=`✓ ${data.total_ofertas} oferta(s) relâmpago criada(s) pra ${cliente.nome} (${data.total_produtos} produto(s) no total).\n\nHorários: ${dias}`;
     if(data.ja_existiam)resumo+=`\n\n${data.ja_existiam} horário(s) já tinham oferta e foram pulados.`;
     if(data.puladas&&data.puladas.length)resumo+=`\n\n${data.puladas.length} horário(s) não deu(ram) pra criar:\n`+data.puladas.slice(0,3).map(p=>`• ${fmtH(p.inicio)}: ${p.motivo}`).join('\n');
-    if(data.falhas&&data.falhas.length)resumo+=`\n\nA Shopee recusou alguns produtos. Exemplo:\n${JSON.stringify(data.falhas[0]).slice(0,240)}`;
+    if(data.motivos)resumo+=`\n\nProdutos/variações que a Shopee recusou — motivo: ${data.motivos}.`;
+    else if(data.falhas&&data.falhas.length)resumo+=`\n\nA Shopee recusou alguns produtos. Exemplo:\n${JSON.stringify(data.falhas[0]).slice(0,240)}`;
     showToast(`✓ ${data.total_ofertas} oferta(s) criada(s) pra ${cliente.nome}.`);
     alert(resumo);
     document.getElementById('ofertaModalOverlay').classList.add('hidden');
@@ -5836,6 +5843,26 @@ document.getElementById('ofertaProximaDataSalvarBtn')?.addEventListener('click',
     showToast('✓ Data salva pra todos os clientes.');
   }catch(e){showToast('Erro ao salvar.');}
 });
+function cmApiSlot(conectado, label, onclick, tituloVencido){
+  if(conectado)return `<span class="cadastro-doc-pill ok" title="Conectado">✅ ${label}</span><button class="icon-btn" title="Reconectar ${label} (use se der erro de token vencido)" onclick="${onclick}">🔄</button>`;
+  return `<button class="btn btn-ghost btn-sm" onclick="${onclick}">🔗 Conectar ${label}</button>`;
+}
+function cmRenderApisShopee(){
+  const el=document.getElementById('cmApisShopeeLista');
+  if(!el)return;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee'));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
+  el.innerHTML=lista.map(c=>{
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    const conectarClick=app=>`window.__shopeeConectar('${c.id}','${nomeEsc}','${app}')`;
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
+      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>
+      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeShopId,'GMV',conectarClick('gmv'))}</span>
+      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeMktShopId,'Marketing',conectarClick('mkt'))}</span>
+      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
+    </div>`;
+  }).join('');
+}
 function cmRenderOfertaShopee(){
   const el=document.getElementById('cmOfertaShopeeLista');
   if(!el)return;
@@ -5844,7 +5871,8 @@ function cmRenderOfertaShopee(){
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const podeBotaoApi=!!c.shopeeMktShopId;
-    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}${podeBotaoApi?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar Oferta (via API)</button>`:''}</div>`;
+    const autoOferta=c.ofertaRelampagoAutoUltimaCriacao?'<span class="cadastro-doc-pill ok" title="Rodando sozinha todo dia via API">🤖 auto</span>':(podeBotaoApi?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda não rodou pelo robô diário">aguardando 1ª rodada automática</span>':'');
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:8px"><span class="nome">${esc(c.nome)}</span>${autoOferta}${renderOfertaFlag(c)}${podeBotaoApi?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar agora</button>`:''}</div>`;
   }).join('');
 }
 const DESCONTO_MPS = [
@@ -5912,7 +5940,7 @@ function cmRenderDevolucao(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
-function cmRenderTudo(){cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();}
+function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();}
 /* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
 let editarDataAlvo=null; // {clienteId, campo}
 window.__editarDataDescontoMp=(clienteId,key)=>{
@@ -6037,7 +6065,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   const alvo=b.dataset.cmtab;
   document.getElementById('cmCardGrid').classList.add('hidden');
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
-  if(alvo==='shopee')window.__shopeeSubTab('gmv');
+  if(alvo==='shopee')window.__shopeeSubTab('apis');
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
 }));
 window.__irParaMarketing=(painel,subtab)=>{
