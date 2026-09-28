@@ -2453,7 +2453,7 @@ textarea{resize:vertical;min-height:70px;}
 <div class="modal-overlay hidden" id="ofertaModalOverlay">
   <div class="modal" style="max-width:420px">
     <h2 id="ofertaModalTitulo">Criar Oferta Relâmpago</h2>
-    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px;line-height:1.5">Busca automaticamente até 20 produtos ativos da loja e aplica o desconto sobre o preço atual de cada um.</p>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px;line-height:1.5">Pega até 20 produtos do <b>desconto fixo</b> da loja e aplica o desconto sobre o preço que eles já têm com o desconto fixo. A loja precisa ter um desconto em andamento (aba Descontos).</p>
     <div class="form-row">
       <div class="field"><label>Desconto (%)</label><input type="number" id="ofertaPercentual" value="5" min="1" max="90"></div>
       <div class="field"><label>Unidades por produto</label><input type="number" id="ofertaQtd" value="5" min="1"></div>
@@ -5584,19 +5584,16 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
   if(!ofertaClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===ofertaClienteAtual);
   if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
-  if(!cliente.shopeeShopId){showToast('Esse cliente também precisa estar conectado ao app GMV (a busca de produtos usa essas credenciais). Conecte o GMV primeiro.');return;}
   const btn=document.getElementById('ofertaCriarBtn');
   btn.disabled=true;btn.textContent='Criando... (pode levar alguns segundos)';
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
-    const accessTokenGmv=await shopeeGarantirTokenValido(cliente,'gmv');
     const params=new URLSearchParams({
       acao:'criar_oferta_relampago',
       app:'mkt',
       access_token:accessToken,
       shop_id:cliente.shopeeMktShopId,
-      access_token_gmv:accessTokenGmv,
-      shop_id_gmv:cliente.shopeeShopId,
+      discount_id:cliente.shopeeDescontoFixoId||'',
       percentual:document.getElementById('ofertaPercentual').value,
       qtd_por_produto:document.getElementById('ofertaQtd').value,
       limite_produtos:document.getElementById('ofertaLimite').value
@@ -5605,11 +5602,12 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
     const data=await resp.json();
     console.log('[Oferta Relâmpago debug]',cliente.nome,data);
     if(!data.ok){
-      alert(`Não foi possível criar a oferta relâmpago de ${cliente.nome}:\\n\\n${data.erro||'Erro desconhecido.'}\\n\\nAbra o Console (F12) e veja "[Oferta Relâmpago debug]" pra mais detalhes.`);
+      alert(`Não foi possível criar a oferta relâmpago de ${cliente.nome}:\n\n${data.erro||'Erro desconhecido.'}\n\nAbra o Console (F12) e veja "[Oferta Relâmpago debug]" pra mais detalhes.`);
       btn.disabled=false;btn.textContent='Criar Oferta';
       return;
     }
     showToast(`✓ Oferta relâmpago criada pra ${cliente.nome}! ${data.total_produtos} produto(s) incluído(s).`);
+    if(data.falhas&&data.falhas.length)alert(`Atenção: ${data.falhas.length} produto(s) não entraram na oferta (a Shopee recusou). Veja o Console (F12) → "[Oferta Relâmpago debug]".`);
     document.getElementById('ofertaModalOverlay').classList.add('hidden');
   }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao criar oferta relâmpago: '+(e.message||'desconhecido'));}
   btn.disabled=false;btn.textContent='Criar Oferta';
@@ -5836,7 +5834,7 @@ function cmRenderOfertaShopee(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    const podeBotaoApi=c.shopeeMktShopId&&c.shopeeShopId;
+    const podeBotaoApi=!!c.shopeeMktShopId;
     return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}${podeBotaoApi?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar Oferta (via API)</button>`:''}</div>`;
   }).join('');
 }
