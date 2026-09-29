@@ -5621,6 +5621,7 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
     if(data.ja_existiam)resumo+=`\n\n${data.ja_existiam} horário(s) já tinham oferta e foram pulados.`;
     if(data.puladas&&data.puladas.length)resumo+=`\n\n${data.puladas.length} horário(s) não deu(ram) pra criar:\n`+data.puladas.slice(0,3).map(p=>`• ${fmtH(p.inicio)}: ${p.motivo}`).join('\n');
     if(data.motivos)resumo+=`\n\nProdutos/variações que a Shopee recusou — motivo: ${data.motivos}.`;
+    if(data.produtos_descartados_por_estoque)resumo+=` (${data.produtos_descartados_por_estoque} produto(s) do catálogo não têm estoque suficiente pra oferta relâmpago).`;
     else if(data.falhas&&data.falhas.length)resumo+=`\n\nA Shopee recusou alguns produtos. Exemplo:\n${JSON.stringify(data.falhas[0]).slice(0,240)}`;
     showToast(`✓ ${data.total_ofertas} oferta(s) criada(s) pra ${cliente.nome}.`);
     alert(resumo);
@@ -5871,8 +5872,15 @@ function cmRenderOfertaShopee(){
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const podeBotaoApi=!!c.shopeeMktShopId;
-    const autoOferta=c.ofertaRelampagoAutoUltimaCriacao?'<span class="cadastro-doc-pill ok" title="Rodando sozinha todo dia via API">🤖 auto</span>':(podeBotaoApi?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda não rodou pelo robô diário">aguardando 1ª rodada automática</span>':'');
-    return `<div class="cm-item" style="flex-wrap:wrap;gap:8px"><span class="nome">${esc(c.nome)}</span>${autoOferta}${renderOfertaFlag(c)}${podeBotaoApi?`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar agora</button>`:''}</div>`;
+    // Cliente com Marketing conectado: o robô diário cuida sozinho, sem precisar marcar "feito" na mão.
+    if(podeBotaoApi){
+      const rodou=!!c.ofertaRelampagoUltimaVerificacao;
+      const autoOferta=c.ofertaRelampagoAutoUltimaCriacao?'<span class="cadastro-doc-pill ok" title="Rodando sozinha todo dia via API">🤖 auto</span>':(rodou?'<span class="cadastro-doc-pill" style="font-size:10px">robô já checou, sem oferta nova ainda</span>':'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda não rodou pelo robô diário">aguardando 1ª rodada automática</span>');
+      const status=rodou?`<span style="font-size:11px;color:var(--text-dim)" title="${esc(c.ofertaRelampagoAutoUltimoResultado||'')}">Última checagem: ${new Date(c.ofertaRelampagoUltimaVerificacao).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:'';
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="nome">${esc(c.nome)}</span>${autoOferta}${status}<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar agora</button></div>`;
+    }
+    // Sem Marketing conectado: continua no rastreador manual (ciclo de 30 dias marcado à mão).
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:8px"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`;
   }).join('');
 }
 const DESCONTO_MPS = [
