@@ -5588,7 +5588,7 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
     showToast(`✓ Cupom criado pra ${cliente.nome}! Data de vencimento atualizada automaticamente.`);
     document.getElementById('cupomModalOverlay').classList.add('hidden');
     cmRenderCupons();
-  }catch(e){showToast('Erro ao criar cupom.');console.error(e);}
+  }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao criar cupom: '+(e.message||'desconhecido'));}
   btn.disabled=false;btn.textContent='Criar Cupom';
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
