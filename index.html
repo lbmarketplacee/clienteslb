@@ -1832,6 +1832,7 @@ textarea{resize:vertical;min-height:70px;}
             <p style="font-size:12.5px;color:var(--text-dim);margin:0">Confere na Shopee, cliente por cliente, se já existe oferta relâmpago ativa ou agendada — útil se você criou alguma direto no Seller Center.</p>
             <div class="spacer"></div>
             <button class="btn btn-gold btn-sm" id="sincronizarTodasBtn" onclick="window.__sincronizarTodasOfertas()">🔄 Sincronizar Todos</button>
+            <button class="btn btn-ghost btn-sm" id="rodarRoboOfertasBtn" style="display:none" onclick="window.__rodarRoboOfertas()">▶️ Rodar robô agora</button>
           </div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
           </div>
@@ -2590,7 +2591,7 @@ onAuthStateChanged(auth,user=>{if(user){
     return;
   }
   currentUser=nome(user.email);currentEmail=user.email;document.getElementById('navUserName').textContent=currentUser;(()=>{const av=document.getElementById('navAvatar');const f=USER_FOTOS[currentUser];if(f){av.style.background='none';av.innerHTML=`<img src="${f}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;}else{av.textContent=currentUser.charAt(0).toUpperCase();}})();
-comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();dreSetupAcesso();ofertaConfigIniciar();document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
+comSetupAcesso();gastosSetupAcesso();tfSetupAcesso();rhSetupAcesso();dreSetupAcesso();ofertaConfigIniciar();const btnRobo=document.getElementById('rodarRoboOfertasBtn');if(btnRobo)btnRobo.style.display=isLincoln()?'':'none';document.getElementById('welcomeTitle').innerHTML=`Bem-vindo de volta, ${currentUser}! 👋`;loginScreen.classList.add('hidden');appScreen.classList.remove('hidden');startListeners();}else{loginScreen.classList.remove('hidden');appScreen.classList.add('hidden');}});
 let unsubC=null,unsubG=null,unsubCt=null;
 function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
 /* NAV */
@@ -5629,6 +5630,21 @@ window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
     console.error(e);
     return{ok:false,erro:e.message};
   }
+};
+window.__rodarRoboOfertas=async()=>{
+  if(!isLincoln()){showToast('Apenas Lincoln pode rodar o robô manualmente.');return;}
+  const btn=document.getElementById('rodarRoboOfertasBtn');
+  if(!confirm('Rodar o robô de Oferta Relâmpago agora, pra todos os clientes prontos na fila? Pode levar até 1 minuto.'))return;
+  if(btn){btn.disabled=true;btn.textContent='Rodando...';}
+  try{
+    const params=new URLSearchParams({acao:'rodar_robo_ofertas'});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Rodar Robô Ofertas debug]',data);
+    if(!data.ok){alert(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    alert(`Robô rodou agora.\n\nClientes na fila: ${data.totalClientes}\nVerificados agora: ${data.verificados}\nOfertas criadas: ${data.ofertasCriadas}\nFicaram pra próxima: ${data.aguardando}\n\nDetalhes completos no Console (F12) → "[Rodar Robô Ofertas debug]".`);
+  }catch(e){showToast('Erro ao rodar o robô.');console.error(e);}
+  finally{if(btn){btn.disabled=false;btn.textContent='▶️ Rodar robô agora';}}
 };
 window.__sincronizarTodasOfertas=async()=>{
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&c.shopeeMktShopId);
