@@ -5587,6 +5587,30 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
 let ofertaClienteAtual=null;
+window.__sincronizarOfertas=async(clienteId,clienteNome)=>{
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
+  showToast(`Sincronizando ${clienteNome}...`);
+  try{
+    const token=await shopeeGarantirTokenValido(cliente,'mkt');
+    const params=new URLSearchParams({acao:'sincronizar_ofertas',app:'mkt',access_token:token,shop_id:cliente.shopeeMktShopId});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Sincronizar Ofertas debug]',clienteNome,data);
+    if(!data.ok){alert(`Não foi possível sincronizar ${clienteNome}:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    const fmtH=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11):'?';
+    const STATUS_LABEL={0:'Agendada',1:'Em andamento',2:'Encerrada'};
+    let resumo=data.confiavel
+      ?(data.total?`${clienteNome} já tem ${data.total} oferta(s) relâmpago na Shopee agora:\n\n`+data.ofertas.map(o=>`• ${fmtH(o.inicio)} → ${fmtH(o.fim)} (${STATUS_LABEL[o.status]||o.status})`).join('\n')
+        :`${clienteNome} não tem nenhuma oferta relâmpago ativa ou agendada na Shopee agora.`)
+      :`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`;
+    await updateDoc(doc(db,"clientes",clienteId),{
+      ofertaRelampagoUltimaVerificacao:Date.now(),
+      ofertaRelampagoAutoUltimoResultado:(data.confiavel?`${data.total} oferta(s) confirmada(s) na Shopee (sincronizado manualmente)`:'Sincronização manual não confirmada pela Shopee').slice(0,220)
+    });
+    alert(resumo);
+  }catch(e){showToast('Erro ao sincronizar.');console.error(e);}
+};
 window.__abrirModalOferta=(clienteId,clienteNome)=>{
   ofertaClienteAtual=clienteId;
   document.getElementById('ofertaModalTitulo').textContent=`Criar Oferta Relâmpago — ${clienteNome}`;
@@ -5894,7 +5918,7 @@ function cmRenderOfertaShopee(){
       const rodou=!!c.ofertaRelampagoUltimaVerificacao;
       const autoOferta=c.ofertaRelampagoAutoUltimaCriacao?'<span class="cadastro-doc-pill ok" title="Rodando sozinha todo dia via API">🤖 auto</span>':(rodou?'<span class="cadastro-doc-pill" style="font-size:10px">robô já checou, sem oferta nova ainda</span>':'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda não rodou pelo robô diário">aguardando 1ª rodada automática</span>');
       const status=rodou?`<span style="font-size:11px;color:var(--text-dim)" title="${esc(c.ofertaRelampagoAutoUltimoResultado||'')}">Última checagem: ${new Date(c.ofertaRelampagoUltimaVerificacao).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:'';
-      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="nome">${esc(c.nome)}</span>${autoOferta}${status}<button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar agora</button></div>`;
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="nome">${esc(c.nome)}</span>${autoOferta}${status}<button class="btn btn-ghost btn-sm" onclick="window.__sincronizarOfertas('${c.id}','${nomeEsc}')">🔄 Sincronizar</button><button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar agora</button></div>`;
     }
     // Sem Marketing conectado: continua no rastreador manual (ciclo de 30 dias marcado à mão).
     return `<div class="cm-item" style="flex-wrap:wrap;gap:8px"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`;
