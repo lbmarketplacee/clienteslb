@@ -1828,6 +1828,11 @@ textarea{resize:vertical;min-height:70px;}
             <div class="field" style="max-width:220px"><label>Próxima data (a Shopee libera datas diferentes toda vez — defina manualmente)</label><input type="date" id="ofertaProximaDataInput"></div>
             <button class="btn btn-gold btn-sm" id="ofertaProximaDataSalvarBtn">Salvar data pra todos</button>
           </div>
+          <div class="toolbar">
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0">Confere na Shopee, cliente por cliente, se já existe oferta relâmpago ativa ou agendada — útil se você criou alguma direto no Seller Center.</p>
+            <div class="spacer"></div>
+            <button class="btn btn-gold btn-sm" id="sincronizarTodasBtn" onclick="window.__sincronizarTodasOfertas()">🔄 Sincronizar Todos</button>
+          </div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
           </div>
 
@@ -5587,29 +5592,56 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
 let ofertaClienteAtual=null;
-window.__sincronizarOfertas=async(clienteId,clienteNome)=>{
+window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
-  if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
-  showToast(`Sincronizando ${clienteNome}...`);
+  if(!cliente||!cliente.shopeeMktShopId){if(!silencioso){showToast('Cliente não conectado ao app Marketing da Shopee.');}return{ok:false,erro:'não conectado'};}
+  if(!silencioso)showToast(`Sincronizando ${clienteNome}...`);
   try{
     const token=await shopeeGarantirTokenValido(cliente,'mkt');
     const params=new URLSearchParams({acao:'sincronizar_ofertas',app:'mkt',access_token:token,shop_id:cliente.shopeeMktShopId});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Sincronizar Ofertas debug]',clienteNome,data);
-    if(!data.ok){alert(`Não foi possível sincronizar ${clienteNome}:\n\n${data.erro||'Erro desconhecido.'}`);return;}
-    const fmtH=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11):'?';
-    const STATUS_LABEL={0:'Agendada',1:'Em andamento',2:'Encerrada'};
-    let resumo=data.confiavel
-      ?(data.total?`${clienteNome} já tem ${data.total} oferta(s) relâmpago na Shopee agora:\n\n`+data.ofertas.map(o=>`• ${fmtH(o.inicio)} → ${fmtH(o.fim)} (${STATUS_LABEL[o.status]||o.status})`).join('\n')
-        :`${clienteNome} não tem nenhuma oferta relâmpago ativa ou agendada na Shopee agora.`)
-      :`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`;
-    await updateDoc(doc(db,"clientes",clienteId),{
+    if(!data.ok){
+      if(!silencioso)alert(`Não foi possível sincronizar ${clienteNome}:\n\n${data.erro||'Erro desconhecido.'}`);
+      else try{await addDoc(collection(db,"shopeeErrosOferta"),{cliente:clienteNome,acao:'Sincronizar (manual)',mensagem:(data.erro||'Erro desconhecido.').slice(0,300),quando:serverTimestamp()});}catch(e){}
+      return{ok:false,erro:data.erro};
+    }
+    const atualizacao={
       ofertaRelampagoUltimaVerificacao:Date.now(),
       ofertaRelampagoAutoUltimoResultado:(data.confiavel?`${data.total} oferta(s) confirmada(s) na Shopee (sincronizado manualmente)`:'Sincronização manual não confirmada pela Shopee').slice(0,220)
-    });
-    alert(resumo);
-  }catch(e){showToast('Erro ao sincronizar.');console.error(e);}
+    };
+    // O selo 🤖 auto reflete "tem oferta ativa/agendada agora" — não só o que o robô criou. Sincronizar também conta.
+    if(data.confiavel&&data.total>0)atualizacao.ofertaRelampagoAutoUltimaCriacao=serverTimestamp();
+    await updateDoc(doc(db,"clientes",clienteId),atualizacao);
+    if(!silencioso){
+      const fmtH=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11):'?';
+      const STATUS_LABEL={0:'Agendada',1:'Em andamento',2:'Encerrada'};
+      const resumo=data.confiavel
+        ?(data.total?`${clienteNome} já tem ${data.total} oferta(s) relâmpago na Shopee agora:\n\n`+data.ofertas.map(o=>`• ${fmtH(o.inicio)} → ${fmtH(o.fim)} (${STATUS_LABEL[o.status]||o.status})`).join('\n')
+          :`${clienteNome} não tem nenhuma oferta relâmpago ativa ou agendada na Shopee agora.`)
+        :`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`;
+      alert(resumo);
+    }
+    return{ok:true,total:data.total,confiavel:data.confiavel};
+  }catch(e){
+    if(!silencioso)showToast('Erro ao sincronizar.');
+    console.error(e);
+    return{ok:false,erro:e.message};
+  }
+};
+window.__sincronizarTodasOfertas=async()=>{
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&c.shopeeMktShopId);
+  if(!lista.length){showToast('Nenhum cliente com Marketing conectado.');return;}
+  const btn=document.getElementById('sincronizarTodasBtn');
+  if(btn){btn.disabled=true;btn.textContent='Sincronizando...';}
+  let comOferta=0,semOferta=0,comErro=0;
+  for(const c of lista){
+    const r=await window.__sincronizarOfertas(c.id,c.nome,true);
+    if(!r.ok)comErro++;else if(r.total>0)comOferta++;else semOferta++;
+  }
+  if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
+  alert(`Sincronização em massa concluída (${lista.length} cliente(s)):\n\n✅ ${comOferta} com oferta ativa/agendada\n⏳ ${semOferta} sem oferta agora\n${comErro?`❌ ${comErro} com erro (veja a aba Erros)`:''}`);
 };
 window.__abrirModalOferta=(clienteId,clienteNome)=>{
   ofertaClienteAtual=clienteId;
