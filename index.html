@@ -1854,7 +1854,7 @@ textarea{resize:vertical;min-height:70px;}
 
           <div class="shopee-subpanel" data-shopeesubpanel="erros" style="display:none">
           <div class="toolbar">
-            <p style="font-size:12.5px;color:var(--text-dim);margin:0">Erros das últimas atualizações em massa (Saldo Ads, GMV) — fica registrado aqui até você limpar.</p>
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0">Erros das últimas atualizações em massa (Saldo Ads, GMV) + tudo que o robô da Oferta Relâmpago não conseguiu criar sozinho — fica registrado aqui até você limpar.</p>
             <div class="spacer"></div>
             <button class="btn btn-ghost btn-sm" id="shopeeErrosLimparBtn">🗑️ Limpar</button>
           </div>
@@ -4491,6 +4491,11 @@ document.getElementById('conectarShopeeAdsBtn')?.addEventListener('click',()=>{
   window.__shopeeConectar(clienteId,clienteNome,'ads');
 });
 window.__shopeeErros=[];
+window.__shopeeErrosAuto=[];
+onSnapshot(query(collection(db,"shopeeErrosOferta"),orderBy("quando","desc"),limit(200)),snap=>{
+  window.__shopeeErrosAuto=snap.docs.map(d=>{const v=d.data();return{id:d.id,cliente:v.cliente,acao:v.acao,mensagem:v.mensagem,quando:v.quando?.toDate?v.quando.toDate():new Date()};});
+  shopeeErrosRenderizar();
+});
 function shopeeErroRegistrar(cliente,acao,mensagem){
   window.__shopeeErros.unshift({cliente,acao,mensagem,quando:new Date()});
   const contador=document.getElementById('shopeeErrosContador');
@@ -4499,19 +4504,23 @@ function shopeeErroRegistrar(cliente,acao,mensagem){
 function shopeeErrosRenderizar(){
   const el=document.getElementById('shopeeErrosLista');
   if(!el)return;
+  const todos=[...window.__shopeeErros,...(window.__shopeeErrosAuto||[])].sort((a,b)=>b.quando-a.quando);
   const contador=document.getElementById('shopeeErrosContador');
-  if(contador)contador.style.display=window.__shopeeErros.length?'':'none';
-  if(!window.__shopeeErros.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum erro registrado. Tudo certo! 🎉</div>';return;}
-  el.innerHTML=window.__shopeeErros.map(e=>`<div class="cm-item" style="flex-wrap:wrap;gap:8px">
+  if(contador){contador.style.display=todos.length?'':'none';contador.textContent=todos.length;}
+  if(!todos.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum erro registrado. Tudo certo! 🎉</div>';return;}
+  el.innerHTML=todos.map(e=>`<div class="cm-item" style="flex-wrap:wrap;gap:8px">
     <span class="nome" style="flex:2;min-width:160px">${esc(e.cliente)}</span>
     <span style="font-size:12px;color:var(--text-dim)">${esc(e.acao)}</span>
     <span style="font-size:12px;color:var(--red)">${esc(e.mensagem)}</span>
     <span style="font-size:11px;color:var(--text-dim);margin-left:auto">${e.quando.toLocaleString('pt-BR')}</span>
   </div>`).join('');
 }
-document.getElementById('shopeeErrosLimparBtn')?.addEventListener('click',()=>{
+document.getElementById('shopeeErrosLimparBtn')?.addEventListener('click',async()=>{
   window.__shopeeErros=[];
+  const idsAuto=(window.__shopeeErrosAuto||[]).map(e=>e.id);
+  window.__shopeeErrosAuto=[];
   shopeeErrosRenderizar();
+  for(const id of idsAuto){try{await deleteDoc(doc(db,"shopeeErrosOferta",id));}catch(e){console.error('Erro ao apagar registro:',e);}}
 });
 
 window.__shopeeAtualizarSaldoAds=async(clienteId,silencioso=false)=>{
@@ -5612,6 +5621,7 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
     console.log('[Oferta Relâmpago debug]',cliente.nome,data);
     if(!data.ok){
       alert(`Não foi possível criar a oferta relâmpago de ${cliente.nome}:\n\n${data.erro||'Erro desconhecido.'}\n\nAbra o Console (F12) e veja "[Oferta Relâmpago debug]" pra mais detalhes.`);
+      try{await addDoc(collection(db,"shopeeErrosOferta"),{cliente:cliente.nome,acao:'Não criou (manual)',mensagem:(data.erro||'Erro desconhecido.').slice(0,300),quando:serverTimestamp()});}catch(e){console.error('Não salvou o erro no painel:',e);}
       btn.disabled=false;btn.textContent='Criar Oferta';
       return;
     }
