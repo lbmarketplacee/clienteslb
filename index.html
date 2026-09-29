@@ -5623,6 +5623,13 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
     if(data.motivos)resumo+=`\n\nProdutos/variações que a Shopee recusou — motivo: ${data.motivos}.`;
     if(data.produtos_descartados_por_estoque)resumo+=` (${data.produtos_descartados_por_estoque} produto(s) do catálogo não têm estoque suficiente pra oferta relâmpago).`;
     else if(data.falhas&&data.falhas.length)resumo+=`\n\nA Shopee recusou alguns produtos. Exemplo:\n${JSON.stringify(data.falhas[0]).slice(0,240)}`;
+    try{
+      await updateDoc(doc(db,"clientes",cliente.id),{
+        ofertaRelampagoUltimaVerificacao:Date.now(),
+        ofertaRelampagoAutoUltimaCriacao:serverTimestamp(),
+        ofertaRelampagoAutoUltimoResultado:`${data.total_ofertas} oferta(s) criada(s) (${data.total_produtos} produto(s)) — criado manualmente`.slice(0,220)
+      });
+    }catch(e){console.error('Não salvou o status da oferta no cadastro do cliente:',e);}
     showToast(`✓ ${data.total_ofertas} oferta(s) criada(s) pra ${cliente.nome}.`);
     alert(resumo);
     document.getElementById('ofertaModalOverlay').classList.add('hidden');
