@@ -4890,12 +4890,13 @@ document.getElementById('conectarTiktokBtn')?.addEventListener('click',async()=>
 
 // app: 'gmv' (padrão, mantém compatibilidade) ou 'mkt' (app de Marketing — cupom/oferta relâmpago)
 async function shopeeGarantirTokenValido(cliente, app='gmv'){
-  const pre = app==='mkt' ? 'shopeeMkt' : app==='ads' ? 'shopeeAds' : 'shopee';
+  const pre = app==='mkt' ? 'shopeeMkt' : app==='ads' ? 'shopeeAds' : app==='produto' ? 'shopeeProduto' : 'shopee';
+  const nomeApp = {mkt:'Marketing',ads:'Ads',produto:'Produto',gmv:'GMV'}[app]||app;
   const shopId = cliente[pre+'ShopId'];
   const accessToken = cliente[pre+'AccessToken'];
   const refreshToken = cliente[pre+'RefreshToken'];
   const expiraEmRaw = cliente[pre+'TokenExpiraEm'];
-  if(!shopId||!accessToken||!refreshToken) throw new Error(`Cliente não conectado ao app ${app==='mkt'?'Marketing':'GMV'} da Shopee.`);
+  if(!shopId||!accessToken||!refreshToken) throw new Error(`Cliente não conectado ao app ${nomeApp} da Shopee.`);
   const agora=Date.now();
   const expiraEm=expiraEmRaw?.seconds?expiraEmRaw.seconds*1000:expiraEmRaw;
   if(expiraEm&&agora<expiraEm-5*60*1000){
@@ -5803,10 +5804,20 @@ async function criarOfertaCore(cliente,opcoes,silencioso){
   if(!cliente||!cliente.shopeeMktShopId)return{ok:false,erro:'não conectado ao Marketing',semMarketing:true};
   try{
     const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
+    const camposExtras={};
+    // App Produto é opcional: se o cliente já conectou, manda o token pra filtrar por estoque real
+    // ANTES de tentar (evita tentar produto que a Shopee vai recusar por estoque abaixo de 20).
+    if(cliente.shopeeProdutoShopId){
+      try{
+        camposExtras.produto_access_token=await shopeeGarantirTokenValido(cliente,'produto');
+        camposExtras.produto_shop_id=cliente.shopeeProdutoShopId;
+      }catch(e){console.error('Token do Produto falhou, seguindo sem filtro de estoque:',e);}
+    }
     const params=new URLSearchParams({
       acao:'criar_oferta_relampago',app:'mkt',access_token:accessToken,shop_id:cliente.shopeeMktShopId,
       discount_id:cliente.shopeeDescontoFixoId||'',
-      percentual:opcoes.percentual,qtd_por_produto:opcoes.qtd,limite_produtos:opcoes.limite,max_horarios:opcoes.maxHorarios
+      percentual:opcoes.percentual,qtd_por_produto:opcoes.qtd,limite_produtos:opcoes.limite,max_horarios:opcoes.maxHorarios,
+      ...camposExtras
     });
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
@@ -6125,6 +6136,7 @@ function cmRenderApisShopee(){
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeShopId,'GMV',conectarClick('gmv'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeMktShopId,'Marketing',conectarClick('mkt'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
+      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeProdutoShopId,'Produto',conectarClick('produto'))}</span>
     </div>`;
   }).join('');
 }
