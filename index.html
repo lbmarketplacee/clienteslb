@@ -969,6 +969,30 @@ textarea{resize:vertical;min-height:70px;}
 .wa-crm-send-btn{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#1a1a1a;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0}
 .wa-crm-send-btn:disabled{opacity:.5;cursor:default}
 @media (max-width:860px){.wa-crm-wrap{flex-direction:column;height:auto}.wa-crm-list{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:280px}}
+
+/* ===== Caixa da Loja (Financeiro) — tema dourado/verde ===== */
+.fin-card{border:1px solid #f5d04030;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:linear-gradient(135deg,#f5d04008,transparent)}
+.fin-saldo{font-size:20px;font-weight:700;color:#f5d040}
+.fin-variacao-up{color:#22c55e;font-weight:600}
+.fin-variacao-down{color:#ef4444;font-weight:600}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.fin-row:last-child{border-bottom:none}
+
+/* ===== Central de Envios (Logística) — tema azul ===== */
+.log-card{border:1px solid #3b82f630;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:linear-gradient(135deg,#3b82f608,transparent)}
+.log-timeline{position:relative;padding-left:18px;margin-top:10px}
+.log-evento{position:relative;padding-bottom:14px;font-size:12px}
+.log-evento::before{content:'';position:absolute;left:-18px;top:4px;width:8px;height:8px;border-radius:50%;background:#3b82f6}
+.log-evento::after{content:'';position:absolute;left:-15px;top:12px;width:1px;height:calc(100% - 4px);background:#3b82f630}
+.log-evento:last-child::after{display:none}
+.log-evento-hora{color:var(--text-dim);font-size:10.5px}
+
+/* ===== Gestão de Catálogo (Produto) — tema roxo/laranja ===== */
+.prod-card{border:1px solid #a855f730;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:linear-gradient(135deg,#a855f708,transparent)}
+.prod-sim-tabela{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.prod-sim-tabela th{text-align:left;color:var(--text-dim);font-weight:500;padding:4px 6px;border-bottom:1px solid var(--border)}
+.prod-sim-tabela td{padding:5px 6px;border-bottom:1px solid var(--border)}
+.prod-preco-novo{color:#a855f7;font-weight:600}
 </style>
 <link rel="preload" as="style" href="lb-dashboard-modern.css" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="lb-dashboard-modern.css"></noscript>
@@ -1771,6 +1795,9 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-tool-card" data-cmtab="gerarad"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Anúncio com IA</div><span class="cm-tool-tag trafego">Aumente o tráfego</span><div class="cm-tool-desc">A IA cria título, destaques e descrição prontos pra publicar.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central Criativa IA</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Título, descrição, funil de fotos e logotipo — tudo gerado por IA num só lugar.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="caixaloja"><div class="cm-tool-ico" style="background:#f5d04020;color:#f5d040">💰</div><div class="cm-tool-body"><div class="cm-tool-titulo">Caixa da Loja</div><span class="cm-tool-tag vendas">Financeiro</span><div class="cm-tool-desc">Extrato Shopee, saldo e alerta automático de queda de receita — requer app ERP.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="envios"><div class="cm-tool-ico" style="background:#3b82f620;color:#3b82f6">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central de Envios</div><span class="cm-tool-tag vendas">Logística</span><div class="cm-tool-desc">Rastreio de pedido direto no sistema, sem entrar na Shopee — requer app ERP.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="catalogo"><div class="cm-tool-ico" style="background:#a855f720;color:#a855f7">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gestão de Catálogo</div><span class="cm-tool-tag vendas">Produto</span><div class="cm-tool-desc">Reajuste de preço em massa (com simulação), estoque e pausa automática — requer app ERP.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="whatsapp"><div class="cm-tool-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><div class="cm-tool-body"><div class="cm-tool-titulo">Conectar WhatsApp Business</div><span class="cm-tool-tag vendas">Comunicação</span><div class="cm-tool-desc">Vincule sua conta WhatsApp Business pra receber e responder mensagens pela API.</div></div></div>
         </div>
 
@@ -1828,7 +1855,28 @@ textarea{resize:vertical;min-height:70px;}
           <button class="btn btn-gold btn-sm" id="relGerarBtn" style="margin-bottom:20px">📊 Gerar Relatório</button>
           <div id="relResultado"></div>
         </div>
-                <div class="cm-secao cm-painel" data-cmpainel="diretor">
+                <div class="cm-secao cm-painel" data-cmpainel="caixaloja">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#f5d04020;color:#f5d040">💰</div><h3>Caixa da Loja</h3></div>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.5">Extrato financeiro direto da Shopee. Só funciona em clientes com o app <b>ERP</b> conectado (é a única conexão com permissão de Financeiro). O robô confere todo dia às 8h e avisa na aba ⚠️ Erros se a receita da semana cair 40% ou mais.</p>
+          <div id="finLista"></div>
+        </div>
+
+        <div class="cm-secao cm-painel" data-cmpainel="envios">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#3b82f620;color:#3b82f6">📦</div><h3>Central de Envios</h3></div>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.5">Rastreio de pedido direto no sistema, sem entrar na Shopee. Requer o app <b>ERP</b> conectado.</p>
+          <div id="logLista"></div>
+        </div>
+
+        <div class="cm-secao cm-painel" data-cmpainel="catalogo">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#a855f720;color:#a855f7">🏷️</div><h3>Gestão de Catálogo</h3></div>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.5">Reajuste de preço em massa (sempre com simulação antes de aplicar), ajuste de estoque e pausa automática. Requer o app <b>ERP</b> ou <b>Produto</b> conectado.</p>
+          <div id="prodLista"></div>
+        </div>
+
+        <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><h3>Central Criativa IA</h3></div>
           <div class="ia-mk-sel" style="margin-bottom:16px">
@@ -1884,7 +1932,7 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="apis">
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Conecte as 3 APIs da Shopee de cada cliente num lugar só: <b>GMV</b> (faturamento), <b>Marketing</b> (cupom, desconto, oferta relâmpago) e <b>Ads</b> (saldo). Cupom, desconto e oferta relâmpago já rodam sozinhos assim que o Marketing estiver conectado — o botão manual continua disponível a qualquer momento nas abas ao lado.</p>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">⭐ <b>ERP</b> é a conexão recomendada agora — uma autorização só cobre GMV, Marketing e Produto juntos. Clientes já conectados do jeito antigo continuam funcionando normalmente, não precisa reconectar com pressa. <b>Ads</b> continua sendo uma conexão à parte (a Shopee não inclui Ads no ERP). Cupom, desconto e oferta relâmpago rodam sozinhos assim que tiver Marketing ou ERP conectado.</p>
           <div class="cm-lista-simples" id="cmApisShopeeLista"></div>
           </div>
 
@@ -2556,6 +2604,34 @@ textarea{resize:vertical;min-height:70px;}
     <div id="ofertasLojaCorpo" style="max-height:52vh;overflow:auto"></div>
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="ofertasLojaFecharBtn">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="finExtratoModalOverlay">
+  <div class="modal" style="max-width:600px;width:94vw">
+    <h2 id="finExtratoTitulo">Extrato — Caixa da Loja</h2>
+    <div id="finExtratoCorpo" style="max-height:56vh;overflow:auto"></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="finExtratoFecharBtn">Fechar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="logRastreioModalOverlay">
+  <div class="modal" style="max-width:520px;width:94vw">
+    <h2 id="logRastreioTitulo">Rastreio do pedido</h2>
+    <div id="logRastreioCorpo" style="max-height:56vh;overflow:auto"></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="logRastreioFecharBtn">Fechar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="prodSimModalOverlay">
+  <div class="modal" style="max-width:640px;width:94vw">
+    <h2 id="prodSimTitulo">Simulação de reajuste de preço</h2>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:10px">Nada foi aplicado ainda — confere os valores e clica em Aplicar só se estiver tudo certo.</p>
+    <div id="prodSimCorpo" style="max-height:48vh;overflow:auto"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="prodSimCancelarBtn">Cancelar</button>
+      <button type="button" class="btn btn-gold" id="prodSimAplicarBtn">Aplicar reajuste</button>
     </div>
   </div>
 </div>
@@ -4932,8 +5008,8 @@ document.getElementById('conectarTiktokBtn')?.addEventListener('click',async()=>
 
 // app: 'gmv' (padrão, mantém compatibilidade) ou 'mkt' (app de Marketing — cupom/oferta relâmpago)
 async function shopeeGarantirTokenValido(cliente, app='gmv'){
-  const pre = app==='mkt' ? 'shopeeMkt' : app==='ads' ? 'shopeeAds' : app==='produto' ? 'shopeeProduto' : 'shopee';
-  const nomeApp = {mkt:'Marketing',ads:'Ads',produto:'Produto',gmv:'GMV'}[app]||app;
+  const pre = app==='mkt' ? 'shopeeMkt' : app==='ads' ? 'shopeeAds' : app==='produto' ? 'shopeeProduto' : app==='erp' ? 'shopeeErp' : 'shopee';
+  const nomeApp = {mkt:'Marketing',ads:'Ads',produto:'Produto',gmv:'GMV',erp:'ERP'}[app]||app;
   const shopId = cliente[pre+'ShopId'];
   const accessToken = cliente[pre+'AccessToken'];
   const refreshToken = cliente[pre+'RefreshToken'];
@@ -5737,13 +5813,14 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
   const btn=document.getElementById('cupomSalvarBtn');
   btn.disabled=true;btn.textContent='Criando...';
   try{
-    const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
+    const prefCupom=shopeeAppPreferido(cliente);
+    const accessToken=await shopeeGarantirTokenValido(cliente,prefCupom.app);
     // Regra fixa da LB Marketplace — sempre os mesmos valores, não editáveis
     const params=new URLSearchParams({
       acao:'criar_cupom',
-      app:'mkt',
+      app:prefCupom.app,
       access_token:accessToken,
-      shop_id:cliente.shopeeMktShopId,
+      shop_id:prefCupom.shopId,
       nome:'Cupom Fixo - LB Marketplace',
       codigo:codigo,
       percentual:'3',
@@ -5764,7 +5841,7 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
 let ofertaClienteAtual=null;
-let ofertasLojaClienteId=null,ofertasLojaToken=null,ofertasLojaCache=[];
+let ofertasLojaClienteId=null,ofertasLojaToken=null,ofertasLojaApp='mkt',ofertasLojaCache=[];
 const OFR_STATUS_LABEL={0:'Agendada',1:'Em andamento',2:'Encerrada'};
 function ofertasLojaFmtHora(s){return s?s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11):'?';}
 function ofertasLojaRenderizar(){
@@ -5787,7 +5864,7 @@ window.__excluirOfertaLoja=async(idx)=>{
   if(!oferta||!cliente)return;
   if(!confirm(`Excluir essa oferta relâmpago (${ofertasLojaFmtHora(oferta.inicio)} → ${ofertasLojaFmtHora(oferta.fim)}) de ${cliente.nome}?\n\nNão tem como desfazer.`))return;
   try{
-    const params=new URLSearchParams({acao:'excluir_oferta',app:'mkt',access_token:ofertasLojaToken,shop_id:cliente.shopeeMktShopId,flash_sale_id:oferta.flashSaleId});
+    const params=new URLSearchParams({acao:'excluir_oferta',app:ofertasLojaApp,access_token:ofertasLojaToken,shop_id:shopeeAppPreferido(cliente).shopId,flash_sale_id:oferta.flashSaleId});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Excluir Oferta debug]',cliente.nome,data);
@@ -5800,11 +5877,12 @@ window.__excluirOfertaLoja=async(idx)=>{
 document.getElementById('ofertasLojaFecharBtn')?.addEventListener('click',()=>document.getElementById('ofertasLojaModalOverlay').classList.add('hidden'));
 window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
-  if(!cliente||!cliente.shopeeMktShopId){if(!silencioso){showToast('Cliente não conectado ao app Marketing da Shopee.');}return{ok:false,erro:'não conectado'};}
+  const prefSync=shopeeAppPreferido(cliente);
+  if(!cliente||!prefSync.shopId){if(!silencioso){showToast('Cliente não conectado ao app Marketing/ERP da Shopee.');}return{ok:false,erro:'não conectado'};}
   if(!silencioso)showToast(`Sincronizando ${clienteNome}...`);
   try{
-    const token=await shopeeGarantirTokenValido(cliente,'mkt');
-    const params=new URLSearchParams({acao:'sincronizar_ofertas',app:'mkt',access_token:token,shop_id:cliente.shopeeMktShopId});
+    const token=await shopeeGarantirTokenValido(cliente,prefSync.app);
+    const params=new URLSearchParams({acao:'sincronizar_ofertas',app:prefSync.app,access_token:token,shop_id:prefSync.shopId});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Sincronizar Ofertas debug]',clienteNome,data);
@@ -5826,6 +5904,7 @@ window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
       }else{
         ofertasLojaClienteId=clienteId;
         ofertasLojaToken=token;
+        ofertasLojaApp=prefSync.app;
         ofertasLojaCache=data.ofertas||[];
         document.getElementById('ofertasLojaTitulo').textContent=`Ofertas Relâmpago na Shopee — ${clienteNome}`;
         ofertasLojaRenderizar();
@@ -5879,21 +5958,28 @@ window.__abrirModalOferta=(clienteId,clienteNome)=>{
 document.getElementById('ofertaCancelarBtn')?.addEventListener('click',()=>document.getElementById('ofertaModalOverlay').classList.add('hidden'));
 // Núcleo de criação de oferta — usado pelo botão individual (modal) e pelo "⚡ Criar em Todas" (massa).
 // silencioso=true: não abre alert nem mexe no modal, só devolve o resultado (pro loop em massa decidir o resumo).
+// Decide qual conexão Shopee usar: ERP se o cliente já migrou (cobre GMV+Marketing+Produto
+// com 1 token só), senão cai pro Marketing antigo. shopId usado nas ações de Marketing/Oferta/Desconto.
+function shopeeAppPreferido(cliente){
+  if(cliente?.shopeeErpShopId)return{app:'erp',shopId:cliente.shopeeErpShopId};
+  return{app:'mkt',shopId:cliente?.shopeeMktShopId};
+}
 async function criarOfertaCore(cliente,opcoes,silencioso){
-  if(!cliente||!cliente.shopeeMktShopId)return{ok:false,erro:'não conectado ao Marketing',semMarketing:true};
+  const pref=shopeeAppPreferido(cliente);
+  if(!cliente||!pref.shopId)return{ok:false,erro:'não conectado ao Marketing/ERP',semMarketing:true};
   try{
-    const accessToken=await shopeeGarantirTokenValido(cliente,'mkt');
+    const accessToken=await shopeeGarantirTokenValido(cliente,pref.app);
     const camposExtras={};
-    // App Produto é opcional: se o cliente já conectou, manda o token pra filtrar por estoque real
-    // ANTES de tentar (evita tentar produto que a Shopee vai recusar por estoque abaixo de 20).
-    if(cliente.shopeeProdutoShopId){
+    // Estoque pro filtro: se já é ERP, o mesmo token acima já serve (o backend reaproveita sozinho).
+    // Se ainda é o Marketing antigo, precisa do app Produto conectado à parte.
+    if(pref.app!=='erp' && cliente.shopeeProdutoShopId){
       try{
         camposExtras.produto_access_token=await shopeeGarantirTokenValido(cliente,'produto');
         camposExtras.produto_shop_id=cliente.shopeeProdutoShopId;
       }catch(e){console.error('Token do Produto falhou, seguindo sem filtro de estoque:',e);}
     }
     const params=new URLSearchParams({
-      acao:'criar_oferta_relampago',app:'mkt',access_token:accessToken,shop_id:cliente.shopeeMktShopId,
+      acao:'criar_oferta_relampago',app:pref.app,access_token:accessToken,shop_id:pref.shopId,
       discount_id:cliente.shopeeDescontoFixoId||'',
       percentual:opcoes.percentual,qtd_por_produto:opcoes.qtd,limite_produtos:opcoes.limite,max_horarios:opcoes.maxHorarios,
       ...camposExtras
@@ -6210,12 +6296,15 @@ function cmRenderApisShopee(){
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const conectarClick=app=>`window.__shopeeConectar('${c.id}','${nomeEsc}','${app}')`;
+    const jaMigrado=!!c.shopeeErpShopId;
     return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
       <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>
+      <span style="display:flex;align-items:center;gap:4px" title="ERP — substitui GMV + Marketing + Produto numa conexão só">⭐ ${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
+      ${jaMigrado?'<span class="cadastro-doc-pill ok" style="font-size:10px">GMV/Marketing/Produto cobertos pelo ERP</span>':`
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeShopId,'GMV',conectarClick('gmv'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeMktShopId,'Marketing',conectarClick('mkt'))}</span>
+      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeProdutoShopId,'Produto',conectarClick('produto'))}</span>`}
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
-      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeProdutoShopId,'Produto',conectarClick('produto'))}</span>
     </div>`;
   }).join('');
 }
@@ -6303,7 +6392,206 @@ function cmRenderDevolucao(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
-function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();}
+function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();}
+
+/* ============== 💰 CAIXA DA LOJA (Financeiro) ============== */
+function cmRenderFinanceiro(){
+  const el=document.getElementById('finLista');
+  if(!el)return;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId);
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP conectado ainda. Vá em 🔌 APIs e conecte o ERP de um cliente pra começar.</div>';return;}
+  el.innerHTML=lista.map(c=>{
+    const saldo=c.financeiroSaldoAtual;
+    const variacao=c.financeiroVariacaoSemanal;
+    const corVar=variacao==null?'':(variacao>=0?'fin-variacao-up':'fin-variacao-down');
+    const setaVar=variacao==null?'':(variacao>=0?'▲':'▼');
+    const varTxt=variacao==null?'<span style="color:var(--text-dim);font-size:11px">ainda sem comparação</span>':`<span class="${corVar}">${setaVar} ${Math.abs(variacao)}% na semana</span>`;
+    return `<div class="fin-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div><div style="font-weight:600">${esc(c.nome)}</div><div class="fin-saldo">${saldo!=null?fmtR(saldo):'—'}</div>${varTxt}</div>
+        <button class="btn btn-gold btn-sm" onclick="window.__finVerExtrato('${c.id}')">Ver extrato</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.__finVerExtrato=async(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c||!c.shopeeErpShopId)return;
+  document.getElementById('finExtratoTitulo').textContent=`Extrato — ${c.nome}`;
+  const corpo=document.getElementById('finExtratoCorpo');
+  corpo.innerHTML='<div class="empty-state" style="padding:20px">Buscando extrato na Shopee...</div>';
+  document.getElementById('finExtratoModalOverlay').classList.remove('hidden');
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const params=new URLSearchParams({acao:'buscar_extrato_financeiro',app:'erp',access_token:token,shop_id:c.shopeeErpShopId});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Extrato Financeiro debug]',c.nome,data);
+    if(!data.ok){
+      const venceu=/token/i.test(data.erro||'');
+      corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?'O acesso do app ERP expirou. Reconecta na aba 🔌 APIs.':('Erro: '+(data.erro||'desconhecido')))}</div>`;
+      return;
+    }
+    corpo.innerHTML=`<div class="fin-saldo" style="margin-bottom:10px">Saldo atual: ${fmtR(data.saldoAtual)}</div>`+
+      data.transacoes.map(t=>`<div class="fin-row"><span>${esc(t.data)}<br><span style="color:var(--text-dim)">${esc(t.descricao)}${t.pedido?' · #'+esc(t.pedido):''}</span></span><span style="color:${t.tipo==='Entrada'?'#22c55e':'#ef4444'};font-weight:600">${t.tipo==='Entrada'?'+':'-'}${fmtR(t.valor)}</span></div>`).join('');
+  }catch(e){corpo.innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar o extrato.</div>';console.error(e);}
+};
+document.getElementById('finExtratoFecharBtn')?.addEventListener('click',()=>document.getElementById('finExtratoModalOverlay').classList.add('hidden'));
+
+/* ============== 📦 CENTRAL DE ENVIOS (Logística) ============== */
+function cmRenderEnvios(){
+  const el=document.getElementById('logLista');
+  if(!el)return;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId);
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP conectado ainda.</div>';return;}
+  el.innerHTML=lista.map(c=>`<div class="log-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span style="font-weight:600">${esc(c.nome)}</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="window.__logPedidosRecentes('${c.id}')">📋 Pedidos recentes</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <input type="text" id="logBusca_${c.id}" placeholder="Número do pedido (order_sn)" style="flex:1;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
+      <button class="btn btn-gold btn-sm" onclick="window.__logRastrear('${c.id}',document.getElementById('logBusca_${c.id}').value.trim())">Rastrear</button>
+    </div>
+  </div>`).join('');
+}
+window.__logPedidosRecentes=async(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c||!c.shopeeErpShopId)return;
+  showToast('Buscando pedidos recentes...');
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const params=new URLSearchParams({acao:'buscar_pedidos_recentes',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,dias:'14'});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Pedidos recentes debug]',c.nome,data);
+    if(!data.ok){alert(`Erro: ${data.erro||'desconhecido'}`);return;}
+    if(!data.pedidos.length){alert(`${c.nome} não tem pedidos nos últimos 14 dias.`);return;}
+    const lista=data.pedidos.slice(0,15).map(p=>`• ${p.orderSn} (${p.status})`).join('\n');
+    const escolha=prompt(`Pedidos recentes de ${c.nome}:\n\n${lista}\n\nCola o número do pedido que quer rastrear:`);
+    if(escolha)window.__logRastrear(clienteId,escolha.trim());
+  }catch(e){showToast('Erro ao buscar pedidos.');console.error(e);}
+};
+window.__logRastrear=async(clienteId,orderSn)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c||!orderSn)return;
+  document.getElementById('logRastreioTitulo').textContent=`Rastreio — ${orderSn}`;
+  const corpo=document.getElementById('logRastreioCorpo');
+  corpo.innerHTML='<div class="empty-state" style="padding:20px">Buscando rastreio na Shopee...</div>';
+  document.getElementById('logRastreioModalOverlay').classList.remove('hidden');
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const params=new URLSearchParams({acao:'buscar_rastreio',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,order_sn:orderSn});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Rastreio debug]',c.nome,orderSn,data);
+    if(!data.ok){corpo.innerHTML=`<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;return;}
+    corpo.innerHTML=`<div style="font-weight:600;margin-bottom:6px">${data.entregue?'✅':'🚚'} ${esc(data.statusLabel)}</div>
+      <div class="log-timeline">${data.eventos.map(ev=>`<div class="log-evento"><div class="log-evento-hora">${esc(ev.quando)}</div><div>${esc(ev.descricao)}</div></div>`).join('')}</div>`;
+  }catch(e){corpo.innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar o rastreio.</div>';console.error(e);}
+};
+document.getElementById('logRastreioFecharBtn')?.addEventListener('click',()=>document.getElementById('logRastreioModalOverlay').classList.add('hidden'));
+
+/* ============== 🏷️ GESTÃO DE CATÁLOGO (Produto) ============== */
+let prodSimClienteId=null,prodSimCache=null;
+function cmRenderCatalogo(){
+  const el=document.getElementById('prodLista');
+  if(!el)return;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.shopeeErpShopId||c.shopeeProdutoShopId));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP ou Produto conectado ainda.</div>';return;}
+  el.innerHTML=lista.map(c=>`<div class="prod-card">
+    <div style="font-weight:600;margin-bottom:8px">${esc(c.nome)}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <input type="text" id="prodItens_${c.id}" placeholder="IDs dos produtos, separados por vírgula" style="flex:2;min-width:200px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
+      <input type="number" id="prodPerc_${c.id}" placeholder="% (ex: 5 ou -10)" style="width:120px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
+      <button class="btn btn-gold btn-sm" onclick="window.__prodSimular('${c.id}')">Simular reajuste</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="prodEstItem_${c.id}" placeholder="ID do produto" style="width:140px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
+      <input type="number" id="prodEstNovo_${c.id}" placeholder="Novo estoque" style="width:110px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
+      <button class="btn btn-ghost btn-sm" onclick="window.__prodAjustarEstoque('${c.id}')">Ajustar estoque</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.__prodAutoPausar('${c.id}')" title="Pausa sozinho quem zerou o estoque">🤖 Auto-pausar sem estoque</button>
+    </div>
+  </div>`).join('');
+}
+async function prodAppECliente(clienteId){
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c)return null;
+  const app=c.shopeeErpShopId?'erp':'produto';
+  const shopId=app==='erp'?c.shopeeErpShopId:c.shopeeProdutoShopId;
+  const token=await shopeeGarantirTokenValido(c,app);
+  return{c,app,shopId,token};
+}
+window.__prodSimular=async(clienteId)=>{
+  const itensTxt=document.getElementById(`prodItens_${clienteId}`).value.trim();
+  const perc=document.getElementById(`prodPerc_${clienteId}`).value;
+  if(!itensTxt||!perc){showToast('Preenche os IDs dos produtos e o percentual.');return;}
+  showToast('Simulando...');
+  try{
+    const ctx=await prodAppECliente(clienteId);
+    const params=new URLSearchParams({acao:'simular_reajuste_preco',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,item_ids:itensTxt,percentual:perc});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Simular reajuste debug]',ctx.c.nome,data);
+    if(!data.ok||!data.totalProdutos){alert(`Não foi possível simular: ${data.erro||'nenhum produto válido encontrado'}`);return;}
+    prodSimClienteId=clienteId;prodSimCache=data;
+    document.getElementById('prodSimTitulo').textContent=`Simulação — ${ctx.c.nome} (${perc>0?'+':''}${perc}%)`;
+    const linhas=[];
+    data.itens.forEach(it=>{
+      if(it.temVariacao)it.modelos.forEach(m=>linhas.push(`<tr><td>${esc(String(it.itemId))} — ${esc(m.nome||'')}</td><td>${fmtR(m.precoAtual)}</td><td class="prod-preco-novo">${fmtR(m.precoNovo)}</td></tr>`));
+      else linhas.push(`<tr><td>${esc(String(it.itemId))}</td><td>${fmtR(it.precoAtual)}</td><td class="prod-preco-novo">${fmtR(it.precoNovo)}</td></tr>`);
+    });
+    document.getElementById('prodSimCorpo').innerHTML=`<table class="prod-sim-tabela"><thead><tr><th>Produto</th><th>Preço atual</th><th>Preço novo</th></tr></thead><tbody>${linhas.join('')}</tbody></table>${data.erros.length?`<p style="font-size:11.5px;color:var(--text-dim);margin-top:8px">${data.erros.length} produto(s) não entraram na simulação (id errado ou sem preço).</p>`:''}`;
+    document.getElementById('prodSimModalOverlay').classList.remove('hidden');
+  }catch(e){showToast('Erro ao simular.');console.error(e);}
+};
+document.getElementById('prodSimCancelarBtn')?.addEventListener('click',()=>document.getElementById('prodSimModalOverlay').classList.add('hidden'));
+document.getElementById('prodSimAplicarBtn')?.addEventListener('click',async()=>{
+  if(!prodSimCache||!prodSimClienteId)return;
+  if(!confirm(`Aplicar o reajuste em ${prodSimCache.totalProdutos} produto(s) de verdade na Shopee? Não tem como desfazer automaticamente.`))return;
+  const btn=document.getElementById('prodSimAplicarBtn');
+  btn.disabled=true;btn.textContent='Aplicando...';
+  try{
+    const ctx=await prodAppECliente(prodSimClienteId);
+    const params=new URLSearchParams({acao:'aplicar_reajuste_preco',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,simulacao:JSON.stringify(prodSimCache)});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Aplicar reajuste debug]',data);
+    alert(`✓ ${data.totalAplicados} produto(s) atualizado(s).${data.totalFalhas?` ${data.totalFalhas} falharam (veja o Console).`:''}`);
+    document.getElementById('prodSimModalOverlay').classList.add('hidden');
+  }catch(e){showToast('Erro ao aplicar.');console.error(e);}
+  btn.disabled=false;btn.textContent='Aplicar reajuste';
+});
+window.__prodAjustarEstoque=async(clienteId)=>{
+  const itemId=document.getElementById(`prodEstItem_${clienteId}`).value.trim();
+  const novoEstoque=document.getElementById(`prodEstNovo_${clienteId}`).value;
+  if(!itemId||novoEstoque==='')
+  {showToast('Preenche o ID do produto e o novo estoque.');return;}
+  try{
+    const ctx=await prodAppECliente(clienteId);
+    const params=new URLSearchParams({acao:'ajustar_estoque',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,item_id:itemId,novo_estoque:novoEstoque});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Ajustar estoque debug]',data);
+    if(!data.ok){alert(`Erro: ${data.erro||'desconhecido'}`);return;}
+    showToast('✓ Estoque atualizado.');
+  }catch(e){showToast('Erro ao ajustar estoque.');console.error(e);}
+};
+window.__prodAutoPausar=async(clienteId)=>{
+  if(!confirm('Isso vai PAUSAR na Shopee (despublicar) todo produto desse cliente que estiver com estoque zerado. Confirma?'))return;
+  showToast('Verificando catálogo...');
+  try{
+    const ctx=await prodAppECliente(clienteId);
+    const params=new URLSearchParams({acao:'auto_pausar_sem_estoque',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Auto-pausar debug]',data);
+    if(!data.ok){alert(`Erro: ${data.erro||'desconhecido'}`);return;}
+    alert(`Verificados: ${data.totalVerificados}\nPausados agora: ${data.totalPausados}${data.erros.length?`\n${data.erros.length} com erro (veja o Console).`:''}`);
+  }catch(e){showToast('Erro no auto-pausar.');console.error(e);}
+};
 /* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
 let editarDataAlvo=null; // {clienteId, campo}
 window.__editarDataDescontoMp=(clienteId,key)=>{
@@ -6336,15 +6624,16 @@ function descLojaRenderizar(){
 }
 window.__descontosLoja=async(clienteId)=>{
   const c=clientesCache.find(x=>x.id===clienteId);
-  if(!c||!c.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
+  const prefDesc=shopeeAppPreferido(c);
+  if(!c||!prefDesc.shopId){showToast('Cliente não conectado ao app Marketing/ERP da Shopee.');return;}
   descLojaClienteId=clienteId;descLojaRefId=c.shopeeDescontoFixoId||null;
   document.getElementById('descontoLojaTitulo').textContent=`Descontos na Shopee — ${c.nome}`;
   const corpo=document.getElementById('descontoLojaCorpo');
   corpo.innerHTML='<div class="empty-state" style="padding:20px">Buscando descontos na Shopee...</div>';
   document.getElementById('descontoLojaModalOverlay').classList.remove('hidden');
   try{
-    const token=await shopeeGarantirTokenValido(c,'mkt');
-    const params=new URLSearchParams({acao:'listar_descontos',app:'mkt',access_token:token,shop_id:c.shopeeMktShopId});
+    const token=await shopeeGarantirTokenValido(c,prefDesc.app);
+    const params=new URLSearchParams({acao:'listar_descontos',app:prefDesc.app,access_token:token,shop_id:prefDesc.shopId});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Descontos da loja debug]',c.nome,data);
@@ -6355,7 +6644,7 @@ window.__descontosLoja=async(clienteId)=>{
     console.error(e);
     const venceu=erroTokenShopee(e);
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?msgErroTokenMkt(c.nome):('Erro ao buscar os descontos: '+(e.message||'desconhecido')))}${venceu?`<br><br><button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄 Reconectar Marketing</button>`:''}</div>`;
+    corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?msgErroTokenMkt(c.nome):('Erro ao buscar os descontos: '+(e.message||'desconhecido')))}${venceu?`<br><br><button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${prefDesc.app}')">🔄 Reconectar ${prefDesc.app==='erp'?'ERP':'Marketing'}</button>`:''}</div>`;
   }
 };
 window.__marcarDescontoFixo=async(idx)=>{
@@ -6369,12 +6658,13 @@ window.__marcarDescontoFixo=async(idx)=>{
   }catch(e){showToast('Erro ao marcar o desconto.');console.error(e);}
 };
 async function duplicarDescontoCore(c,discountId,nome){
-  if(!c.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
+  const prefDup=shopeeAppPreferido(c);
+  if(!prefDup.shopId){showToast('Cliente não conectado ao app Marketing/ERP da Shopee.');return;}
   if(!confirm(`Duplicar "${nome||discountId}" de ${c.nome}?\n\nVai criar um desconto novo com o mesmo nome, os mesmos produtos e preços, por 5 meses — começando logo depois que o atual acabar (ou em cerca de 1 hora, se ele já venceu).`))return;
   showToast('Duplicando... (pode levar alguns segundos)');
   try{
-    const token=await shopeeGarantirTokenValido(c,'mkt');
-    const params=new URLSearchParams({acao:'duplicar_desconto',app:'mkt',access_token:token,shop_id:c.shopeeMktShopId,discount_id:discountId});
+    const token=await shopeeGarantirTokenValido(c,prefDup.app);
+    const params=new URLSearchParams({acao:'duplicar_desconto',app:prefDup.app,access_token:token,shop_id:prefDup.shopId,discount_id:discountId});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Duplicar desconto debug]',c.nome,data);
