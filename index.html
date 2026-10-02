@@ -1263,6 +1263,13 @@ textarea{resize:vertical;min-height:70px;}
                 <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="auto" onclick="window.__waFiltrarModo('auto')">🤖 IA</button>
                 <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="humano" onclick="window.__waFiltrarModo('humano')">🙋 Você</button>
               </div>
+              <select onchange="window.__waFiltrarPeriodo(this.value)" style="font-size:11.5px;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
+                <option value="all">Última msg: todas</option>
+                <option value="hoje">Hoje</option>
+                <option value="ontem">Ontem</option>
+                <option value="7dias">Últimos 7 dias</option>
+                <option value="30dias">Últimos 30 dias</option>
+              </select>
               <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim);cursor:pointer">
                 <input type="checkbox" id="waEsconderNaoQualificado" onchange="window.__waRenderizarComFiltro()"> Esconder "Não qualificado"
               </label>
@@ -2542,6 +2549,17 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="ofertasLojaModalOverlay">
+  <div class="modal" style="max-width:640px;width:94vw">
+    <h2 id="ofertasLojaTitulo">Ofertas Relâmpago na Shopee</h2>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px;line-height:1.5">Ofertas ativas e agendadas que essa loja tem agora, direto da Shopee. <b>🗑️ Excluir</b> apaga de vez — não tem como desfazer.</p>
+    <div id="ofertasLojaCorpo" style="max-height:52vh;overflow:auto"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="ofertasLojaFecharBtn">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="descontoLojaModalOverlay">
   <div class="modal" style="max-width:720px;width:94vw">
     <h2 id="descontoLojaTitulo">Descontos na Shopee</h2>
@@ -3344,6 +3362,20 @@ function whatsappIniciar(){
   });
 }
 let waFiltroModoAtual='todas';
+let waFiltroPeriodo='all';
+function waDataDentroDoPeriodo(emIso){
+  if(waFiltroPeriodo==='all')return true;
+  if(!emIso)return false;
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const d=new Date(emIso);d.setHours(0,0,0,0);
+  const diffDias=Math.round((hoje-d)/86400000);
+  if(waFiltroPeriodo==='hoje')return diffDias===0;
+  if(waFiltroPeriodo==='ontem')return diffDias===1;
+  if(waFiltroPeriodo==='7dias')return diffDias>=0&&diffDias<=7;
+  if(waFiltroPeriodo==='30dias')return diffDias>=0&&diffDias<=30;
+  return true;
+}
+window.__waFiltrarPeriodo=(v)=>{waFiltroPeriodo=v;whatsappRenderizarLista();};
 const WA_LABEL_QUALIF={qualificado:'✅ Qualificado',nao_qualificado:'❌ Não qualificado',cliente:'💰 Virou cliente'};
 window.__waFiltrarModo=(modo)=>{
   waFiltroModoAtual=modo;
@@ -3363,6 +3395,13 @@ window.__waSalvarQualificacao=async(conversaId,valor)=>{
 };
 function waIniciais(texto){return (texto||'?').trim().charAt(0).toUpperCase();}
 function waFmtHoraCurta(iso){if(!iso)return'';const d=new Date(iso);return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function waSeloVisto(status){
+  if(status==='read')return' <span style="color:#53bdeb" title="Visto">✓✓</span>';
+  if(status==='delivered')return' <span style="color:var(--text-dim)" title="Entregue">✓✓</span>';
+  if(status==='failed')return' <span style="color:var(--red)" title="Falhou">⚠</span>';
+  if(status==='enviada'||status==='sent')return' <span style="color:var(--text-dim)" title="Enviada">✓</span>';
+  return'';
+}
 function waFmtHoraLista(iso){
   if(!iso)return'';
   const d=new Date(iso),hoje=new Date();
@@ -3398,6 +3437,7 @@ function whatsappRenderizarLista(){
   if(waFiltroModoAtual!=='todas')lista=lista.filter(c=>c.modo===waFiltroModoAtual);
   if(esconderNaoQualif)lista=lista.filter(c=>c.qualificacao!=='nao_qualificado');
   if(termoBusca)lista=lista.filter(c=>(c.nome||'').toLowerCase().includes(termoBusca)||(c.telefone||c.id||'').toLowerCase().includes(termoBusca));
+  lista=lista.filter(c=>{const msgs=c.mensagens||[];return waDataDentroDoPeriodo(msgs[msgs.length-1]?.em);});
   // aguardando_humano sempre sobe pro topo, independente da ordenação por última mensagem
   lista.sort((a,b)=>(b.modo==='aguardando_humano')-(a.modo==='aguardando_humano'));
 
@@ -3406,6 +3446,7 @@ function whatsappRenderizarLista(){
     const msgs=c.mensagens||[];
     const ultima=msgs[msgs.length-1];
     const prefixo=ultima&&ultima.de!=='lead'?(ultima.de==='ia'?'🤖 ':'Você: '):'';
+    const vistoLista=ultima&&ultima.de!=='lead'?waSeloVisto(ultima.status):'';
     const pendente=c.modo==='aguardando_humano';
     const ativa=c.id===waConversaAtualTelefone;
     return `<div class="wa-crm-row${pendente?' pendente':''}${ativa?' active':''}" onclick="window.__waAbrirConversa('${c.id}')">
@@ -3415,7 +3456,7 @@ function whatsappRenderizarLista(){
           <span class="wa-crm-row-nome">${esc(c.nome||c.telefone||c.id)}</span>
           <span class="wa-crm-row-hora">${waFmtHoraLista(ultima?.em)}</span>
         </div>
-        <div class="wa-crm-row-preview">${esc(prefixo+(ultima?ultima.texto:''))}</div>
+        <div class="wa-crm-row-preview">${vistoLista}${esc(prefixo+(ultima?ultima.texto:''))}</div>
         <div class="wa-crm-row-tags">
           <span class="wa-crm-tag${pendente?' pendente':''}">${labelModo[c.modo]||c.modo}</span>
           ${c.qualificacao?`<span class="wa-crm-tag auto">${labelQualif[c.qualificacao]||c.qualificacao}</span>`:''}
@@ -3447,10 +3488,11 @@ function waAbrirConversa(telefone){
     if(dia&&dia!==diaAnterior){html+=`<div class="wa-crm-date-divider">${waFmtDivisorData(m.em)}</div>`;diaAnterior=dia;}
     const deLead=m.de==='lead';
     const rotulo=m.de==='ia'?'🤖 IA':(m.de==='equipe'?'🙋 Você':'');
+    const visto=!deLead?waSeloVisto(m.status):'';
     html+=`<div class="wa-crm-bubble-row ${deLead?'left':'right'}">
       ${rotulo?`<span class="wa-crm-bubble-label">${rotulo}</span>`:''}
       <div class="wa-crm-bubble ${esc(m.de||'lead')}">${esc(m.texto)}</div>
-      <span class="wa-crm-bubble-hora">${waFmtHoraCurta(m.em)}</span>
+      <span class="wa-crm-bubble-hora">${waFmtHoraCurta(m.em)}${visto}</span>
     </div>`;
   });
   msgsEl.innerHTML=html;
@@ -5722,6 +5764,40 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
 let ofertaClienteAtual=null;
+let ofertasLojaClienteId=null,ofertasLojaToken=null,ofertasLojaCache=[];
+const OFR_STATUS_LABEL={0:'Agendada',1:'Em andamento',2:'Encerrada'};
+function ofertasLojaFmtHora(s){return s?s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11):'?';}
+function ofertasLojaRenderizar(){
+  const corpo=document.getElementById('ofertasLojaCorpo');
+  if(!corpo)return;
+  if(!ofertasLojaCache.length){corpo.innerHTML='<div class="empty-state" style="padding:20px">Essa loja não tem nenhuma oferta relâmpago ativa ou agendada agora.</div>';return;}
+  corpo.innerHTML=ofertasLojaCache.map((o,i)=>{
+    const status=OFR_STATUS_LABEL[o.status]||o.status||'—';
+    const corSt=o.status===1?'ok':(o.status===0?'hoje':'atrasada');
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center">
+      <span style="font-size:12.5px;flex:1;min-width:160px">${esc(ofertasLojaFmtHora(o.inicio))} → ${esc(ofertasLojaFmtHora(o.fim))}</span>
+      <span class="tt-status-pill ${corSt}">${esc(status)}</span>
+      <button class="btn btn-ghost btn-sm" onclick="window.__excluirOfertaLoja(${i})">🗑️ Excluir</button>
+    </div>`;
+  }).join('');
+}
+window.__excluirOfertaLoja=async(idx)=>{
+  const oferta=ofertasLojaCache[idx];
+  const cliente=clientesCache.find(c=>c.id===ofertasLojaClienteId);
+  if(!oferta||!cliente)return;
+  if(!confirm(`Excluir essa oferta relâmpago (${ofertasLojaFmtHora(oferta.inicio)} → ${ofertasLojaFmtHora(oferta.fim)}) de ${cliente.nome}?\n\nNão tem como desfazer.`))return;
+  try{
+    const params=new URLSearchParams({acao:'excluir_oferta',app:'mkt',access_token:ofertasLojaToken,shop_id:cliente.shopeeMktShopId,flash_sale_id:oferta.flashSaleId});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Excluir Oferta debug]',cliente.nome,data);
+    if(!data.ok){alert(`Não foi possível excluir:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    ofertasLojaCache.splice(idx,1);
+    ofertasLojaRenderizar();
+    showToast('✓ Oferta excluída.');
+  }catch(e){showToast('Erro ao excluir a oferta.');console.error(e);}
+};
+document.getElementById('ofertasLojaFecharBtn')?.addEventListener('click',()=>document.getElementById('ofertasLojaModalOverlay').classList.add('hidden'));
 window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
   if(!cliente||!cliente.shopeeMktShopId){if(!silencioso){showToast('Cliente não conectado ao app Marketing da Shopee.');}return{ok:false,erro:'não conectado'};}
@@ -5745,13 +5821,16 @@ window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
     if(data.confiavel&&data.total>0)atualizacao.ofertaRelampagoAutoUltimaCriacao=serverTimestamp();
     await updateDoc(doc(db,"clientes",clienteId),atualizacao);
     if(!silencioso){
-      const fmtH=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+' '+s.slice(11):'?';
-      const STATUS_LABEL={0:'Agendada',1:'Em andamento',2:'Encerrada'};
-      const resumo=data.confiavel
-        ?(data.total?`${clienteNome} já tem ${data.total} oferta(s) relâmpago na Shopee agora:\n\n`+data.ofertas.map(o=>`• ${fmtH(o.inicio)} → ${fmtH(o.fim)} (${STATUS_LABEL[o.status]||o.status})`).join('\n')
-          :`${clienteNome} não tem nenhuma oferta relâmpago ativa ou agendada na Shopee agora.`)
-        :`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`;
-      alert(resumo);
+      if(!data.confiavel){
+        alert(`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`);
+      }else{
+        ofertasLojaClienteId=clienteId;
+        ofertasLojaToken=token;
+        ofertasLojaCache=data.ofertas||[];
+        document.getElementById('ofertasLojaTitulo').textContent=`Ofertas Relâmpago na Shopee — ${clienteNome}`;
+        ofertasLojaRenderizar();
+        document.getElementById('ofertasLojaModalOverlay').classList.remove('hidden');
+      }
     }
     return{ok:true,total:data.total,confiavel:data.confiavel};
   }catch(e){
@@ -7014,7 +7093,28 @@ function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) 
 
 let crmLeads = [];
 let crmView = 'kanban';
-let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all'};
+let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all'};
+function crmDataDentroDoPeriodo(createdDate){
+  if(crmFilter.periodo==='all'||!createdDate)return true;
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const d=new Date(createdDate+'T00:00:00');
+  const diffDias=Math.round((hoje-d)/86400000);
+  if(crmFilter.periodo==='hoje')return diffDias===0;
+  if(crmFilter.periodo==='ontem')return diffDias===1;
+  if(crmFilter.periodo==='7dias')return diffDias>=0&&diffDias<=7;
+  if(crmFilter.periodo==='30dias')return diffDias>=0&&diffDias<=30;
+  return true;
+}
+function crmLabelEntrada(createdDate){
+  if(!createdDate)return'';
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const d=new Date(createdDate+'T00:00:00');
+  const diffDias=Math.round((hoje-d)/86400000);
+  if(diffDias===0)return'Hoje';
+  if(diffDias===1)return'Ontem';
+  if(diffDias>1)return`há ${diffDias} dias`;
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+}
 let leadFormOpen = false;
 let editingLeadId = null;
 let dragLeadId = null;
@@ -7034,6 +7134,7 @@ function crmFilteredLeads(){
     if(crmFilter.origem!=='all' && l.origem!==crmFilter.origem) return false;
     if(crmFilter.tipoServico!=='all' && l.tipoServico!==crmFilter.tipoServico) return false;
     if(crmFilter.nicho!=='all' && l.nicho!==crmFilter.nicho) return false;
+    if(!crmDataDentroDoPeriodo(l.createdDate)) return false;
     if(crmFilter.search){
       const q = crmFilter.search.toLowerCase();
       const hay = [l.nome,l.whatsapp,l.email,l.instagram].filter(Boolean).join(' ').toLowerCase();
@@ -7177,7 +7278,7 @@ function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
     ${CRM_STAGES.map(s=>{
-      const inStage = leads.filter(l=>l.stage===s.key);
+      const inStage = leads.filter(l=>l.stage===s.key).sort((a,b)=>(a.createdDate||'').localeCompare(b.createdDate||''));
       return `<div class="kcol" ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
         ondragleave="event.currentTarget.classList.remove('dragover')" ondrop="window.__crmDropStage('${s.key}', event)">
         <div class="kcol-head"><span class="name" style="color:${s.color}">${s.label}</span><span class="count">${inStage.length}</span></div>
@@ -7187,6 +7288,7 @@ function crmKanbanHtml(){
           return `
           <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
             <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}${l.respostasTypebot&&Object.keys(l.respostasTypebot).length?`<span class="wa-btn" title="Tem respostas do Typebot">📋</span>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
+            <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}</div>
             <div>
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
               ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
@@ -7250,6 +7352,13 @@ function renderCRM(){
       <select onchange="crmFilter.nicho=this.value;renderCRM()">
         <option value="all">Todos os nichos</option>
         ${CRM_NICHOS.map(n=>`<option value="${n}" ${crmFilter.nicho===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+      <select onchange="crmFilter.periodo=this.value;renderCRM()">
+        <option value="all" ${crmFilter.periodo==='all'?'selected':''}>Quando entrou: todos</option>
+        <option value="hoje" ${crmFilter.periodo==='hoje'?'selected':''}>Entrou hoje</option>
+        <option value="ontem" ${crmFilter.periodo==='ontem'?'selected':''}>Entrou ontem</option>
+        <option value="7dias" ${crmFilter.periodo==='7dias'?'selected':''}>Últimos 7 dias</option>
+        <option value="30dias" ${crmFilter.periodo==='30dias'?'selected':''}>Últimos 30 dias</option>
       </select>
     </div>
     <button class="btn-newlead" onclick="window.__crmToggleForm(true)">+ Novo Lead</button>
