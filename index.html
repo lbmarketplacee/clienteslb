@@ -1932,7 +1932,7 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="apis">
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">⭐ <b>ERP</b> é a conexão recomendada agora — uma autorização só cobre GMV, Marketing e Produto juntos. Clientes já conectados do jeito antigo continuam funcionando normalmente, não precisa reconectar com pressa. <b>Ads</b> continua sendo uma conexão à parte (a Shopee não inclui Ads no ERP). Cupom, desconto e oferta relâmpago rodam sozinhos assim que tiver Marketing ou ERP conectado.</p>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Só 2 conexões por cliente: <b>⭐ ERP</b> (cobre GMV, Marketing, Produto, Financeiro e Logística) e <b>Ads</b> (a Shopee não inclui Ads no ERP, precisa à parte). O selo "🕰️ ainda no esquema antigo" aparece em quem conectou antes da gente simplificar — continua funcionando, migra quando puder.</p>
           <div class="cm-lista-simples" id="cmApisShopeeLista"></div>
           </div>
 
@@ -6297,14 +6297,12 @@ function cmRenderApisShopee(){
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const conectarClick=app=>`window.__shopeeConectar('${c.id}','${nomeEsc}','${app}')`;
     const jaMigrado=!!c.shopeeErpShopId;
+    const temLegado=!jaMigrado&&!!(c.shopeeShopId||c.shopeeMktShopId||c.shopeeProdutoShopId);
     return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
       <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>
-      <span style="display:flex;align-items:center;gap:4px" title="ERP — substitui GMV + Marketing + Produto numa conexão só">⭐ ${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
-      ${jaMigrado?'<span class="cadastro-doc-pill ok" style="font-size:10px">GMV/Marketing/Produto cobertos pelo ERP</span>':`
-      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeShopId,'GMV',conectarClick('gmv'))}</span>
-      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeMktShopId,'Marketing',conectarClick('mkt'))}</span>
-      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeProdutoShopId,'Produto',conectarClick('produto'))}</span>`}
+      <span style="display:flex;align-items:center;gap:4px" title="ERP — cobre GMV, Marketing e Produto numa conexão só">⭐ ${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
+      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">🕰️ ainda no esquema antigo</span>':''}
     </div>`;
   }).join('');
 }
