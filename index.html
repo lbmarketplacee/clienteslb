@@ -1792,7 +1792,6 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-tool-card" data-cmtab="tiktokshop"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">TikTok Shop</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Conectar loja, GMV e oferta relâmpago via API.</div></div></div>
           <div class="cm-tool-card" data-cmtab="mercadolivre"><div class="cm-tool-ico" style="background:#fff16020;color:#ffe600">🛍️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Mercado Livre</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">GMV, conexão, oferta relâmpago e gross up — tudo num só lugar.</div></div></div>
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="gerarad"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gerar Anúncio com IA</div><span class="cm-tool-tag trafego">Aumente o tráfego</span><div class="cm-tool-desc">A IA cria título, destaques e descrição prontos pra publicar.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central Criativa IA</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Título, descrição, funil de fotos e logotipo — tudo gerado por IA num só lugar.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="caixaloja"><div class="cm-tool-ico" style="background:#f5d04020;color:#f5d040">💰</div><div class="cm-tool-body"><div class="cm-tool-titulo">Caixa da Loja</div><span class="cm-tool-tag vendas">Financeiro</span><div class="cm-tool-desc">Extrato Shopee, saldo e alerta automático de queda de receita — requer app ERP.</div></div></div>
@@ -1802,49 +1801,6 @@ textarea{resize:vertical;min-height:70px;}
         </div>
 
 
-        <div class="cm-secao cm-painel" data-cmpainel="gerarad">
-          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">✨</div><h3>Gerar Anúncio com IA</h3></div>
-
-        
-        <div class="ia-grid">
-          <div class="ia-inputs">
-            <div class="ia-mk-sel">
-              <button class="ia-mk-btn active" data-iamk="shopee">Shopee</button>
-              <button class="ia-mk-btn" data-iamk="ml">Mercado Livre</button>
-              <button class="ia-mk-btn" data-iamk="tiktok">TikTok Shop</button>
-            </div>
-            <div class="field"><label>Foto do produto (opcional — melhora o texto)</label>
-              <div class="dz" id="iaDropZone" style="padding:20px">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                <div class="dz-t" id="iaDzText">Clique ou arraste a foto do produto</div>
-                <input type="file" id="iaFotoInput" accept="image/*" class="hidden">
-              </div>
-              <div id="iaFotoPreview" class="hidden" style="margin-top:10px;position:relative"><img id="iaFotoImg" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid var(--border)"><button onclick="window.__iaRemoveFoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">Remover</button></div>
-              </div>
-              <div class="field"><label>Descreva o produto (quanto mais detalhe, melhor)</label><textarea id="iaProduto" style="min-height:130px" placeholder="Ex: Vestido longo floral, tecido viscose leve, tamanhos P ao GG, cores azul e rosa, ideal para o verão..."></textarea></div>
-            <button class="btn btn-gold" id="iaGerarBtn" style="width:100%;margin-top:6px">✨ Gerar Anúncio</button>
-            <p style="font-size:11px;color:var(--text-dim);margin-top:12px;text-align:center">Custo aproximado: R$ 0,01 por anúncio gerado</p>
-          </div>
-          <div class="ia-result" id="iaResult">
-            <div class="ia-right-panel">
-              <div class="ia-icons-cluster">
-                <div class="float-ico f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></div>
-                <div class="center-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12h8M8 8h5M8 16h4"/></svg></div>
-                <div class="float-ico f2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4L12 16.6 5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div>
-                <div class="float-ico f3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-              </div>
-              <h3>Pronta para criar seu anúncio!</h3>
-              <p>Preencha a descrição e clique em <b style="color:var(--gold)">Gerar Anúncio</b>.<br>A IA vai criar o título, os destaques e a descrição prontos para publicar.</p>
-              <div class="ia-feature-badges">
-                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Rápido e inteligente</span></div>
-                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Otimizado para conversão</span></div>
-                <div class="ia-feature-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Conteúdo profissional</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
                 <div class="cm-secao cm-painel" data-cmpainel="relatorio">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><h3>Relatório Mensal — Ads x GMV</h3></div>
@@ -1978,11 +1934,20 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="cupons" style="display:none">
+          <div class="toolbar">
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0">Confere direto na Shopee se o Cupom Fixo está mesmo ativo em cada cliente — a data aqui pode estar desatualizada se alguém mexeu direto na Shopee.</p>
+            <div class="spacer"></div>
+            <button class="btn btn-gold btn-sm" id="cupomSincronizarTodosBtn" onclick="window.__cupomSincronizarTodos()">🔄 Sincronizar Todos</button>
+          </div>
           <div class="cm-lista-simples" id="cmCuponsLista"></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="descontos" style="display:none">
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Vencimento do desconto fixo de cada cliente. Use <b>🔍 Descontos da loja</b> pra buscar os descontos direto na Shopee, marcar qual é o fixo (📌) e <b>🔁 Duplicar</b> quando ele estiver acabando. Só o desconto marcado é renovado automaticamente toda segunda.</p>
+          <div class="toolbar">
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0">Vencimento do desconto fixo de cada cliente. Use <b>🔍 Descontos da loja</b> pra buscar direto na Shopee, marcar qual é o fixo (📌) e <b>🔁 Duplicar</b> quando estiver acabando.</p>
+            <div class="spacer"></div>
+            <button class="btn btn-gold btn-sm" id="descontoSincronizarTodosBtn" onclick="window.__descontoSincronizarTodos()">🔄 Sincronizar Todos</button>
+          </div>
           <div class="cm-lista-simples" id="cmDescontosShopeeLista"></div>
           </div>
 
@@ -3003,41 +2968,9 @@ document.getElementById('driveCloseBtn')?.addEventListener('click',()=>document.
 document.getElementById('driveOpenBtn')?.addEventListener('click',()=>{if(drivePastaAtual)window.open('https://drive.google.com/drive/folders/'+drivePastaAtual,'_blank');else showToast('Pasta ainda não criada.');});
 initGoogle();
 
-/* ================= GERAR ANÚNCIO COM IA ================= */
+/* IA_ENDPOINT (lbiagerador) continua em uso pela Central Criativa IA e pelo Gross Up de leads ML — só a
+   aba isolada "Gerar Anúncio com IA" foi removida, já que a Central Criativa cobre a mesma função. */
 const IA_ENDPOINT='https://lbiagerador.vercel.app/api/gerar';
-let iaMarketplace='shopee';
-document.querySelectorAll('.ia-mk-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.ia-mk-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');iaMarketplace=b.dataset.iamk;}));
-let iaImagemB64=null;
-const iaDz=document.getElementById('iaDropZone');const iaFi=document.getElementById('iaFotoInput');
-function iaCarregarFoto(file){if(!file||!file.type.startsWith('image/')){showToast('Envie um arquivo de imagem.');return;}const reader=new FileReader();reader.onload=e=>{iaImagemB64=e.target.result;document.getElementById('iaFotoImg').src=iaImagemB64;document.getElementById('iaFotoPreview').classList.remove('hidden');iaDz.classList.add('hidden');};reader.readAsDataURL(file);}
-iaDz?.addEventListener('click',()=>iaFi.click());
-iaFi?.addEventListener('change',e=>{if(e.target.files[0])iaCarregarFoto(e.target.files[0]);e.target.value='';});
-iaDz?.addEventListener('dragover',e=>{e.preventDefault();iaDz.classList.add('over');});
-iaDz?.addEventListener('dragleave',()=>iaDz.classList.remove('over'));
-iaDz?.addEventListener('drop',e=>{e.preventDefault();iaDz.classList.remove('over');if(e.dataTransfer.files[0])iaCarregarFoto(e.dataTransfer.files[0]);});
-window.__iaRemoveFoto=()=>{iaImagemB64=null;document.getElementById('iaFotoPreview').classList.add('hidden');iaDz.classList.remove('hidden');};
-document.getElementById('iaGerarBtn')?.addEventListener('click',async()=>{
-  const produto=document.getElementById('iaProduto').value.trim();
-  const res=document.getElementById('iaResult');
-  if(!produto){res.innerHTML='<div class="ia-empty" style="color:var(--amber)">⚠ Descreva o produto primeiro.</div>';return;}
-  const btn=document.getElementById('iaGerarBtn');
-  btn.disabled=true;btn.textContent='Gerando...';
-  res.innerHTML='<div class="ia-loading"><div class="ia-spin"></div><div style="color:var(--text-dim);font-size:13px">A IA está criando seu anúncio...</div></div>';
-  try{
-    const r=await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto,marketplace:iaMarketplace,imagem:iaImagemB64})});
-    const d=await r.json();
-    if(!r.ok||d.erro){res.innerHTML=`<div class="ia-empty" style="color:var(--red)">⚠ ${esc(d.erro||'Erro ao gerar. Tente de novo.')}</div>`;return;}
-    const mkNome=iaMarketplace==='shopee'?'Shopee':iaMarketplace==='tiktok'?'TikTok Shop':'Mercado Livre';
-    const bullets=(d.bullets||[]).map(b=>esc(b)).join('\n');
-    res.innerHTML=`
-      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📌 Título — ${mkNome}</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(d.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(d.titulo||'')}</div><div class="ia-char">${(d.titulo||'').length} caracteres</div></div>
-      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">✨ Destaques</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(bullets).replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${bullets}</div></div>
-      <div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📝 Descrição</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(d.descricao||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(d.descricao||'')}</div></div>
-      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="window.__copy(${JSON.stringify('TÍTULO:\n'+(d.titulo||'')+'\n\nDESTAQUES:\n'+bullets+'\n\nDESCRIÇÃO:\n'+(d.descricao||'')).replace(/"/g,'&quot;')})">📋 Copiar tudo</button>`;
-  }catch(e){
-    res.innerHTML='<div class="ia-empty" style="color:var(--red)">⚠ Não foi possível conectar ao gerador. Verifique a conexão e tente de novo.</div>';
-  }finally{btn.disabled=false;btn.textContent='✨ Gerar Anúncio';}
-});
 
 /* ================= COMERCIAL & MARKETING (restrito) ================= */
 const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br'];
@@ -6374,15 +6307,103 @@ function cmRenderCupons(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    const pref=shopeeAppPreferido(c);
     let botaoShopee='';
-    if(c.shopeeMktShopId){
-      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button><button class="icon-btn" title="Reconectar Marketing (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄</button>`;
+    if(pref.shopId){
+      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomSincronizar('${c.id}','${nomeEsc}')">🔄 Sincronizar</button><button class="icon-btn" title="Reconectar (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${pref.app}')">🔄</button>`;
     }else if((c.marketplaces||[]).includes('shopee')){
-      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔗 Conectar Marketing</button>`;
+      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','erp')">🔗 Conectar ERP</button>`;
     }
-    return `<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${statusBadge(c.cupomFim)}<button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button>${botaoShopee}</div>`;
+    // selo de status real: só existe depois da 1ª sincronização (cupomUltimaVerificacao gravado pelo sync)
+    let selo='';
+    if(c.cupomUltimaVerificacao){
+      selo=c.cupomAtivo?'<span class="cadastro-doc-pill ok">✅ ativo na Shopee</span>':'<span class="cadastro-doc-pill" style="background:rgba(220,53,69,.15);color:var(--red)">❌ sem cupom ativo</span>';
+    }
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:8px">${statusBadge(c.cupomFim)}${selo}<span class="nome">${esc(c.nome)}</span><button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button>${botaoShopee}</div>`;
   }).join('');
 }
+// Confere na Shopee se o "Cupom Fixo - LB Marketplace" está mesmo ativo, e grava o resultado real
+// (cupomAtivo, cupomFim, cupomUltimaVerificacao) — assim o selo da lista deixa de confiar só na data digitada.
+async function cupomSincronizarCore(cliente,silencioso){
+  const pref=shopeeAppPreferido(cliente);
+  if(!pref.shopId)return{ok:false,erro:'não conectado'};
+  try{
+    const token=await shopeeGarantirTokenValido(cliente,pref.app);
+    const params=new URLSearchParams({acao:'listar_cupons',app:pref.app,access_token:token,shop_id:pref.shopId,status:'all'});
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Sincronizar Cupom debug]',cliente.nome,data);
+    if(!data.ok||data.error){
+      if(!silencioso)alert(`Não foi possível sincronizar o cupom de ${cliente.nome}:\n\n${data.error||data.erro||'Erro desconhecido.'}`);
+      return{ok:false,erro:data.error||data.erro};
+    }
+    const vouchers=data.response?.voucher_list||[];
+    const nosso=vouchers.find(v=>v.voucher_name==='Cupom Fixo - LB Marketplace');
+    const agora=Math.floor(Date.now()/1000);
+    const ativo=!!(nosso&&nosso.end_time>agora);
+    await updateDoc(doc(db,"clientes",cliente.id),{
+      cupomAtivo:ativo,
+      cupomFim:nosso?dataLocalBR(nosso.end_time):(cliente.cupomFim||''),
+      cupomUltimaVerificacao:Date.now()
+    });
+    if(!silencioso){
+      showToast(ativo?`✓ ${cliente.nome} tem cupom ativo até ${nosso.end_time?new Date(nosso.end_time*1000).toLocaleDateString('pt-BR'):'?'}.`:`${cliente.nome} NÃO tem o Cupom Fixo ativo na Shopee agora.`);
+    }
+    return{ok:true,ativo};
+  }catch(e){
+    console.error(e);
+    if(!silencioso){if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao sincronizar cupom: '+(e.message||'desconhecido'));}
+    return{ok:false,erro:e.message};
+  }
+}
+window.__cupomSincronizar=(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(c)cupomSincronizarCore(c,false);
+};
+window.__cupomSincronizarTodos=async()=>{
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&shopeeAppPreferido(c).shopId);
+  if(!lista.length){showToast('Nenhum cliente com Marketing/ERP conectado.');return;}
+  const btn=document.getElementById('cupomSincronizarTodosBtn');
+  if(btn){btn.disabled=true;btn.textContent='Sincronizando...';}
+  let ativos=0,semCupom=0,comErro=0;
+  for(const c of lista){
+    const r=await cupomSincronizarCore(c,true);
+    if(!r.ok)comErro++;else if(r.ativo)ativos++;else semCupom++;
+  }
+  if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
+  alert(`Sincronização de cupons concluída (${lista.length} cliente(s)):\n\n✅ ${ativos} com cupom ativo\n❌ ${semCupom} sem cupom ativo\n${comErro?`⚠️ ${comErro} com erro (veja o Console)`:''}`);
+};
+// Confere na Shopee se o desconto MARCADO (📌) de cada cliente ainda está ativo de verdade —
+// igual o "🔍 Descontos da loja" individual, só que em massa, sem abrir modal pra cada um.
+window.__descontoSincronizarTodos=async()=>{
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&shopeeAppPreferido(c).shopId);
+  if(!lista.length){showToast('Nenhum cliente com Marketing/ERP conectado.');return;}
+  const btn=document.getElementById('descontoSincronizarTodosBtn');
+  if(btn){btn.disabled=true;btn.textContent='Sincronizando...';}
+  let ativos=0,semMarcado=0,vencidos=0,comErro=0;
+  for(const c of lista){
+    const pref=shopeeAppPreferido(c);
+    try{
+      const token=await shopeeGarantirTokenValido(c,pref.app);
+      const params=new URLSearchParams({acao:'listar_descontos',app:pref.app,access_token:token,shop_id:pref.shopId});
+      const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+      const data=await resp.json();
+      console.log('[Sincronizar Desconto debug]',c.nome,data);
+      if(!data.ok){comErro++;continue;}
+      if(!c.shopeeDescontoFixoId){semMarcado++;continue;}
+      const marcado=(data.descontos||[]).find(d=>String(d.discount_id)===String(c.shopeeDescontoFixoId));
+      const ativoAgora=marcado&&marcado.status==='ongoing';
+      if(ativoAgora){
+        ativos++;
+        await updateDoc(doc(db,"clientes",c.id),{descontoFixoFim:dataLocalBR(marcado.end_time),shopeeDescontoFixoNome:marcado.discount_name});
+      }else{
+        vencidos++;
+      }
+    }catch(e){console.error(e);comErro++;}
+  }
+  if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
+  alert(`Sincronização de descontos concluída (${lista.length} cliente(s)):\n\n✅ ${ativos} com desconto fixo ativo\n⏰ ${vencidos} com o desconto marcado vencido/não encontrado — precisa duplicar\n📋 ${semMarcado} sem desconto marcado ainda — use 🔍 Descontos da loja\n${comErro?`⚠️ ${comErro} com erro (veja o Console)`:''}`);
+};
 function cmRenderDevolucao(){
   const el=document.getElementById('cmDevolucaoLista');
   if(!el)return;
