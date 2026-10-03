@@ -2601,6 +2601,15 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="cupomLojaModalOverlay">
+  <div class="modal" style="max-width:640px;width:94vw">
+    <h2 id="cupomLojaTitulo">Cupons na Shopee</h2>
+    <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px;line-height:1.5">Todos os cupons dessa loja, direto da Shopee — independente do nome. "Ativo" é calculado pela data (início já passou, fim ainda não chegou), não pelo nome do cupom.</p>
+    <div id="cupomLojaCorpo" style="max-height:52vh;overflow:auto"></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="cupomLojaFecharBtn">Fechar</button></div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="descontoLojaModalOverlay">
   <div class="modal" style="max-width:720px;width:94vw">
     <h2 id="descontoLojaTitulo">Descontos na Shopee</h2>
@@ -6310,56 +6319,95 @@ function cmRenderCupons(){
     const pref=shopeeAppPreferido(c);
     let botaoShopee='';
     if(pref.shopId){
-      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomSincronizar('${c.id}','${nomeEsc}')">🔄 Sincronizar</button><button class="icon-btn" title="Reconectar (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${pref.app}')">🔄</button>`;
+      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomVerTodos('${c.id}')">🔍 Cupons da loja</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomSincronizar('${c.id}','${nomeEsc}')">🔄 Sincronizar</button><button class="icon-btn" title="Reconectar (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${pref.app}')">🔄</button>`;
     }else if((c.marketplaces||[]).includes('shopee')){
       botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','erp')">🔗 Conectar ERP</button>`;
     }
     // selo de status real: só existe depois da 1ª sincronização (cupomUltimaVerificacao gravado pelo sync)
     let selo='';
     if(c.cupomUltimaVerificacao){
-      selo=c.cupomAtivo?'<span class="cadastro-doc-pill ok">✅ ativo na Shopee</span>':'<span class="cadastro-doc-pill" style="background:rgba(220,53,69,.15);color:var(--red)">❌ sem cupom ativo</span>';
+      selo=c.cupomAtivo?`<span class="cadastro-doc-pill ok" title="${esc(c.cupomNomeReal||'')}">✅ ativo (${esc(c.cupomNomeReal||'?')})</span>`:'<span class="cadastro-doc-pill" style="background:rgba(220,53,69,.15);color:var(--red)">❌ sem cupom ativo</span>';
     }
     return `<div class="cm-item" style="flex-wrap:wrap;gap:8px">${statusBadge(c.cupomFim)}${selo}<span class="nome">${esc(c.nome)}</span><button class="icon-btn" onclick="window.__editarDataCupom('${c.id}')">✏️ Editar</button>${botaoShopee}</div>`;
   }).join('');
 }
 // Confere na Shopee se o "Cupom Fixo - LB Marketplace" está mesmo ativo, e grava o resultado real
 // (cupomAtivo, cupomFim, cupomUltimaVerificacao) — assim o selo da lista deixa de confiar só na data digitada.
-async function cupomSincronizarCore(cliente,silencioso){
+// Busca TODOS os cupons da loja, sem depender do nome (nem todo cliente usa "Cupom Fixo - LB Marketplace"
+// exatamente — por isso o nome sozinho não é confiável). "Ativo" é calculado pela DATA (start<=agora<end),
+// igual já fazemos pra desconto.
+async function cupomBuscarTodos(cliente){
   const pref=shopeeAppPreferido(cliente);
   if(!pref.shopId)return{ok:false,erro:'não conectado'};
+  const token=await shopeeGarantirTokenValido(cliente,pref.app);
+  const params=new URLSearchParams({acao:'listar_cupons',app:pref.app,access_token:token,shop_id:pref.shopId,status:'all'});
+  const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+  const data=await resp.json();
+  console.log('[Cupons da loja debug]',cliente.nome,data);
+  if(!data.ok||data.error)return{ok:false,erro:data.error||data.erro||'Erro desconhecido.'};
+  const agora=Math.floor(Date.now()/1000);
+  const vouchers=(data.response?.voucher_list||[]).map(v=>({
+    id:v.voucher_id,nome:v.voucher_name,inicio:v.start_time,fim:v.end_time,
+    ativo:v.start_time<=agora&&v.end_time>agora,
+    aindaNaoComecou:v.start_time>agora,
+    usados:v.usage?.current_usage,limite:v.usage?.quantity??v.usage_quantity
+  })).sort((a,b)=>b.fim-a.fim);
+  return{ok:true,vouchers,ativos:vouchers.filter(v=>v.ativo)};
+}
+async function cupomSincronizarCore(cliente,silencioso){
+  const r=await (async()=>{try{return await cupomBuscarTodos(cliente);}catch(e){return{ok:false,erro:e.message};}})();
+  if(!r.ok){
+    if(!silencioso){if(erroTokenShopee(r)||/token/i.test(r.erro||''))alert(msgErroTokenMkt(cliente.nome));else alert(`Não foi possível sincronizar o cupom de ${cliente.nome}:\n\n${r.erro}`);}
+    return{ok:false,erro:r.erro};
+  }
+  // havendo mais de um cupom ativo ao mesmo tempo, considera o de vencimento mais distante como referência
+  const ref=r.ativos[0]||null;
+  const ativo=!!ref;
   try{
-    const token=await shopeeGarantirTokenValido(cliente,pref.app);
-    const params=new URLSearchParams({acao:'listar_cupons',app:pref.app,access_token:token,shop_id:pref.shopId,status:'all'});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
-    const data=await resp.json();
-    console.log('[Sincronizar Cupom debug]',cliente.nome,data);
-    if(!data.ok||data.error){
-      if(!silencioso)alert(`Não foi possível sincronizar o cupom de ${cliente.nome}:\n\n${data.error||data.erro||'Erro desconhecido.'}`);
-      return{ok:false,erro:data.error||data.erro};
-    }
-    const vouchers=data.response?.voucher_list||[];
-    const nosso=vouchers.find(v=>v.voucher_name==='Cupom Fixo - LB Marketplace');
-    const agora=Math.floor(Date.now()/1000);
-    const ativo=!!(nosso&&nosso.end_time>agora);
     await updateDoc(doc(db,"clientes",cliente.id),{
       cupomAtivo:ativo,
-      cupomFim:nosso?dataLocalBR(nosso.end_time):(cliente.cupomFim||''),
+      cupomFim:ref?dataLocalBR(ref.fim):(cliente.cupomFim||''),
+      cupomNomeReal:ref?ref.nome:null,
       cupomUltimaVerificacao:Date.now()
     });
-    if(!silencioso){
-      showToast(ativo?`✓ ${cliente.nome} tem cupom ativo até ${nosso.end_time?new Date(nosso.end_time*1000).toLocaleDateString('pt-BR'):'?'}.`:`${cliente.nome} NÃO tem o Cupom Fixo ativo na Shopee agora.`);
-    }
-    return{ok:true,ativo};
-  }catch(e){
-    console.error(e);
-    if(!silencioso){if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao sincronizar cupom: '+(e.message||'desconhecido'));}
-    return{ok:false,erro:e.message};
+  }catch(e){console.error('Não salvou o status do cupom:',e);}
+  if(!silencioso){
+    showToast(ativo?`✓ ${cliente.nome} tem cupom ativo ("${ref.nome}") até ${new Date(ref.fim*1000).toLocaleDateString('pt-BR')}.`:`${cliente.nome} não tem nenhum cupom ativo na Shopee agora.`);
   }
+  return{ok:true,ativo};
 }
 window.__cupomSincronizar=(clienteId)=>{
   const c=clientesCache.find(x=>x.id===clienteId);
   if(c)cupomSincronizarCore(c,false);
 };
+window.__cupomVerTodos=async(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c)return;
+  document.getElementById('cupomLojaTitulo').textContent=`Cupons na Shopee — ${c.nome}`;
+  const corpo=document.getElementById('cupomLojaCorpo');
+  corpo.innerHTML='<div class="empty-state" style="padding:20px">Buscando cupons na Shopee...</div>';
+  document.getElementById('cupomLojaModalOverlay').classList.remove('hidden');
+  try{
+    const r=await cupomBuscarTodos(c);
+    if(!r.ok){
+      const venceu=/token/i.test(r.erro||'');
+      corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?'O acesso expirou. Reconecta na aba 🔌 APIs.':('Erro: '+r.erro))}</div>`;
+      return;
+    }
+    if(!r.vouchers.length){corpo.innerHTML='<div class="empty-state" style="padding:20px">Essa loja não tem nenhum cupom cadastrado na Shopee.</div>';return;}
+    corpo.innerHTML=r.vouchers.map(v=>{
+      const status=v.ativo?'Ativo':(v.aindaNaoComecou?'Agendado':'Encerrado');
+      const cor=v.ativo?'ok':(v.aindaNaoComecou?'hoje':'atrasada');
+      const uso=v.limite?` · ${v.usados??0}/${v.limite} usados`:'';
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center">
+        <span class="nome" style="flex:2;min-width:180px">${esc(v.nome)}</span>
+        <span class="tt-status-pill ${cor}">${status}</span>
+        <span style="font-size:12px;color:var(--text-dim)">${new Date(v.inicio*1000).toLocaleDateString('pt-BR')} → ${new Date(v.fim*1000).toLocaleDateString('pt-BR')}${uso}</span>
+      </div>`;
+    }).join('');
+  }catch(e){corpo.innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar os cupons.</div>';console.error(e);}
+};
+document.getElementById('cupomLojaFecharBtn')?.addEventListener('click',()=>document.getElementById('cupomLojaModalOverlay').classList.add('hidden'));
 window.__cupomSincronizarTodos=async()=>{
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&shopeeAppPreferido(c).shopId);
   if(!lista.length){showToast('Nenhum cliente com Marketing/ERP conectado.');return;}
