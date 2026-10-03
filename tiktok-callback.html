@@ -570,7 +570,7 @@ async function processarCallback(){
       await db
         .collection('clientes')
         .doc(clienteId)
-        .update({
+        .set({
 
           tiktokAccessToken:
             data.access_token,
@@ -590,7 +590,7 @@ async function processarCallback(){
           tiktokConectadoEm:
             firebase.firestore.FieldValue.serverTimestamp()
 
-        });
+        }, { merge: true }); // merge:true em vez de update — não quebra se o cliente de teste não existir ainda
 
 
       /* ---------------------------------------------------
