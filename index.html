@@ -2098,6 +2098,7 @@ textarea{resize:vertical;min-height:70px;}
 
           <div style="display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap">
             <button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">📊 Conectar / GMV</button>
+            <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">📦 Produtos</button>
             <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">⚡ Oferta Relâmpago</button>
             <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">🏷️ Descontos</button>
           </div>
@@ -2109,6 +2110,44 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Aguardando<br>Conexão</div></div><div class="sc-value" id="ttGmvPendentes">0</div></div>
           </div>
           <div class="tt-list" id="ttGmvLista"></div>
+          </div>
+
+          <div class="tiktok-subpanel" data-tiktoksubpanel="produtos" style="display:none">
+            <div class="sgmv-summary">
+              <div class="summary-card">
+                <div class="sc-top">
+                  <div class="sc-icon gold">📦</div>
+                  <div class="sc-label">Produtos<br>Sincronizados</div>
+                </div>
+                <div class="sc-value" id="ttProdutosTotal">0</div>
+              </div>
+              <div class="summary-card">
+                <div class="sc-top">
+                  <div class="sc-icon green">🟢</div>
+                  <div class="sc-label">Produtos<br>Ativos</div>
+                </div>
+                <div class="sc-value green" id="ttProdutosAtivos">0</div>
+              </div>
+              <div class="summary-card">
+                <div class="sc-top">
+                  <div class="sc-icon amber">🔄</div>
+                  <div class="sc-label">Última<br>Sincronização</div>
+                </div>
+                <div class="sc-value" id="ttProdutosSync">—</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 10px;flex-wrap:wrap">
+              <div>
+                <div style="font-weight:700">Produtos TikTok Shop</div>
+                <div style="font-size:12px;color:var(--text-dim)">Busque os produtos diretamente da loja conectada.</div>
+              </div>
+              <button class="btn btn-gold btn-sm" onclick="window.__tiktokCarregarTodosProdutos()">🔄 Sincronizar produtos</button>
+            </div>
+
+            <div class="tt-list" id="ttProdutosLista">
+              <div class="empty-state" style="padding:20px">Clique em “Sincronizar produtos” para buscar os produtos.</div>
+            </div>
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="descontos" style="display:none">
@@ -4613,6 +4652,148 @@ window.__tiktokAtualizarGmv=async(clienteId)=>{
     showToast(`✓ GMV TikTok de ${cliente.nome}: ${fmtR(data.gmv)}`);
     return true;
   }catch(e){showToast('Erro ao buscar GMV do TikTok.');console.error(e);return false;}
+};
+
+
+function ttProdutosFormatarPreco(valor, moeda){
+  if(valor === undefined || valor === null || valor === '') return '-';
+  const numero = Number(valor);
+  if(Number.isNaN(numero)) return esc(String(valor));
+  return `${moeda || 'R$'} ${numero.toFixed(2).replace('.', ',')}`;
+}
+
+function ttProdutosExtrairPreco(produto){
+  // formato real (confirmado na loja catolis): preço por SKU em skus[].price.tax_exclusive_price
+  if(Array.isArray(produto?.skus)){
+    const precos = produto.skus.map(s=>Number(s?.price?.tax_exclusive_price ?? s?.price?.sale_price ?? s?.price?.original_price)).filter(n=>Number.isFinite(n)&&n>0);
+    if(precos.length) return Math.min(...precos);
+  }
+  return produto?.price?.tax_exclusive_price ??
+         produto?.price?.sale_price ??
+         produto?.price?.original_price ??
+         produto?.skus?.[0]?.price?.sale_price ??
+         produto?.skus?.[0]?.price?.original_price ??
+         null;
+}
+
+function ttProdutosExtrairEstoque(produto){
+  if(Array.isArray(produto?.skus)){
+    return produto.skus.reduce((total, sku)=>{
+      const estoque = sku?.inventory?.quantity ??
+                      sku?.inventory?.[0]?.quantity ??
+                      sku?.stock_info?.quantity ??
+                      0;
+      return total + (Number(estoque) || 0);
+    }, 0);
+  }
+  return produto?.inventory?.quantity ?? produto?.stock_info?.quantity ?? 0;
+}
+
+function ttProdutosStatus(produto){
+  const status = String(produto?.status || produto?.product_status || '').toUpperCase();
+  if(['LIVE','ACTIVE','ACTIVATE','AVAILABLE'].includes(status)) return '🟢 Ativo';
+  if(['DEACTIVATED','INACTIVE','OFFLINE'].includes(status)) return '⚪ Inativo';
+  return status ? esc(status) : '-';
+}
+
+window.__tiktokCarregarProdutos = async function(clienteId, paginaToken=''){
+  const cliente = (clientesCache || []).find(c => c.id === clienteId);
+  if(!cliente || !cliente.tiktokAccessToken || !cliente.tiktokShopCipher){
+    showToast('Cliente não conectado ao TikTok Shop.');
+    return;
+  }
+
+  const lista = document.getElementById('ttProdutosLista');
+  if(!lista) return;
+
+  if(!paginaToken){
+    lista.innerHTML = '<div class="empty-state" style="padding:20px">🔄 Buscando produtos...</div>';
+  }
+
+  try{
+    const params = new URLSearchParams({
+      acao: 'buscar_produtos',
+      access_token: cliente.tiktokAccessToken,
+      shop_cipher: cliente.tiktokShopCipher,
+      status: 'ALL',
+      locale: 'pt-BR'
+    });
+    if(paginaToken) params.set('page_token', paginaToken);
+
+    const resp = await fetch(`${TIKTOK_API}?${params.toString()}`);
+    const data = await resp.json();
+
+    if(!data.ok){
+      lista.innerHTML = `<div class="empty-state" style="padding:20px">❌ Erro TikTok: ${esc(data.erro || 'não foi possível buscar os produtos.')}</div>`;
+      showToast('Erro ao buscar produtos TikTok.');
+      return;
+    }
+
+    const produtos = Array.isArray(data.produtos) ? data.produtos : [];
+    const ativos = produtos.filter(p=>{
+      const s = String(p?.status || p?.product_status || '').toUpperCase();
+      return ['LIVE','ACTIVE','ACTIVATE','AVAILABLE'].includes(s);
+    }).length;
+
+    document.getElementById('ttProdutosTotal').textContent = produtos.length;
+    document.getElementById('ttProdutosAtivos').textContent = ativos;
+    document.getElementById('ttProdutosSync').textContent = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+    if(!produtos.length){
+      lista.innerHTML = '<div class="empty-state" style="padding:20px">Nenhum produto retornado pela loja.</div>';
+      return;
+    }
+
+    const linhas = produtos.map(p=>{
+      const nome = p?.title || p?.product_name || 'Produto sem nome';
+      const id = p?.id || p?.product_id || '-';
+      const sku = p?.skus?.[0]?.seller_sku || p?.skus?.[0]?.sku || p?.seller_sku || '-';
+      const preco = ttProdutosExtrairPreco(p);
+      const estoque = ttProdutosExtrairEstoque(p);
+      return `<div class="cm-item" style="display:grid;grid-template-columns:minmax(220px,2fr) 120px 130px 100px 100px;gap:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div class="nome">${esc(nome)}</div>
+          <div style="font-size:11px;color:var(--text-dim)">ID: ${esc(String(id))}</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim)">SKU<br><b style="color:var(--text)">${esc(String(sku))}</b></div>
+        <div style="font-size:12px;color:var(--text-dim)">Preço<br><b style="color:var(--text)">${ttProdutosFormatarPreco(preco)}</b></div>
+        <div style="font-size:12px;color:var(--text-dim)">Estoque<br><b style="color:var(--text)">${Number(estoque)||0}</b></div>
+        <div style="font-size:12px">${ttProdutosStatus(p)}</div>
+      </div>`;
+    }).join('');
+
+    lista.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">${linhas}</div>`;
+
+    if(data.next_page_token){
+      lista.innerHTML += `<div style="margin-top:14px;text-align:center">
+        <button class="btn btn-ghost btn-sm" onclick="window.__tiktokCarregarProdutos('${clienteId}','${String(data.next_page_token).replace(/'/g,"\\'")}')">Carregar próxima página</button>
+      </div>`;
+    }
+
+    showToast(`✓ ${produtos.length} produtos carregados do TikTok.`);
+  }catch(e){
+    console.error(e);
+    lista.innerHTML = '<div class="empty-state" style="padding:20px">❌ Erro de comunicação com a API TikTok.</div>';
+    showToast('Erro ao buscar produtos TikTok.');
+  }
+};
+
+window.__tiktokCarregarTodosProdutos = async function(){
+  const clientes = (clientesCache || []).filter(c =>
+    c.ativo !== false &&
+    (c.marketplaces || []).includes('tiktok') &&
+    c.tiktokAccessToken &&
+    c.tiktokShopCipher
+  );
+
+  if(!clientes.length){
+    showToast('Nenhum cliente TikTok conectado.');
+    return;
+  }
+
+  // Por enquanto carregamos o primeiro cliente conectado.
+  // A estrutura já fica pronta para sincronização em massa depois.
+  await window.__tiktokCarregarProdutos(clientes[0].id);
 };
 
 function ttGmvRenderizar(){
