@@ -1888,7 +1888,7 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="apis">
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Só 2 conexões por cliente: <b>⭐ ERP</b> (cobre GMV, Marketing, Produto, Financeiro e Logística) e <b>Ads</b> (a Shopee não inclui Ads no ERP, precisa à parte). O selo "🕰️ ainda no esquema antigo" aparece em quem conectou antes da gente simplificar — continua funcionando, migra quando puder.</p>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5"><b>Tudo se conecta aqui, uma vez só.</b> Shopee: <b>⭐ ERP</b> (cobre GMV, Marketing, Produto, Financeiro e Logística) + <b>Ads</b> (a Shopee não inclui Ads no ERP). TikTok: <b>🎵 uma conexão</b> — assim que conectar, o <b>🤖 robô de oferta relâmpago liga sozinho</b> (dá pra desligar no quadradinho). O selo "🕰️ ainda no esquema antigo" aparece em quem conectou a Shopee antes da gente simplificar — continua funcionando.</p>
           <div class="cm-lista-simples" id="cmApisShopeeLista"></div>
           </div>
 
@@ -6414,21 +6414,78 @@ function cmApiSlot(conectado, label, onclick, tituloVencido){
 function cmRenderApisShopee(){
   const el=document.getElementById('cmApisShopeeLista');
   if(!el)return;
-  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee'));
-  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.marketplaces||[]).includes('shopee')||(c.marketplaces||[]).includes('tiktok')));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ou TikTok ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const conectarClick=app=>`window.__shopeeConectar('${c.id}','${nomeEsc}','${app}')`;
+    const temShopee=(c.marketplaces||[]).includes('shopee');
+    const temTiktok=(c.marketplaces||[]).includes('tiktok');
     const jaMigrado=!!c.shopeeErpShopId;
     const temLegado=!jaMigrado&&!!(c.shopeeShopId||c.shopeeMktShopId||c.shopeeProdutoShopId);
-    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
-      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>
+    const blocoShopee=temShopee?`
       <span style="display:flex;align-items:center;gap:4px" title="ERP — cobre GMV, Marketing e Produto numa conexão só">⭐ ${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
-      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">🕰️ ainda no esquema antigo</span>':''}
+      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">🕰️ ainda no esquema antigo</span>':''}`:'';
+    const ttConectado=!!c.tiktokShopCipher;
+    const ttAuto=c.tiktokOfertaAuto!==false; // ligado por padrão assim que conecta
+    const blocoTiktok=temTiktok?`
+      <span style="display:flex;align-items:center;gap:4px">🎵 ${cmApiSlot(ttConectado,'TikTok',`window.__tiktokConectar('${c.id}','${nomeEsc}')`)}</span>
+      ${ttConectado?`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer" title="Cria sozinho as ofertas relâmpago do mês todo, nas regras da LB (desconto fixo −5%, 72h, intervalo de 3 min)"><input type="checkbox" ${ttAuto?'checked':''} onchange="window.__tiktokToggleAuto('${c.id}',this.checked)"> 🤖 oferta relâmpago automática</label>
+      <button class="btn btn-ghost btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',false)" title="Mostra o que o robô faria, sem criar nada">🔎 Simular</button>
+      ${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',true)" title="Cria as ofertas agora, de verdade">▶️ Rodar agora</button>`:''}`:''}`:'';
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
+      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>${blocoShopee}${blocoTiktok}
     </div>`;
   }).join('');
 }
+// ---- TikTok: chave liga/desliga + simular/rodar o robô de oferta relâmpago (tudo pela aba APIs) ----
+window.__tiktokToggleAuto=async(clienteId,ligado)=>{
+  try{
+    await updateDoc(doc(db,"clientes",clienteId),{tiktokOfertaAuto:!!ligado});
+    showToast(ligado?'🤖 Oferta relâmpago automática do TikTok LIGADA.':'Oferta relâmpago automática do TikTok desligada.');
+  }catch(e){showToast('Erro ao salvar.');console.error(e);}
+};
+const TT_MOTIVOS={preco_maior_que_ultima_oferta:'preço novo mais caro que a última oferta (regra da TikTok)',sem_estoque:'sem estoque',sem_desconto_fixo:'fora do desconto fixo',produto_inativo:'produto inativo',produto_nao_encontrado:'sumiu da loja'};
+function ttResumoRobo(r,modo){
+  if(!r||!Object.keys(r).length)return'O robô não devolveu resultado pra esse cliente.';
+  if(r.erro)return`${r.cliente}\n\n⚠️ ${r.erro}`;
+  const L=[`${r.cliente} — ${modo||''}`,''];
+  if(r.situacao==='ja_coberto')return L.concat(`✅ O mês já está coberto até ${r.cobertaAte}. Nada a criar agora.`).join('\n');
+  const bl=r.blocosPlanejados||[];
+  if(r.descontoFixo)L.push(`Desconto fixo usado: ${r.descontoFixo.titulo||'?'} (até ${r.descontoFixo.fimEm})`);
+  if(bl.length)L.push(`Ofertas de 72h: ${bl.length} (de ${bl[0].inicio} até ${bl[bl.length-1].fim})`);
+  L.push(`Produtos que entram: ${(r.produtosIncluidos||[]).length}`);
+  const pul=r.produtosPulados||[];
+  if(pul.length){
+    const cont={};pul.forEach(p=>{cont[p.motivo]=(cont[p.motivo]||0)+1;});
+    L.push(`Produtos pulados: ${pul.length}`);
+    Object.entries(cont).forEach(([m,n])=>L.push(`   • ${n}× ${TT_MOTIVOS[m]||m}`));
+  }
+  if(r.ofertasCriadas)L.push('',`✅ Ofertas criadas agora: ${r.ofertasCriadas.length}`);
+  if(r.erroNaCriacao)L.push('',`⚠️ Parou no meio: ${r.erroNaCriacao}`);
+  if(r.restaPraProximaRodada)L.push(`Faltam ${r.restaPraProximaRodada} ofertas — o robô completa na próxima rodada.`);
+  if(r.situacao==='simulacao')L.push('','(Simulação — nada foi criado no TikTok.)');
+  return L.join('\n');
+}
+window.__tiktokRodarRobo=async(clienteId,executar)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c)return;
+  if(executar){
+    if(!isLincoln()){showToast('Apenas Lincoln pode rodar o robô de verdade.');return;}
+    if(!confirm(`Criar AGORA as ofertas relâmpago na loja de ${c.nome}?\n\nIsso cria de verdade no TikTok Shop.`))return;
+  }
+  showToast(executar?'Rodando o robô...':'Simulando...');
+  try{
+    const params=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId});
+    if(executar)params.set('executar','1');
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Robô TikTok debug]',c.nome,data);
+    if(!data.ok){alert(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    alert(ttResumoRobo((data.resultados||[])[0],data.modo));
+  }catch(e){showToast('Erro ao rodar o robô do TikTok.');console.error(e);}
+};
 function cmRenderOfertaShopee(){
   const el=document.getElementById('cmOfertaShopeeLista');
   if(!el)return;
