@@ -2148,7 +2148,11 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="descontos" style="display:none">
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px">Vencimento do desconto fixo de cada cliente no TikTok Shop.</p>
+          <div class="sub-cab" style="--acc-bg:#ffffff12;--acc-bd:#ffffff40"><span class="sub-cab-ico">🏷️</span><div><b>Desconto fixo do TikTok</b><div class="sub-cab-desc">Lido direto da TikTok: o vencimento é <b>sincronizado sozinho</b> e o robô <b>renova por duplicação</b> (mesmos produtos e preços, até 340 dias) quando faltarem 30 dias. <b>🔄 Sincronizar</b> confere agora; <b>🔎 Simular renovação</b> mostra o que seria criado, sem criar nada.</div></div></div>
+          <div class="toolbar">
+            <div class="spacer"></div>
+            <button class="btn btn-gold btn-sm" id="ttDescontoSincTodosBtn" onclick="window.__tiktokDescontoSincronizarTodos()">🔄 Sincronizar Todos</button>
+          </div>
           <div class="cm-lista-simples" id="cmDescontosTiktokLista"></div>
           </div>
 
@@ -6496,6 +6500,66 @@ window.__tiktokRodarRobo=async(clienteId,executar)=>{
     alert(ttResumoRobo((data.resultados||[])[0],data.modo));
   }catch(e){showToast('Erro ao rodar o robô do TikTok.');console.error(e);}
 };
+// ---- TikTok Shop: DESCONTO FIXO via API (sincroniza vencimento, simula e renova por duplicação) ----
+function cmDescontoExtrasTiktok(c){
+  const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+  if(!c.tiktokShopCipher)return`<button class="btn btn-ghost btn-sm" onclick="window.__tiktokConectar('${c.id}','${nomeEsc}')">🔗 Conectar TikTok</button>`;
+  const ref=c.tiktokDescontoFixoNome
+    ?`<span class="cadastro-doc-pill ok" title="Desconto fixo lido do TikTok Shop">📌 ${esc(c.tiktokDescontoFixoNome)}${c.tiktokDescontoFixoProdutos!=null?` · ${c.tiktokDescontoFixoProdutos} produtos`:''}</span>`
+    :'<span class="cadastro-doc-pill" style="font-size:10px">ainda não sincronizado</span>';
+  const auto=c.tiktokDescontoUltimaRenovacao?'<span class="cadastro-doc-pill ok" title="Já renovado automaticamente pelo robô">🤖 renovado</span>':'';
+  return`${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','sincronizar')">🔄 Sincronizar</button><button class="btn btn-ghost btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','simular')" title="Mostra o que seria criado, sem criar nada">🔎 Simular renovação</button>${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','executar')" title="Cria o sucessor agora, de verdade">🔁 Renovar agora</button>`:''}`;
+}
+function ttResumoDesconto(r,modo){
+  if(!r||!Object.keys(r).length)return'O servidor não devolveu resultado pra esse cliente.';
+  if(r.erro)return`${r.cliente}\n\n⚠️ ${r.erro}`;
+  const L=[`${r.cliente} — ${modo||''}`,''];
+  if(r.situacao==='sem_desconto_fixo')return L.concat('Essa loja não tem nenhum desconto fixo ativo no TikTok.','Crie o primeiro (com os preços) pelo UpSeller ou Seller Center — depois o robô renova sozinho.').join('\n');
+  const d=r.descontoAtual,p=r.plano||{};
+  if(d)L.push(`Desconto atual: ${d.titulo} · ${d.produtos} produtos`,`Vence em: ${d.fimEm}${p.diasRestantes!=null?` (${p.diasRestantes} dias)`:''}`);
+  if(r.situacao==='em_dia')L.push('','✅ Em dia. A renovação automática acontece quando faltarem 30 dias.');
+  if(r.situacao==='precisa_renovar')L.push('',`⏰ Precisa renovar: faltam ${p.diasRestantes} dias.`,`Sucessor: de ${p.novoInicio} até ${p.novoFim} (340 dias).`);
+  if(r.situacao==='simulacao'){L.push('',`⏰ Seria renovado: de ${p.novoInicio} até ${p.novoFim} (340 dias), com ${r.produtosNaRenovacao} produtos.`);if((r.produtosPulados||[]).length)L.push(`   ${r.produtosPulados.length} produto(s) ficariam de fora (inativos ou fora da loja).`);L.push('','(Simulação — nada foi criado.)');}
+  if(r.situacao==='renovado'&&r.novoDesconto)L.push('',`✅ Renovado agora: ${r.novoDesconto.titulo}`,`De ${r.novoDesconto.inicio} até ${r.novoDesconto.fim} · ${r.novoDesconto.produtos} produtos.`);
+  if(r.modo==='sincronizar')L.push('','Vencimento atualizado no cadastro.');
+  return L.join('\n');
+}
+window.__tiktokDescontoRodar=async(clienteId,tipo,silencioso)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);
+  if(!c)return null;
+  if(tipo==='executar'){
+    if(!isLincoln()){showToast('Apenas Lincoln pode renovar de verdade.');return null;}
+    if(!confirm(`Renovar AGORA o desconto fixo de ${c.nome} no TikTok Shop?\n\nIsso cria um desconto novo de verdade, com os mesmos produtos e preços do atual.`))return null;
+  }
+  if(!silencioso)showToast(tipo==='executar'?'Renovando...':(tipo==='sincronizar'?'Sincronizando...':'Simulando...'));
+  try{
+    const params=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId,modo:'descontos'});
+    if(tipo==='sincronizar')params.set('sincronizar','1');
+    if(tipo==='executar')params.set('executar','1');
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const data=await resp.json();
+    console.log('[Desconto TikTok debug]',c.nome,data);
+    if(!data.ok){if(!silencioso)alert(`Não foi possível:\n\n${data.erro||'Erro desconhecido.'}`);return{ok:false,erro:data.erro};}
+    const r=(data.resultados||[])[0]||{};
+    if(!silencioso)alert(ttResumoDesconto(r,data.modo));
+    return{ok:!r.erro,r};
+  }catch(e){if(!silencioso)showToast('Erro ao falar com o servidor.');console.error(e);return{ok:false,erro:e.message};}
+};
+window.__tiktokDescontoSincronizarTodos=async()=>{
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('tiktok')&&c.tiktokShopCipher);
+  if(!lista.length){showToast('Nenhum cliente com TikTok conectado.');return;}
+  const btn=document.getElementById('ttDescontoSincTodosBtn');
+  if(btn){btn.disabled=true;btn.textContent='Sincronizando...';}
+  const cont={em_dia:0,precisa_renovar:0,sem_desconto_fixo:0,erro:0};
+  for(const c of lista){
+    const x=await window.__tiktokDescontoRodar(c.id,'sincronizar',true);
+    if(!x||!x.ok)cont.erro++;
+    else if(x.r.situacao in cont)cont[x.r.situacao]++;
+    else cont.em_dia++;
+  }
+  if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
+  alert(`Sincronização de descontos do TikTok concluída (${lista.length} cliente(s)):\n\n✅ ${cont.em_dia} em dia\n⏰ ${cont.precisa_renovar} precisam renovar (faltam 30 dias ou menos)\n📋 ${cont.sem_desconto_fixo} sem desconto fixo ativo${cont.erro?`\n⚠️ ${cont.erro} com erro (veja o Console)`:''}`);
+};
 function cmRenderOfertaShopee(){
   const el=document.getElementById('cmOfertaShopeeLista');
   if(!el)return;
@@ -6555,7 +6619,7 @@ function cmDescontoExtrasShopee(c){
 function cmRenderDescontosTodos(){
   cmRenderDescontosMp('shopee','cmDescontosShopeeLista',cmDescontoExtrasShopee);
   cmRenderDescontosMp('ml','cmDescontosMlLista');
-  cmRenderDescontosMp('tiktok','cmDescontosTiktokLista');
+  cmRenderDescontosMp('tiktok','cmDescontosTiktokLista',cmDescontoExtrasTiktok);
 }
 function cmRenderCupons(){
   const el=document.getElementById('cmCuponsLista');
