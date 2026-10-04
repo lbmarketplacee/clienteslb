@@ -970,6 +970,17 @@ textarea{resize:vertical;min-height:70px;}
 .wa-crm-send-btn:disabled{opacity:.5;cursor:default}
 @media (max-width:860px){.wa-crm-wrap{flex-direction:column;height:auto}.wa-crm-list{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:280px}}
 
+/* ===== Barra de abas agrupada (Shopee / TikTok) e cabeçalho temático dos módulos ===== */
+.sub-bar{display:flex;flex-wrap:wrap;gap:12px 30px;margin:16px 0 22px;padding:12px 16px 14px;background:var(--bg-card2);border:1px solid var(--border);border-radius:12px}
+.sub-grupo{display:flex;flex-direction:column;gap:7px;min-width:0}
+.sub-grupo-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
+.sub-grupo-btns{display:flex;flex-wrap:wrap;gap:6px}
+.sub-cab{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:12px 14px;border-radius:12px;background:var(--acc-bg);border:1px solid var(--acc-bd)}
+.sub-cab-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;background:var(--acc-bd)}
+.sub-cab b{font-size:14px;color:var(--text)}
+.sub-cab-desc{font-size:12px;color:var(--text-dim);line-height:1.5;margin-top:2px}
+@media (max-width:700px){.sub-bar{gap:12px 18px;padding:10px 12px 12px}}
+
 /* ===== Caixa da Loja (Financeiro) — tema dourado/verde ===== */
 .fin-card{border:1px solid #f5d04030;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:linear-gradient(135deg,#f5d04008,transparent)}
 .fin-saldo{font-size:20px;font-weight:700;color:#f5d040}
@@ -1794,9 +1805,6 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central Criativa IA</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Título, descrição, funil de fotos e logotipo — tudo gerado por IA num só lugar.</div></div></div>
-                    <div class="cm-tool-card" data-cmtab="caixaloja"><div class="cm-tool-ico" style="background:#f5d04020;color:#f5d040">💰</div><div class="cm-tool-body"><div class="cm-tool-titulo">Caixa da Loja</div><span class="cm-tool-tag vendas">Financeiro</span><div class="cm-tool-desc">Extrato Shopee, saldo e alerta automático de queda de receita — requer app ERP.</div></div></div>
-                    <div class="cm-tool-card" data-cmtab="envios"><div class="cm-tool-ico" style="background:#3b82f620;color:#3b82f6">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central de Envios</div><span class="cm-tool-tag vendas">Logística</span><div class="cm-tool-desc">Rastreio de pedido direto no sistema, sem entrar na Shopee — requer app ERP.</div></div></div>
-                    <div class="cm-tool-card" data-cmtab="catalogo"><div class="cm-tool-ico" style="background:#a855f720;color:#a855f7">🏷️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Gestão de Catálogo</div><span class="cm-tool-tag vendas">Produto</span><div class="cm-tool-desc">Reajuste de preço em massa (com simulação), estoque e pausa automática — requer app ERP.</div></div></div>
                     <div class="cm-tool-card" data-cmtab="whatsapp"><div class="cm-tool-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><div class="cm-tool-body"><div class="cm-tool-titulo">Conectar WhatsApp Business</div><span class="cm-tool-tag vendas">Comunicação</span><div class="cm-tool-desc">Vincule sua conta WhatsApp Business pra receber e responder mensagens pela API.</div></div></div>
         </div>
 
@@ -1811,28 +1819,7 @@ textarea{resize:vertical;min-height:70px;}
           <button class="btn btn-gold btn-sm" id="relGerarBtn" style="margin-bottom:20px">📊 Gerar Relatório</button>
           <div id="relResultado"></div>
         </div>
-                <div class="cm-secao cm-painel" data-cmpainel="caixaloja">
-          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#f5d04020;color:#f5d040">💰</div><h3>Caixa da Loja</h3></div>
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.5">Extrato financeiro direto da Shopee. Só funciona em clientes com o app <b>ERP</b> conectado (é a única conexão com permissão de Financeiro). O robô confere todo dia às 8h e avisa na aba ⚠️ Erros se a receita da semana cair 40% ou mais.</p>
-          <div id="finLista"></div>
-        </div>
-
-        <div class="cm-secao cm-painel" data-cmpainel="envios">
-          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#3b82f620;color:#3b82f6">📦</div><h3>Central de Envios</h3></div>
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.5">Rastreio de pedido direto no sistema, sem entrar na Shopee. Requer o app <b>ERP</b> conectado.</p>
-          <div id="logLista"></div>
-        </div>
-
-        <div class="cm-secao cm-painel" data-cmpainel="catalogo">
-          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#a855f720;color:#a855f7">🏷️</div><h3>Gestão de Catálogo</h3></div>
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.5">Reajuste de preço em massa (sempre com simulação antes de aplicar), ajuste de estoque e pausa automática. Requer o app <b>ERP</b> ou <b>Produto</b> conectado.</p>
-          <div id="prodLista"></div>
-        </div>
-
-        <div class="cm-secao cm-painel" data-cmpainel="diretor">
+                <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><h3>Central Criativa IA</h3></div>
           <div class="ia-mk-sel" style="margin-bottom:16px">
@@ -1876,19 +1863,15 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛍️</div><h3>Shopee</h3></div>
 
-          <div style="display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap">
-            <button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">🔌 APIs</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">📊 GMV</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">⚡ Oferta Relâmpago</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">💚 Saúde da Loja</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">📢 Ads — Saldo</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">🎟️ Cupons</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="descontos" onclick="window.__shopeeSubTab('descontos')">🏷️ Descontos</button>
-            <button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">⚠️ Erros <span id="shopeeErrosContador" style="display:none"></span></button>
+          <div class="sub-bar">
+            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">🔌 APIs</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">📊 GMV</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="caixaloja" onclick="window.__shopeeSubTab('caixaloja')">💰 Caixa da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="envios" onclick="window.__shopeeSubTab('envios')">📦 Envios</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="catalogo" onclick="window.__shopeeSubTab('catalogo')">🗂️ Catálogo</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">💚 Saúde da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">📢 Ads — Saldo</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">⚡ Oferta Relâmpago</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="descontos" onclick="window.__shopeeSubTab('descontos')">🏷️ Descontos</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">🎟️ Cupons</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Alertas</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">⚠️ Erros <span id="shopeeErrosContador" style="display:none"></span></button></div></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="apis">
-          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5"><b>Tudo se conecta aqui, uma vez só.</b> Shopee: <b>⭐ ERP</b> (cobre GMV, Marketing, Produto, Financeiro e Logística) + <b>Ads</b> (a Shopee não inclui Ads no ERP). TikTok: <b>🎵 uma conexão</b> — assim que conectar, o <b>🤖 robô de oferta relâmpago liga sozinho</b> (dá pra desligar no quadradinho). O selo "🕰️ ainda no esquema antigo" aparece em quem conectou a Shopee antes da gente simplificar — continua funcionando.</p>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5"><b>2 conexões por cliente:</b> <b>⭐ ERP</b> (cobre GMV, Marketing, Produto, Financeiro e Logística) + <b>Ads</b> (a Shopee não inclui Ads no ERP, precisa à parte). O selo "🕰️ ainda no esquema antigo" aparece em quem conectou antes da gente simplificar — continua funcionando, migra quando puder. <i>O TikTok Shop se conecta dentro do card TikTok Shop.</i></p>
           <div class="cm-lista-simples" id="cmApisShopeeLista"></div>
           </div>
 
@@ -1949,6 +1932,21 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-gold btn-sm" id="descontoSincronizarTodosBtn" onclick="window.__descontoSincronizarTodos()">🔄 Sincronizar Todos</button>
           </div>
           <div class="cm-lista-simples" id="cmDescontosShopeeLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="caixaloja" style="display:none">
+          <div class="sub-cab" style="--acc-bg:#f5d04012;--acc-bd:#f5d04040"><span class="sub-cab-ico" style="color:#f5d040">💰</span><div><b>Caixa da Loja</b><div class="sub-cab-desc">Extrato financeiro direto da Shopee. Só funciona em clientes com o app <b>ERP</b> conectado (é a única conexão com permissão de Financeiro). O robô confere todo dia às 8h e avisa na aba ⚠️ Erros se a receita da semana cair 40% ou mais.</div></div></div>
+          <div id="finLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="envios" style="display:none">
+          <div class="sub-cab" style="--acc-bg:#3b82f612;--acc-bd:#3b82f640"><span class="sub-cab-ico" style="color:#3b82f6">📦</span><div><b>Central de Envios</b><div class="sub-cab-desc">Rastreio de pedido direto no sistema, sem entrar na Shopee. Requer o app <b>ERP</b> conectado.</div></div></div>
+          <div id="logLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="catalogo" style="display:none">
+          <div class="sub-cab" style="--acc-bg:#a855f712;--acc-bd:#a855f740"><span class="sub-cab-ico" style="color:#a855f7">🗂️</span><div><b>Gestão de Catálogo</b><div class="sub-cab-desc">Reajuste de preço em massa (sempre com simulação antes de aplicar), ajuste de estoque e pausa automática. Requer o app <b>ERP</b> ou <b>Produto</b> conectado.</div></div></div>
+          <div id="prodLista"></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="erros" style="display:none">
@@ -2096,11 +2094,10 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>TikTok Shop</h3></div>
 
-          <div style="display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap">
-            <button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">📊 Conectar / GMV</button>
-            <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">📦 Produtos</button>
-            <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">⚡ Oferta Relâmpago</button>
-            <button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">🏷️ Descontos</button>
+          <div class="sub-bar">
+            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">🔌 Conexão e GMV</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Catálogo</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">📦 Produtos</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">⚡ Oferta Relâmpago</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">🏷️ Descontos</button></div></div>
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="gmv">
@@ -2156,6 +2153,9 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="oferta" style="display:none">
+          <div class="sub-cab" style="--acc-bg:#ffffff12;--acc-bd:#ffffff40"><span class="sub-cab-ico" style="color:#ffffff">🤖</span><div><b>Robô de oferta relâmpago</b><div class="sub-cab-desc">Conectou a loja, o robô liga sozinho: cria as ofertas do mês todo (preço do desconto fixo −5%, 72h cada, 3 minutos de intervalo) e agenda o mês seguinte nos últimos dias. Desmarque o quadradinho pra pausar um cliente. <b>🔎 Simular</b> mostra o que ele faria, sem criar nada.</div></div></div>
+          <div id="ttRoboLista" style="margin-bottom:24px"></div>
+          <div class="sub-grupo-label" style="margin:0 0 10px">Controle manual (como era antes)</div>
           <div class="sgmv-summary">
           <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="ttEmDia">0</div></div>
           <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Programar<br>Hoje</div></div><div class="sc-value" id="ttHoje">0</div></div>
@@ -6414,28 +6414,38 @@ function cmApiSlot(conectado, label, onclick, tituloVencido){
 function cmRenderApisShopee(){
   const el=document.getElementById('cmApisShopeeLista');
   if(!el)return;
-  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.marketplaces||[]).includes('shopee')||(c.marketplaces||[]).includes('tiktok')));
-  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ou TikTok ainda.</div>';return;}
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee'));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const conectarClick=app=>`window.__shopeeConectar('${c.id}','${nomeEsc}','${app}')`;
-    const temShopee=(c.marketplaces||[]).includes('shopee');
-    const temTiktok=(c.marketplaces||[]).includes('tiktok');
     const jaMigrado=!!c.shopeeErpShopId;
     const temLegado=!jaMigrado&&!!(c.shopeeShopId||c.shopeeMktShopId||c.shopeeProdutoShopId);
-    const blocoShopee=temShopee?`
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
+      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>
       <span style="display:flex;align-items:center;gap:4px" title="ERP — cobre GMV, Marketing e Produto numa conexão só">⭐ ${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
-      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">🕰️ ainda no esquema antigo</span>':''}`:'';
-    const ttConectado=!!c.tiktokShopCipher;
-    const ttAuto=c.tiktokOfertaAuto!==false; // ligado por padrão assim que conecta
-    const blocoTiktok=temTiktok?`
-      <span style="display:flex;align-items:center;gap:4px">🎵 ${cmApiSlot(ttConectado,'TikTok',`window.__tiktokConectar('${c.id}','${nomeEsc}')`)}</span>
-      ${ttConectado?`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer" title="Cria sozinho as ofertas relâmpago do mês todo, nas regras da LB (desconto fixo −5%, 72h, intervalo de 3 min)"><input type="checkbox" ${ttAuto?'checked':''} onchange="window.__tiktokToggleAuto('${c.id}',this.checked)"> 🤖 oferta relâmpago automática</label>
-      <button class="btn btn-ghost btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',false)" title="Mostra o que o robô faria, sem criar nada">🔎 Simular</button>
-      ${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',true)" title="Cria as ofertas agora, de verdade">▶️ Rodar agora</button>`:''}`:''}`:'';
+      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">🕰️ ainda no esquema antigo</span>':''}
+    </div>`;
+  }).join('');
+}
+// ---- TikTok Shop: conexão + robô de oferta relâmpago (vive DENTRO do card TikTok Shop) ----
+function cmRenderTiktokRobo(){
+  const el=document.getElementById('ttRoboLista');
+  if(!el)return;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('tiktok'));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:16px">Nenhum cliente com TikTok Shop ainda. Marque "TikTok Shop" nos marketplaces do cliente.</div>';return;}
+  el.innerHTML=lista.map(c=>{
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
+    const conectado=!!c.tiktokShopCipher;
+    const auto=c.tiktokOfertaAuto!==false; // ligado por padrão assim que conecta
+    const cobertura=c.tiktokOfertaCobertaAte?`Coberto até ${new Date(c.tiktokOfertaCobertaAte*1000).toLocaleDateString('pt-BR')}`:'';
     return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
-      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>${blocoShopee}${blocoTiktok}
+      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}${cobertura?`<div style="font-size:11px;color:var(--text-dim)">${cobertura}</div>`:''}</span>
+      <span style="display:flex;align-items:center;gap:4px">🎵 ${cmApiSlot(conectado,'TikTok',`window.__tiktokConectar('${c.id}','${nomeEsc}')`)}</span>
+      ${conectado?`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer" title="Cria sozinho as ofertas relâmpago do mês todo, nas regras da LB"><input type="checkbox" ${auto?'checked':''} onchange="window.__tiktokToggleAuto('${c.id}',this.checked)"> 🤖 automática</label>
+      <button class="btn btn-ghost btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',false)" title="Mostra o que o robô faria, sem criar nada">🔎 Simular</button>
+      ${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',true)" title="Cria as ofertas agora, de verdade">▶️ Rodar agora</button>`:''}`:''}
     </div>`;
   }).join('');
 }
@@ -6697,7 +6707,7 @@ function cmRenderDevolucao(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
-function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();}
+function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();cmRenderTiktokRobo();}
 
 /* ============== 💰 CAIXA DA LOJA (Financeiro) ============== */
 function cmRenderFinanceiro(){
