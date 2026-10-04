@@ -2723,6 +2723,8 @@ import{getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,onSnapshot,query,o
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 const nome=e=>USERS_MAP[e]||e;
 const isLincoln=()=>currentEmail===LINCOLN_EMAIL;
+// Login do Firebase pro backend saber quem chamou (ações dos robôs exigem).
+const authHeaders=async()=>auth.currentUser?{Authorization:`Bearer ${await auth.currentUser.getIdToken()}`}:{};
 let clientesCache=[],gmvCache=[],contratosCache=[];
 let filtroMp="todos",filtroResp="todos",busca="",currentUser="",currentEmail="",mostrarInativos=false;
 let gmvChart=null,gmvLineChart=null,gmvDonutChart=null,firstTableRender=true;
@@ -6052,7 +6054,7 @@ window.__rodarRoboOfertas=async()=>{
   if(btn){btn.disabled=true;btn.textContent='Rodando...';}
   try{
     const params=new URLSearchParams({acao:'rodar_robo_ofertas'});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Rodar Robô Ofertas debug]',data);
     if(!data.ok){alert(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
@@ -6493,7 +6495,7 @@ window.__tiktokRodarRobo=async(clienteId,executar)=>{
   try{
     const params=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId});
     if(executar)params.set('executar','1');
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Robô TikTok debug]',c.nome,data);
     if(!data.ok){alert(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
@@ -6536,7 +6538,7 @@ window.__tiktokDescontoRodar=async(clienteId,tipo,silencioso)=>{
     const params=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId,modo:'descontos'});
     if(tipo==='sincronizar')params.set('sincronizar','1');
     if(tipo==='executar')params.set('executar','1');
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Desconto TikTok debug]',c.nome,data);
     if(!data.ok){if(!silencioso)alert(`Não foi possível:\n\n${data.erro||'Erro desconhecido.'}`);return{ok:false,erro:data.erro};}
