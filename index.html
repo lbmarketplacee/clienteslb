@@ -26,14 +26,14 @@
   };
 </script>
 <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Montserrat:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{--bg:#0a0a09;--bg-sidebar:#111110;--bg-card:#111110;--bg-card2:#171613;--gold:#d4a94a;--gold-soft:#d4a94a30;--gold-dim:#a8863c;--gold-bright:#f0d791;--text:#f3efe4;--text-dim:#a39d8c;--text-dim2:#6e6a5d;--border:#282722;--border-soft:#1e1d19;--border-strong:#3a3728;--btn-text-dark:#181712;--red:#e0525a;--red-bg:#e0525a20;--amber:#e0a352;--amber-bg:#e0a35220;--green:#5fbf7a;--green-bg:#5fbf7a20;--purple:#a855f7;--purple-bg:#a855f720;--teal:#69c9d0;--shopee:#ee4d2d;--ml:#ffe156;--tiktok:#69c9d0;--shein:#a855f7;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:inherit;min-height:100vh;}
 h1,h2,h3{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
 .hidden{display:none!important;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -118,7 +118,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--gold-dim);}
 .dash-row{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px;margin-bottom:24px;}
 .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:22px;}
 .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-.panel-head h3{font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;letter-spacing:.02em;color:var(--text);text-transform:uppercase;}
+.panel-head h3{font-size:15px;font-weight:700;font-family:inherit;letter-spacing:.02em;color:var(--text);text-transform:uppercase;}
 .panel-head .p-sub{font-size:11px;color:var(--text-dim);}
 .donut-wrap{display:flex;align-items:center;gap:20px;}
 .donut-canvas{width:170px;height:170px;flex:none;position:relative;}
@@ -757,6 +757,8 @@ textarea{resize:vertical;min-height:70px;}
 .cm-tool-titulo{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:6px;}
 .cm-tool-tag{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:5px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;}
 .cm-tool-tag.vendas{background:var(--gold-soft);color:var(--gold);}
+.cm-tool-tag.mkt,.cm-tool-tag.pos,.cm-tool-tag.rel,.cm-tool-tag.ia,.cm-tool-tag.com{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-weight:600}
+.cm-tool-tag.ia{border-color:var(--gold-dim);color:var(--gold)}
 .cm-tool-tag.trafego{background:var(--purple-bg);color:var(--purple);}
 .cm-tool-tag.engajamento{background:var(--green-bg);color:var(--green);}
 .cm-tool-desc{font-size:11.5px;color:var(--text-dim);line-height:1.5;}
@@ -826,7 +828,7 @@ textarea{resize:vertical;min-height:70px;}
 .brd-logpanel-inner{padding:18px 22px 20px;}
 .brd-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:12px;}
 .brd-field label{display:block;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;}
-.brd-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;outline:none;}
+.brd-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:inherit;font-size:14px;outline:none;}
 .brd-field input:focus{border-color:var(--gold);}
 .brd-board.com .brd-field input:focus{border-color:var(--green);}
 .brd-form-actions{display:flex;justify-content:flex-end;}
@@ -878,13 +880,13 @@ textarea{resize:vertical;min-height:70px;}
 .kfollow.parado{color:#9fb6ff;border-color:#9fb6ff55}
 .kfollow.agendado{color:var(--text-dim)}
 .kfollow.perda{color:var(--red);opacity:.85}
-.crm-filters input,.crm-filters select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:12px;padding:7px 9px;outline:none;}
+.crm-filters input,.crm-filters select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;padding:7px 9px;outline:none;}
 .crm-filters input:focus,.crm-filters select:focus{border-color:var(--purple);}
 .btn-newlead{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:var(--purple);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;}
 .lead-form{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;}
 .lead-form .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px;}
 .lead-form .field label{display:block;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;}
-.lead-form .field input,.lead-form .field select,.lead-form .field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;outline:none;}
+.lead-form .field input,.lead-form .field select,.lead-form .field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:inherit;font-size:14px;outline:none;}
 .lead-form .field textarea{min-height:60px;resize:vertical;}
 .lead-form .field input:focus,.lead-form .field select:focus,.lead-form .field textarea:focus{border-color:var(--purple);}
 .lead-form-actions{display:flex;justify-content:flex-end;gap:8px;}
@@ -925,7 +927,7 @@ textarea{resize:vertical;min-height:70px;}
 .chat-sugg-btn{background:var(--bg-card2);border:1px solid var(--border);color:var(--text-dim);font-size:12.5px;padding:8px 14px;border-radius:99px;cursor:pointer;}
 .chat-sugg-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
 .chat-inputbar{display:flex;gap:10px;padding:14px 0 4px;border-top:1px solid var(--border);}
-.chat-inputbar textarea{flex:1;background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;resize:none;outline:none;min-height:46px;max-height:120px;}
+.chat-inputbar textarea{flex:1;background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:14px;resize:none;outline:none;min-height:46px;max-height:120px;}
 .chat-inputbar textarea:focus{border-color:var(--gold-dim);}
 .chat-send-btn{background:var(--gold);color:var(--btn-text-dark);border:none;border-radius:10px;padding:0 20px;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.5px;font-size:13px;}
 .chat-send-btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -964,7 +966,7 @@ textarea{resize:vertical;min-height:70px;}
 .c360-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .c360-kpi{background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:15px}.c360-kpi span{display:block;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}.c360-kpi b{font-family:'Oswald',sans-serif;font-size:22px;color:var(--text)}
 .c360-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
-.c360-card{background:var(--bg-card);border:1px solid var(--border);border-radius:13px;padding:18px}.c360-card h3{font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:.02em;color:var(--gold);margin-bottom:14px}
+.c360-card{background:var(--bg-card);border:1px solid var(--border);border-radius:13px;padding:18px}.c360-card h3{font-family:inherit;font-size:13px;letter-spacing:.02em;color:var(--gold);margin-bottom:14px}
 .c360-market{display:flex;flex-wrap:wrap;gap:8px}.c360-market .mp-badge{font-size:11px;padding:6px 10px}
 .c360-row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid var(--border-soft);font-size:12px}.c360-row:last-child{border-bottom:0}.c360-row span{color:var(--text-dim)}.c360-row b{text-align:right;color:var(--text);font-weight:600}
 .c360-months{display:flex;flex-direction:column;gap:7px}.c360-month{display:flex;justify-content:space-between;align-items:center;background:#0e0e0e;border:1px solid var(--border-soft);border-radius:8px;padding:9px 11px;font-size:11px}.c360-month strong{color:var(--green)}.c360-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.c360-actions .btn{flex:1;min-width:150px}
@@ -1217,7 +1219,7 @@ textarea{resize:vertical;min-height:70px;}
         <div style="position:relative">
           <button class="notif-btn" id="notifBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge hidden" id="notifBadge">0</span></button>
           <div class="notif-panel" id="notifPanel">
-            <div class="notif-panel-head">🔔 Notificações</div>
+            <div class="notif-panel-head">Notificações</div>
             <div id="notifList"></div>
           </div>
         </div>
@@ -1299,7 +1301,7 @@ textarea{resize:vertical;min-height:70px;}
           <button class="chip" data-resp2="caroline@lbmarketplace.com.br">Caroline</button>
           <button class="chip" data-resp2="mirela@lbmarketplace.com.br">Mirela</button>
           <span style="width:1px;background:var(--border);margin:0 4px"></span>
-          <button class="chip" id="chipMostrarInativos">👻 Mostrar Inativos</button>
+          <button class="chip" id="chipMostrarInativos">Mostrar Inativos</button>
         </div>
         <div class="table-wrap">
           <div class="table-scroll">
@@ -1342,11 +1344,11 @@ textarea{resize:vertical;min-height:70px;}
           <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos indicados</div></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button class="btn btn-gold btn-sm" id="openNovoContratoBtn">+ Propor Novo Contrato</button></div>
-                <div class="contratos-section"><h3>⏳ Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
-        <div class="contratos-section"><h3>✅ Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
-        <div class="contratos-section"><h3>❌ Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
+                <div class="contratos-section"><h3>Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
+        <div class="contratos-section"><h3>Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
+        <div class="contratos-section"><h3>Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
         <div class="contratos-section">
-          <h3>📄 Gerar Contrato (PDF)</h3>
+          <h3>Gerar Contrato (PDF)</h3>
           <div class="field"><label>Nome do cliente/empresa</label><input type="text" id="caNome" placeholder="Nome completo ou razão social"></div>
           <div class="field"><label>CNPJ/CPF</label><input type="text" id="caCnpjCpf" placeholder="00.000.000/0000-00"></div>
           <div style="display:flex;gap:10px">
@@ -1359,7 +1361,7 @@ textarea{resize:vertical;min-height:70px;}
             <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="caDuracaoMeses" placeholder="12"></div>
             <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="caDiaVencimento" min="1" max="31" placeholder="5"></div>
           </div>
-          <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">📄 Gerar Contrato (.pdf)</button>
+          <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">Gerar Contrato (.pdf)</button>
         </div>
       </div>
       <!-- ===== PÁGINA: CADASTROS RECEBIDOS ===== -->
@@ -1375,9 +1377,9 @@ textarea{resize:vertical;min-height:70px;}
               <input type="text" id="waBusca" placeholder="🔎 Buscar por nome ou telefone..." style="padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="window.__waRenderizarComFiltro()">
               <div style="display:flex;gap:6px;flex-wrap:wrap" id="waFiltroModo">
                 <button class="btn btn-gold btn-sm wa-filtro-btn active" data-wafiltro="todas" onclick="window.__waFiltrarModo('todas')">Todas</button>
-                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="aguardando_humano" onclick="window.__waFiltrarModo('aguardando_humano')">⏳ <span id="waContadorPendentes" class="tt-status-pill atrasada" style="margin-left:2px">0</span></button>
-                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="auto" onclick="window.__waFiltrarModo('auto')">🤖 IA</button>
-                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="humano" onclick="window.__waFiltrarModo('humano')">🙋 Você</button>
+                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="aguardando_humano" onclick="window.__waFiltrarModo('aguardando_humano')">Aguardando <span id="waContadorPendentes" class="tt-status-pill atrasada" style="margin-left:2px">0</span></button>
+                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="auto" onclick="window.__waFiltrarModo('auto')">IA</button>
+                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="humano" onclick="window.__waFiltrarModo('humano')">Você</button>
               </div>
               <select onchange="window.__waFiltrarPeriodo(this.value)" style="font-size:11.5px;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
                 <option value="all">Última msg: todas</option>
@@ -1404,9 +1406,9 @@ textarea{resize:vertical;min-height:70px;}
                 <span class="tt-status-pill" id="waModalModoBadge"></span>
                 <select id="waChatQualifSelect" onchange="window.__waSalvarQualificacaoAtiva(this.value)" style="font-size:12px;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
                   <option value="">Não avaliado</option>
-                  <option value="qualificado">✅ Qualificado</option>
-                  <option value="nao_qualificado">❌ Não qualificado</option>
-                  <option value="cliente">💰 Virou cliente</option>
+                  <option value="qualificado">Qualificado</option>
+                  <option value="nao_qualificado">Não qualificado</option>
+                  <option value="cliente">Virou cliente</option>
                 </select>
                 <button class="icon-act" onclick="window.__waFecharChat()" aria-label="Fechar" title="Fechar conversa">✕</button>
               </div>
@@ -1424,7 +1426,7 @@ textarea{resize:vertical;min-height:70px;}
                 <button class="wa-crm-send-btn" id="waModalEnviarBtn" title="Enviar">➤</button>
               </div>
               <div style="padding:0 14px 12px">
-                <button class="btn btn-ghost btn-sm" id="waModalAssumirBtn" style="width:100%">🙋 Assumir Conversa (para a IA)</button>
+                <button class="btn btn-ghost btn-sm" id="waModalAssumirBtn" style="width:100%">Assumir Conversa (para a IA)</button>
               </div>
             </div>
           </div>
@@ -1435,7 +1437,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Cadastros Recebidos</h2><p class="page-sub">Cadastros enviados pelo link público de onboarding.</p></div>
-          <button class="btn btn-ghost btn-sm" id="cadastrosVerConvertidosBtn" style="margin-left:auto">👁 Ver Já Convertidos</button>
+          <button class="btn btn-ghost btn-sm" id="cadastrosVerConvertidosBtn" style="margin-left:auto">Ver Já Convertidos</button>
         </div>
         <div id="cadastrosRecebidos"><div class="empty-state" style="padding:20px">Nenhum cadastro pendente.</div></div>
       </div>
@@ -1452,8 +1454,8 @@ textarea{resize:vertical;min-height:70px;}
           <button class="calc-mp-btn" data-cmp="shein">Shein</button>
         </div>
         <div class="calc-mode-selector">
-          <button class="calc-mode-btn active" data-mode="quanto">🎯 Quero saber quanto vender</button>
-          <button class="calc-mode-btn" data-mode="venda">💰 Tenho o valor de venda</button>
+          <button class="calc-mode-btn active" data-mode="quanto">Quero saber quanto vender</button>
+          <button class="calc-mode-btn" data-mode="venda">Tenho o valor de venda</button>
         </div>
         <div class="calc-grid">
           <div class="calc-inputs">
@@ -1464,7 +1466,7 @@ textarea{resize:vertical;min-height:70px;}
             <div class="field hidden" id="calcMlTipoField"><label>Tipo de Anúncio ML</label><div class="chip-toggle-group"><button type="button" class="calc-mltipo on" data-tipo="classico">Clássico (14%)</button><button type="button" class="calc-mltipo" data-tipo="premium">Premium (17%)</button></div></div>
             <div class="field"><label>Imposto (%) — opcional</label><input type="number" step="0.01" id="calcImposto" placeholder="Ex: 6"></div>
             <div class="calc-toggles-title">Extras (liga/desliga)</div>
-            <div class="calc-toggles"><button type="button" class="calc-toggle" data-t="cupom">🎟️ Cupom 3%</button><button type="button" class="calc-toggle" data-t="relampago">⚡ Relâmpago 5%</button><button type="button" class="calc-toggle" data-t="ads">📢 Ads 10%</button></div>
+            <div class="calc-toggles"><button type="button" class="calc-toggle" data-t="cupom">Cupom 3%</button><button type="button" class="calc-toggle" data-t="relampago">Relâmpago 5%</button><button type="button" class="calc-toggle" data-t="ads">Ads 10%</button></div>
             <button class="btn btn-gold" id="calcBtn" style="margin-top:20px;width:100%">Calcular</button>
           </div>
           <div class="calc-result-col">
@@ -1858,7 +1860,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="page-head-text"><h2 class="page-title">DRE <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Demonstrativo de Resultado — dados reais puxados direto do Asaas.</p></div>
           <div style="display:flex;gap:8px;margin-left:auto">
             <input type="month" id="dreMesInput" style="max-width:160px">
-            <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">🔄 Atualizar</button>
+            <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">Atualizar</button>
           </div>
         </div>
         <div class="sgmv-summary">
@@ -1868,15 +1870,15 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card metric-card glow-purple"><div class="sc-top"><div class="sc-icon purple metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div><div class="sc-label">MRR<br>(Recorrência Ativa)</div></div></div><div class="sc-value metric-value" id="dreMrr">R$ 0</div><div class="sc-foot" id="dreMrrFoot">&nbsp;</div></div>
         </div>
         <div class="cm-secao" style="margin-top:20px">
-          <h3 style="margin-bottom:14px">📅 Vencimentos — Próximas Cobranças Recorrentes</h3>
+          <h3 style="margin-bottom:14px">Vencimentos — Próximas Cobranças Recorrentes</h3>
           <div id="dreListaVencimentos"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
         </div>
         <div class="cm-secao" style="margin-top:20px">
-          <h3 style="margin-bottom:14px">📊 Receita por Cliente</h3>
+          <h3 style="margin-bottom:14px">Receita por Cliente</h3>
           <div id="dreListaClientes"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
         </div>
         <div class="cm-secao" style="margin-top:20px">
-          <h3 style="margin-bottom:14px">👤 Despesas por Colaboradora</h3>
+          <h3 style="margin-bottom:14px">Despesas por Colaboradora</h3>
           <div id="dreListaColaboradoras"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
         </div>
       </div>
@@ -1888,29 +1890,29 @@ textarea{resize:vertical;min-height:70px;}
         </div>
 
         <div class="cm-card-grid" id="cmCardGrid">
-          <div class="cm-tool-card" data-cmtab="shopee"><div class="cm-tool-ico" style="background:#ee4d2d20;color:#ee4d2d">🛍️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">GMV, oferta relâmpago, saúde da loja e saldo de Ads — tudo num só lugar.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="tiktokshop"><div class="cm-tool-ico" style="background:#00000030;color:#fff">🎵</div><div class="cm-tool-body"><div class="cm-tool-titulo">TikTok Shop</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Conectar loja, GMV e oferta relâmpago via API.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="mercadolivre"><div class="cm-tool-ico" style="background:#fff16020;color:#ffe600">🛍️</div><div class="cm-tool-body"><div class="cm-tool-titulo">Mercado Livre</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">GMV, conexão, oferta relâmpago e gross up — tudo num só lugar.</div></div></div>
-          <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag gestao" style="background:#2a261c;color:var(--text-dim)">Gestão pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
-                    <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
-                    <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><div class="cm-tool-body"><div class="cm-tool-titulo">Central Criativa IA</div><span class="cm-tool-tag vendas">Aumente suas vendas</span><div class="cm-tool-desc">Título, descrição, funil de fotos e logotipo — tudo gerado por IA num só lugar.</div></div></div>
-                    <div class="cm-tool-card" data-cmtab="whatsapp"><div class="cm-tool-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><div class="cm-tool-body"><div class="cm-tool-titulo">Conectar WhatsApp Business</div><span class="cm-tool-tag vendas">Comunicação</span><div class="cm-tool-desc">Vincule sua conta WhatsApp Business pra receber e responder mensagens pela API.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="shopee"><div class="cm-tool-ico" style="background:#ee4d2d1f"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="#ee4d2d" d="M19.5 7.5h-2.6C16.7 5 14.6 3.2 12 3.2S7.3 5 7.1 7.5H4.5c-.5 0-.8.4-.8.8l-.7 10.8c-.1 1.6 1.1 2.9 2.7 2.9h12.6c1.6 0 2.8-1.3 2.7-2.9l-.7-10.8c0-.4-.3-.8-.8-.8zM12 4.9c1.6 0 2.9 1.1 3.1 2.6H8.9c.2-1.5 1.5-2.6 3.1-2.6z"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="700" font-family="Arial,sans-serif">S</text></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee</div><span class="cm-tool-tag mkt">Marketplace</span><div class="cm-tool-desc">GMV, oferta relâmpago, saúde da loja e saldo de Ads — tudo num só lugar.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="tiktokshop"><div class="cm-tool-ico" style="background:#0b0b0b;border:1px solid var(--border)"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#25F4EE" transform="translate(-0.7,0.5)"/><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#FE2C55" transform="translate(0.7,-0.3)"/><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#fff"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">TikTok Shop</div><span class="cm-tool-tag mkt">Marketplace</span><div class="cm-tool-desc">Conectar loja, GMV e oferta relâmpago via API.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="mercadolivre"><div class="cm-tool-ico" style="background:#ffe6001a"><svg viewBox="0 0 24 24" width="24" height="24"><ellipse cx="12" cy="12" rx="10" ry="7.6" fill="#FFE600" stroke="#2D3277" stroke-width="1.5"/><path d="M5.5 12.2c1.6-1.7 3.1-2.6 4.6-1.1l1.9 1.7 1.9-1.7c1.5-1.5 3-.6 4.6 1.1" stroke="#2D3277" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Mercado Livre</div><span class="cm-tool-tag mkt">Marketplace</span><div class="cm-tool-desc">GMV, conexão, oferta relâmpago e gross up — tudo num só lugar.</div></div></div>
+          <div class="cm-tool-card" data-cmtab="devolucao"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Devolução</div><span class="cm-tool-tag pos">Pós-venda</span><div class="cm-tool-desc">Lembrete mensal do dia 30 pra revisar devoluções de cada cliente.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="relatorio"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Relatório Mensal</div><span class="cm-tool-tag rel">Relatórios</span><div class="cm-tool-desc">Investimento em Ads x GMV vendido, por cliente, mês a mês.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="diretor"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Central Criativa IA</div><span class="cm-tool-tag ia">Criação com IA</span><div class="cm-tool-desc">Título, descrição, funil de fotos e logotipo — tudo gerado por IA num só lugar.</div></div></div>
+                    <div class="cm-tool-card" data-cmtab="whatsapp"><div class="cm-tool-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Conectar WhatsApp Business</div><span class="cm-tool-tag com">Comunicação</span><div class="cm-tool-desc">Vincule sua conta WhatsApp Business pra receber e responder mensagens pela API.</div></div></div>
         </div>
 
 
                 <div class="cm-secao cm-painel" data-cmpainel="relatorio">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">📊</div><h3>Relatório Mensal — Ads x GMV</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><h3>Relatório Mensal — Ads x GMV</h3></div>
           <div class="form-row" style="margin-bottom:20px">
             <div class="field"><label>Cliente</label><select id="relClienteSelect"></select></div>
             <div class="field"><label>Mês</label><input type="month" id="relMesInput"></div>
           </div>
-          <button class="btn btn-gold btn-sm" id="relGerarBtn" style="margin-bottom:20px">📊 Gerar Relatório</button>
+          <button class="btn btn-gold btn-sm" id="relGerarBtn" style="margin-bottom:20px">Gerar Relatório</button>
           <div id="relResultado"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple)">🎨</div><h3>Central Criativa IA</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></div><h3>Central Criativa IA</h3></div>
           <div class="ia-mk-sel" style="margin-bottom:16px">
             <button class="ia-mk-btn active" data-dirmk="shopee"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px;margin-right:5px"><path fill="#ee4d2d" d="M19.5 7.5h-2.6C16.7 5 14.6 3.2 12 3.2S7.3 5 7.1 7.5H4.5c-.5 0-.8.4-.8.8l-.7 10.8c-.1 1.6 1.1 2.9 2.7 2.9h12.6c1.6 0 2.8-1.3 2.7-2.9l-.7-10.8c0-.4-.3-.8-.8-.8zM12 4.9c1.6 0 2.9 1.1 3.1 2.6H8.9c.2-1.5 1.5-2.6 3.1-2.6z"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="700" font-family="Arial,sans-serif">S</text></svg> Shopee</button>
             <button class="ia-mk-btn" data-dirmk="ml"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px;margin-right:5px"><ellipse cx="12" cy="12" rx="10" ry="7.6" fill="#FFE600" stroke="#2D3277" stroke-width="1.5"/><path d="M5.5 12.2c1.6-1.7 3.1-2.6 4.6-1.1l1.9 1.7 1.9-1.7c1.5-1.5 3-.6 4.6 1.1" stroke="#2D3277" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg> Mercado Livre</button>
@@ -1927,15 +1929,15 @@ textarea{resize:vertical;min-height:70px;}
 
           <div class="calc-toggles-title">O que você quer gerar?</div>
           <div class="calc-toggles" style="margin-bottom:16px">
-            <button type="button" class="calc-toggle on" data-dirgerar="titulo">📌 Título</button>
-            <button type="button" class="calc-toggle on" data-dirgerar="descricao">📝 Descrição</button>
-            <button type="button" class="calc-toggle on" data-dirgerar="fotos">🖼️ Fotos (funil completo)</button>
-            <button type="button" class="calc-toggle" data-dirgerar="guia">📏 Guia de Tamanhos avulso</button>
+            <button type="button" class="calc-toggle on" data-dirgerar="titulo">Título</button>
+            <button type="button" class="calc-toggle on" data-dirgerar="descricao">Descrição</button>
+            <button type="button" class="calc-toggle on" data-dirgerar="fotos">Fotos (funil completo)</button>
+            <button type="button" class="calc-toggle" data-dirgerar="guia">Guia de Tamanhos avulso</button>
           </div>
           <div class="form-row" id="dirQtdFotosWrap">
             <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="5" min="1" max="8"></div>
           </div>
-          <button class="btn btn-gold" id="dirGerarBtn">✨ Gerar</button>
+          <button class="btn btn-gold" id="dirGerarBtn">Gerar</button>
           <div id="dirResultado" style="margin-top:24px"></div>
 
           <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
@@ -1944,19 +1946,19 @@ textarea{resize:vertical;min-height:70px;}
               <div class="field"><label>Nome da loja</label><input type="text" id="logoNomeLoja" placeholder="Ex: Fada Varejista"></div>
               <div class="field"><label>Estilo desejado</label><input type="text" id="logoEstilo" placeholder="Ex: minimalista, dourado, elegante..."></div>
             </div>
-            <button class="btn btn-ghost" id="logoGerarBtn">🏷️ Gerar Logotipo</button>
+            <button class="btn btn-ghost" id="logoGerarBtn">Gerar Logotipo</button>
             <div id="logoResultado" style="margin-top:16px"></div>
           </div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="shopee">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d20;color:#ee4d2d">🛍️</div><h3>Shopee</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ee4d2d1f"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="#ee4d2d" d="M19.5 7.5h-2.6C16.7 5 14.6 3.2 12 3.2S7.3 5 7.1 7.5H4.5c-.5 0-.8.4-.8.8l-.7 10.8c-.1 1.6 1.1 2.9 2.7 2.9h12.6c1.6 0 2.8-1.3 2.7-2.9l-.7-10.8c0-.4-.3-.8-.8-.8zM12 4.9c1.6 0 2.9 1.1 3.1 2.6H8.9c.2-1.5 1.5-2.6 3.1-2.6z"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="700" font-family="Arial,sans-serif">S</text></svg></div><h3>Shopee</h3></div>
 
           <div class="sub-bar">
-            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">🔌 APIs</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">📊 GMV</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="caixaloja" onclick="window.__shopeeSubTab('caixaloja')">💰 Caixa da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="envios" onclick="window.__shopeeSubTab('envios')">📦 Envios</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="catalogo" onclick="window.__shopeeSubTab('catalogo')">🗂️ Catálogo</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">💚 Saúde da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">📢 Ads — Saldo</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">⚡ Oferta Relâmpago</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="descontos" onclick="window.__shopeeSubTab('descontos')">🏷️ Descontos</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">🎟️ Cupons</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Alertas</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">⚠️ Erros <span id="shopeeErrosContador" style="display:none"></span></button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">APIs</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">GMV</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="caixaloja" onclick="window.__shopeeSubTab('caixaloja')">Caixa da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="envios" onclick="window.__shopeeSubTab('envios')">Envios</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="catalogo" onclick="window.__shopeeSubTab('catalogo')">Catálogo</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">Saúde da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">Ads — Saldo</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="descontos" onclick="window.__shopeeSubTab('descontos')">Descontos</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">Cupons</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Alertas</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">Erros <span id="shopeeErrosContador" style="display:none"></span></button></div></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="apis">
@@ -1973,7 +1975,7 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="toolbar">
           <div class="spacer"></div>
-          <button class="btn btn-gold btn-sm" id="sgmvAtualizarTodosBtn">🔄 Atualizar Todas as Lojas</button>
+          <button class="btn btn-gold btn-sm" id="sgmvAtualizarTodosBtn">Atualizar Todas as Lojas</button>
         </div>
         <div class="sgmv-list" id="sgmvLista"></div>
           </div>
@@ -1986,9 +1988,9 @@ textarea{resize:vertical;min-height:70px;}
           <div class="toolbar">
             <p style="font-size:12.5px;color:var(--text-dim);margin:0"><b>⚡ Criar em Todas</b> passa por todo cliente com Marketing conectado e preenche todos os horários disponíveis de cada um — não duplica o que já existe. <b>🔄 Sincronizar</b> só consulta, não cria nada.</p>
             <div class="spacer"></div>
-            <button class="btn btn-ghost btn-sm" id="sincronizarTodasBtn" onclick="window.__sincronizarTodasOfertas()">🔄 Sincronizar Todos</button>
-            <button class="btn btn-gold btn-sm" id="criarEmTodasBtn" onclick="window.__criarOfertasEmTodas()">⚡ Criar em Todas</button>
-            <button class="btn btn-ghost btn-sm" id="rodarRoboOfertasBtn" style="display:none" onclick="window.__rodarRoboOfertas()">▶️ Rodar robô agora</button>
+            <button class="btn btn-ghost btn-sm" id="sincronizarTodasBtn" onclick="window.__sincronizarTodasOfertas()">Sincronizar Todos</button>
+            <button class="btn btn-gold btn-sm" id="criarEmTodasBtn" onclick="window.__criarOfertasEmTodas()">Criar em Todas</button>
+            <button class="btn btn-ghost btn-sm" id="rodarRoboOfertasBtn" style="display:none" onclick="window.__rodarRoboOfertas()">Rodar robô agora</button>
           </div>
           <div class="cm-lista-simples" id="cmOfertaShopeeLista"></div>
           </div>
@@ -2000,7 +2002,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="shopee-subpanel" data-shopeesubpanel="ads" style="display:none">
           <div class="toolbar">
             <div class="spacer"></div>
-            <button class="btn btn-gold btn-sm" id="shopeeAdsAtualizarTodosBtn">🔄 Atualizar Todos os Saldos</button>
+            <button class="btn btn-gold btn-sm" id="shopeeAdsAtualizarTodosBtn">Atualizar Todos os Saldos</button>
           </div>
           <div class="sgmv-list" id="adsSaldoLista"></div>
           </div>
@@ -2009,7 +2011,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="toolbar">
             <p style="font-size:12.5px;color:var(--text-dim);margin:0">Confere direto na Shopee se o Cupom Fixo está mesmo ativo em cada cliente — a data aqui pode estar desatualizada se alguém mexeu direto na Shopee.</p>
             <div class="spacer"></div>
-            <button class="btn btn-gold btn-sm" id="cupomSincronizarTodosBtn" onclick="window.__cupomSincronizarTodos()">🔄 Sincronizar Todos</button>
+            <button class="btn btn-gold btn-sm" id="cupomSincronizarTodosBtn" onclick="window.__cupomSincronizarTodos()">Sincronizar Todos</button>
           </div>
           <div class="cm-lista-simples" id="cmCuponsLista"></div>
           </div>
@@ -2018,7 +2020,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="toolbar">
             <p style="font-size:12.5px;color:var(--text-dim);margin:0">Vencimento do desconto fixo de cada cliente. Use <b>🔍 Descontos da loja</b> pra buscar direto na Shopee, marcar qual é o fixo (📌) e <b>🔁 Duplicar</b> quando estiver acabando.</p>
             <div class="spacer"></div>
-            <button class="btn btn-gold btn-sm" id="descontoSincronizarTodosBtn" onclick="window.__descontoSincronizarTodos()">🔄 Sincronizar Todos</button>
+            <button class="btn btn-gold btn-sm" id="descontoSincronizarTodosBtn" onclick="window.__descontoSincronizarTodos()">Sincronizar Todos</button>
           </div>
           <div class="cm-lista-simples" id="cmDescontosShopeeLista"></div>
           </div>
@@ -2042,7 +2044,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="toolbar">
             <p style="font-size:12.5px;color:var(--text-dim);margin:0">Erros das últimas atualizações em massa (Saldo Ads, GMV) + tudo que o robô da Oferta Relâmpago não conseguiu criar sozinho — fica registrado aqui até você limpar.</p>
             <div class="spacer"></div>
-            <button class="btn btn-ghost btn-sm" id="shopeeErrosLimparBtn">🗑️ Limpar</button>
+            <button class="btn btn-ghost btn-sm" id="shopeeErrosLimparBtn">Limpar</button>
           </div>
           <div id="shopeeErrosLista"></div>
           </div>
@@ -2050,18 +2052,18 @@ textarea{resize:vertical;min-height:70px;}
 
         <div class="cm-secao cm-painel" data-cmpainel="mercadolivre">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#fff16020;color:#ffe600">🛍️</div><h3>Mercado Livre</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#ffe6001a"><svg viewBox="0 0 24 24" width="24" height="24"><ellipse cx="12" cy="12" rx="10" ry="7.6" fill="#FFE600" stroke="#2D3277" stroke-width="1.5"/><path d="M5.5 12.2c1.6-1.7 3.1-2.6 4.6-1.1l1.9 1.7 1.9-1.7c1.5-1.5 3-.6 4.6 1.1" stroke="#2D3277" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg></div><h3>Mercado Livre</h3></div>
 
           <div style="display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap">
-            <button class="btn btn-gold btn-sm ml-subtab-btn active" data-mlsub="gmv" onclick="window.__mlSubTab('gmv')">📊 Conectar / GMV</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="oferta" onclick="window.__mlSubTab('oferta')">⚡ Oferta Relâmpago</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">💰 Gross Up</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="descontos" onclick="window.__mlSubTab('descontos')">🏷️ Descontos</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="margem" onclick="window.__mlSubTab('margem')">🚦 Margem</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="ads" onclick="window.__mlSubTab('ads')">📢 Ads</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="qualidade" onclick="window.__mlSubTab('qualidade')">💚 Qualidade dos Anúncios</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="roi" onclick="window.__mlSubTab('roi')">📈 ROI por Produto</button>
-            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="publicacao" onclick="window.__mlSubTab('publicacao')">🚀 Publicação em Massa</button>
+            <button class="btn btn-gold btn-sm ml-subtab-btn active" data-mlsub="gmv" onclick="window.__mlSubTab('gmv')">Conectar / GMV</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="oferta" onclick="window.__mlSubTab('oferta')">Oferta Relâmpago</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="grossup" onclick="window.__mlSubTab('grossup')">Gross Up</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="descontos" onclick="window.__mlSubTab('descontos')">Descontos</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="margem" onclick="window.__mlSubTab('margem')">Margem</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="ads" onclick="window.__mlSubTab('ads')">Ads</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="qualidade" onclick="window.__mlSubTab('qualidade')">Qualidade dos Anúncios</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="roi" onclick="window.__mlSubTab('roi')">ROI por Produto</button>
+            <button class="btn btn-ghost btn-sm ml-subtab-btn" data-mlsub="publicacao" onclick="window.__mlSubTab('publicacao')">Publicação em Massa</button>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="gmv">
@@ -2074,7 +2076,7 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="toolbar">
           <div class="spacer"></div>
-          <button class="btn btn-gold btn-sm" id="mlApiAtualizarTodosBtn">🔄 Atualizar Todas as Lojas</button>
+          <button class="btn btn-gold btn-sm" id="mlApiAtualizarTodosBtn">Atualizar Todas as Lojas</button>
         </div>
         <div class="sgmv-list" id="mlApiLista"></div>
           </div>
@@ -2108,7 +2110,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="ml-subpanel" data-mlsubpanel="margem" style="display:none">
             <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver a margem real de cada produto (usa a comissão de verdade do Mercado Livre, calculada por categoria e preço).</p>
             <select id="mlMargemClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
-            <button class="btn btn-gold btn-sm" id="mlMargemCarregarBtn" style="margin-bottom:16px">🔄 Carregar Produtos</button>
+            <button class="btn btn-gold btn-sm" id="mlMargemCarregarBtn" style="margin-bottom:16px">Carregar Produtos</button>
             <div class="sgmv-summary">
               <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Margem<br>Saudável</div></div><div class="sc-value green" id="margemVerde">0</div></div>
               <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Margem<br>Apertada</div></div><div class="sc-value" id="margemAmarela">0</div></div>
@@ -2119,7 +2121,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="ml-subpanel" data-mlsubpanel="ads" style="display:none">
             <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver as campanhas de Product Ads dele, com ROAS, ACOS e CVR reais (últimos 30 dias).</p>
             <select id="mlAdsClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
-            <button class="btn btn-gold btn-sm" id="mlAdsCarregarBtn" style="margin-bottom:16px">🔄 Carregar Campanhas</button>
+            <button class="btn btn-gold btn-sm" id="mlAdsCarregarBtn" style="margin-bottom:16px">Carregar Campanhas</button>
             <div class="sgmv-summary">
               <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div><div class="sc-label">Escalar</div></div><div class="sc-value green" id="adsEscalar">0</div></div>
               <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Observar</div></div><div class="sc-value" id="adsObservar">0</div></div>
@@ -2130,7 +2132,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="ml-subpanel" data-mlsubpanel="qualidade" style="display:none">
             <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver a "saúde" de cada anúncio ativo (ficha técnica, título, fotos) — quanto mais completo, melhor o ranqueamento no Mercado Livre.</p>
             <select id="mlQualidadeClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
-            <button class="btn btn-gold btn-sm" id="mlQualidadeCarregarBtn" style="margin-bottom:16px">🔄 Carregar Anúncios</button>
+            <button class="btn btn-gold btn-sm" id="mlQualidadeCarregarBtn" style="margin-bottom:16px">Carregar Anúncios</button>
             <div class="sgmv-summary">
               <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Ótimo</div></div><div class="sc-value green" id="qualidadeVerde">0</div></div>
               <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Pode melhorar</div></div><div class="sc-value" id="qualidadeAmarela">0</div></div>
@@ -2141,7 +2143,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="ml-subpanel" data-mlsubpanel="roi" style="display:none">
             <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Escolhe um cliente conectado pra ver, produto por produto, quanto foi investido em Ads e quanto voltou em vendas atribuídas (últimos 30 dias).</p>
             <select id="mlRoiClienteSelect" style="max-width:320px;margin-bottom:14px"><option value="">Escolha um cliente conectado...</option></select>
-            <button class="btn btn-gold btn-sm" id="mlRoiCarregarBtn" style="margin-bottom:16px">🔄 Carregar ROI</button>
+            <button class="btn btn-gold btn-sm" id="mlRoiCarregarBtn" style="margin-bottom:16px">Carregar ROI</button>
             <div class="sgmv-summary">
               <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div><div class="sc-label">Vale investir</div></div><div class="sc-value green" id="roiEscalar">0</div></div>
               <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div><div class="sc-label">Observar</div></div><div class="sc-value" id="roiObservar">0</div></div>
@@ -2159,7 +2161,7 @@ textarea{resize:vertical;min-height:70px;}
 
         <div class="cm-secao cm-painel" data-cmpainel="whatsapp">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#25f4ee20;color:#25f4ee">💬</div><h3>Conectar WhatsApp Business</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.5A8.4 8.4 0 1 1 21 11.5z"/></svg></div><h3>Conectar WhatsApp Business</h3></div>
           <div style="padding:20px;background:var(--bg-card);border-radius:10px;margin-bottom:20px;border:1px solid var(--border)">
             <p style="margin-bottom:12px;color:var(--text-dim)">Clica no botão abaixo pra conectar o número via popup do Facebook.</p>
             <button class="btn btn-gold" id="whatsappEmbeddedBtn">Conectar WhatsApp Business</button>
@@ -2181,12 +2183,12 @@ textarea{resize:vertical;min-height:70px;}
 
         <div class="cm-secao cm-painel" data-cmpainel="tiktokshop">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#00000030;color:#fff">🎵</div><h3>TikTok Shop</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:#0b0b0b;border:1px solid var(--border)"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#25F4EE" transform="translate(-0.7,0.5)"/><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#FE2C55" transform="translate(0.7,-0.3)"/><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#fff"/></svg></div><h3>TikTok Shop</h3></div>
 
           <div class="sub-bar">
-            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">🔌 Conexão e GMV</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Catálogo</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">📦 Produtos</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">⚡ Oferta Relâmpago</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">🏷️ Descontos</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">Conexão e GMV</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Catálogo</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">Produtos</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">Descontos</button></div></div>
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="gmv">
@@ -2228,7 +2230,7 @@ textarea{resize:vertical;min-height:70px;}
                 <div style="font-weight:700">Produtos TikTok Shop</div>
                 <div style="font-size:12px;color:var(--text-dim)">Busque os produtos diretamente da loja conectada.</div>
               </div>
-              <button class="btn btn-gold btn-sm" onclick="window.__tiktokCarregarTodosProdutos()">🔄 Sincronizar produtos</button>
+              <button class="btn btn-gold btn-sm" onclick="window.__tiktokCarregarTodosProdutos()">Sincronizar produtos</button>
             </div>
 
             <div class="tt-list" id="ttProdutosLista">
@@ -2240,7 +2242,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="sub-cab" style="--acc-bg:#ffffff12;--acc-bd:#ffffff40"><span class="sub-cab-ico">🏷️</span><div><b>Desconto fixo do TikTok</b><div class="sub-cab-desc">Lido direto da TikTok: o vencimento é <b>sincronizado sozinho</b> e o robô <b>renova por duplicação</b> (mesmos produtos e preços, até 340 dias) quando faltarem 30 dias. <b>🔄 Sincronizar</b> confere agora; <b>🔎 Simular renovação</b> mostra o que seria criado, sem criar nada.</div></div></div>
           <div class="toolbar">
             <div class="spacer"></div>
-            <button class="btn btn-gold btn-sm" id="ttDescontoSincTodosBtn" onclick="window.__tiktokDescontoSincronizarTodos()">🔄 Sincronizar Todos</button>
+            <button class="btn btn-gold btn-sm" id="ttDescontoSincTodosBtn" onclick="window.__tiktokDescontoSincronizarTodos()">Sincronizar Todos</button>
           </div>
           <div class="cm-lista-simples" id="cmDescontosTiktokLista"></div>
           </div>
@@ -2261,7 +2263,7 @@ textarea{resize:vertical;min-height:70px;}
 
         <div class="cm-secao cm-painel" data-cmpainel="devolucao">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)">📦</div><h3>Devolução</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></div><h3>Devolução</h3></div>
           <div class="cm-lista-simples" id="cmDevolucaoLista"></div>
         </div>
       </div>
@@ -2269,11 +2271,11 @@ textarea{resize:vertical;min-height:70px;}
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
           <div class="page-head-text"><h2 class="page-title">Minhas Tarefas</h2><p class="page-sub" id="tarefasSub">Seu quadro pessoal — só você vê estas tarefas.</p></div>
-          <button class="btn btn-ghost btn-sm hidden" id="tarefasFixasBtn" style="margin-left:auto" onclick="window.__abrirTarefasFixas()">🔁 Tarefas Fixas</button>
+          <button class="btn btn-ghost btn-sm hidden" id="tarefasFixasBtn" style="margin-left:auto" onclick="window.__abrirTarefasFixas()">Tarefas Fixas</button>
         </div>
         <div class="calc-mode-selector" style="margin-bottom:20px">
-          <button class="calc-mode-btn active" data-tfview="meu">📋 Meu Quadro</button>
-          <button class="calc-mode-btn" data-tfview="atribuidas">👥 Tarefas da Equipe</button>
+          <button class="calc-mode-btn active" data-tfview="meu">Meu Quadro</button>
+          <button class="calc-mode-btn" data-tfview="atribuidas">Tarefas da Equipe</button>
         </div>
         <div class="field" style="max-width:420px;margin-bottom:16px">
           <input type="text" id="tfBuscaInput" placeholder="🔎 Buscar tarefa por título, cliente ou descrição...">
@@ -2286,15 +2288,15 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="kanban-board">
           <div class="kanban-col" data-coluna="afazer">
-            <div class="kanban-col-head"><div class="kanban-col-title">📋 A Fazer <span class="kanban-count" id="countAfazer">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('afazer')">+</button></div>
+            <div class="kanban-col-head"><div class="kanban-col-title">A Fazer <span class="kanban-count" id="countAfazer">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('afazer')">+</button></div>
             <div class="kanban-cards" id="colAfazer"></div>
           </div>
           <div class="kanban-col" data-coluna="fazendo">
-            <div class="kanban-col-head"><div class="kanban-col-title">⚡ Fazendo <span class="kanban-count" id="countFazendo">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('fazendo')">+</button></div>
+            <div class="kanban-col-head"><div class="kanban-col-title">Fazendo <span class="kanban-count" id="countFazendo">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('fazendo')">+</button></div>
             <div class="kanban-cards" id="colFazendo"></div>
           </div>
           <div class="kanban-col" data-coluna="feito">
-            <div class="kanban-col-head"><div class="kanban-col-title">✅ Feito <span class="kanban-count" id="countFeito">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('feito')">+</button></div>
+            <div class="kanban-col-head"><div class="kanban-col-title">Feito <span class="kanban-count" id="countFeito">0</span></div><button class="kanban-add" onclick="window.__novaTarefa('feito')">+</button></div>
             <div class="kanban-cards" id="colFeito"></div>
           </div>
         </div>
@@ -2310,7 +2312,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="field"><label>Nome do Cliente</label><input type="text" id="fNome" required></div>
       <div class="field"><label>E-mail (opcional)</label><input type="email" id="fEmail" placeholder="cliente@email.com"></div>
       <div class="field"><label>Pasta no Google Drive (link) — opcional</label><input type="url" id="fDrive" placeholder="https://drive.google.com/drive/folders/..."></div>
-      <div class="cm-secao-titulo" style="margin-top:18px;margin-bottom:6px"><h3 style="font-size:14px">📄 Dados do Contrato</h3></div>
+      <div class="cm-secao-titulo" style="margin-top:18px;margin-bottom:6px"><h3 style="font-size:14px">Dados do Contrato</h3></div>
       <div class="field"><label>CNPJ/CPF</label><input type="text" id="fCnpjCpf" placeholder="00.000.000/0000-00"></div>
       <div class="field"><label>Endereço</label><input type="text" id="fEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
       <div style="display:flex;gap:10px">
@@ -2318,7 +2320,7 @@ textarea{resize:vertical;min-height:70px;}
         <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="fDuracaoMeses" placeholder="12"></div>
         <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="fDiaVencimento" min="1" max="31" placeholder="5"></div>
       </div>
-      <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">📄 Gerar Contrato (.pdf)</button>
+      <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">Gerar Contrato (.pdf)</button>
       <div class="field"><label>Marketplaces</label><div class="chip-toggle-group">
         <button type="button" class="chip-toggle" data-val="shopee">Shopee</button>
         <button type="button" class="chip-toggle" data-val="ml">Mercado Livre</button>
@@ -2336,24 +2338,24 @@ textarea{resize:vertical;min-height:70px;}
       <div class="field"><label>Observações</label><textarea id="fObs" placeholder="Notas internas..."></textarea></div>
       <div class="field" id="fDocumentosCadastroWrap" style="display:none"><label>Documentos do Cadastro</label><div id="fDocumentosCadastroLista" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
       <div class="field hidden" id="shopeeIntegracaoField">
-        <label>🛒 Integração Shopee (GMV Automático)</label>
+        <label>Integração Shopee (GMV Automático)</label>
         <div id="shopeeStatusBox" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;">
           <div id="shopeeStatusTexto" style="font-size:13px;color:var(--text-dim);margin-bottom:10px">Verificando...</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeBtn">🔗 Conectar Shopee</button>
-            <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarGmvBtn">🔄 Atualizar GMV (mês atual)</button>
+            <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeBtn">Conectar Shopee</button>
+            <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarGmvBtn">Atualizar GMV (mês atual)</button>
           </div>
           <div id="tiktokStatusTexto" style="font-size:13px;color:var(--text-dim);margin:14px 0 10px">Verificando TikTok Shop...</div>
-          <button type="button" class="btn btn-gold btn-sm" id="conectarTiktokBtn">🔗 Conectar TikTok Shop</button>
+          <button type="button" class="btn btn-gold btn-sm" id="conectarTiktokBtn">Conectar TikTok Shop</button>
         </div>
       </div>
       <div class="field hidden" id="shopeeAdsIntegracaoField">
-        <label>📢 Saldo Shopee Ads (Automático)</label>
+        <label>Saldo Shopee Ads (Automático)</label>
         <div style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;">
           <div id="shopeeAdsStatusTexto" style="font-size:13px;color:var(--text-dim);margin-bottom:10px">Verificando...</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeAdsBtn">🔗 Conectar Ads</button>
-            <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarSaldoAdsBtn">🔄 Atualizar Saldo</button>
+            <button type="button" class="btn btn-gold btn-sm" id="conectarShopeeAdsBtn">Conectar Ads</button>
+            <button type="button" class="btn btn-ghost btn-sm hidden" id="atualizarSaldoAdsBtn">Atualizar Saldo</button>
           </div>
         </div>
       </div>
@@ -2426,7 +2428,7 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
     <div id="vaultDataView" class="hidden">
-      <h2 id="vaultTitle">🔑 Acessos</h2>
+      <h2 id="vaultTitle">Acessos</h2>
       <div class="acc-list" id="accList"></div>
       <div class="acc-add">
         <div class="gmv-form-title">Adicionar acesso</div>
@@ -2459,7 +2461,7 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 <div class="modal-overlay hidden" id="driveModalOverlay">
   <div class="modal modal-wide">
-    <h2 id="driveTitle">📁 Arquivos</h2>
+    <h2 id="driveTitle">Arquivos</h2>
     <div class="dz" id="dropZone">
       <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <div class="dz-t">Arraste arquivos aqui ou clique para escolher</div>
@@ -2477,7 +2479,7 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 <div class="modal-overlay hidden" id="comMetasModalOverlay">
   <div class="modal modal-wide">
-    <h2>🎯 Metas do Mês</h2>
+    <h2>Metas do Mês</h2>
     <div class="form-row">
       <div class="field"><label>Investimento Tráfego (R$)</label><input type="number" step="0.01" id="metaInvestimento"></div>
       <div class="field"><label>Impressões</label><input type="number" id="metaImpressoes"></div>
@@ -2525,9 +2527,9 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="field"><label>Status (coluna)</label>
         <select id="tfStatus">
-          <option value="afazer">📋 A Fazer</option>
-          <option value="fazendo">⚡ Fazendo</option>
-          <option value="feito">✅ Feito</option>
+          <option value="afazer">A Fazer</option>
+          <option value="fazendo">Fazendo</option>
+          <option value="feito">Feito</option>
         </select>
       </div>
       <div class="form-row">
@@ -2537,7 +2539,7 @@ textarea{resize:vertical;min-height:70px;}
             <option value="guilherme@lbmarketplace.com.br">Guilherme</option>
             <option value="caroline@lbmarketplace.com.br">Caroline</option>
             <option value="mirela@lbmarketplace.com.br">Mirela</option>
-            <option value="varias">👥 Várias colaboradoras ao mesmo tempo</option>
+            <option value="varias">Várias colaboradoras ao mesmo tempo</option>
           </select>
           <div class="chip-toggle-group hidden" id="tfVariasWrap" style="margin-top:8px">
             <button type="button" class="chip-toggle" data-resp-varias="guilherme@lbmarketplace.com.br">Guilherme</button>
@@ -2550,7 +2552,7 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
       <div class="field hidden" id="tfDocsField">
-        <label>📎 Documentos do Cliente (Google Drive)</label>
+        <label>Documentos do Cliente (Google Drive)</label>
         <div class="dz" id="tfDropZone" style="padding:16px">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <div class="dz-t" style="font-size:12.5px">Clique ou arraste arquivos e fotos</div>
@@ -2772,7 +2774,7 @@ textarea{resize:vertical;min-height:70px;}
 
 <div class="modal-overlay hidden" id="tarefasFixasModalOverlay">
   <div class="modal" style="max-width:520px">
-    <h2>🔁 Tarefas Fixas (repetem todo dia)</h2>
+    <h2>Tarefas Fixas (repetem todo dia)</h2>
     <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px">Essas tarefas aparecem sozinhas, todo dia, no quadro de cada colaboradora — não precisa recriar manualmente.</p>
     <div class="form-row">
       <div class="field"><label>Responsável</label>
@@ -3037,9 +3039,9 @@ window.__gmv=(id,nm)=>{document.getElementById('gmvClienteId').value=id;document
 document.getElementById('cancelGmvModal').addEventListener('click',()=>gmvModalOverlay.classList.add('hidden'));
 document.getElementById('saveGmvBtn').addEventListener('click',async()=>{const cid=document.getElementById('gmvClienteId').value;const cn=document.getElementById('gmvClienteNome').value;const mes=document.getElementById('gmvMes').value;const gmv=parseFloat(document.getElementById('gmvValor').value)||0;const ads=parseFloat(document.getElementById('gmvAds').value)||0;if(!mes){showToast('Selecione o mês.');return;}if(!gmv){showToast('Informe o GMV.');return;}const exist=gmvCache.find(g=>g.clienteId===cid&&g.mes===mes);try{if(exist){await updateDoc(doc(db,"gmv",exist.id),{gmv,gastoAds:ads,registradoPor:currentUser,timestamp:serverTimestamp()});}else{await addDoc(collection(db,"gmv"),{clienteId:cid,clienteNome:cn,mes,gmv,gastoAds:ads,registradoPor:currentUser,timestamp:serverTimestamp()});}await log(cid,cn,'edição',`GMV de ${fmtMes(mes)}: ${fmtR(gmv)} | Ads: ${fmtR(ads)} — por ${currentUser}.`);showToast('GMV salvo!');window.__gmv(cid,cn);}catch(e){console.error(e);showToast('Erro ao salvar GMV.');}});
 /* DESEMPENHO */
-function renderPerformanceTab(){const byMes={};gmvCache.forEach(g=>{if(!byMes[g.mes])byMes[g.mes]={gmv:0,ads:0,clients:new Set()};byMes[g.mes].gmv+=Number(g.gmv)||0;byMes[g.mes].ads+=Number(g.gastoAds)||0;byMes[g.mes].clients.add(g.clienteId);});const meses=Object.keys(byMes).sort();const gt=Object.values(byMes).reduce((a,m)=>a+m.gmv,0);const at=Object.values(byMes).reduce((a,m)=>a+m.ads,0);animateTo(document.getElementById('perfGmvTotal'),gt,v=>fmtR(v));animateTo(document.getElementById('perfAdsTotal'),at,v=>fmtR(v));animateTo(document.getElementById('perfMeses'),meses.length,v=>Math.round(v));const el=document.getElementById('gmvChart');if(!el)return;const ctx=el.getContext('2d');if(gmvChart)gmvChart.destroy();gmvChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(fmtMes),datasets:[{label:'GMV',data:meses.map(m=>byMes[m].gmv),backgroundColor:'rgba(92,184,138,0.7)',borderColor:'#5cb88a',borderWidth:1.5,borderRadius:6},{label:'Gasto Ads',data:meses.map(m=>byMes[m].ads),backgroundColor:'rgba(224,163,82,0.65)',borderColor:'#e0a352',borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#a8a39a',font:{family:'Montserrat',size:12}}}},scales:{x:{ticks:{color:'#a8a39a'},grid:{color:'#2a261c'}},y:{ticks:{color:'#a8a39a',callback:v=>fmtR(v)},grid:{color:'#2a261c'}}}}});const tbody=document.getElementById('perfTableBody');if(!meses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">Nenhum dado registrado ainda.</td></tr>';return;}tbody.innerHTML=meses.slice().reverse().map((m,i,arr)=>{const d=byMes[m];const roi=d.ads>0?(d.gmv/d.ads).toFixed(1)+'x':'—';const prev=arr[i+1]?byMes[arr[i+1]]:null;let var_='—';if(prev&&prev.gmv>0){const p=((d.gmv-prev.gmv)/prev.gmv*100).toFixed(1);var_=`<span class="${p>=0?'trend-up':'trend-down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span>`;}return`<tr><td><b>${fmtMes(m)}</b></td><td style="color:var(--green);font-weight:600">${fmtR(d.gmv)}</td><td style="color:var(--amber)">${fmtR(d.ads)}</td><td>${roi}</td><td>${d.clients.size}</td><td>${var_}</td></tr>`;}).join('');}
+function renderPerformanceTab(){const byMes={};gmvCache.forEach(g=>{if(!byMes[g.mes])byMes[g.mes]={gmv:0,ads:0,clients:new Set()};byMes[g.mes].gmv+=Number(g.gmv)||0;byMes[g.mes].ads+=Number(g.gastoAds)||0;byMes[g.mes].clients.add(g.clienteId);});const meses=Object.keys(byMes).sort();const gt=Object.values(byMes).reduce((a,m)=>a+m.gmv,0);const at=Object.values(byMes).reduce((a,m)=>a+m.ads,0);animateTo(document.getElementById('perfGmvTotal'),gt,v=>fmtR(v));animateTo(document.getElementById('perfAdsTotal'),at,v=>fmtR(v));animateTo(document.getElementById('perfMeses'),meses.length,v=>Math.round(v));const el=document.getElementById('gmvChart');if(!el)return;const ctx=el.getContext('2d');if(gmvChart)gmvChart.destroy();gmvChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(fmtMes),datasets:[{label:'GMV',data:meses.map(m=>byMes[m].gmv),backgroundColor:'rgba(92,184,138,0.7)',borderColor:'#5cb88a',borderWidth:1.5,borderRadius:6},{label:'Gasto Ads',data:meses.map(m=>byMes[m].ads),backgroundColor:'rgba(224,163,82,0.65)',borderColor:'#e0a352',borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#a8a39a',font:{family:'Inter',size:12}}}},scales:{x:{ticks:{color:'#a8a39a'},grid:{color:'#2a261c'}},y:{ticks:{color:'#a8a39a',callback:v=>fmtR(v)},grid:{color:'#2a261c'}}}}});const tbody=document.getElementById('perfTableBody');if(!meses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">Nenhum dado registrado ainda.</td></tr>';return;}tbody.innerHTML=meses.slice().reverse().map((m,i,arr)=>{const d=byMes[m];const roi=d.ads>0?(d.gmv/d.ads).toFixed(1)+'x':'—';const prev=arr[i+1]?byMes[arr[i+1]]:null;let var_='—';if(prev&&prev.gmv>0){const p=((d.gmv-prev.gmv)/prev.gmv*100).toFixed(1);var_=`<span class="${p>=0?'trend-up':'trend-down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span>`;}return`<tr><td><b>${fmtMes(m)}</b></td><td style="color:var(--green);font-weight:600">${fmtR(d.gmv)}</td><td style="color:var(--amber)">${fmtR(d.ads)}</td><td>${roi}</td><td>${d.clients.size}</td><td>${var_}</td></tr>`;}).join('');}
 /* CONTRATOS */
-function renderContratosTab(){notifRecalcular();const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccGuilherme',aprovMes.filter(c=>c.indicadoPor==='Guilherme').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${esc(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${esc(c.nomeCliente)}')">✗ Reprovar</button>`:(c.status==='aprovado'?`<button class="icon-btn" onclick="window.__copiarDadosContrato('${c.id}')" title="Copiar dados pra gerar o contrato">📋 Copiar dados</button>`:'');return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} em ${fmtMes(c.mes)}, ${dt}${c.obs?` — ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
+function renderContratosTab(){notifRecalcular();const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccGuilherme',aprovMes.filter(c=>c.indicadoPor==='Guilherme').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${esc(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${esc(c.nomeCliente)}')">✗ Reprovar</button>`:(c.status==='aprovado'?`<button class="icon-btn" onclick="window.__copiarDadosContrato('${c.id}')" title="Copiar dados pra gerar o contrato">Copiar dados</button>`:'');return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} em ${fmtMes(c.mes)}, ${dt}${c.obs?` — ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
 window.__copiarDadosContrato=(id)=>{
   const c=contratosCache.find(x=>x.id===id);
   if(!c){showToast('Contrato não encontrado.');return;}
@@ -3386,7 +3388,7 @@ function tfCardFixaHtml(f){
   const feito=f.feitoHojeData===chaveAtual;
   const labelBadge=mensal?(feito?'✓ Feito este mês':'○ Marcar feito este mês'):(feito?'✓ Feito hoje':'○ Marcar feito hoje');
   return `<div class="kanban-card kanban-card-fixa" data-fixaid="${f.id}">
-    <div class="kanban-card-title">🔁 ${esc(f.titulo)}${mensal?' <span class="kb-badge" style="opacity:.65">mensal</span>':''}</div>
+    <div class="kanban-card-title">${esc(f.titulo)}${mensal?' <span class="kb-badge" style="opacity:.65">mensal</span>':''}</div>
     <div class="kanban-card-meta">
       <button class="kb-badge ${feito?'kb-fixa-feito':'kb-fixa-pendente'}" onclick="window.__toggleFixaHoje('${f.id}')">${labelBadge}</button>
     </div>
@@ -3575,7 +3577,7 @@ function waDataDentroDoPeriodo(emIso){
   return true;
 }
 window.__waFiltrarPeriodo=(v)=>{waFiltroPeriodo=v;whatsappRenderizarLista();};
-const WA_LABEL_QUALIF={qualificado:'✅ Qualificado',nao_qualificado:'❌ Não qualificado',cliente:'💰 Virou cliente'};
+const WA_LABEL_QUALIF={qualificado:'Qualificado',nao_qualificado:'Não qualificado',cliente:'Virou cliente'};
 window.__waFiltrarModo=(modo)=>{
   waFiltroModoAtual=modo;
   document.querySelectorAll('.wa-filtro-btn').forEach(b=>{
@@ -3616,8 +3618,8 @@ function waFmtDivisorData(iso){
 function whatsappRenderizarLista(){
   const el=document.getElementById('whatsappConversasLista');
   if(!el)return;
-  const labelModo={auto:'🤖 IA',aguardando_humano:'⏳ Aguardando',humano:'🙋 Você'};
-  const labelQualif={qualificado:'✅ Qualificado',nao_qualificado:'❌ Não qualif.',cliente:'💰 Cliente'};
+  const labelModo={auto:'IA',aguardando_humano:'Aguardando',humano:'Você'};
+  const labelQualif={qualificado:'Qualificado',nao_qualificado:'Não qualif.',cliente:'Cliente'};
 
   const pendentesCount=whatsappConversasCache.filter(c=>c.modo==='aguardando_humano').length;
   const badgeContador=document.getElementById('waContadorPendentes');
@@ -3756,7 +3758,7 @@ function waAbrirConversa(telefone){
   document.getElementById('waChatAvatar').textContent=waIniciais(conversa.nome||conversa.telefone);
   const qualifSel=document.getElementById('waChatQualifSelect');
   if(qualifSel)qualifSel.value=conversa.qualificacao||'';
-  const labelModo={auto:'🤖 IA',aguardando_humano:'⏳ Aguardando',humano:'🙋 Você'};
+  const labelModo={auto:'IA',aguardando_humano:'Aguardando',humano:'Você'};
   const corModo={auto:'ok',aguardando_humano:'hoje',humano:'atrasada'};
   const badgeModo=document.getElementById('waModalModoBadge');
   badgeModo.textContent=labelModo[conversa.modo]||conversa.modo;
@@ -4123,7 +4125,7 @@ function rhRenderPagamento(c){
 
   const botaoParcela=(numero,dia,paga)=>{
     if(paga)return `<button class="btn btn-ghost btn-sm" disabled>✓ ${numero}ª parcela (dia ${dia}) já paga</button>`;
-    return `<button class="btn btn-gold btn-sm" ${!c.chavePix?'disabled':''} onclick="window.__rhAbrirConfirmarPagamento('${c.id}',${valorParcela},${numero})">💸 Pagar ${numero}ª parcela (dia ${dia}) — ${fmtR(valorParcela)}</button>`;
+    return `<button class="btn btn-gold btn-sm" ${!c.chavePix?'disabled':''} onclick="window.__rhAbrirConfirmarPagamento('${c.id}',${valorParcela},${numero})">Pagar ${numero}ª parcela (dia ${dia}) — ${fmtR(valorParcela)}</button>`;
   };
 
   el.innerHTML=`
@@ -4606,7 +4608,7 @@ function gastosRenderTable(){
     <td><span class="gasto-cat ${g.categoria}">${g.categoria==='pessoal'?'Pessoal':'Empresa'}</span></td>
     <td>${gtStatusBadge(g.proximoVencimento)}</td>
     <td><div class="actions-cell">
-      <button class="icon-btn success" onclick="window.__gastoPagar('${g.id}')">💰 Pagar</button>
+      <button class="icon-btn success" onclick="window.__gastoPagar('${g.id}')">Pagar</button>
       <button class="icon-btn" onclick="window.__gastoEditar('${g.id}')">Editar</button>
       <button class="icon-btn" onclick="window.__gastoHist('${g.id}')">Histórico</button>
       <button class="icon-btn danger" onclick="window.__gastoExcluir('${g.id}')">Excluir</button>
@@ -4839,7 +4841,7 @@ function renderCadastrosRecebidos(){
         <span class="cadastro-doc-pill ${c.urlDocCnpj?'ok':''}">🏢 Doc. CNPJ ${c.urlDocCnpj?'✓':'—'}</span>
       </div>
       <div class="actions-cell">
-        <button class="btn btn-gold btn-sm" onclick="window.__verCadastro('${c.id}')">👁 Ver Detalhes</button>
+        <button class="btn btn-gold btn-sm" onclick="window.__verCadastro('${c.id}')">Ver Detalhes</button>
         ${c.status==='convertido'?'<span class="cadastro-doc-pill ok">✓ Já é cliente</span>':`<button class="icon-btn danger" onclick="window.__descartarCadastro('${c.id}')">Descartar</button>`}
       </div>
     </div>`;
@@ -5279,8 +5281,8 @@ function adsRenderizar(){
       ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.saldoAds||0)}</div><div class="lbl">Saldo Ads</div></div>`:''}
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
-        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarSaldoAds('${c.id}')">🔄 Atualizar</button>`
-        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}','ads')">🔗 Conectar</button>`
+        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarSaldoAds('${c.id}')">Atualizar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}','ads')">Conectar</button>`
       }
     </div>`;
   }).join('');
@@ -5514,9 +5516,9 @@ function sgmvRenderizar(){
       ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.gmvShopeeAutomatico||0)}</div><div class="lbl">GMV mês atual</div></div>`:''}
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
-        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">🔄 Atualizar</button>
+        ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">Atualizar</button>
         `
-        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">🔗 Conectar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">Conectar</button>`
       }
     </div>`;
   }).join('');
@@ -5749,10 +5751,10 @@ function mlPubRenderizar(){
       </div>
       ${l.categoryName?`<div style="font-size:12px;color:var(--text-dim)">📁 Categoria: <b>${esc(l.categoryName)}</b></div>`:''}
       ${atributosHtml?`<div style="background:var(--border);border-radius:6px;padding:10px">${atributosHtml}</div>`:''}
-      ${l.titulo?`<div class="ia-block"><div class="ia-block-label">📌 Título gerado</div><div class="ia-block-txt">${esc(l.titulo)}</div></div>`:''}
-      ${l.descricao?`<div class="ia-block"><div class="ia-block-label">📝 Descrição gerada</div><div class="ia-block-txt">${esc(l.descricao)}</div></div>`:''}
+      ${l.titulo?`<div class="ia-block"><div class="ia-block-label">Título gerado</div><div class="ia-block-txt">${esc(l.titulo)}</div></div>`:''}
+      ${l.descricao?`<div class="ia-block"><div class="ia-block-label">Descrição gerada</div><div class="ia-block-txt">${esc(l.descricao)}</div></div>`:''}
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-ghost btn-sm" onclick="window.__mlPubGerar('${l.id}')">✨ Gerar</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.__mlPubGerar('${l.id}')">Gerar</button>
         <button class="btn btn-gold btn-sm" ${l.status==='publicado'?'disabled':''} onclick="window.__mlPubPublicar('${l.id}')">${l.status==='publicado'?'✓ Publicado':'🚀 Publicar'}</button>
         ${l.erro?`<span style="color:var(--red);font-size:12px">${esc(l.erro)}</span>`:''}
         ${l.permalink?`<a href="${esc(l.permalink)}" target="_blank" style="font-size:12px;text-decoration:underline">Ver anúncio →</a>`:''}
@@ -5978,7 +5980,7 @@ function mlApiRenderizar(){
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
         ?`<button class="icon-btn ${c.mlCupomConfig?.ativo?'kb-fixa-feito':''}" onclick="window.__mlAbrirCupomConfig('${c.id}')" title="Configurar cupom automático">🎯</button>`
-        :`<button class="btn btn-gold btn-sm" onclick="window.__mlConectar('${c.id}')">🔗 Conectar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__mlConectar('${c.id}')">Conectar</button>`
       }
     </div>`;
   }).join('');
@@ -6293,7 +6295,7 @@ function ofertasLojaRenderizar(){
     return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center">
       <span style="font-size:12.5px;flex:1;min-width:160px">${esc(ofertasLojaFmtHora(o.inicio))} → ${esc(ofertasLojaFmtHora(o.fim))}</span>
       <span class="tt-status-pill ${corSt}">${esc(status)}</span>
-      <button class="btn btn-ghost btn-sm" onclick="window.__excluirOfertaLoja(${i})">🗑️ Excluir</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.__excluirOfertaLoja(${i})">Excluir</button>
     </div>`;
   }).join('');
 }
@@ -6835,12 +6837,12 @@ window.__tiktokRodarRobo=async(clienteId,executar)=>{
 // ---- TikTok Shop: DESCONTO FIXO via API (sincroniza vencimento, simula e renova por duplicação) ----
 function cmDescontoExtrasTiktok(c){
   const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-  if(!c.tiktokShopCipher)return`<button class="btn btn-ghost btn-sm" onclick="window.__tiktokConectar('${c.id}','${nomeEsc}')">🔗 Conectar TikTok</button>`;
+  if(!c.tiktokShopCipher)return`<button class="btn btn-ghost btn-sm" onclick="window.__tiktokConectar('${c.id}','${nomeEsc}')">Conectar TikTok</button>`;
   const ref=c.tiktokDescontoFixoNome
     ?`<span class="cadastro-doc-pill ok" title="Desconto fixo lido do TikTok Shop">📌 ${esc(c.tiktokDescontoFixoNome)}${c.tiktokDescontoFixoProdutos!=null?` · ${c.tiktokDescontoFixoProdutos} produtos`:''}</span>`
     :'<span class="cadastro-doc-pill" style="font-size:10px">ainda não sincronizado</span>';
   const auto=c.tiktokDescontoUltimaRenovacao?'<span class="cadastro-doc-pill ok" title="Já renovado automaticamente pelo robô">🤖 renovado</span>':'';
-  return`${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','sincronizar')">🔄 Sincronizar</button><button class="btn btn-ghost btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','simular')" title="Mostra o que seria criado, sem criar nada">🔎 Simular renovação</button>${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','executar')" title="Cria o sucessor agora, de verdade">🔁 Renovar agora</button>`:''}`;
+  return`${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','sincronizar')">Sincronizar</button><button class="btn btn-ghost btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','simular')" title="Mostra o que seria criado, sem criar nada">Simular renovação</button>${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokDescontoRodar('${c.id}','executar')" title="Cria o sucessor agora, de verdade">Renovar agora</button>`:''}`;
 }
 function ttResumoDesconto(r,modo){
   if(!r||!Object.keys(r).length)return'O servidor não devolveu resultado pra esse cliente.';
@@ -6905,7 +6907,7 @@ function cmRenderOfertaShopee(){
       const rodou=!!c.ofertaRelampagoUltimaVerificacao;
       const autoOferta=c.ofertaRelampagoAutoUltimaCriacao?'<span class="cadastro-doc-pill ok" title="Rodando sozinha todo dia via API">🤖 auto</span>':(rodou?'<span class="cadastro-doc-pill" style="font-size:10px">robô já checou, sem oferta nova ainda</span>':'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda não rodou pelo robô diário">aguardando 1ª rodada automática</span>');
       const status=rodou?`<span style="font-size:11px;color:var(--text-dim)" title="${esc(c.ofertaRelampagoAutoUltimoResultado||'')}">Última checagem: ${new Date(c.ofertaRelampagoUltimaVerificacao).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:'';
-      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="nome">${esc(c.nome)}</span>${autoOferta}${status}<button class="btn btn-ghost btn-sm" onclick="window.__sincronizarOfertas('${c.id}','${nomeEsc}')">🔄 Sincronizar</button><button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">⚡ Criar agora</button></div>`;
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="nome">${esc(c.nome)}</span>${autoOferta}${status}<button class="btn btn-ghost btn-sm" onclick="window.__sincronizarOfertas('${c.id}','${nomeEsc}')">Sincronizar</button><button class="btn btn-gold btn-sm" onclick="window.__abrirModalOferta('${c.id}','${nomeEsc}')">Criar agora</button></div>`;
     }
     // Sem Marketing conectado: continua no rastreador manual (ciclo de 30 dias marcado à mão).
     return `<div class="cm-item" style="flex-wrap:wrap;gap:8px"><span class="nome">${esc(c.nome)}</span>${renderOfertaFlag(c)}</div>`;
@@ -6939,14 +6941,14 @@ function cmRenderDescontosMp(key,elId,extrasFn){
 function cmDescontoExtrasShopee(c){
   const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
   if(!c.shopeeMktShopId){
-    return `<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔗 Conectar Marketing</button>`;
+    return `<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">Conectar Marketing</button>`;
   }
   const ref=c.shopeeDescontoFixoId
     ?`<span class="cadastro-doc-pill ok" title="Desconto fixo marcado na Shopee">📌 ${esc(c.shopeeDescontoFixoNome||'marcado')}</span>`
     :'<span class="cadastro-doc-pill" style="font-size:10px">nenhum desconto marcado</span>';
   const auto=c.descontoAutoUltimaRenovacao?'<span class="cadastro-doc-pill ok" title="Já renovado automaticamente">🤖 auto</span>':'';
-  const dup=c.shopeeDescontoFixoId?`<button class="btn btn-gold btn-sm" onclick="window.__duplicarDescontoFixo('${c.id}')">🔁 Duplicar</button>`:'';
-  return `${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__descontosLoja('${c.id}')">🔍 Descontos da loja</button>${dup}<button class="icon-btn" title="Reconectar Marketing (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄</button>`;
+  const dup=c.shopeeDescontoFixoId?`<button class="btn btn-gold btn-sm" onclick="window.__duplicarDescontoFixo('${c.id}')">Duplicar</button>`:'';
+  return `${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__descontosLoja('${c.id}')">Descontos da loja</button>${dup}<button class="icon-btn" title="Reconectar Marketing (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄</button>`;
 }
 function cmRenderDescontosTodos(){
   cmRenderDescontosMp('shopee','cmDescontosShopeeLista',cmDescontoExtrasShopee);
@@ -6963,9 +6965,9 @@ function cmRenderCupons(){
     const pref=shopeeAppPreferido(c);
     let botaoShopee='';
     if(pref.shopId){
-      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">🎟️ Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomVerTodos('${c.id}')">🔍 Cupons da loja</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomSincronizar('${c.id}','${nomeEsc}')">🔄 Sincronizar</button><button class="icon-btn" title="Reconectar (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${pref.app}')">🔄</button>`;
+      botaoShopee=`<button class="btn btn-gold btn-sm" onclick="window.__abrirModalCupom('${c.id}','${nomeEsc}')">Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomVerTodos('${c.id}')">Cupons da loja</button><button class="btn btn-ghost btn-sm" onclick="window.__cupomSincronizar('${c.id}','${nomeEsc}')">Sincronizar</button><button class="icon-btn" title="Reconectar (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${pref.app}')">🔄</button>`;
     }else if((c.marketplaces||[]).includes('shopee')){
-      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','erp')">🔗 Conectar ERP</button>`;
+      botaoShopee=`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','erp')">Conectar ERP</button>`;
     }
     // selo de status real: só existe depois da 1ª sincronização (cupomUltimaVerificacao gravado pelo sync)
     let selo='';
@@ -7159,7 +7161,7 @@ function cmRenderEnvios(){
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <span style="font-weight:600">${esc(c.nome)}</span>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="window.__logPedidosRecentes('${c.id}')">📋 Pedidos recentes</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.__logPedidosRecentes('${c.id}')">Pedidos recentes</button>
       </div>
     </div>
     <div style="display:flex;gap:6px;margin-top:8px">
@@ -7223,7 +7225,7 @@ function cmRenderCatalogo(){
       <input type="text" id="prodEstItem_${c.id}" placeholder="ID do produto" style="width:140px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
       <input type="number" id="prodEstNovo_${c.id}" placeholder="Novo estoque" style="width:110px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
       <button class="btn btn-ghost btn-sm" onclick="window.__prodAjustarEstoque('${c.id}')">Ajustar estoque</button>
-      <button class="btn btn-ghost btn-sm" onclick="window.__prodAutoPausar('${c.id}')" title="Pausa sozinho quem zerou o estoque">🤖 Auto-pausar sem estoque</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.__prodAutoPausar('${c.id}')" title="Pausa sozinho quem zerou o estoque">Auto-pausar sem estoque</button>
     </div>
   </div>`).join('');
 }
@@ -7328,8 +7330,8 @@ function descLojaRenderizar(){
       <span class="nome" style="flex:2;min-width:180px">${esc(d.discount_name)}${ehFixo?' <span class="cadastro-doc-pill ok">📌 fixo</span>':''}</span>
       <span class="tt-status-pill ${corSt}">${st}</span>
       <span style="font-size:12px;color:var(--text-dim)">${fmtDataHoraBR(d.start_time)} → ${fmtDataHoraBR(d.end_time)}</span>
-      ${ehFixo?'':`<button class="btn btn-ghost btn-sm" onclick="window.__marcarDescontoFixo(${i})">📌 Marcar como fixo</button>`}
-      <button class="btn btn-gold btn-sm" onclick="window.__duplicarDescontoLoja(${i})">🔁 Duplicar</button>
+      ${ehFixo?'':`<button class="btn btn-ghost btn-sm" onclick="window.__marcarDescontoFixo(${i})">Marcar como fixo</button>`}
+      <button class="btn btn-gold btn-sm" onclick="window.__duplicarDescontoLoja(${i})">Duplicar</button>
     </div>`;
   }).join('');
 }
@@ -7355,7 +7357,7 @@ window.__descontosLoja=async(clienteId)=>{
     console.error(e);
     const venceu=erroTokenShopee(e);
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?msgErroTokenMkt(c.nome):('Erro ao buscar os descontos: '+(e.message||'desconhecido')))}${venceu?`<br><br><button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${prefDesc.app}')">🔄 Reconectar ${prefDesc.app==='erp'?'ERP':'Marketing'}</button>`:''}</div>`;
+    corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?msgErroTokenMkt(c.nome):('Erro ao buscar os descontos: '+(e.message||'desconhecido')))}${venceu?`<br><br><button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${prefDesc.app}')">Reconectar ${prefDesc.app==='erp'?'ERP':'Marketing'}</button>`:''}</div>`;
   }
 };
 window.__marcarDescontoFixo=async(idx)=>{
@@ -7911,10 +7913,10 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
 
     let html = '';
     if(dirGerarSel.titulo && data){
-      html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📌 Título</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.titulo||'')}</div></div>`;
+      html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">Título</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.titulo||'')}</div></div>`;
     }
     if(dirGerarSel.descricao && data){
-      html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">📝 Descrição</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.descricao||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.descricao||'')}</div></div>`;
+      html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">Descrição</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.descricao||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.descricao||'')}</div></div>`;
     }
     if(querFotos && data?.fotos?.length){
       const fotosHtml = data.fotos.map((f,i)=>{
@@ -7931,7 +7933,7 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
       const imgGuia = guiaData?.imagem || guiaData?.guia;
       if(guiaData?.ok && imgGuia){
         html += `<div class="ia-block" style="padding:12px;margin-top:16px;max-width:280px">
-          <div class="ia-block-label" style="margin-bottom:8px">📏 Guia de Tamanhos</div>
+          <div class="ia-block-label" style="margin-bottom:8px">Guia de Tamanhos</div>
           <img src="${imgGuia}" style="width:100%;border-radius:8px;margin-bottom:8px">
           <a href="${imgGuia}" download="guia-tamanhos.png" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
         </div>`;
@@ -8053,7 +8055,7 @@ document.getElementById('videoGerarBtn')?.addEventListener('click', async ()=>{
         <video src="${resultado.video}" controls style="width:100%;max-width:340px;border-radius:10px;display:block;margin:0 auto"></video>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
           <a href="${resultado.video}" download="video-produto.mp4" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
-          <button class="btn btn-gold btn-sm" id="videoEstenderBtn">➕ Estender (+7s)</button>
+          <button class="btn btn-gold btn-sm" id="videoEstenderBtn">Estender (+7s)</button>
         </div>
       `;
       document.getElementById('videoEstenderBtn')?.addEventListener('click', async ()=>{
@@ -8291,7 +8293,7 @@ function crmLeadFormHtml(){
     </div>
     ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? `
     <div class="field" style="margin-bottom:12px;">
-      <label>📋 Respostas do Typebot</label>
+      <label>Respostas do Typebot</label>
       <div style="background:var(--bg2,#1a1a1a);border:1px solid var(--border,#333);border-radius:8px;padding:12px;display:grid;gap:8px;">
         ${Object.keys(lead.respostasTypebot).map(chave=>`
           <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;border-bottom:1px solid var(--border,#333);padding-bottom:6px;">
@@ -8303,7 +8305,7 @@ function crmLeadFormHtml(){
     <div class="field" style="margin-bottom:12px;"><label>Notas</label><textarea id="lead-notas" placeholder="Observações...">${lead?esc(lead.notas||''):''}</textarea></div>
     <div class="lead-form-actions">
       ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
-      ${lead?`<button class="btn-cancel" onclick="window.__hist('${lead.id}','${esc(lead.nome).replace(/'/g,"\\'")}')" style="margin-right:auto">🕒 Ver histórico</button>`:''}
+      ${lead?`<button class="btn-cancel" onclick="window.__hist('${lead.id}','${esc(lead.nome).replace(/'/g,"\\'")}')" style="margin-right:auto">Ver histórico</button>`:''}
       <button class="btn-cancel" onclick="window.__crmToggleForm(false)">Cancelar</button>
       <button class="btn-save" onclick="window.__crmSubmitForm()">${lead?'Salvar alterações':'Adicionar lead'}</button>
     </div>
@@ -8771,7 +8773,7 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
       </div>
       <div class="c360-grid">
         <div class="c360-card"><h3>Marketplaces</h3><div class="c360-market" id="c360Marketplaces"></div><div style="height:14px"></div><h3>Informações</h3><div id="c360Info"></div></div>
-        <div class="c360-card"><h3>Últimos resultados</h3><div class="c360-months" id="c360Months"></div><div class="c360-actions"><button class="btn btn-gold btn-sm" id="c360EditBtn">✎ Editar cliente</button><button class="btn btn-ghost btn-sm" id="c360GmvBtn">▥ Gerenciar GMV</button><button class="btn btn-ghost btn-sm" id="c360VaultBtn">🔑 Abrir acessos</button></div></div>
+        <div class="c360-card"><h3>Últimos resultados</h3><div class="c360-months" id="c360Months"></div><div class="c360-actions"><button class="btn btn-gold btn-sm" id="c360EditBtn">✎ Editar cliente</button><button class="btn btn-ghost btn-sm" id="c360GmvBtn">▥ Gerenciar GMV</button><button class="btn btn-ghost btn-sm" id="c360VaultBtn">Abrir acessos</button></div></div>
       </div>
     </div>
   </div>
@@ -8779,7 +8781,7 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
 
 <div class="modal-overlay hidden" id="mlCupomOverlay">
   <div class="modal" style="max-width:440px">
-    <div class="modal-header"><h2>🎯 Cupom Automático — Mercado Livre</h2><button class="icon-act" onclick="document.getElementById('mlCupomOverlay').classList.add('hidden')" aria-label="Fechar">✕</button></div>
+    <div class="modal-header"><h2>Cupom Automático — Mercado Livre</h2><button class="icon-act" onclick="document.getElementById('mlCupomOverlay').classList.add('hidden')" aria-label="Fechar">✕</button></div>
     <div class="modal-body">
       <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px">Cria um cupom novo automaticamente a cada 14 dias (limite máximo da própria API do Mercado Livre), sem precisar fazer nada manual.</p>
       <div class="field"><label>Tipo de desconto</label>
@@ -8793,7 +8795,7 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px"><input type="checkbox" id="mlCupomAtivo"> Ativar renovação automática a cada 14 dias</label>
       <div style="display:flex;gap:8px;margin-top:16px">
         <button class="btn btn-ghost btn-sm" id="mlCupomCriarAgoraBtn" style="flex:1">Criar agora (teste)</button>
-        <button class="btn btn-gold btn-sm" id="mlCupomSalvarBtn" style="flex:1">💾 Salvar Configuração</button>
+        <button class="btn btn-gold btn-sm" id="mlCupomSalvarBtn" style="flex:1">Salvar Configuração</button>
       </div>
     </div>
   </div>
@@ -8816,7 +8818,7 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
       </div>
       <div class="c360-grid">
         <div class="c360-card"><h3>Cupons/Promoções ativas</h3><div id="mlc360ListaPromocoes"><div class="c360-empty">Carregando...</div></div></div>
-        <div class="c360-card"><h3>Ações rápidas</h3><div class="c360-actions" style="flex-direction:column"><button class="btn btn-gold btn-sm" id="mlc360AtualizarGmvBtn">🔄 Atualizar GMV</button><button class="btn btn-ghost btn-sm" id="mlc360CupomBtn">🎯 Configurar Cupom Automático</button><button class="btn btn-ghost btn-sm" id="mlc360ConvitesBtn">⚡ Ver Convites de Oferta Relâmpago</button></div></div>
+        <div class="c360-card"><h3>Ações rápidas</h3><div class="c360-actions" style="flex-direction:column"><button class="btn btn-gold btn-sm" id="mlc360AtualizarGmvBtn">Atualizar GMV</button><button class="btn btn-ghost btn-sm" id="mlc360CupomBtn">Configurar Cupom Automático</button><button class="btn btn-ghost btn-sm" id="mlc360ConvitesBtn">Ver Convites de Oferta Relâmpago</button></div></div>
       </div>
     </div>
   </div>
