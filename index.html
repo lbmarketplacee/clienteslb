@@ -8053,8 +8053,10 @@ function dirGuiaTamanhos(lista,subtitulo){
   g.fillStyle='#fff';g.fillRect(0,0,900,1200);g.textAlign='center';g.fillStyle='#111';g.font='700 64px Arial';g.fillText('GUIA DE TAMANHOS',450,170);
   if(subtitulo){g.font='400 30px Arial';g.fillStyle='#555';g.fillText(subtitulo.slice(0,48),450,228);}
   const x0=70,w=760,cw=w/cols.length,h=Math.min(130,560/(lista.length+1)),y0=320;
-  g.fillStyle='#111';g.fillRect(x0,y0,w,h);g.fillStyle='#fff';g.font=`700 ${cols.length>3?28:36}px Arial`;
-  cols.forEach((c,i)=>{const num=lista.some(t=>/^\d/.test(t.campos[c]||''))&&!/veste/i.test(c);g.fillText(c.toUpperCase()+(num?' (cm)':''),x0+cw*i+cw/2,y0+h/2+12);});
+  g.fillStyle='#111';g.fillRect(x0,y0,w,h);g.fillStyle='#fff';
+  cols.forEach((c,i)=>{const num=lista.some(t=>/^\d/.test(t.campos[c]||''))&&!/veste/i.test(c);const x=x0+cw*i+cw/2;let fs=34;
+    do{g.font=`700 ${fs}px Arial`;fs-=2;}while(g.measureText(c.toUpperCase()).width>cw-14&&fs>14);
+    g.fillText(c.toUpperCase(),x,y0+h/2+(num?0:12));if(num){g.font='400 22px Arial';g.fillText('(cm)',x,y0+h/2+30);}});
   lista.forEach((t,r)=>{const y=y0+h*(r+1);g.fillStyle=r%2?'#f2f2f2':'#fafafa';g.fillRect(x0,y,w,h);g.fillStyle='#111';
     cols.forEach((c,i)=>{g.font=i===0?'700 52px Arial':'400 42px Arial';g.fillText(i===0?t.tam:(t.campos[c]||'—'),x0+cw*i+cw/2,y+h/2+16);});});
   g.strokeStyle='#111';g.lineWidth=3;g.strokeRect(x0,y0,w,h*(lista.length+1));
