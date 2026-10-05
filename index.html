@@ -722,6 +722,22 @@ textarea{resize:vertical;min-height:70px;}
 .cm-lista-simples{display:flex;flex-direction:column;gap:8px;}
 .cm-item{display:flex;align-items:center;gap:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
 .cm-item .nome{flex:1;font-size:13.5px;font-weight:600;color:var(--text);}
+.cm-grupo{margin-bottom:14px}
+.cm-grupo>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;padding:6px 2px 10px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim)}
+.cm-grupo>summary::-webkit-details-marker{display:none}
+.cm-grupo>summary::before{content:'';width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .15s;margin-right:2px}
+.cm-grupo[open]>summary::before{transform:rotate(45deg)}
+.cm-grupo-qtd{background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:1px 8px;font-size:10px;color:var(--text-dim)}
+.cm-grupo-itens{display:flex;flex-direction:column;gap:8px}
+.cm-ico-btn{display:inline-flex;align-items:center;padding:6px 8px}
+.cm-conectar{display:inline-flex;align-items:center;gap:6px}
+.cm-switch{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);cursor:pointer;user-select:none}
+.cm-switch input{position:absolute;opacity:0;width:0;height:0}
+.cm-switch-trilho{position:relative;width:30px;height:17px;border-radius:99px;background:var(--border);transition:background .15s;flex-shrink:0}
+.cm-switch-trilho::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .15s}
+.cm-switch input:checked+.cm-switch-trilho{background:var(--green)}
+.cm-switch input:checked+.cm-switch-trilho::after{transform:translateX(13px)}
+.cm-switch input:focus-visible+.cm-switch-trilho{outline:2px solid var(--gold);outline-offset:2px}
 
 
 .cm-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;}
@@ -6517,27 +6533,39 @@ document.getElementById('ofertaProximaDataSalvarBtn')?.addEventListener('click',
     showToast('✓ Data salva pra todos os clientes.');
   }catch(e){showToast('Erro ao salvar.');}
 });
+const CM_ICO={ok:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',reconectar:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>',conectar:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'};
 function cmApiSlot(conectado, label, onclick, tituloVencido){
-  if(conectado)return `<span class="cadastro-doc-pill ok" title="Conectado">✅ ${label}</span><button class="icon-btn" title="Reconectar ${label} (use se der erro de token vencido)" onclick="${onclick}">🔄</button>`;
-  return `<button class="btn btn-ghost btn-sm" onclick="${onclick}">🔗 Conectar ${label}</button>`;
+  if(conectado)return `<span class="cadastro-doc-pill ok" title="Conectado">${CM_ICO.ok} ${label}</span><button class="icon-btn cm-ico-btn" title="Reconectar ${label} (use se der erro de token vencido)" onclick="${onclick}">${CM_ICO.reconectar}</button>`;
+  return `<button class="btn btn-ghost btn-sm cm-conectar" onclick="${onclick}">${CM_ICO.conectar} Conectar ${label}</button>`;
+}
+// Grupos recolhíveis nas listas de conexão: quem precisa de ação em cima, o resto agrupado.
+const cmGruposAbertos=new Set();
+window.__cmGrupo=(id,aberto)=>{aberto?cmGruposAbertos.add(id):cmGruposAbertos.delete(id);};
+function cmGrupoHtml(id,titulo,itens,recolhido){
+  if(!itens.length)return'';
+  const aberto=!recolhido||cmGruposAbertos.has(id);
+  return `<details class="cm-grupo" ${aberto?'open':''} ontoggle="window.__cmGrupo('${id}',this.open)"><summary><span>${titulo}</span><span class="cm-grupo-qtd">${itens.length}</span></summary><div class="cm-grupo-itens">${itens.join('')}</div></details>`;
 }
 function cmRenderApisShopee(){
   const el=document.getElementById('cmApisShopeeLista');
   if(!el)return;
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee'));
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
-  el.innerHTML=lista.map(c=>{
+  const linha=c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const conectarClick=app=>`window.__shopeeConectar('${c.id}','${nomeEsc}','${app}')`;
     const jaMigrado=!!c.shopeeErpShopId;
     const temLegado=!jaMigrado&&!!(c.shopeeShopId||c.shopeeMktShopId||c.shopeeProdutoShopId);
     return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
       <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}</span>
-      <span style="display:flex;align-items:center;gap:4px" title="ERP — cobre GMV, Marketing e Produto numa conexão só">⭐ ${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
+      <span style="display:flex;align-items:center;gap:4px" title="ERP — cobre GMV, Marketing e Produto numa conexão só">${cmApiSlot(jaMigrado,'ERP',conectarClick('erp'))}</span>
       <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(!!c.shopeeAdsShopId,'Ads',conectarClick('ads'))}</span>
-      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">🕰️ ainda no esquema antigo</span>':''}
+      ${temLegado?'<span class="cadastro-doc-pill" style="font-size:10px" title="Ainda conectado pelo jeito antigo (GMV/Marketing/Produto separados) — continua funcionando, mas vale migrar pro ERP quando puder">esquema antigo</span>':''}
     </div>`;
-  }).join('');
+  };
+  const completo=c=>!!c.shopeeErpShopId&&!!c.shopeeAdsShopId;
+  el.innerHTML=cmGrupoHtml('shp-falta','Falta conectar',lista.filter(c=>!completo(c)).map(linha),false)
+    +cmGrupoHtml('shp-ok','Tudo conectado (ERP + Ads)',lista.filter(completo).map(linha),false);
 }
 // ---- TikTok Shop: conexão + robô de oferta relâmpago (vive DENTRO do card TikTok Shop) ----
 function cmRenderTiktokRobo(){
@@ -6545,19 +6573,21 @@ function cmRenderTiktokRobo(){
   if(!el)return;
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('tiktok'));
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:16px">Nenhum cliente com TikTok Shop ainda. Marque "TikTok Shop" nos marketplaces do cliente.</div>';return;}
-  el.innerHTML=lista.map(c=>{
+  const linha=c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     const conectado=!!c.tiktokShopCipher;
     const auto=c.tiktokOfertaAuto!==false; // ligado por padrão assim que conecta
     const cobertura=c.tiktokOfertaCobertaAte?`Coberto até ${new Date(c.tiktokOfertaCobertaAte*1000).toLocaleDateString('pt-BR')}`:'';
     return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
       <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}${cobertura?`<div style="font-size:11px;color:var(--text-dim)">${cobertura}</div>`:''}</span>
-      <span style="display:flex;align-items:center;gap:4px">🎵 ${cmApiSlot(conectado,'TikTok',`window.__tiktokConectar('${c.id}','${nomeEsc}')`)}</span>
-      ${conectado?`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer" title="Cria sozinho as ofertas relâmpago do mês todo, nas regras da LB"><input type="checkbox" ${auto?'checked':''} onchange="window.__tiktokToggleAuto('${c.id}',this.checked)"> 🤖 automática</label>
-      <button class="btn btn-ghost btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',false)" title="Mostra o que o robô faria, sem criar nada">🔎 Simular</button>
-      ${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',true)" title="Cria as ofertas agora, de verdade">▶️ Rodar agora</button>`:''}`:''}
+      <span style="display:flex;align-items:center;gap:4px">${cmApiSlot(conectado,'TikTok',`window.__tiktokConectar('${c.id}','${nomeEsc}')`)}</span>
+      ${conectado?`<label class="cm-switch" title="Cria sozinho as ofertas relâmpago do mês todo, nas regras da LB"><input type="checkbox" ${auto?'checked':''} onchange="window.__tiktokToggleAuto('${c.id}',this.checked)"><span class="cm-switch-trilho"></span> Robô automático</label>
+      <button class="btn btn-ghost btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',false)" title="Mostra o que o robô faria, sem criar nada">Simular</button>
+      ${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__tiktokRodarRobo('${c.id}',true)" title="Cria as ofertas agora, de verdade">Rodar agora</button>`:''}`:''}
     </div>`;
-  }).join('');
+  };
+  el.innerHTML=cmGrupoHtml('tt-on','Lojas conectadas',lista.filter(c=>c.tiktokShopCipher).map(linha),false)
+    +cmGrupoHtml('tt-off','Sem conexão — clique pra conectar',lista.filter(c=>!c.tiktokShopCipher).map(linha),true);
 }
 // ---- TikTok: chave liga/desliga + simular/rodar o robô de oferta relâmpago (tudo pela aba APIs) ----
 window.__tiktokToggleAuto=async(clienteId,ligado)=>{
