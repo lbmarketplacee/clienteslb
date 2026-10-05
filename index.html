@@ -1194,7 +1194,6 @@ textarea{resize:vertical;min-height:70px;}
       <button class="nav-item sidebar-item" data-page="marketing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing</button>
       <button class="nav-item sidebar-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item sidebar-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
-      <button class="nav-item sidebar-item" data-page="contratos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Contratos</button>
       <button class="nav-item sidebar-item" data-page="whatsapp" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Conversas WhatsApp<span id="waNavBadge" style="display:none;position:absolute;top:6px;right:10px;background:#25D366;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1"></span></button>
       <button class="nav-item sidebar-item" data-page="cadastros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros</button>
       <button class="nav-item sidebar-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
@@ -1248,7 +1247,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card metric-card glow-purple"><div class="sc-top"><div class="sc-icon purple metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saldo Total<br>em Ads</div></div></div><div class="sc-value green metric-value" id="sumSaldo">R$ 0</div><svg class="sc-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,18 15,15 30,17 45,10 60,12 75,5 100,3" fill="none" stroke="var(--green)" stroke-width="2"/></svg></div>
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">GMV Total<br>Acumulado</div></div></div><div class="sc-value green metric-value" id="sumGmv">R$ 0</div><div class="sc-foot" id="sumGmvFoot">&nbsp;</div></div>
         </div>
-        <div class="panel hidden" id="dashCobrancas" style="margin-top:18px"></div>
+        
         <div class="dash-row">
           <div class="panel">
             <div class="panel-head"><h3>GMV Acumulado</h3><span class="p-sub">Evolução mensal</span></div>
@@ -1267,7 +1266,6 @@ textarea{resize:vertical;min-height:70px;}
               <div class="perf-item"><div class="perf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="perf-info"><div class="perf-plabel">Meses com Registro</div><div class="perf-pval" id="dashMeses">0</div></div></div>
               <div class="perf-item"><div class="perf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="perf-info"><div class="perf-plabel">Total Investido em Ads</div><div class="perf-pval" id="dashAds">R$ 0</div></div></div>
               <div class="perf-item"><div class="perf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div><div class="perf-info"><div class="perf-plabel">ROI Médio (GMV/Ads)</div><div class="perf-pval" id="dashRoi">—</div></div></div>
-              <div class="perf-item"><div class="perf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div><div class="perf-info"><div class="perf-plabel">Contratos Aprovados (mês)</div><div class="perf-pval" id="dashContratos">0</div></div></div>
             </div>
           </div>
         </div>
@@ -1357,31 +1355,7 @@ textarea{resize:vertical;min-height:70px;}
                 <div class="contratos-section"><h3>Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
         <div class="contratos-section"><h3>Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
         <div class="contratos-section"><h3>Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
-        <div class="contratos-section" id="contratoAvulsoBox">
-          <h3>Gerar Contrato (PDF)</h3>
-          <div class="field"><label>Nome do cliente/empresa</label><input type="text" id="caNome" placeholder="Nome completo ou razão social"></div>
-          <div class="field"><label>CNPJ/CPF</label><input type="text" id="caCnpjCpf" placeholder="00.000.000/0000-00"></div>
-          <div style="display:flex;gap:10px">
-            <div class="field" style="flex:1"><label>E-mail</label><input type="email" id="caEmail" placeholder="email@cliente.com"></div>
-            <div class="field" style="flex:1"><label>WhatsApp</label><input type="text" id="caWhatsapp" placeholder="(11) 90000-0000"></div>
-          </div>
-          <div class="field"><label>Endereço</label><input type="text" id="caEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
-          <div style="display:flex;gap:10px">
-            <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="text" inputmode="decimal" id="caMensalidade" placeholder="2.000,00"></div>
-            <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="caDuracaoMeses" placeholder="12"></div>
-            <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="caDiaVencimento" min="1" max="31" placeholder="5"></div>
-          </div>
-
-          <div style="display:flex;gap:10px">
-            <div class="field" style="flex:1"><label>Início do contrato</label><input type="date" id="caInicio"></div>
-            <div class="field" style="flex:2"><label>Segmento (opcional)</label><input type="text" id="caSegmento" placeholder="moda, aviamentos, acessórios..."></div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-end">
-            <label class="cm-switch" style="flex:2;margin-bottom:14px"><input type="checkbox" id="caUpseller"><span class="cm-switch-trilho"></span> UpSeller absorvido pela LB</label>
-            <div class="field" style="flex:1"><label>Valor UpSeller (R$/mês)</label><input type="text" inputmode="decimal" id="caUpsellerValor" value="150,00"></div>
-          </div>
-          <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">Gerar Contrato (.pdf)</button>
-        </div>
+        
       </div>
       <!-- ===== PÁGINA: CADASTROS RECEBIDOS ===== -->
             <div class="page" id="page-whatsapp">
@@ -1882,6 +1856,7 @@ textarea{resize:vertical;min-height:70px;}
             <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">Atualizar</button>
           </div>
         </div>
+        <div class="panel hidden" id="dashCobrancas" style="margin:0 0 20px"></div>
         <div class="sgmv-summary">
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Receita<br>(Clientes)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
           <div class="summary-card metric-card glow-coral"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Despesas<br>(Colaboradoras)</div></div></div><div class="sc-value metric-value" id="dreDespesas">R$ 0</div></div>
@@ -1899,6 +1874,34 @@ textarea{resize:vertical;min-height:70px;}
         <div class="cm-secao" style="margin-top:20px">
           <h3 style="margin-bottom:14px">Despesas por Colaboradora</h3>
           <div id="dreListaColaboradoras"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
+        </div>
+      
+        <div class="cm-secao" style="margin-top:20px">
+          <div id="contratoAvulsoBox">
+          <h3 style="margin-bottom:14px">Gerar Contrato (PDF)</h3>
+          <div class="field"><label>Nome do cliente/empresa</label><input type="text" id="caNome" placeholder="Nome completo ou razão social"></div>
+          <div class="field"><label>CNPJ/CPF</label><input type="text" id="caCnpjCpf" placeholder="00.000.000/0000-00"></div>
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>E-mail</label><input type="email" id="caEmail" placeholder="email@cliente.com"></div>
+            <div class="field" style="flex:1"><label>WhatsApp</label><input type="text" id="caWhatsapp" placeholder="(11) 90000-0000"></div>
+          </div>
+          <div class="field"><label>Endereço</label><input type="text" id="caEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="text" inputmode="decimal" id="caMensalidade" placeholder="2.000,00"></div>
+            <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="caDuracaoMeses" placeholder="12"></div>
+            <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="caDiaVencimento" min="1" max="31" placeholder="5"></div>
+          </div>
+
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>Início do contrato</label><input type="date" id="caInicio"></div>
+            <div class="field" style="flex:2"><label>Segmento (opcional)</label><input type="text" id="caSegmento" placeholder="moda, aviamentos, acessórios..."></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <label class="cm-switch" style="flex:2;margin-bottom:14px"><input type="checkbox" id="caUpseller"><span class="cm-switch-trilho"></span> UpSeller absorvido pela LB</label>
+            <div class="field" style="flex:1"><label>Valor UpSeller (R$/mês)</label><input type="text" inputmode="decimal" id="caUpsellerValor" value="150,00"></div>
+          </div>
+          <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">Gerar Contrato (.pdf)</button>
+        </div>
         </div>
       </div>
 
@@ -3031,7 +3034,7 @@ function renderDashCharts(){
   document.getElementById('dashAds').textContent=fmtR(at);
   document.getElementById('dashRoi').textContent=at>0?(gt/at).toFixed(1)+'x':'—';
   const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
-  document.getElementById('dashContratos').textContent=contratosCache.filter(c=>c.status==='aprovado'&&c.mes===ma).length;
+  const _dc=document.getElementById('dashContratos');if(_dc)_dc.textContent=contratosCache.filter(c=>c.status==='aprovado'&&c.mes===ma).length;
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
@@ -8375,15 +8378,7 @@ window.__crmMoveStage=async(id,stage)=>{
     await updateDoc(doc(db,"crmLeads",id),{stage,atualizadoEm:crmHojeISO()});
     if(stage==='perdido'&&lead.stage!=='perdido'){editingLeadId=id;leadFormOpen=true;showToast('Marque o motivo da perda e salve.');}
     await log(id,lead.nome,'mudança de etapa',`${currentUser} moveu de "${stageAntiga}" para "${stageNova}".`);
-    // Quando fecha um lead, cria automaticamente a proposta de contrato
-    if(stage==='fechado' && lead.stage!=='fechado'){
-      const hoje=new Date();
-      const mesAtual=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
-      const nichoLabel=lead.nicho==='Outros'&&lead.nichoOutro?lead.nichoOutro:lead.nicho;
-      const obsAuto=`Lead fechado automaticamente pelo CRM.\\nContato: ${lead.whatsapp||lead.email||'—'}\\nNicho: ${nichoLabel||'—'}\\nServiço: ${lead.tipoServico?crmTipoServicoInfo(lead.tipoServico).label:'—'}\\nOrigem: ${lead.origem||'—'}${lead.valor?`\\nValor estimado: ${fmtR(lead.valor)}`:''}${lead.notas?`\\nNotas: ${lead.notas}`:''}`;
-      await addDoc(collection(db,"contratos"),{nomeCliente:lead.nome,indicadoPor:currentUser,mes:mesAtual,obs:obsAuto,status:'pendente',timestamp:serverTimestamp()});
-      showToast(`✓ ${lead.nome} fechado! Proposta de contrato criada automaticamente.`);
-    }
+    if(stage==='fechado' && lead.stage!=='fechado') showToast(`✓ ${lead.nome} fechado!`);
   }catch(e){showToast('Erro ao mover lead.');console.error(e);}
 };
 
