@@ -1002,7 +1002,29 @@ textarea{resize:vertical;min-height:70px;}
 .wa-tpl-params{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}
 .wa-tpl-param b{font-weight:600;opacity:.75}
 .wa-midia{font-weight:600}
-.wa-midia-dica{font-size:11px;opacity:.7;margin-top:3px}
+.wa-midia-btn{margin-top:6px;background:transparent;border:1px solid currentColor;color:inherit;opacity:.85;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.wa-midia-btn:disabled{opacity:.5;cursor:default}
+.wa-midia-conteudo{margin-top:6px}
+.wa-midia-conteudo audio{width:240px;max-width:100%;height:36px}
+.wa-midia-conteudo img,.wa-midia-conteudo video{max-width:260px;max-height:320px;border-radius:8px;display:block}
+.wa-crm-row-nome.nao-lida{color:var(--text);font-weight:700}
+.wa-nao-lidas{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--green);color:#0a0a0a;font-size:10.5px;font-weight:700;vertical-align:middle}
+.wa-rr-wrap{position:relative}
+.wa-rr-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.wa-rr-painel{position:absolute;bottom:46px;left:0;width:340px;max-width:80vw;max-height:360px;overflow:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:10px;z-index:20}
+.wa-rr-tit{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin:2px 4px 8px}
+.wa-rr-item{display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:8px;cursor:pointer}
+.wa-rr-item:hover{background:var(--bg)}
+.wa-rr-item>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.wa-rr-item b{font-size:12.5px;color:var(--text)}
+.wa-rr-item span{font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-rr-del{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;padding:0 4px}
+.wa-rr-del:hover{color:var(--red)}
+.wa-rr-vazio{font-size:12px;color:var(--text-dim);padding:8px}
+.wa-rr-nova{width:100%;margin-top:6px;background:none;border:1px dashed var(--border);color:var(--gold);border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:inherit}
+.wa-rr-form{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.wa-rr-form input,.wa-rr-form textarea{padding:8px 10px;font-size:12.5px}
+.wa-rr-form-acoes{display:flex;justify-content:flex-end;gap:6px}
 .wa-crm-chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:2px}
 .wa-crm-date-divider{align-self:center;background:var(--bg-card);color:var(--text-dim);font-size:11px;padding:3px 12px;border-radius:10px;margin:10px 0;border:1px solid var(--border)}
 .wa-crm-bubble-row{display:flex;flex-direction:column;margin-bottom:2px;max-width:72%}
@@ -1383,7 +1405,11 @@ textarea{resize:vertical;min-height:70px;}
               </div>
               <div id="waModalMensagens" class="wa-crm-chat-body"></div>
               <div class="wa-crm-chat-input">
-                <input type="text" id="waModalTexto" placeholder="Digite uma mensagem...">
+                <div class="wa-rr-wrap">
+                  <button class="wa-rr-btn" id="waRRBtn" title="Respostas rápidas (ou digite / )" onclick="window.__waRRAlternar()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></button>
+                  <div class="wa-rr-painel hidden" id="waRRPainel"></div>
+                </div>
+                <input type="text" id="waModalTexto" placeholder="Digite uma mensagem ou / pra respostas rápidas">
                 <button class="wa-crm-send-btn" id="waModalEnviarBtn" title="Enviar">➤</button>
               </div>
               <div style="padding:0 14px 12px">
@@ -3590,7 +3616,9 @@ function whatsappRenderizarLista(){
     if(pendentesCount>0){badgeNav.textContent=pendentesCount>99?'99+':pendentesCount;badgeNav.style.display='flex';}
     else{badgeNav.style.display='none';}
   }
-  document.title=pendentesCount>0?`(${pendentesCount}) Sistema LB Marketplace`:'Sistema LB Marketplace';
+  const naoLidasTotal=whatsappConversasCache.reduce((t,c)=>t+waNaoLidas(c),0);
+  const avisos=pendentesCount+naoLidasTotal;
+  document.title=avisos>0?`(${avisos}) Sistema LB Marketplace`:'Sistema LB Marketplace';
 
   const termoBusca=(document.getElementById('waBusca')?.value||'').trim().toLowerCase();
   const esconderNaoQualif=document.getElementById('waEsconderNaoQualificado')?.checked;
@@ -3615,8 +3643,8 @@ function whatsappRenderizarLista(){
       <div class="wa-avatar">${esc(waIniciais(c.nome||c.telefone))}</div>
       <div class="wa-crm-row-body">
         <div class="wa-crm-row-top">
-          <span class="wa-crm-row-nome">${esc(c.nome||c.telefone||c.id)}</span>
-          <span class="wa-crm-row-hora">${waFmtHoraLista(ultima?.em)}</span>
+          <span class="wa-crm-row-nome${waNaoLidas(c)?' nao-lida':''}">${esc(c.nome||c.telefone||c.id)}</span>
+          <span class="wa-crm-row-hora">${waFmtHoraLista(ultima?.em)}${waNaoLidas(c)?`<span class="wa-nao-lidas">${waNaoLidas(c)}</span>`:''}</span>
         </div>
         <div class="wa-crm-row-preview">${vistoLista}${esc(prefixo+waPreviewTexto(ultima))}</div>
         <div class="wa-crm-row-tags">
@@ -3630,6 +3658,20 @@ function whatsappRenderizarLista(){
 window.__waAbrirConversa=(telefone)=>{waConversaAtualTelefone=telefone;waAbrirConversa(telefone);document.getElementById('waChatEmpty').style.display='none';const ativa=document.getElementById('waChatAtiva');ativa.style.display='flex';ativa.classList.remove('hidden');whatsappRenderizarLista();};
 window.__waFecharChat=()=>{waConversaAtualTelefone=null;document.getElementById('waChatAtiva').style.display='none';document.getElementById('waChatEmpty').style.display='flex';whatsappRenderizarLista();};
 window.__waSalvarQualificacaoAtiva=(valor)=>{if(waConversaAtualTelefone)window.__waSalvarQualificacao(waConversaAtualTelefone,valor);};
+// Não lida = mensagem do lead depois da última resposta (IA/equipe) e depois da última vez que a equipe abriu.
+function waNaoLidas(c){
+  const msgs=c.mensagens||[];
+  let corte=c.vistoEquipeEm||'';
+  for(const m of msgs)if(m.de!=='lead'&&(m.em||'')>corte)corte=m.em;
+  return msgs.filter(m=>m.de==='lead'&&(m.em||'')>corte).length;
+}
+// Marca como vista quando alguém da equipe está com a conversa aberta na tela.
+function waMarcarVista(c){
+  if(!c||!waNaoLidas(c)||document.visibilityState!=='visible')return;
+  if(!document.getElementById('page-whatsapp')?.classList.contains('active'))return;
+  const agora=new Date().toISOString();c.vistoEquipeEm=agora;
+  updateDoc(doc(db,'whatsappConversas',c.id),{vistoEquipeEm:agora}).catch(e=>console.error('vistoEquipeEm',e));
+}
 function waPreviewTexto(m){
   if(!m)return'';
   const tpl=String(m.texto||'').match(/^\[Template aprovado "([^"]+)"/);
@@ -3645,11 +3687,28 @@ function waConteudoBolha(m){
     return `<div class="wa-tpl"><div class="wa-tpl-tit">Mensagem automática · ${esc(nomeTpl)}</div>${params?`<div class="wa-tpl-params">${params}</div>`:''}</div>`;
   }
   if(m.tipo&&m.tipo!=='text'){
-    const extra=m.tipo==='audio'||m.tipo==='image'||m.tipo==='video'||m.tipo==='document'?'<div class="wa-midia-dica">Abra no WhatsApp do celular pra ver o conteúdo.</div>':'';
-    return `<div class="wa-midia">${esc(t)}</div>${extra}`;
+    const rotulo={audio:'Ouvir',image:'Ver foto',video:'Ver vídeo',document:'Abrir documento',sticker:'Ver figurinha'}[m.tipo];
+    const btn=m.midia?.id&&rotulo?`<button class="wa-midia-btn" onclick="window.__waAbrirMidia(this,'${esc(m.midia.id)}','${esc(m.tipo)}','${esc(m.midia.nome||'')}')">${rotulo}</button>`:'';
+    return `<div class="wa-midia">${esc(t)}</div>${btn}`;
   }
   return esc(t);
 }
+// Baixa a mídia pelo backend (com login) e mostra no lugar do botão.
+window.__waAbrirMidia=async(btn,midiaId,tipo,nome)=>{
+  btn.disabled=true;btn.textContent='Carregando...';
+  try{
+    const resp=await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'baixar_midia',midiaId})});
+    const d=await resp.json();
+    if(!resp.ok||!d.ok)throw new Error(d.erro||'Não consegui abrir.');
+    const url=`data:${d.mime};base64,${d.base64}`;
+    const el=document.createElement('div');el.className='wa-midia-conteudo';
+    if(tipo==='audio')el.innerHTML=`<audio controls autoplay src="${url}"></audio>`;
+    else if(tipo==='image'||tipo==='sticker')el.innerHTML=`<a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="Foto recebida"></a>`;
+    else if(tipo==='video')el.innerHTML=`<video controls src="${url}"></video>`;
+    else el.innerHTML=`<a class="btn btn-ghost btn-sm" href="${url}" download="${esc(nome||'documento')}">Baixar ${esc(nome||'documento')}</a>`;
+    btn.replaceWith(el);
+  }catch(e){btn.disabled=false;btn.textContent='Tentar de novo';showToast(e.message);}
+};
 function waAbrirConversa(telefone){
   const conversa=whatsappConversasCache.find(c=>c.id===telefone);
   if(!conversa)return;
@@ -3679,8 +3738,58 @@ function waAbrirConversa(telefone){
   });
   msgsEl.innerHTML=html;
   msgsEl.scrollTop=msgsEl.scrollHeight;
-  document.getElementById('waModalAssumirBtn').textContent=conversa.modo==='humano'?'🤖 Devolver pra IA':'🙋 Assumir Conversa (para a IA)';
+  document.getElementById('waModalAssumirBtn').textContent=conversa.modo==='humano'?'Devolver pra IA':'Assumir conversa (pausa a IA)';
+  waMarcarVista(conversa);
 }
+// ---- Respostas rápidas (mensagens prontas da equipe) — coleção whatsappRespostasRapidas ----
+let waRR=[],waRRIniciado=false,waRRFormAberto=false;
+function waRRIniciar(){
+  if(waRRIniciado)return;waRRIniciado=true;
+  onSnapshot(query(collection(db,'whatsappRespostasRapidas'),orderBy('titulo')),snap=>{waRR=snap.docs.map(d=>({id:d.id,...d.data()}));if(!document.getElementById('waRRPainel')?.classList.contains('hidden'))waRRRender();});
+}
+function waRRRender(){
+  const el=document.getElementById('waRRPainel');if(!el)return;
+  const txt=document.getElementById('waModalTexto').value;
+  const filtro=txt.startsWith('/')?txt.slice(1).toLowerCase():'';
+  const lista=waRR.filter(r=>!filtro||(r.titulo+' '+r.texto).toLowerCase().includes(filtro));
+  el.innerHTML=`<div class="wa-rr-tit">Respostas rápidas</div>
+    <div class="wa-rr-lista">${lista.map(r=>`<div class="wa-rr-item" onclick="window.__waRRUsar('${r.id}')"><div><b>${esc(r.titulo)}</b><span>${esc(r.texto)}</span></div><button class="wa-rr-del" title="Excluir" onclick="event.stopPropagation();window.__waRRExcluir('${r.id}')">×</button></div>`).join('')||'<div class="wa-rr-vazio">Nenhuma resposta ainda.</div>'}</div>
+    ${waRRFormAberto?`<div class="wa-rr-form"><input id="waRRTitulo" placeholder="Atalho (ex: preço, horário)"><textarea id="waRRTexto" rows="3" placeholder="Texto da mensagem"></textarea><div class="wa-rr-form-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__waRRForm(false)">Cancelar</button><button class="btn btn-gold btn-sm" onclick="window.__waRRSalvar()">Salvar</button></div></div>`:`<button class="wa-rr-nova" onclick="window.__waRRForm(true)">+ Nova resposta rápida</button>`}`;
+}
+window.__waRRAlternar=(abrir)=>{
+  waRRIniciar();
+  const el=document.getElementById('waRRPainel');
+  const mostrar=abrir??el.classList.contains('hidden');
+  el.classList.toggle('hidden',!mostrar);
+  if(mostrar)waRRRender();
+};
+window.__waRRForm=(abrir)=>{waRRFormAberto=abrir;waRRRender();if(abrir)setTimeout(()=>document.getElementById('waRRTitulo')?.focus(),0);};
+window.__waRRUsar=(id)=>{
+  const r=waRR.find(x=>x.id===id);if(!r)return;
+  const input=document.getElementById('waModalTexto');input.value=r.texto;input.focus();
+  window.__waRRAlternar(false);
+};
+window.__waRRSalvar=async()=>{
+  const titulo=document.getElementById('waRRTitulo').value.trim(),texto=document.getElementById('waRRTexto').value.trim();
+  if(!titulo||!texto){showToast('Preencha o atalho e o texto.');return;}
+  try{await addDoc(collection(db,'whatsappRespostasRapidas'),{titulo,texto,criadoPor:currentUser,criadoEm:serverTimestamp()});waRRFormAberto=false;showToast('✓ Resposta rápida salva.');}
+  catch(e){showToast('Erro ao salvar.');console.error(e);}
+};
+window.__waRRExcluir=async(id)=>{
+  const r=waRR.find(x=>x.id===id);
+  if(!await lbConfirmar(`Excluir a resposta rápida "${r?.titulo||''}"?`))return;
+  try{await deleteDoc(doc(db,'whatsappRespostasRapidas',id));}catch(e){showToast('Erro ao excluir.');}
+};
+document.getElementById('waModalTexto')?.addEventListener('input',e=>{
+  if(e.target.value.startsWith('/'))window.__waRRAlternar(true);
+  else if(!document.getElementById('waRRPainel').classList.contains('hidden')&&!waRRFormAberto)window.__waRRAlternar(false);
+});
+document.getElementById('waModalTexto')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();
+    if(e.target.value.startsWith('/')){const t=e.target.value.slice(1).toLowerCase();const r=waRR.find(x=>(x.titulo+' '+x.texto).toLowerCase().includes(t));if(r){window.__waRRUsar(r.id);return;}}
+    document.getElementById('waModalEnviarBtn').click();}
+  if(e.key==='Escape')window.__waRRAlternar(false);
+});
 document.getElementById('waModalEnviarBtn')?.addEventListener('click',async()=>{
   const texto=document.getElementById('waModalTexto').value.trim();
   if(!texto||!waConversaAtualTelefone)return;
