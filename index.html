@@ -6462,16 +6462,20 @@ window.__tiktokToggleAuto=async(clienteId,ligado)=>{
     showToast(ligado?'🤖 Oferta relâmpago automática do TikTok LIGADA.':'Oferta relâmpago automática do TikTok desligada.');
   }catch(e){showToast('Erro ao salvar.');console.error(e);}
 };
-const TT_MOTIVOS={preco_maior_que_ultima_oferta:'preço novo mais caro que a última oferta (regra da TikTok)',sem_estoque:'sem estoque',sem_desconto_fixo:'fora do desconto fixo',produto_inativo:'produto inativo',produto_nao_encontrado:'sumiu da loja'};
+const TT_MOTIVOS={preco_maior_que_ultima_oferta:'preço novo mais caro que a última oferta (regra da TikTok)',sem_estoque:'sem estoque',sem_desconto_fixo:'fora do desconto fixo',produto_inativo:'produto inativo',produto_nao_encontrado:'sumiu da loja',sem_preco_no_desconto_fixo:'sem preço calculável no desconto fixo (variações com preços diferentes?)'};
 function ttResumoRobo(r,modo){
   if(!r||!Object.keys(r).length)return'O robô não devolveu resultado pra esse cliente.';
   if(r.erro)return`${r.cliente}\n\n⚠️ ${r.erro}`;
   const L=[`${r.cliente} — ${modo||''}`,''];
   if(r.situacao==='ja_coberto')return L.concat(`✅ O mês já está coberto até ${r.cobertaAte}. Nada a criar agora.`).join('\n');
   const bl=r.blocosPlanejados||[];
-  if(r.descontoFixo)L.push(`Desconto fixo usado: ${r.descontoFixo.titulo||'?'} (até ${r.descontoFixo.fimEm})`);
+  if(r.descontoFixo)L.push(`Desconto fixo usado: ${r.descontoFixo.titulo||'?'}${r.descontoFixo.tipo==='DIRECT_DISCOUNT'?' (em %)':''} (até ${r.descontoFixo.fimEm})`);
   if(bl.length)L.push(`Ofertas de 72h: ${bl.length} (de ${bl[0].inicio} até ${bl[bl.length-1].fim})`);
-  L.push(`Produtos que entram: ${(r.produtosIncluidos||[]).length}`);
+  const inc=r.produtosIncluidos||[];
+  L.push(`Produtos que entram: ${inc.length}`);
+  const brl=v=>Number(v).toFixed(2).replace('.',',');
+  inc.slice(0,5).forEach(p=>L.push(`   • ${p.id}: desconto fixo R$ ${brl(p.fixo)} → relâmpago R$ ${brl(p.preco)}`));
+  if(inc.length>5)L.push(`   … e mais ${inc.length-5}`);
   const pul=r.produtosPulados||[];
   if(pul.length){
     const cont={};pul.forEach(p=>{cont[p.motivo]=(cont[p.motivo]||0)+1;});
