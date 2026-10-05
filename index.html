@@ -848,6 +848,20 @@ textarea{resize:vertical;min-height:70px;}
 .crm-view-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);padding:7px 12px;border-radius:6px;cursor:pointer;}
 .crm-view-btn.on{background:var(--purple);color:#fff;border-color:var(--purple);}
 .crm-filters{display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:flex-end;}
+.crm-filters select,.crm-filters input{width:auto;flex:0 1 auto;max-width:200px}
+.crm-filters input{min-width:200px;max-width:260px;padding:7px 10px;font-size:12px}
+.crm-resumo{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.crm-resumo-item{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dim);font-size:12px;cursor:pointer}
+.crm-resumo-item b{font-size:14px;color:var(--text)}
+.crm-resumo-item.atrasado b{color:var(--red)}.crm-resumo-item.hoje b{color:var(--gold)}.crm-resumo-item.parado b{color:#9fb6ff}
+.crm-resumo-item.on{border-color:var(--gold-dim);background:var(--gold-soft)}
+.crm-resumo-limpar{background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;text-decoration:underline}
+.kfollow{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)}
+.kfollow.atrasado{color:var(--red);border-color:var(--red);background:transparent}
+.kfollow.hoje{color:#181712;background:var(--gold);border-color:var(--gold)}
+.kfollow.parado{color:#9fb6ff;border-color:#9fb6ff55}
+.kfollow.agendado{color:var(--text-dim)}
+.kfollow.perda{color:var(--red);opacity:.85}
 .crm-filters input,.crm-filters select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:12px;padding:7px 9px;outline:none;}
 .crm-filters input:focus,.crm-filters select:focus{border-color:var(--purple);}
 .btn-newlead{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:var(--purple);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;}
@@ -7854,11 +7868,39 @@ document.getElementById('videoGerarBtn')?.addEventListener('click', async ()=>{
 });
 
 function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
+// ---- Acompanhamento (follow-up): quem precisa de retorno e quem está esquecido ----
+const CRM_ATIVAS=['novo','contato','agendado','compareceu'];
+const CRM_DIAS_PARADO=7;
+const CRM_MOTIVOS_PERDA=['Preço','Não respondeu mais','Fechou com outra agência','Não é o momento','Sem perfil pro serviço','Outro'];
+function crmHojeISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function crmDiasEntre(de,ate){return Math.round((new Date(ate+'T00:00:00')-new Date(de+'T00:00:00'))/86400000);}
+// atrasado | hoje | agendado | parado | ok  (só para leads em etapas ativas)
+function crmAcompanhamento(l,hoje=crmHojeISO()){
+  if(!CRM_ATIVAS.includes(l.stage||'novo'))return{tipo:'ok',texto:''};
+  if(l.proximoContato){
+    const d=crmDiasEntre(hoje,l.proximoContato);
+    if(d<0)return{tipo:'atrasado',texto:`Retorno atrasado há ${-d} dia${d<-1?'s':''}`};
+    if(d===0)return{tipo:'hoje',texto:'Retornar hoje'};
+    const [,m,dd]=l.proximoContato.split('-');
+    return{tipo:'agendado',texto:d===1?'Retornar amanhã':`Retornar em ${dd}/${m}`};
+  }
+  const ultimo=String(l.atualizadoEm||l.createdDate||'').slice(0,10);
+  if(ultimo){const p=crmDiasEntre(ultimo,hoje);if(p>=CRM_DIAS_PARADO)return{tipo:'parado',texto:`Parado há ${p} dias`};}
+  return{tipo:'ok',texto:''};
+}
+const CRM_PRIORIDADE={atrasado:0,hoje:1,parado:2,agendado:3,ok:4};
+window.__crmFiltro=(campo,valor)=>{
+  crmFilter[campo]=valor;
+  const busca=campo==='search'?document.activeElement:null;
+  const pos=busca?.selectionStart;
+  renderCRM();
+  if(busca){const el=document.getElementById('crmBusca');if(el){el.focus();try{el.setSelectionRange(pos,pos);}catch(e){}}}
+};
 function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) || CRM_TIPOS_SERVICO[2]; }
 
 let crmLeads = [];
 let crmView = 'kanban';
-let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all'};
+let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all'};
 function crmDataDentroDoPeriodo(createdDate){
   if(crmFilter.periodo==='all'||!createdDate)return true;
   const hoje=new Date();hoje.setHours(0,0,0,0);
@@ -7900,6 +7942,7 @@ function crmFilteredLeads(){
     if(crmFilter.tipoServico!=='all' && l.tipoServico!==crmFilter.tipoServico) return false;
     if(crmFilter.nicho!=='all' && l.nicho!==crmFilter.nicho) return false;
     if(!crmDataDentroDoPeriodo(l.createdDate)) return false;
+    if(crmFilter.acomp!=='all' && crmAcompanhamento(l).tipo!==crmFilter.acomp) return false;
     if(crmFilter.search){
       const q = crmFilter.search.toLowerCase();
       const hay = [l.nome,l.whatsapp,l.email,l.instagram].filter(Boolean).join(' ').toLowerCase();
@@ -7930,12 +7973,15 @@ window.__crmSubmitForm=async()=>{
   const origem=document.getElementById('lead-origem').value;
   const valor=BRD_PARSE_EDIT(document.getElementById('lead-valor').value);
   const notas=document.getElementById('lead-notas').value.trim();
+  const proximoContato=document.getElementById('lead-proximo')?.value||'';
+  const motivoEl=document.getElementById('lead-motivo-perda');
+  const extras={proximoContato,atualizadoEm:crmHojeISO(),...(motivoEl?{motivoPerda:motivoEl.value}:{})};
   try{
     if(editingLeadId){
-      await updateDoc(doc(db,"crmLeads",editingLeadId),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas});
+      await updateDoc(doc(db,"crmLeads",editingLeadId),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras});
       await log(editingLeadId,nome,'edição de lead',`Dados do lead atualizados por ${currentUser}.`);
     }else{
-      const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
+      const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
       await log(ref.id,nome,'lead criado',`Lead criado por ${currentUser}, origem: ${origem||'—'}.`);
       // Dispara a mensagem de qualificação automática via WhatsApp (não trava o salvamento se falhar)
       if(whatsapp){
@@ -7965,7 +8011,8 @@ window.__crmMoveStage=async(id,stage)=>{
   try{
     const stageAntiga=crmStageInfo(lead.stage).label;
     const stageNova=crmStageInfo(stage).label;
-    await updateDoc(doc(db,"crmLeads",id),{stage});
+    await updateDoc(doc(db,"crmLeads",id),{stage,atualizadoEm:crmHojeISO()});
+    if(stage==='perdido'&&lead.stage!=='perdido'){editingLeadId=id;leadFormOpen=true;showToast('Marque o motivo da perda e salve.');}
     await log(id,lead.nome,'mudança de etapa',`${currentUser} moveu de "${stageAntiga}" para "${stageNova}".`);
     // Quando fecha um lead, cria automaticamente a proposta de contrato
     if(stage==='fechado' && lead.stage!=='fechado'){
@@ -8017,6 +8064,8 @@ function crmLeadFormHtml(){
         <select id="lead-origem">${CRM_ORIGENS.map(o=>`<option value="${o}" ${lead&&lead.origem===o?'selected':''}>${o}</option>`).join('')}</select>
       </div>
       <div class="field"><label>Valor Estimado</label><input type="text" id="lead-valor" value="${lead?fmtR(lead.valor).replace('R$ ',''):''}" placeholder="0"></div>
+      <div class="field"><label>Próximo contato (retorno)</label><input type="date" id="lead-proximo" value="${lead?esc(lead.proximoContato||''):''}"></div>
+      ${lead&&lead.stage==='perdido'?`<div class="field"><label>Motivo da perda</label><select id="lead-motivo-perda"><option value="">Selecione</option>${CRM_MOTIVOS_PERDA.map(m=>`<option value="${m}" ${lead.motivoPerda===m?'selected':''}>${m}</option>`).join('')}</select></div>`:''}
     </div>
     ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? `
     <div class="field" style="margin-bottom:12px;">
@@ -8043,7 +8092,7 @@ function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
     ${CRM_STAGES.map(s=>{
-      const inStage = leads.filter(l=>l.stage===s.key).sort((a,b)=>(a.createdDate||'').localeCompare(b.createdDate||''));
+      const inStage = leads.filter(l=>l.stage===s.key).sort((a,b)=>(CRM_PRIORIDADE[crmAcompanhamento(a).tipo]-CRM_PRIORIDADE[crmAcompanhamento(b).tipo])||(a.createdDate||'').localeCompare(b.createdDate||''));
       return `<div class="kcol" ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
         ondragleave="event.currentTarget.classList.remove('dragover')" ondrop="window.__crmDropStage('${s.key}', event)">
         <div class="kcol-head"><span class="name" style="color:${s.color}">${s.label}</span><span class="count">${inStage.length}</span></div>
@@ -8054,6 +8103,8 @@ function crmKanbanHtml(){
           <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
             <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}${l.respostasTypebot&&Object.keys(l.respostasTypebot).length?`<span class="wa-btn" title="Tem respostas do Typebot">📋</span>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
             <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}</div>
+            ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
+            ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
             <div>
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
               ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
@@ -8070,7 +8121,7 @@ function crmListHtml(){
   const leads = crmFilteredLeads();
   if(!leads.length) return '<div class="empty-crm">Nenhum lead encontrado.</div>';
   return `<table class="crm-table">
-    <thead><tr><th>Nome</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Valor</th><th>Criado em</th></tr></thead>
+    <thead><tr><th>Nome</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Acompanhamento</th><th>Valor</th><th>Criado em</th></tr></thead>
     <tbody>
       ${[...leads].sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||'')).map(l=>{
         const s = crmStageInfo(l.stage);
@@ -8083,6 +8134,7 @@ function crmListHtml(){
           <td>${esc(nichoLabel||'—')}</td>
           <td>${tipo?`<span class="stage-pill" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:'—'}</td>
           <td><span class="stage-pill" style="color:${s.color};background:${s.color}22">${s.label}</span></td>
+          <td>${(()=>{const a=crmAcompanhamento(l);return a.texto?`<span class="kfollow ${a.tipo}">${esc(a.texto)}</span>`:(l.stage==='perdido'&&l.motivoPerda?esc(l.motivoPerda):'—');})()}</td>
           <td>${l.valor?fmtR(l.valor):'—'}</td>
           <td>${partes.length===3?partes[2]+'/'+partes[1]:'—'}</td>
         </tr>`;
@@ -8091,6 +8143,12 @@ function crmListHtml(){
   </table>`;
 }
 
+function crmResumoHtml(){
+  const cont={atrasado:0,hoje:0,parado:0};
+  crmLeads.forEach(l=>{const t=crmAcompanhamento(l).tipo;if(t in cont)cont[t]++;});
+  const item=(k,rot)=>`<button class="crm-resumo-item ${k} ${crmFilter.acomp===k?'on':''}" onclick="window.__crmFiltro('acomp','${crmFilter.acomp===k?'all':k}')"><b>${cont[k]}</b> ${rot}</button>`;
+  return `<div class="crm-resumo">${item('atrasado','retornos atrasados')}${item('hoje','pra retornar hoje')}${item('parado',`parados há ${CRM_DIAS_PARADO}+ dias`)}${crmFilter.acomp!=='all'?`<button class="crm-resumo-limpar" onclick="window.__crmFiltro('acomp','all')">Ver todos</button>`:''}</div>`;
+}
 function renderCRM(){
   const container = document.getElementById('board-crm');
   if(!container)return;
@@ -8101,24 +8159,24 @@ function renderCRM(){
       <button class="crm-view-btn ${crmView==='lista'?'on':''}" onclick="window.__crmSetView('lista')">Lista</button>
     </div>
     <div class="crm-filters">
-      <input type="text" placeholder="Buscar nome ou contato" value="${esc(crmFilter.search)}" oninput="crmFilter.search=this.value;renderCRM()">
-      <select onchange="crmFilter.stage=this.value;renderCRM()">
+      <input type="text" id="crmBusca" placeholder="Buscar nome ou contato" value="${esc(crmFilter.search)}" oninput="window.__crmFiltro('search',this.value)">
+      <select onchange="window.__crmFiltro('stage',this.value)">
         <option value="all">Todas as etapas</option>
         ${CRM_STAGES.map(s=>`<option value="${s.key}" ${crmFilter.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
       </select>
-      <select onchange="crmFilter.origem=this.value;renderCRM()">
+      <select onchange="window.__crmFiltro('origem',this.value)">
         <option value="all">Todas as origens</option>
         ${CRM_ORIGENS.map(o=>`<option value="${o}" ${crmFilter.origem===o?'selected':''}>${o}</option>`).join('')}
       </select>
-      <select onchange="crmFilter.tipoServico=this.value;renderCRM()">
+      <select onchange="window.__crmFiltro('tipoServico',this.value)">
         <option value="all">Todos os tipos de serviço</option>
         ${CRM_TIPOS_SERVICO.map(s=>`<option value="${s.key}" ${crmFilter.tipoServico===s.key?'selected':''}>${s.label}</option>`).join('')}
       </select>
-      <select onchange="crmFilter.nicho=this.value;renderCRM()">
+      <select onchange="window.__crmFiltro('nicho',this.value)">
         <option value="all">Todos os nichos</option>
         ${CRM_NICHOS.map(n=>`<option value="${n}" ${crmFilter.nicho===n?'selected':''}>${n}</option>`).join('')}
       </select>
-      <select onchange="crmFilter.periodo=this.value;renderCRM()">
+      <select onchange="window.__crmFiltro('periodo',this.value)">
         <option value="all" ${crmFilter.periodo==='all'?'selected':''}>Quando entrou: todos</option>
         <option value="hoje" ${crmFilter.periodo==='hoje'?'selected':''}>Entrou hoje</option>
         <option value="ontem" ${crmFilter.periodo==='ontem'?'selected':''}>Entrou ontem</option>
@@ -8128,6 +8186,7 @@ function renderCRM(){
     </div>
     <button class="btn-newlead" onclick="window.__crmToggleForm(true)">+ Novo Lead</button>
   </div>
+  ${crmResumoHtml()}
   ${leadFormOpen ? crmLeadFormHtml() : ''}
   ${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}
   `;
