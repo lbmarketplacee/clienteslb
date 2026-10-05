@@ -6596,7 +6596,7 @@ window.__tiktokToggleAuto=async(clienteId,ligado)=>{
     showToast(ligado?'🤖 Oferta relâmpago automática do TikTok LIGADA.':'Oferta relâmpago automática do TikTok desligada.');
   }catch(e){showToast('Erro ao salvar.');console.error(e);}
 };
-const TT_MOTIVOS={preco_maior_que_ultima_oferta:'preço novo mais caro que a última oferta (regra da TikTok)',sem_estoque:'sem estoque',sem_desconto_fixo:'fora do desconto fixo',produto_inativo:'produto inativo',produto_nao_encontrado:'sumiu da loja',sem_preco_no_desconto_fixo:'sem preço calculável no desconto fixo (variações com preços diferentes?)'};
+const TT_MOTIVOS={preco_maior_que_ultima_oferta:'última oferta foi mais de 8% abaixo do desconto fixo (regra da TikTok)',sem_estoque:'sem estoque',sem_desconto_fixo:'fora do desconto fixo',produto_inativo:'produto inativo',produto_nao_encontrado:'sumiu da loja',sem_preco_no_desconto_fixo:'sem preço calculável no desconto fixo (variações com preços diferentes?)',preco_acima_do_minimo_30_dias:'a TikTok exige preço menor que o menor dos últimos 30 dias (nem −8% passou)'};
 function ttResumoRobo(r,modo){
   if(!r||!Object.keys(r).length)return'O robô não devolveu resultado pra esse cliente.';
   if(r.erro)return`${r.cliente}\n\n⚠️ ${r.erro}`;
@@ -6610,6 +6610,8 @@ function ttResumoRobo(r,modo){
   const brl=v=>Number(v).toFixed(2).replace('.',',');
   inc.slice(0,5).forEach(p=>L.push(`   • ${p.id}: desconto fixo R$ ${brl(p.fixo)} → relâmpago R$ ${brl(p.preco)}`));
   if(inc.length>5)L.push(`   … e mais ${inc.length-5}`);
+  const acomp=inc.filter(p=>p.ajuste==='acompanhou_ultima_oferta').length;
+  if(acomp)L.push(`   (${acomp} acompanham o preço da última relâmpago, até −8%)`);
   const pul=r.produtosPulados||[];
   if(pul.length){
     const cont={};pul.forEach(p=>{cont[p.motivo]=(cont[p.motivo]||0)+1;});
