@@ -8039,7 +8039,7 @@ function dirLerTamanhos(txt){
     const [tam,resto='']=l.split(/:(.*)/s);
     const campos={};
     resto.split(/[;|]/).map(x=>x.trim()).filter(Boolean).forEach(par=>{
-      const m=par.match(/^([A-Za-zÀ-ú ]+?)\s*[:=]?\s*([\d.,\/ a-zA-Z-]+)$/);
+      const m=par.match(/^([A-Za-zÀ-ú ]+?)\s*[:=]?\s*(\d.*)$/);
       if(m){const k=m[1].trim();campos[k.charAt(0).toUpperCase()+k.slice(1).toLowerCase()]=m[2].trim();}
     });
     return{tam:tam.trim(),campos};
