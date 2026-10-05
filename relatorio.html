@@ -85,13 +85,13 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
     </div>
     ${mps.length?`<section><h2>Vendas por marketplace</h2><div class="painel"><table><thead><tr><th>Marketplace</th><th class="n">Vendido</th><th class="n">Pedidos</th><th class="n">Ticket médio</th><th class="n">Mês anterior</th><th class="n">Variação</th></tr></thead><tbody>${linhasMp}</tbody></table></div></section>`:''}
     ${Object.keys(d.porDia||{}).length?`<section><h2>Vendas por dia</h2><div class="grafico"><canvas id="graf"></canvas></div></section>`:''}
-    <section><h2>O que a LB fez por você</h2>
+    ${(a.ofertasRelampago||a.descontosRenovados)?`<section><h2>O que a LB fez por você</h2>
       <div class="feito">
-        <div><b>${num(a.ofertasRelampago)}</b><span>ofertas relâmpago mantidas no ar automaticamente</span></div>
-        <div><b>${num(a.descontosRenovados)}</b><span>descontos fixos renovados sem interrupção</span></div>
+        ${a.ofertasRelampago?`<div><b>${num(a.ofertasRelampago)}</b><span>ofertas relâmpago mantidas no ar automaticamente</span></div>`:''}
+        ${a.descontosRenovados?`<div><b>${num(a.descontosRenovados)}</b><span>descontos fixos renovados sem interrupção</span></div>`:''}
       </div>
       ${fora.length?`<div class="fora">Produtos que ficaram de fora das ofertas: ${fora.map(([m,q])=>`${num(q)} por ${esc(m)}`).join(' · ')}.</div>`:''}
-    </section>`;
+    </section>`:''}`;
   document.getElementById('rodape').textContent=`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} · LB Marketplace Assessoria · Vendas consideram apenas pedidos válidos (cancelados e não pagos ficam de fora).`;
   document.getElementById('btnPdf').hidden=false;
   const dias=Object.keys(d.porDia||{}).sort();
