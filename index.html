@@ -5353,6 +5353,7 @@ document.getElementById('relClienteBtn')?.addEventListener('click',async()=>{
       ${x.incompleto?`<div class="step-alert" style="margin-bottom:12px">Ainda incompleto: ${esc((x.avisos||[]).join(' · '))}. Clique em gerar de novo em alguns minutos.</div>`:''}
       <div class="cm-item" style="flex-wrap:wrap;gap:10px"><span class="nome">Vendido em ${esc(x.mesNome)}${x.emAndamento?' (parcial)':''}</span><b>${fmtR(x.total)}</b>${x.variacao!==null&&x.variacao!==undefined?`<span style="color:${x.variacao>=0?'var(--green)':'var(--red)'}">${x.variacao>=0?'▲':'▼'} ${Math.abs(x.variacao).toLocaleString('pt-BR')}%</span>`:''}</div>
       ${Object.entries(x.porMarketplace).map(([n,m])=>`<div class="cm-item"><span class="nome">${esc(n)}</span><span style="color:var(--text-dim)">${m.pedidos.toLocaleString('pt-BR')} pedidos</span><b>${fmtR(m.gmv)}</b></div>`).join('')}
+      ${x.ads&&x.ads.investido>0?`<div class="cm-item"><span class="nome">Investido em Ads</span><span style="color:var(--text-dim)">gerou ${fmtR(x.ads.vendasAnuncios)}${x.ads.roas?` · retorno ${x.ads.roas.toLocaleString('pt-BR')}x`:''}</span><b>${fmtR(x.ads.investido)}</b></div>`:''}
       ${x.resumo?`<div class="cm-item" style="font-size:13px;line-height:1.5;color:var(--text-dim)">${esc(x.resumo)}</div>`:''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
         <input type="text" readonly value="${esc(link)}" style="flex:1;min-width:240px;font-size:12.5px;padding:9px 11px" onclick="this.select()">

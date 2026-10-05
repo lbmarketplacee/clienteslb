@@ -84,6 +84,16 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
       <div class="kpi"><label>Mês anterior</label><b>${d.totalAnterior!==null&&d.totalAnterior!==undefined?brl(d.totalAnterior):'—'}</b>${d.comparacaoConsidera?`<i>considera ${esc(d.comparacaoConsidera.join(', '))}</i>`:''}</div>
     </div>
     ${mps.length?`<section><h2>Vendas por marketplace</h2><div class="painel"><table><thead><tr><th>Marketplace</th><th class="n">Vendido</th><th class="n">Pedidos</th><th class="n">Ticket médio</th><th class="n">Mês anterior</th><th class="n">Variação</th></tr></thead><tbody>${linhasMp}</tbody></table></div></section>`:''}
+    ${d.ads&&d.ads.investido>0?`<section><h2>Investimento em anúncios</h2>
+      <div class="kpis">
+        <div class="kpi"><label>Investido</label><b>${brl(d.ads.investido)}</b></div>
+        <div class="kpi"><label>Vendas pelos anúncios</label><b>${brl(d.ads.vendasAnuncios)}</b></div>
+        <div class="kpi"><label>Retorno (ROAS)</label><b>${d.ads.roas?d.ads.roas.toLocaleString('pt-BR')+'x':'—'}</b>${d.ads.roas?`<i>cada R$ 1 virou ${brl(d.ads.roas)}</i>`:''}</div>
+        ${(()=>{const p=Object.values(d.ads.plataformas||{})[0];return p&&p.participacao!==null?`<div class="kpi"><label>Vendas via anúncio</label><b>${p.participacao.toLocaleString('pt-BR')}%</b><i>do vendido na ${esc(Object.keys(d.ads.plataformas)[0].replace(' Ads',''))}</i></div>`:'';})()}
+      </div>
+      <div class="painel" style="margin-top:12px"><table><thead><tr><th>Plataforma</th><th class="n">Investido</th><th class="n">Vendas pelos anúncios</th><th class="n">Pedidos</th><th class="n">Cliques</th><th class="n">Retorno</th><th class="n">Retorno mês anterior</th></tr></thead><tbody>
+        ${Object.entries(d.ads.plataformas).map(([n,p])=>`<tr><td><b>${esc(n)}</b></td><td class="n">${brl(p.investido)}</td><td class="n">${brl(p.vendasAnuncios)}</td><td class="n">${num(p.pedidosAnuncios)}</td><td class="n">${num(p.cliques)}</td><td class="n">${p.roas?p.roas.toLocaleString('pt-BR')+'x':'—'}</td><td class="n">${p.anterior?.roas?p.anterior.roas.toLocaleString('pt-BR')+'x':'—'}</td></tr>`).join('')}
+      </tbody></table></div></section>`:''}
     ${Object.keys(d.porDia||{}).length?`<section><h2>Vendas por dia</h2><div class="grafico"><canvas id="graf"></canvas></div></section>`:''}
     ${(a.ofertasRelampago||a.descontosRenovados)?`<section><h2>O que a LB fez por você</h2>
       <div class="feito">
