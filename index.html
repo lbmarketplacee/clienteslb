@@ -8310,6 +8310,9 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
     // fabricante obrigatório (ex.: caixas de embalagem) e a IA não soube → nome da loja
     if(paraIA.some(a=>a.id==='MANUFACTURER')&&!extras.some(e=>e.id==='MANUFACTURER'))extras.push({id:'MANUFACTURER',value_name:c.nome});
+    // número de peça obrigatório (autopeças, ex.: Pontas de Eixos — erro visto ao vivo na Rodan 05/10/2026) → SKU do produto
+    const skuMl=(document.getElementById('dirShSku')?.value||'').trim();
+    for(const id of ['PART_NUMBER','MPN','SELLER_SKU'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
     const faltaReq=paraIA.filter(a=>!ia.some(x=>x.id===a.id)).map(a=>a.nome);
     if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
     const textoReq=[];
