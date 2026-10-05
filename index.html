@@ -8181,13 +8181,12 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     <div class="form-row">
       <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
       <div class="field"><label>SKU (base)</label><input type="text" id="dirShSku" value="${esc(skuSug)}"></div>
-      <div class="field"><label>Peso (kg)</label><input type="text" id="dirShPeso" value="0,5"></div>
-      <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" value="25 x 35 x 5"></div>
+      <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
+      <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" placeholder="25 x 35 x 5"></div>
     </div>
     <div style="font-size:13px;margin:4px 0 6px"><b>Fotos do anúncio</b> <span style="color:var(--text-dim)">(até ${maxSel}${u.guia?' + a guia de tamanhos no fim':''}; desmarque as que não ficaram fiéis ao produto)</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">${cands.map((c,i)=>`<label style="cursor:pointer;font-size:10px;color:var(--text-dim);text-align:center"><img src="${c.img}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><br><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''}> ${esc(c.tipo)}</label>`).join('')}</div>
-    ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada cor</b> (variação 1 = Cor${u.tamanhos.length?', variação 2 = Tamanho':''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--red);margin-top:10px">Sem cores preenchidas: o anúncio sai sem variação.</div>'}
-    ${u.tamanhos.length?'':'<div style="font-size:12px;color:var(--red)">Sem tamanhos preenchidos: sem variação de tamanho e sem guia.</div>'}
+    ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada opção de ${esc(u.nome1||'Cor')}</b> (variação 1 = ${esc(u.nome1||'Cor')}${u.tamanhos.length?`, variação 2 = ${esc(u.nome2||'Tamanho')}`:''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Produto sem variação.</div>'}
     ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl?'1. Criar na Shopee (oculto) — o ML entra no passo de publicar':'Criar anúncio (oculto)'}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre</button>`}
     <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
 }
@@ -8208,12 +8207,11 @@ function cpRender(){
     <div class="field"><label>Cliente</label><select id="cpLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${temShopee(c)?' · Shopee':''}${temMl(c)?' · ML':''}</option>`).join('')}</select></div>
     <div class="field"><label>Fotos reais (até 5 — a 1ª é a principal; uma de cada cor, na ordem das cores)</label>
       <div class="dz" id="cpDrop" style="padding:18px;cursor:pointer"><input type="file" id="cpFotoInput" accept="image/*" multiple style="display:none"><div id="cpDropTxt">Clique ou arraste as fotos aqui</div><div id="cpPrev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div></div></div>
-    <div class="field"><label>Descrição do produto (tecido, modelagem, detalhes reais)</label><textarea id="cpDesc" style="min-height:80px" placeholder="Vestido longo em chiffon, decote coração, manga bufante 3/4 com elástico, costas com lastex..."></textarea></div>
-    <div class="form-row">
-      <div class="field"><label>Cores (na ordem das fotos)</label><input type="text" id="cpCores" placeholder="Preto, Verde Musgo"></div>
-      <div class="field"><label>Tamanhos (1 por linha — "veste" ou medidas em cm)</label><textarea id="cpTam" style="min-height:58px" placeholder="M: veste 38/40&#10;G: veste 42/44; busto 96; cintura 78; quadril 104"></textarea></div>
-    </div>
-    <div class="field"><label>Material / tecido</label><input type="text" id="cpMaterial" placeholder="Chiffon"></div>
+    <div class="field"><label>Descrição do produto (o que é, material, medidas, detalhes reais)</label><textarea id="cpDesc" style="min-height:80px" placeholder="Ex.: vestido longo em chiffon... · luminária de mesa articulada, metal, lâmpada E27... · caixa de papelão 16x11x3 onda B..."></textarea></div>
+    <div style="font-size:13px;margin:4px 0 6px"><b>Variações</b> <span style="color:var(--text-dim)">(deixe "Sem variação" se o produto é único; a variação 1 pode ter uma foto por opção, na ordem das fotos)</span></div>
+    ${[1,2].map(n=>`<div class="form-row"><div class="field" style="max-width:200px"><label>Variação ${n}</label><select id="cpVar${n}" onchange="document.getElementById('cpVar${n}Outra').style.display=this.value==='Outra'?'':'none'">${['','Cor','Tamanho','Voltagem','Modelo','Quantidade','Medida','Sabor','Estampa','Outra'].map(o=>`<option value="${o}" ${(n===1&&o==='Cor')||(n===2&&o==='Tamanho')?'selected':''}>${o||'Sem variação'}</option>`).join('')}</select><input type="text" id="cpVar${n}Outra" placeholder="Nome da variação" style="display:none;margin-top:6px"></div><div class="field"><label>Opções da variação ${n} (separadas por vírgula)</label><input type="text" id="cpVar${n}Opcoes" placeholder="${n===1?'Preto, Verde Musgo · 110V, 220V · 100 un, 500 un':'M, G · 30x40, 40x60'}"></div></div>`).join('')}
+    <div class="field"><label>Só pra ROUPA — medidas por tamanho (opcional; gera a guia de tamanhos e a tabela do ML)</label><textarea id="cpTam" style="min-height:52px" placeholder="M: veste 38/40&#10;G: veste 42/44; busto 96; cintura 78; quadril 104"></textarea></div>
+    <div class="field"><label>Material (opcional; algumas categorias do ML exigem)</label><input type="text" id="cpMaterial" placeholder="Chiffon · Metal · Papelão"></div>
     <button class="btn btn-gold" id="cpGerarBtn" onclick="window.__cpGerar()">Gerar fotos, título e descrição</button>
     <div id="cpStatus" style="margin-top:10px;font-size:13px"></div>
   </div>
@@ -8231,17 +8229,23 @@ window.__cpTirar=i=>{cpFotos.splice(i,1);cpPrev();};
 window.__cpGerar=async()=>{
   const st=document.getElementById('cpStatus');const btn=document.getElementById('cpGerarBtn');
   const lojaId=document.getElementById('cpLoja').value;const produto=document.getElementById('cpDesc').value.trim();
-  const cores=document.getElementById('cpCores').value.split(',').map(x=>x.trim()).filter(Boolean);
-  const tamanhos=dirLerTamanhos(document.getElementById('cpTam').value);
+  const lerVar=n=>{let nome=document.getElementById('cpVar'+n).value;if(nome==='Outra')nome=document.getElementById('cpVar'+n+'Outra').value.trim();const op=document.getElementById('cpVar'+n+'Opcoes').value.split(',').map(x=>x.trim()).filter(Boolean);return nome&&op.length?{nome,op}:null;};
+  let v1=lerVar(1),v2=lerVar(2);if(!v1&&v2){v1=v2;v2=null;}
+  const medidas=Object.fromEntries(dirLerTamanhos(document.getElementById('cpTam').value).map(t=>[t.tam.toUpperCase(),t.campos]));
+  const cores=v1?v1.op:[];const nome1=v1?.nome||'';const nome2=v2?.nome||'';
+  const tamanhos=(v2?v2.op:[]).map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}}));
+  // guia de tamanhos (Shopee) só se a variação de tamanho tiver medida/"veste" informada
+  const varTam=[v1,v2].find(v=>v&&/tamanho/i.test(v.nome));
+  const linhasGuia=varTam?varTam.op.map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}})).filter(t=>Object.keys(t.campos).length):[];
   const plataformas=[document.getElementById('cpPlatShopee').checked&&'shopee',document.getElementById('cpPlatMl').checked&&'ml'].filter(Boolean);
   const material=document.getElementById('cpMaterial').value.trim();
-  const falta=[!plataformas.length&&'plataforma',!lojaId&&'cliente',!cpFotos.length&&'fotos',!produto&&'descrição',!cores.length&&'cores',!tamanhos.length&&'tamanhos'].filter(Boolean);
+  const falta=[!plataformas.length&&'plataforma',!lojaId&&'cliente',!cpFotos.length&&'fotos',!produto&&'descrição',[1,2].some(n=>document.getElementById('cpVar'+n).value&&!document.getElementById('cpVar'+n+'Opcoes').value.trim())&&'opções da variação escolhida'].filter(Boolean);
   if(falta.length){lbAvisar('Falta preencher\n'+falta.join(', '));return;}
   const cli=(clientesCache||[]).find(c=>c.id===lojaId);
   const semCon=plataformas.filter(p=>p==='shopee'?!(cli.shopeeErpShopId&&cli.shopeeErpRefreshToken):!(cli.mlUserId&&cli.mlRefreshToken));
   if(semCon.length){lbAvisar(`${cli.nome} não está conectada em: ${semCon.map(p=>p==='shopee'?'Shopee (ERP)':'Mercado Livre').join(', ')}\nDesmarque essa plataforma ou conecte a loja primeiro.`);return;}
-  if(cores.length>cpFotos.length&&!await lbConfirmar(`Tem ${cores.length} cores e ${cpFotos.length} foto(s)\nO ideal é 1 foto de cada cor. Continuar assim?`,{okTxt:'Continuar'}))return;
-  const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+`\nCores disponíveis: ${cores.join(', ')}.`+`\nTamanhos disponíveis: ${tamanhos.map(t=>t.tam+(Object.keys(t.campos).length?` (${Object.entries(t.campos).map(([k,v])=>k+' '+v).join(', ')})`:'')).join('; ')}.`;
+  if(/cor|estampa/i.test(nome1)&&cores.length>cpFotos.length&&!await lbConfirmar(`Tem ${cores.length} opções de ${nome1} e ${cpFotos.length} foto(s)\nO ideal é 1 foto de cada. Continuar assim?`,{okTxt:'Continuar'}))return;
+  const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+(v1?`\n${v1.nome} disponíveis: ${v1.op.join(', ')}.`:'')+(v2?`\n${v2.nome} disponíveis: ${v2.op.map(o=>{const c=medidas[o.toUpperCase()];return o+(c&&Object.keys(c).length?` (${Object.entries(c).map(([k,v])=>k+' '+v).join(', ')})`:'');}).join('; ')}.`:'');
   btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';
   try{
     const d=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:7})})).json();
@@ -8250,8 +8254,8 @@ window.__cpGerar=async()=>{
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
     let tituloMl='';
     if(plataformas.includes('ml')){st.textContent='Gerando o título do Mercado Livre...';try{const t=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:produtoIA})})).json();tituloMl=t.ok?t.titulo:'';}catch(e){}}
-    window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:dirGuiaTamanhos(tamanhos,''),reais:cpFotos.slice(),cores,tamanhos,plataformas,material,lojaId};
-    st.textContent=`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''} + guia de tamanhos. Confira abaixo e desmarque o que não ficou fiel.`;
+    window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:linhasGuia.length?dirGuiaTamanhos(linhasGuia,''):null,reais:cpFotos.slice(),cores,tamanhos,nome1,nome2,medidas,plataformas,material,lojaId};
+    st.textContent=`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
     dirShopeeRender('cpPasso2',lojaId);
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
   btn.disabled=false;
@@ -8283,7 +8287,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
   const falta=[!c&&'cliente',!(c?.mlUserId&&c?.mlRefreshToken)&&'conexão do ML da loja',!(liq>0)&&'valor a receber',!familia&&'nome no ML',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
   if(falta.length){lbAvisar('Mercado Livre — falta\n'+falta.join(', '));return;}
   const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
-  if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por cor e tamanho), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria`,{okTxt:'Criar no ML'}))return;
+  if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por combinação de variação), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria`,{okTxt:'Criar no ML'}))return;
   if(!depoisDaShopee)st.innerHTML='';
   if(btn)btn.disabled=true;
   try{
@@ -8293,28 +8297,34 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));const cat=Array.isArray(dd)?dd[0]:null;
     if(!cat)throw new Error('o ML não sugeriu categoria pro nome');
     const attrs=await ler(`/categories/${cat.category_id}/attributes`)||[];
-    const TRATADOS=/^(BRAND|MODEL|COLOR|SIZE|SIZE_GRID_ID|SIZE_GRID_ROW_ID|ITEM_CONDITION|SELLER_PACKAGE_.*|FILTRABLE_.*|IS_.*|GTIN|MAIN_MATERIAL)$/;
-    const paraIA=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!TRATADOS.test(a.id)&&(a.values||[]).length).map(a=>({id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}));
+    // variação → atributo da categoria (Cor→COLOR, Tamanho→SIZE, Voltagem→VOLTAGE...) ou atributo próprio (UP permite)
+    const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const mapVar=nome=>{if(!nome)return null;if(/^cor(es)?$/.test(norm(nome)))return attrs.some(a=>a.id==='COLOR')?'COLOR':null;if(/^tamanho/.test(norm(nome)))return attrs.some(a=>a.id==='SIZE')?'SIZE':null;return attrs.find(a=>!a.tags?.read_only&&norm(a.name)===norm(nome))?.id||null;};
+    const id1=mapVar(u.nome1),id2=mapVar(u.nome2);const idsVar=[id1,id2].filter(Boolean);
+    const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
+    const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_|IS_)/.test(id);
+    const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
+    const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:a.name,livre:true});
     linhaMl('ML: preenchendo a ficha técnica...');
-    let ia=[];if(paraIA.length){const r=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}\nCores: ${u.cores.join(', ')}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
+    let ia=[];if(paraIA.length){const r=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
     const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
     const faltaReq=paraIA.filter(a=>!ia.some(x=>x.id===a.id)).map(a=>a.nome);
     if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
-    const textoReq=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!(a.values||[]).length&&!TRATADOS.test(a.id)).map(a=>a.name);
-    if(attrs.some(a=>a.id==='MAIN_MATERIAL'&&a.tags?.required)&&!u.material)throw new Error('a categoria exige material/tecido — preencha no passo 1');
+    const textoReq=[];
     // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
     let gridId=null,linhas={};
-    if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&u.tamanhos.length){
+    const opTam=id1==='SIZE'?u.cores.map(o=>({tam:o,campos:u.medidas?.[o.toUpperCase()]||{}})):id2==='SIZE'?u.tamanhos:[];
+    if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&opTam.length){
       linhaMl('ML: tabela de medidas...');
       const genVal=attrs.find(a=>a.id==='GENDER')?.values?.find(v=>String(v.id)===String(genero?.value_id));
       const busca=await dirMl('tabela_medidas_buscar',{access_token:token,domain_id:cat.domain_id,corpo:{domain_id:cat.domain_id.replace(/^MLB-/,''),site_id:'MLB',seller_id:Number(c.mlUserId),attributes:[{id:'GENDER',values:[{name:genVal?.name||'Feminino'}]},{id:'BRAND',values:[{name:c.nome}]}]}});
-      const tams=u.tamanhos.map(t=>t.tam.toUpperCase());
+      const tams=opTam.map(t=>t.tam.toUpperCase());
       const temTodos=ch=>tams.every(t=>(ch.rows||[]).some(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t))));
       const reuso=(busca.data?.charts||[]).find(ch=>/^LB /.test(ch.names?.MLB||'')&&temTodos(ch));
-      if(reuso){gridId=reuso.id;for(const t of u.tamanhos){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
+      if(reuso){gridId=reuso.id;for(const t of opTam){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
       else{
-        const ls=u.tamanhos.map(t=>({tam:t.tam,m:dirMedidasMl(t)}));const sem=ls.filter(x=>!x.m).map(x=>x.tam);
-        if(sem.length)throw new Error(`sem medidas pro ML nos tamanhos ${sem.join(', ')} — escreva "veste 38/40" ou busto/cintura/quadril em cm`);
+        const ls=opTam.map(t=>({tam:t.tam,m:dirMedidasMl(t)}));const sem=ls.filter(x=>!x.m).map(x=>x.tam);
+        if(sem.length)throw new Error(`essa categoria do ML exige tabela de medidas: faltam medidas nos tamanhos ${sem.join(', ')} — no passo 1, em "medidas por tamanho", escreva "M: veste 38/40" ou busto/cintura/quadril em cm`);
         const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
         const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:['CHEST_CIRCUMFERENCE_FROM'],linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
         if(!r.ok)throw new Error('tabela de medidas: '+r.erro);
@@ -8333,10 +8343,13 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     }
     const criados=[],erros=[];
     for(const cor of (u.cores.length?u.cores:[''])){for(const t of (u.tamanhos.length?u.tamanhos:[{tam:''}])){
-      linhaMl(`ML: criando ${cor} ${t.tam}... (${criados.length+erros.length+1}/${nItens})`);
-      const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:est,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:cor||undefined,tamanho:t.tam||undefined,material:u.material||undefined,gridId,gridRowId:t.tam?linhas[t.tam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras,descricao:document.getElementById('dirShDesc').value.trim()};
+      linhaMl(`ML: criando ${[cor,t.tam].filter(Boolean).join(' ')||'anúncio'}... (${criados.length+erros.length+1}/${nItens})`);
+      const vars=[[u.nome1,id1,cor],[u.nome2,id2,t.tam]].filter(v=>v[2]);
+      const vCor=vars.find(v=>v[1]==='COLOR')?.[2],vTam=vars.find(v=>v[1]==='SIZE')?.[2];
+      const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
+      const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:est,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:document.getElementById('dirShDesc').value.trim()};
       const r=await dirMl('ml_criar_item',{access_token:token,item},true);
-      if(r.ok)criados.push(r);else erros.push(`${cor} ${t.tam}: ${r.erro}`);
+      if(r.ok)criados.push(r);else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
     }}
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
@@ -8387,10 +8400,10 @@ window.__dirShCriar=async()=>{
     const guiaId=u.guia?await subir(u.guia,'guia de tamanhos'):null;if(guiaId)imagens.push(guiaId);
     const fotosCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotosCor[s2.dataset.cor]=await subir(u.reais[Number(s2.value)],'cor '+s2.dataset.cor);
     passo('Criando o anúncio (oculto)...');
-    const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\nCores: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\nTamanhos: ${u.tamanhos.map(t=>t.tam+(t.campos.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
+    const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\n${u.nome1||'Cor'}: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\n${u.nome2||'Tamanho'}: ${u.tamanhos.map(t=>t.tam+(t.campos?.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
       category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
       item_sku:document.getElementById('dirShSku').value.trim(),guiaTamanhos:guiaId,atributos,
-      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),fotosCor,estoque:est,skuBase:document.getElementById('dirShSku').value.trim()};
+      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:est,skuBase:document.getElementById('dirShSku').value.trim()};
     const r=await dirShApi('produto_criar',c,token,{dados});
     if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}${r.aviso?' — '+r.aviso:''}`);
     window.__dirShItem={itemId:r.item_id,clienteId:c.id,venda:precos.venda};
