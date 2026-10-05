@@ -1949,19 +1949,24 @@ textarea{resize:vertical;min-height:70px;}
             </div>
           </div>
           <div class="field"><label>Descrição do produto</label><textarea id="dirDescricao" placeholder="Descreva o produto com o máximo de detalhes reais possível..." style="min-height:80px"></textarea></div>
+          <div class="form-row">
+            <div class="field"><label>Cores (na mesma ordem das fotos)</label><input type="text" id="dirCores" placeholder="Preto, Verde Musgo"></div>
+            <div class="field"><label>Tamanhos (1 por linha — só o que for real)</label><textarea id="dirTamanhos" placeholder="M: veste 38/40&#10;G: veste 42/44; busto 92; comprimento 130" style="min-height:58px"></textarea></div>
+          </div>
 
           <div class="calc-toggles-title">O que você quer gerar?</div>
           <div class="calc-toggles" style="margin-bottom:16px">
             <button type="button" class="calc-toggle on" data-dirgerar="titulo">Título</button>
             <button type="button" class="calc-toggle on" data-dirgerar="descricao">Descrição</button>
             <button type="button" class="calc-toggle on" data-dirgerar="fotos">Fotos (funil completo)</button>
-            <button type="button" class="calc-toggle" data-dirgerar="guia">Guia de Tamanhos avulso</button>
+            <button type="button" class="calc-toggle" data-dirgerar="guia">Só a Guia de Tamanhos</button>
           </div>
           <div class="form-row" id="dirQtdFotosWrap">
-            <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="5" min="1" max="8"></div>
+            <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="7" min="1" max="7"></div>
           </div>
           <button class="btn btn-gold" id="dirGerarBtn">Gerar</button>
           <div id="dirResultado" style="margin-top:24px"></div>
+          <div id="dirShopeePainel" style="margin-top:20px"></div>
 
           <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
             <div class="cm-secao-titulo" style="margin-bottom:14px"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple);width:30px;height:30px;font-size:14px">🏷️</div><h3 style="font-size:16px">Gerar Logotipo</h3></div>
@@ -8028,58 +8033,73 @@ document.querySelectorAll('[data-dirgerar]').forEach(b=>b.addEventListener('clic
 }));
 dirAtualizarQtdFotosVisibilidade();
 
+// Tamanhos digitados → [{tam, campos:{Veste:'38/40', Busto:'92'}}]. Linha: "M: veste 38/40; busto 92; comprimento 130"
+function dirLerTamanhos(txt){
+  return String(txt||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    const [tam,resto='']=l.split(/:(.*)/s);
+    const campos={};
+    resto.split(/[;|]/).map(x=>x.trim()).filter(Boolean).forEach(par=>{
+      const m=par.match(/^([A-Za-zÀ-ú ]+?)\s*[:=]?\s*([\d.,\/ a-zA-Z-]+)$/);
+      if(m){const k=m[1].trim();campos[k.charAt(0).toUpperCase()+k.slice(1).toLowerCase()]=m[2].trim();}
+    });
+    return{tam:tam.trim(),campos};
+  }).filter(t=>t.tam);
+}
+// Guia de tamanhos montada pelo SISTEMA (a IA inventava P/M/G/GG e medidas) — só com o que foi digitado. 900×1200 (3:4).
+function dirGuiaTamanhos(lista,subtitulo){
+  if(!lista.length)return null;
+  const cols=['Tamanho',...[...new Set(lista.flatMap(t=>Object.keys(t.campos)))].slice(0,4)];
+  const cv=document.createElement('canvas');cv.width=900;cv.height=1200;const g=cv.getContext('2d');
+  g.fillStyle='#fff';g.fillRect(0,0,900,1200);g.textAlign='center';g.fillStyle='#111';g.font='700 64px Arial';g.fillText('GUIA DE TAMANHOS',450,170);
+  if(subtitulo){g.font='400 30px Arial';g.fillStyle='#555';g.fillText(subtitulo.slice(0,48),450,228);}
+  const x0=70,w=760,cw=w/cols.length,h=Math.min(130,560/(lista.length+1)),y0=320;
+  g.fillStyle='#111';g.fillRect(x0,y0,w,h);g.fillStyle='#fff';g.font=`700 ${cols.length>3?28:36}px Arial`;
+  cols.forEach((c,i)=>{const num=lista.some(t=>/^\d/.test(t.campos[c]||''))&&!/veste/i.test(c);g.fillText(c.toUpperCase()+(num?' (cm)':''),x0+cw*i+cw/2,y0+h/2+12);});
+  lista.forEach((t,r)=>{const y=y0+h*(r+1);g.fillStyle=r%2?'#f2f2f2':'#fafafa';g.fillRect(x0,y,w,h);g.fillStyle='#111';
+    cols.forEach((c,i)=>{g.font=i===0?'700 52px Arial':'400 42px Arial';g.fillText(i===0?t.tam:(t.campos[c]||'—'),x0+cw*i+cw/2,y+h/2+16);});});
+  g.strokeStyle='#111';g.lineWidth=3;g.strokeRect(x0,y0,w,h*(lista.length+1));
+  for(let i=1;i<cols.length;i++){g.beginPath();g.moveTo(x0+cw*i,y0);g.lineTo(x0+cw*i,y0+h*(lista.length+1));g.stroke();}
+  g.font='400 30px Arial';g.fillStyle='#444';g.fillText('Na dúvida entre dois tamanhos, escolha o maior.',450,y0+h*(lista.length+1)+90);
+  return cv.toDataURL('image/jpeg',0.92);
+}
+window.__dirUltimo=null;
 document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   const produto = document.getElementById('dirDescricao').value.trim();
   const qtd = document.getElementById('dirQtdFotos').value;
   const resEl = document.getElementById('dirResultado');
+  const tamanhos = dirLerTamanhos(document.getElementById('dirTamanhos')?.value);
+  const cores = String(document.getElementById('dirCores')?.value||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const querFotos = dirGerarSel.fotos;
+  const querTexto = dirGerarSel.titulo || dirGerarSel.descricao;
+  const soGuia = dirGerarSel.guia && !querFotos && !querTexto;
+  if(soGuia){
+    if(!tamanhos.length){showToast('Preencha os tamanhos (ex.: M: veste 38/40).');return;}
+    const guia=dirGuiaTamanhos(tamanhos,'');
+    resEl.innerHTML=`<div class="ia-block" style="padding:12px;max-width:280px"><div class="ia-block-label" style="margin-bottom:8px">Guia de Tamanhos</div><img src="${guia}" style="width:100%;border-radius:8px;margin-bottom:8px"><a href="${guia}" download="guia-tamanhos.jpg" class="btn btn-ghost btn-sm">Baixar</a></div>`;
+    return;
+  }
   if(!dirImagensB64.length){showToast('Envie pelo menos 1 foto real do produto.');return;}
   if(!produto){showToast('Descreva o produto.');return;}
   const btn = document.getElementById('dirGerarBtn');
-  const querFotos = dirGerarSel.fotos;
-  const querGuiaAvulso = dirGerarSel.guia && !dirGerarSel.fotos; // se o funil já roda, a Tabela de Medidas já vem como uma das fotos
-  const querTexto = dirGerarSel.titulo || dirGerarSel.descricao;
   const soTexto = querTexto && !querFotos; // sem fotos, usa o motor leve (rápido) em vez do funil pesado
-  btn.disabled = true; btn.textContent = soTexto ? '✨ Gerando...' : '✨ Gerando... (pode levar 1-2 minutos)';
+  // descrição enviada pra IA já com cores e tamanhos reais (ela não pode inventar outros)
+  const produtoIA = produto + (cores.length?`\nCores disponíveis: ${cores.join(', ')}.`:'') + (tamanhos.length?`\nTamanhos disponíveis: ${tamanhos.map(t=>t.tam+(Object.keys(t.campos).length?` (${Object.entries(t.campos).map(([k,v])=>k+' '+v).join(', ')})`:'')).join('; ')}.`:'');
+  btn.disabled = true; btn.textContent = soTexto ? 'Gerando...' : 'Gerando... (pode levar 1-2 minutos)';
   resEl.innerHTML = '<div class="empty-state" style="padding:20px">Gerando o que foi selecionado, aguarde...</div>';
+  document.getElementById('dirShopeePainel').innerHTML='';
   try{
     let data = null;
     if(soTexto){
-      // Texto sem foto: usa o mesmo motor leve do "Gerar Anúncio com IA" — rápido, sem processar imagem
-      const resp = await fetch(IA_ENDPOINT, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ produto, marketplace: dirMarketplace, imagem: dirImagensB64[0] || null })
-      });
+      const resp = await fetch(IA_ENDPOINT, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ produto: produtoIA, marketplace: dirMarketplace, imagem: dirImagensB64[0] || null })});
       data = await resp.json();
-      if(!resp.ok || data.erro){
-        resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;
-        btn.disabled = false; btn.textContent = '✨ Gerar';
-        return;
-      }
+      if(!resp.ok || data.erro){resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;btn.disabled=false;btn.textContent='Gerar';return;}
       data.ok = true;
     }else if(querFotos){
-      const resp = await fetch(DIRETOR_API, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ produto, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })
-      });
+      const resp = await fetch(DIRETOR_API, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ produto: produtoIA, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })});
       data = await resp.json();
-      if(!data.ok){
-        resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;
-        btn.disabled = false; btn.textContent = '✨ Gerar';
-        return;
-      }
+      if(!data.ok){resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;btn.disabled=false;btn.textContent='Gerar';return;}
     }
-    let guiaData = null;
-    if(querGuiaAvulso){
-      const respGuia = await fetch(DIRETOR_API, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ acao: 'guia_tamanhos', produto, marketplace: dirMarketplace, imagens: dirImagensB64 })
-      });
-      guiaData = await respGuia.json();
-    }
-
+    const guia = (dirGerarSel.guia||querFotos) && tamanhos.length ? dirGuiaTamanhos(tamanhos,'') : null;
     let html = '';
     if(dirGerarSel.titulo && data){
       html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">Título</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.titulo||'')}</div></div>`;
@@ -8087,37 +8107,143 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
     if(dirGerarSel.descricao && data){
       html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">Descrição</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.descricao||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.descricao||'')}</div></div>`;
     }
-    if(querFotos && data?.fotos?.length){
-      const fotosHtml = data.fotos.map((f,i)=>{
+    const fotos=[...(querFotos?(data?.fotos||[]):[]),...(guia?[{tipo:'Guia de Tamanhos',imagem:guia}]:[])];
+    if(fotos.length){
+      html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px">${fotos.map((f,i)=>{
         if(f.erro || !f.imagem) return `<div class="ia-block" style="padding:12px"><div class="ia-block-label">${i+1}. ${esc(f.tipo)}</div><div style="color:var(--red);font-size:12px">Erro ao gerar: ${esc(f.erro||'—')}</div></div>`;
-        return `<div class="ia-block" style="padding:12px">
-          <div class="ia-block-label" style="margin-bottom:8px">${i+1}. ${esc(f.tipo)}</div>
-          <img src="${f.imagem}" style="width:100%;border-radius:8px;margin-bottom:8px">
-          <a href="${f.imagem}" download="foto-${i+1}-${dirMarketplace}.png" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
-        </div>`;
-      }).join('');
-      html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px">${fotosHtml}</div>`;
+        return `<div class="ia-block" style="padding:12px"><div class="ia-block-label" style="margin-bottom:8px">${i+1}. ${esc(f.tipo)}</div><img src="${f.imagem}" style="width:100%;border-radius:8px;margin-bottom:8px"><a href="${f.imagem}" download="foto-${i+1}-${dirMarketplace}.jpg" class="btn btn-ghost btn-sm">Baixar</a></div>`;
+      }).join('')}</div>`;
     }
-    if(querGuiaAvulso){
-      const imgGuia = guiaData?.imagem || guiaData?.guia;
-      if(guiaData?.ok && imgGuia){
-        html += `<div class="ia-block" style="padding:12px;margin-top:16px;max-width:280px">
-          <div class="ia-block-label" style="margin-bottom:8px">Guia de Tamanhos</div>
-          <img src="${imgGuia}" style="width:100%;border-radius:8px;margin-bottom:8px">
-          <a href="${imgGuia}" download="guia-tamanhos.png" class="btn btn-ghost btn-sm">⬇️ Baixar</a>
-        </div>`;
-      }else{
-        html += `<div class="ia-block" style="padding:12px;margin-top:16px;color:var(--red)">Erro ao gerar o guia de tamanhos: ${esc(guiaData?.erro||'desconhecido')}</div>`;
-      }
-    }
+    if(!tamanhos.length&&querFotos)html+=`<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Sem guia de tamanhos: preencha o campo Tamanhos pra ela entrar no anúncio.</div>`;
     resEl.innerHTML = html || '<div class="empty-state" style="padding:20px">Nada foi gerado.</div>';
+    window.__dirUltimo={titulo:data?.titulo||'',descricao:data?.descricao||'',produto,fotos:fotos.filter(f=>f.imagem&&f.tipo!=='Guia de Tamanhos'),guia,reais:dirImagensB64.slice(),cores,tamanhos};
+    if(dirMarketplace==='shopee'&&isLincoln()&&querFotos)dirShopeeRender();
     showToast('✓ Gerado com sucesso!');
   }catch(e){
     resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro de conexão: ${esc(e.message)}</div>`;
     console.error(e);
   }
-  btn.disabled = false; btn.textContent = '✨ Gerar';
+  btn.disabled = false; btn.textContent = 'Gerar';
 });
+
+/* ---- Criar anúncio na Shopee a partir da Central Criativa (só Lincoln; backend: lb-shopee-gmv ações produto_*) ----
+   Padrão LB: venda = gross-up (comissão por faixa + cupom 3% + relâmpago 5%) terminando em ,99; preço cheio = venda × 1,30;
+   marca Malaysia Collection; variação 1 = Cor (foto de cada cor), 2 = Tamanho; nasce OCULTO → publica → entra no desconto fixo. */
+const DIR_FAIXAS_SHOPEE=[{min:0,max:79.99,com:0.20,fix:4},{min:80,max:99.99,com:0.14,fix:16},{min:100,max:199.99,com:0.14,fix:20},{min:200,max:Infinity,com:0.14,fix:26}];
+const dirR2=v=>Math.round(v*100+1e-7)/100;
+const dir99=v=>dirR2(Math.ceil(dirR2(v)-0.99-1e-9)+0.99);
+function dirLiquido(p){const f=DIR_FAIXAS_SHOPEE.find(x=>p>=x.min&&p<=x.max)||DIR_FAIXAS_SHOPEE[3];return dirR2(p-(p*f.com+f.fix)-p*0.08);}
+function dirPrecosLB(liq){ // espelho de lb-shopee-gmv/lib/produto.js (precosLB) — testado lá
+  liq=Number(liq);if(!(liq>0))return null;
+  const sol=DIR_FAIXAS_SHOPEE.map(f=>(liq+f.fix)/(1-f.com-0.08)).filter((p,i)=>p>=DIR_FAIXAS_SHOPEE[i].min&&p<=DIR_FAIXAS_SHOPEE[i].max);
+  if(!sol.length)return null;let venda=dir99(Math.min(...sol));if(dirLiquido(venda)<liq-0.005)venda=dir99(venda+0.01);
+  return{venda,cheio:dir99(venda*1.3),liquido:dirLiquido(venda)};
+}
+// Qualquer imagem → JPEG 900×1200 (3:4). Se a proporção já for ~3:4 preenche; senão encaixa com fundo branco (nunca corta texto).
+function dirPara34(dataUrl){return new Promise((ok,erro)=>{const im=new Image();im.onload=()=>{const cv=document.createElement('canvas');cv.width=900;cv.height=1200;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,900,1200);
+  const r=im.width/im.height;if(Math.abs(r-0.75)<0.02)g.drawImage(im,0,0,900,1200);else{const e=Math.min(900/im.width,1200/im.height);const w=im.width*e,h=im.height*e;g.drawImage(im,(900-w)/2,(1200-h)/2,w,h);}
+  ok(cv.toDataURL('image/jpeg',0.88));};im.onerror=()=>erro(new Error('imagem inválida'));im.src=dataUrl;});}
+function dirShopeeRender(){
+  const u=window.__dirUltimo;const el=document.getElementById('dirShopeePainel');if(!u||!el)return;
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const cands=[...(u.fotos[0]?[{tipo:'IA · '+u.fotos[0].tipo,img:u.fotos[0].imagem}]:[]),...u.reais.map((r,i)=>({tipo:'Foto real '+(i+1),img:r})),...u.fotos.slice(1).map(f=>({tipo:'IA · '+f.tipo,img:f.imagem}))];
+  window.__dirCands=cands;
+  const maxSel=u.guia?8:9;
+  const skuSug=(u.titulo||u.produto).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().split(/\s+/).filter(w=>w.length>2).slice(0,3).join('-').replace(/[^A-Z0-9-]/g,'');
+  el.innerHTML=`<div class="cm-secao" style="border:1px solid var(--gold);border-radius:12px;padding:16px">
+    <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">Criar anúncio na Shopee</h3></div>
+    <div class="form-row">
+      <div class="field"><label>Loja (conectada pelo ERP)</label><select id="dirShLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+      <div class="field"><label>Valor que a cliente quer receber (R$)</label><input type="text" inputmode="decimal" id="dirShLiq" placeholder="60,00" oninput="window.__dirShPreco()"></div>
+    </div>
+    <div id="dirShPrecoTxt" style="font-size:13px;color:var(--text-dim);margin:-4px 0 10px"></div>
+    <div class="form-row">
+      <div class="field"><label>Estoque por variação</label><input type="number" id="dirShEst" value="10" min="0"></div>
+      <div class="field"><label>SKU (base)</label><input type="text" id="dirShSku" value="${esc(skuSug)}"></div>
+      <div class="field"><label>Peso (kg)</label><input type="text" id="dirShPeso" value="0,5"></div>
+      <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" value="25 x 35 x 5"></div>
+    </div>
+    <div style="font-size:13px;margin:4px 0 6px"><b>Fotos do anúncio</b> <span style="color:var(--text-dim)">(até ${maxSel}${u.guia?' + a guia de tamanhos no fim':''}; desmarque as que não ficaram fiéis ao produto)</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">${cands.map((c,i)=>`<label style="cursor:pointer;font-size:10px;color:var(--text-dim);text-align:center"><img src="${c.img}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><br><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''}> ${esc(c.tipo)}</label>`).join('')}</div>
+    ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada cor</b> (variação 1 = Cor${u.tamanhos.length?', variação 2 = Tamanho':''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--red);margin-top:10px">Sem cores preenchidas: o anúncio sai sem variação.</div>'}
+    ${u.tamanhos.length?'':'<div style="font-size:12px;color:var(--red)">Sem tamanhos preenchidos: sem variação de tamanho e sem guia.</div>'}
+    <button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">Criar anúncio (oculto)</button>
+    <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
+}
+window.__dirShopeeRender=dirShopeeRender;
+window.__dirShPreco=()=>{const p=dirPrecosLB(lbValorBR(document.getElementById('dirShLiq').value));document.getElementById('dirShPrecoTxt').innerHTML=p?`Preço de venda (desconto fixo): <b>${fmtR(p.venda)}</b> · preço cheio no anúncio: <b>${fmtR(p.cheio)}</b> · ela recebe ~${fmtR(p.liquido)} (com cupom 3% + relâmpago 5%)`:'';};
+async function dirShApi(acao,c,token,extra={}){
+  const r=await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,app:'erp',access_token:token,shop_id:c.shopeeErpShopId,...extra})});
+  return r.json();
+}
+window.__dirShCriar=async()=>{
+  const u=window.__dirUltimo;const st=document.getElementById('dirShStatus');const btn=document.getElementById('dirShCriarBtn');
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('dirShLoja').value);
+  const precos=dirPrecosLB(lbValorBR(document.getElementById('dirShLiq').value));
+  const sel=[...document.querySelectorAll('.dirShFoto:checked')].map(x=>window.__dirCands[Number(x.dataset.i)]);
+  const peso=lbValorBR(document.getElementById('dirShPeso').value);const dim=(document.getElementById('dirShDim').value.match(/\d+/g)||[]).map(Number);
+  const falta=[!c&&'loja',!precos&&'valor a receber',!sel.length&&'fotos',!u.titulo&&'título',!(peso>0)&&'peso',dim.length!==3&&'embalagem'].filter(Boolean);
+  if(falta.length){lbAvisar('Falta preencher\n'+falta.join(', '));return;}
+  if(sel.length>(u.guia?8:9)){lbAvisar(`Máximo de ${u.guia?8:9} fotos${u.guia?' (a guia de tamanhos é a 9ª)':''}.`);return;}
+  const est=Math.max(0,parseInt(document.getElementById('dirShEst').value)||0);
+  const nVar=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
+  if(!await lbConfirmar(`Criar anúncio OCULTO na Shopee\nLoja: ${c.nome}\nTítulo: ${u.titulo}\nPreço cheio ${fmtR(precos.cheio)} · venda ${fmtR(precos.venda)} (no desconto fixo, depois de publicar)\n${nVar} variação(ões) com ${est} un. cada\n${sel.length+(u.guia?1:0)} fotos · marca Malaysia Collection\nNada vai pro ar ainda: você confere e publica no próximo passo.`,{okTxt:'Criar oculto'}))return;
+  btn.disabled=true;const passo=t=>{st.innerHTML=t;};
+  try{
+    passo('Conferindo a conexão da loja...');const token=await shopeeGarantirTokenValido(c,'erp');
+    const ler=(caminho,query)=>dirShApi('produto_ler_api',c,token,{caminho,query});
+    passo('Escolhendo a categoria...');
+    const rec=await ler('/api/v2/product/category_recommend',{item_name:u.titulo});const catId=rec?.response?.category_id?.[0];
+    if(!catId)throw new Error('a Shopee não sugeriu categoria pro título');
+    const arvR=await ler('/api/v2/product/get_attribute_tree',{category_id_list:String(catId),language:'pt-br'});
+    const pt=x=>(x.multi_lang||[]).find(m=>/pt/i.test(m.language))?.value||x.name||x.display_value_name||x.original_value_name;
+    const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
+    passo('Preenchendo as especificações...');
+    let atributos=[];
+    if(arvore.length){try{const ra=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${u.titulo}\n${u.produto}\nCores: ${u.cores.join(', ')}`,arvore})}).then(r=>r.json());atributos=ra.atributos||[];}catch(e){console.warn('atributos',e);}}
+    const canais=await ler('/api/v2/logistics/get_channel_list',{});
+    const logisticas=(canais?.response?.logistics_channel_list||[]).filter(x=>x.enabled&&!x.mask_channel_id).map(x=>x.logistics_channel_id);
+    if(!logisticas.length)throw new Error('a loja não tem frete ativo');
+    // fotos (1 por chamada) — as fotos das cores reaproveitam o upload se já estiverem no anúncio
+    const ids=new Map();
+    const subir=async(img,rotulo)=>{if(ids.has(img))return ids.get(img);passo(`Subindo fotos... (${rotulo})`);const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await dirPara34(img),ratio:'3:4'});if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.image_id);return r.image_id;};
+    const imagens=[];for(let i=0;i<sel.length;i++)imagens.push(await subir(sel[i].img,`${i+1}/${sel.length}`));
+    const guiaId=u.guia?await subir(u.guia,'guia de tamanhos'):null;if(guiaId)imagens.push(guiaId);
+    const fotosCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotosCor[s2.dataset.cor]=await subir(u.reais[Number(s2.value)],'cor '+s2.dataset.cor);
+    passo('Criando o anúncio (oculto)...');
+    const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\nCores: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\nTamanhos: ${u.tamanhos.map(t=>t.tam+(t.campos.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
+      category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
+      item_sku:document.getElementById('dirShSku').value.trim(),guiaTamanhos:guiaId,atributos,
+      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),fotosCor,estoque:est,skuBase:document.getElementById('dirShSku').value.trim()};
+    const r=await dirShApi('produto_criar',c,token,{dados});
+    if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}${r.aviso?' — '+r.aviso:''}`);
+    window.__dirShItem={itemId:r.item_id,clienteId:c.id,venda:precos.venda};
+    await log(c.id,c.nome,'anúncio criado na Shopee (oculto)',`Item ${r.item_id}: "${u.titulo}", cheio ${fmtR(precos.cheio)}, venda ${fmtR(precos.venda)}, ${(r.modelos||[]).length} variação(ões), ${atributos.length} especificações.`);
+    passo(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:6px"><b>Anúncio criado OCULTO na Shopee ✓</b>
+      <span>Item ${r.item_id} · formato ${esc(r.formato||'')} · ${(r.modelos||[]).length} variações · ${atributos.length} especificações · ${imagens.length} fotos</span>
+      <span style="font-size:12px;color:var(--text-dim)">Confira no Seller Center (Meus Produtos → Não listados). Depois:</span>
+      <button class="btn btn-gold btn-sm" onclick="window.__dirShPublicar()">Publicar e colocar no desconto fixo a ${fmtR(precos.venda)}</button></div>`);
+  }catch(e){passo(`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`);}
+  btn.disabled=false;
+};
+window.__dirShPublicar=async()=>{
+  const it=window.__dirShItem;const st=document.getElementById('dirShStatus');if(!it)return;
+  const c=(clientesCache||[]).find(x=>x.id===it.clienteId);
+  if(!await lbConfirmar(`Publicar o anúncio ${it.itemId} na ${c.nome}?\nEle vai pro ar e entra no desconto fixo a ${fmtR(it.venda)}.${c.shopeeDescontoFixoId?'':'\nA loja não tem desconto fixo marcado: vou criar o "Desconto fixo - LB" (5 meses, começa em ~1h).'}`,{okTxt:'Publicar'}))return;
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    st.innerHTML='Publicando...';
+    const p=await dirShApi('produto_publicar',c,token,{item_id:it.itemId});if(!p.ok)throw new Error('publicar: '+p.erro);
+    let descId=c.shopeeDescontoFixoId;
+    if(!descId){const d=await dirShApi('desconto_fixo_criar',c,token);if(!d.ok)throw new Error('desconto fixo: '+d.erro);descId=String(d.discount_id);
+      await updateDoc(doc(db,'clientes',c.id),{shopeeDescontoFixoId:descId,shopeeDescontoFixoNome:d.nome,descontoFixoFim:new Date((d.fim-3*3600)*1000).toISOString().slice(0,16)});}
+    st.innerHTML='Colocando no desconto fixo...';
+    const e=await dirShApi('produto_desconto',c,token,{discount_id:descId,item_id:it.itemId,preco:it.venda});
+    if(!e.ok)throw new Error('desconto: '+e.erro);
+    await log(c.id,c.nome,'anúncio publicado na Shopee',`Item ${it.itemId} publicado e no desconto fixo ${descId} a ${fmtR(it.venda)}.`);
+    st.innerHTML=`<div class="cob-box"><b>No ar ✓</b><span>Item ${it.itemId} publicado e no desconto fixo a ${fmtR(it.venda)}.</span></div>`;
+  }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
+};
 
 /* ---- Gerador de Logotipo (dentro da Central Criativa IA) ---- */
 document.getElementById('logoGerarBtn')?.addEventListener('click', async ()=>{
