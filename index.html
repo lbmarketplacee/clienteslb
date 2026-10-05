@@ -4932,22 +4932,22 @@ function ttGmvRenderizar(){
   document.getElementById('ttGmvPendentes').textContent=clientesTiktok.length-conectados.length;
   const gmvTotal=conectados.reduce((a,c)=>a+(Number(c.tiktokGmv)||0),0);
   document.getElementById('ttGmvTotal').textContent=fmtR(gmvTotal);
-  el.innerHTML=clientesTiktok.map(c=>{
-    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    if(c.tiktokShopId){
-      return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
+  // Conectadas em cima (maior GMV primeiro); as sem conexão ficam num grupo recolhido.
+  const linhaOn=c=>`<div class="cm-item" style="flex-wrap:wrap;gap:10px">
         <span class="nome" style="flex:2;min-width:180px">${esc(c.nome)}</span>
-        <span class="tt-status-pill ok">✅ Conectado</span>
+        <span class="cadastro-doc-pill ok">${CM_ICO.ok} Conectado</span>
         <span style="font-size:13px;color:var(--text-dim)">GMV: ${fmtR(Number(c.tiktokGmv)||0)}</span>
-        <button class="btn btn-ghost btn-sm" onclick="window.__tiktokAtualizarGmv('${c.id}')">🔄 Atualizar GMV</button>
+        <button class="btn btn-ghost btn-sm cm-conectar" onclick="window.__tiktokAtualizarGmv('${c.id}')">${CM_ICO.reconectar} Atualizar GMV</button>
       </div>`;
-    }
+  const linhaOff=c=>{
+    const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
     return `<div class="cm-item" style="flex-wrap:wrap;gap:10px">
       <span class="nome" style="flex:2;min-width:180px">${esc(c.nome)}</span>
-      <span class="tt-status-pill atrasada">⚠ Não conectado</span>
-      <button class="btn btn-gold btn-sm" onclick="window.__tiktokConectar('${c.id}','${nomeEsc}')">🔗 Conectar Loja</button>
+      <button class="btn btn-ghost btn-sm cm-conectar" onclick="window.__tiktokConectar('${c.id}','${nomeEsc}')">${CM_ICO.conectar} Conectar loja</button>
     </div>`;
-  }).join('');
+  };
+  el.innerHTML=cmGrupoHtml('ttg-on','Lojas conectadas',[...conectados].sort((a,b)=>(Number(b.tiktokGmv)||0)-(Number(a.tiktokGmv)||0)).map(linhaOn),false)
+    +cmGrupoHtml('ttg-off','Sem conexão — clique pra conectar',clientesTiktok.filter(c=>!c.tiktokShopId).map(linhaOff),true);
 }
 const SHOPEE_CALLBACK_URL = 'https://sistema.lbmarketplace.com.br/shopee-callback.html';
 
