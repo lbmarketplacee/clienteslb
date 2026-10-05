@@ -1360,9 +1360,18 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <div class="field"><label>Endereço</label><input type="text" id="caEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
           <div style="display:flex;gap:10px">
-            <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="number" id="caMensalidade" step="0.01" placeholder="0,00"></div>
+            <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="text" inputmode="decimal" id="caMensalidade" placeholder="2.000,00"></div>
             <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="caDuracaoMeses" placeholder="12"></div>
             <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="caDiaVencimento" min="1" max="31" placeholder="5"></div>
+          </div>
+
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>Início do contrato</label><input type="date" id="caInicio"></div>
+            <div class="field" style="flex:2"><label>Segmento (opcional)</label><input type="text" id="caSegmento" placeholder="moda, aviamentos, acessórios..."></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <label class="cm-switch" style="flex:2;margin-bottom:14px"><input type="checkbox" id="caUpseller"><span class="cm-switch-trilho"></span> UpSeller absorvido pela LB</label>
+            <div class="field" style="flex:1"><label>Valor UpSeller (R$/mês)</label><input type="text" inputmode="decimal" id="caUpsellerValor" value="150,00"></div>
           </div>
           <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">Gerar Contrato (.pdf)</button>
         </div>
@@ -2317,11 +2326,21 @@ textarea{resize:vertical;min-height:70px;}
       <div class="field"><label>Pasta no Google Drive (link) — opcional</label><input type="url" id="fDrive" placeholder="https://drive.google.com/drive/folders/..."></div>
       <div class="cm-secao-titulo" style="margin-top:18px;margin-bottom:6px"><h3 style="font-size:14px">Dados do Contrato</h3></div>
       <div class="field"><label>CNPJ/CPF</label><input type="text" id="fCnpjCpf" placeholder="00.000.000/0000-00"></div>
+      <div class="field"><label>WhatsApp (pro contrato)</label><input type="text" id="fWhatsappContrato" placeholder="(11) 90000-0000"></div>
       <div class="field"><label>Endereço</label><input type="text" id="fEndereco" placeholder="Rua, número, bairro, cidade/UF"></div>
       <div style="display:flex;gap:10px">
-        <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="number" id="fMensalidade" step="0.01" placeholder="0,00"></div>
+        <div class="field" style="flex:1"><label>Mensalidade (R$)</label><input type="text" inputmode="decimal" id="fMensalidade" placeholder="2.000,00"></div>
         <div class="field" style="flex:1"><label>Duração (meses)</label><input type="number" id="fDuracaoMeses" placeholder="12"></div>
         <div class="field" style="flex:1"><label>Dia do vencimento</label><input type="number" id="fDiaVencimento" min="1" max="31" placeholder="5"></div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <div class="field" style="flex:1"><label>Início do contrato</label><input type="date" id="fInicio"></div>
+        <div class="field" style="flex:2"><label>Segmento (opcional)</label><input type="text" id="fSegmento" placeholder="moda, aviamentos, acessórios..."></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-end">
+        <label class="cm-switch" style="flex:2;margin-bottom:14px"><input type="checkbox" id="fUpseller"><span class="cm-switch-trilho"></span> UpSeller absorvido pela LB</label>
+        <div class="field" style="flex:1"><label>Valor UpSeller (R$/mês)</label><input type="text" inputmode="decimal" id="fUpsellerValor" value="150,00"></div>
       </div>
       <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">Gerar Contrato (.pdf)</button>
       <div class="field"><label>Marketplaces</label><div class="chip-toggle-group">
@@ -3011,7 +3030,7 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c?(c.mensalidade||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+function openClientModal(c){window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c&&c.mensalidade?lbFmtValorBR(c.mensalidade):'';document.getElementById('fWhatsappContrato').value=c?(c.whatsappContrato||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
 const docs=c?.documentosCadastro;
 const fDocsWrap=document.getElementById('fDocumentosCadastroWrap'),fDocsLista=document.getElementById('fDocumentosCadastroLista');
 if(docs&&(docs.docFrente||docs.docVerso||docs.docCnpj)){
@@ -3034,7 +3053,7 @@ const responsaveisPorMarketplace={
   tiktok:responsavelGeral,
   shein:responsavelGeral
 };
-const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:parseFloat(document.getElementById('fMensalidade').value)||0,duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,marketplaces:mps,responsavelGeral,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:lbValorBR(document.getElementById('fMensalidade').value)||0,whatsappContrato:document.getElementById('fWhatsappContrato').value.trim(),duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,marketplaces:mps,responsavelGeral,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
 function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
@@ -5354,32 +5373,50 @@ document.getElementById('relGerarBtn')?.addEventListener('click',async()=>{
 });
 
 
-document.getElementById('gerarContratoBtn')?.addEventListener('click',async()=>{
-  const nomeCliente=document.getElementById('fNome').value.trim();
+// ===== Contrato (PDF) — valores em formato brasileiro, conferência antes de gerar =====
+// "2.000" num campo numérico virava 2 (contrato de R$ 2,00). Agora o campo é texto e este parser entende BR.
+function lbValorBR(txt){
+  let t=String(txt??'').replace(/[R$\s]/g,'');
+  if(!t)return 0;
+  if(t.includes(','))t=t.replace(/\./g,'').replace(',','.');           // 2.000,50 → 2000.50
+  else if(/^\d{1,3}(\.\d{3})+$/.test(t))t=t.replace(/\./g,'');         // 2.000 → 2000
+  const n=Number(t);return Number.isFinite(n)?n:NaN;
+}
+function lbFmtValorBR(n){return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function lbHojeISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function contratoTermino(inicioISO,meses){const [a,m,d]=inicioISO.split('-').map(Number);const ult=new Date(a,m-1+meses+1,0).getDate();const f=new Date(a,m-1+meses,Math.min(d,ult));f.setDate(f.getDate()-1);return f;}
+async function gerarContratoDoForm(px,btnId){
+  const $=id=>document.getElementById(px+id);
+  const nomeCliente=$('Nome').value.trim();
   if(!nomeCliente){showToast('Preenche o nome do cliente primeiro.');return;}
-  const btn=document.getElementById('gerarContratoBtn');
+  const mensalidade=lbValorBR($('Mensalidade').value);
+  const duracaoMeses=parseInt($('DuracaoMeses').value,10);
+  const diaVencimento=parseInt($('DiaVencimento').value,10);
+  const upsellerAbsorvido=!!$('Upseller')?.checked;
+  const upsellerValor=lbValorBR($('UpsellerValor')?.value||'150');
+  const inicio=$('Inicio')?.value||lbHojeISO();
+  if(!(mensalidade>0)){lbAvisar('Mensalidade inválida\nDigite o valor do jeito normal: 2.000 ou 2.000,00');return;}
+  if(!(duracaoMeses>=1&&duracaoMeses<=60)){lbAvisar('Duração inválida\nInforme de 1 a 60 meses.');return;}
+  if(!(diaVencimento>=1&&diaVencimento<=31)){lbAvisar('Dia de vencimento inválido\nInforme um dia de 1 a 31.');return;}
+  const fim=contratoTermino(inicio,duracaoMeses);
+  const [ia,im,id]=inicio.split('-');
+  const resumo=`Confira antes de gerar\nCliente: ${nomeCliente}\nMensalidade: R$ ${lbFmtValorBR(mensalidade)} / mês\nDuração: ${duracaoMeses} ${duracaoMeses===1?'mês':'meses'} (${id}/${im}/${ia} até ${fim.toLocaleDateString('pt-BR')})\nValor total: R$ ${lbFmtValorBR(mensalidade*duracaoMeses)}\nVencimento: todo dia ${String(diaVencimento).padStart(2,'0')}\nMulta rescisória: R$ ${lbFmtValorBR(mensalidade*2)}\nUpSeller: ${upsellerAbsorvido?`absorvido pela LB (R$ ${lbFmtValorBR(upsellerValor)}/mês)`:'não incluído'}`;
+  if(!await lbConfirmar(resumo,{okTxt:'Gerar contrato'}))return;
+  const btn=document.getElementById(btnId);
   btn.disabled=true;btn.textContent='Gerando...';
   try{
-    const mensalidade=parseFloat(document.getElementById('fMensalidade').value)||0;
-    const duracaoMeses=parseInt(document.getElementById('fDuracaoMeses').value)||0;
-    const hoje=new Date();
-    const fim=new Date(hoje);fim.setMonth(fim.getMonth()+duracaoMeses);
-    const fmtDataBR=(d)=>d.toLocaleDateString('pt-BR');
     const resp=await fetch('https://lb-gerador-contrato.vercel.app/api/gerar-contrato',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         nomeCliente,
-        cnpjCpfCliente:document.getElementById('fCnpjCpf').value.trim(),
-        emailCliente:document.getElementById('fEmail').value.trim(),
-        enderecoCliente:document.getElementById('fEndereco').value.trim(),
-        duracaoMeses,
-        dataInicio:fmtDataBR(hoje),
-        dataFim:duracaoMeses?fmtDataBR(fim):'',
-        mensalidade:mensalidade?mensalidade.toFixed(2).replace('.',','):'',
-        valorTotal:(mensalidade&&duracaoMeses)?(mensalidade*duracaoMeses).toFixed(2).replace('.',','):'',
-        diaVencimento:document.getElementById('fDiaVencimento').value,
-        dataAssinatura:hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+        cnpjCpfCliente:$('CnpjCpf').value.trim(),
+        emailCliente:$('Email').value.trim(),
+        whatsappCliente:($('Whatsapp')||$('WhatsappContrato'))?.value.trim()||'',
+        enderecoCliente:$('Endereco').value.trim(),
+        segmento:$('Segmento')?.value.trim()||'',
+        mensalidade,duracaoMeses,diaVencimento,
+        dataInicio:inicio,dataAssinatura:lbHojeISO(),
+        upsellerAbsorvido,upsellerValor
       })
     });
     if(!resp.ok){const err=await resp.json().catch(()=>({}));throw new Error(err.erro||'Erro ao gerar.');}
@@ -5390,49 +5427,11 @@ document.getElementById('gerarContratoBtn')?.addEventListener('click',async()=>{
     document.body.appendChild(a);a.click();a.remove();
     URL.revokeObjectURL(url);
     showToast('✓ Contrato gerado e baixado!');
-  }catch(e){showToast('Erro: '+e.message);console.error(e);}
-  btn.disabled=false;btn.textContent='📄 Gerar Contrato (.pdf)';
-});
-document.getElementById('gerarContratoAvulsoBtn')?.addEventListener('click',async()=>{
-  const nomeCliente=document.getElementById('caNome').value.trim();
-  if(!nomeCliente){showToast('Preenche o nome do cliente primeiro.');return;}
-  const btn=document.getElementById('gerarContratoAvulsoBtn');
-  btn.disabled=true;btn.textContent='Gerando...';
-  try{
-    const mensalidade=parseFloat(document.getElementById('caMensalidade').value)||0;
-    const duracaoMeses=parseInt(document.getElementById('caDuracaoMeses').value)||0;
-    const hoje=new Date();
-    const fim=new Date(hoje);fim.setMonth(fim.getMonth()+duracaoMeses);
-    const fmtDataBR=(d)=>d.toLocaleDateString('pt-BR');
-    const resp=await fetch('https://lb-gerador-contrato.vercel.app/api/gerar-contrato',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        nomeCliente,
-        cnpjCpfCliente:document.getElementById('caCnpjCpf').value.trim(),
-        emailCliente:document.getElementById('caEmail').value.trim(),
-        whatsappCliente:document.getElementById('caWhatsapp').value.trim(),
-        enderecoCliente:document.getElementById('caEndereco').value.trim(),
-        duracaoMeses,
-        dataInicio:fmtDataBR(hoje),
-        dataFim:duracaoMeses?fmtDataBR(fim):'',
-        mensalidade:mensalidade?mensalidade.toFixed(2).replace('.',','):'',
-        valorTotal:(mensalidade&&duracaoMeses)?(mensalidade*duracaoMeses).toFixed(2).replace('.',','):'',
-        diaVencimento:document.getElementById('caDiaVencimento').value,
-        dataAssinatura:hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
-      })
-    });
-    if(!resp.ok){const err=await resp.json().catch(()=>({}));throw new Error(err.erro||'Erro ao gerar.');}
-    const blob=await resp.blob();
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=`Contrato - ${nomeCliente}.pdf`;
-    document.body.appendChild(a);a.click();a.remove();
-    URL.revokeObjectURL(url);
-    showToast('✓ Contrato gerado e baixado!');
-  }catch(e){showToast('Erro: '+e.message);console.error(e);}
-  btn.disabled=false;btn.textContent='📄 Gerar Contrato (.pdf)';
-});
+  }catch(e){lbAvisar('Não foi possível gerar o contrato\n'+e.message);console.error(e);}
+  btn.disabled=false;btn.textContent='Gerar Contrato (.pdf)';
+}
+document.getElementById('gerarContratoBtn')?.addEventListener('click',()=>gerarContratoDoForm('f','gerarContratoBtn'));
+document.getElementById('gerarContratoAvulsoBtn')?.addEventListener('click',()=>gerarContratoDoForm('ca','gerarContratoAvulsoBtn'));
 document.getElementById('conectarShopeeBtn')?.addEventListener('click',()=>{
   const clienteId=document.getElementById('clientId').value;
   const clienteNome=document.getElementById('fNome').value.trim();
