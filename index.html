@@ -3798,7 +3798,9 @@ window.__waTemplateAbrir=async()=>{
   </div>`;
   document.body.appendChild(ov);
   const sel=ov.querySelector('#waTplSel'),vars=ov.querySelector('#waTplVars'),previa=ov.querySelector('#waTplPrevia');
-  const sugestao={nome_lead:(c.nome||'').split(' ')[0]};
+  // Sugestões: nome salvo da conversa; senão, os valores do último template que o lead recebeu.
+  const doUltimoTpl=Object.fromEntries([...String([...(c.mensagens||[])].reverse().find(m=>/^\[Template aprovado/.test(m.texto||''))?.texto||'').matchAll(/(\w+): "([^"]*)"/g)].map(x=>[x[1],x[2]]));
+  const sugestao={...doUltimoTpl,...(c.nome?{nome_lead:c.nome.split(' ')[0]}:{})};
   const valores=()=>Object.fromEntries([...vars.querySelectorAll('input')].map(i=>[i.dataset.v,i.value.trim()]));
   const atualizar=()=>{const t=waTemplates[sel.value];previa.textContent=waPreencherTpl(t.corpo,valores());};
   const montar=()=>{const t=waTemplates[sel.value];vars.innerHTML=t.variaveis.map(v=>`<label class="wa-tpl-lbl">${esc(v.replace(/_/g,' '))}</label><input data-v="${esc(v)}" value="${esc(sugestao[v]||'')}">`).join('');vars.querySelectorAll('input').forEach(i=>i.addEventListener('input',atualizar));atualizar();};
