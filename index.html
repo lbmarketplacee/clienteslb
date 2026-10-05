@@ -8224,14 +8224,14 @@ window.__dirShCriar=async()=>{
     passo(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:6px"><b>Anúncio criado OCULTO na Shopee ✓</b>
       <span>Item ${r.item_id} · formato ${esc(r.formato||'')} · ${(r.modelos||[]).length} variações · ${atributos.length} especificações · ${imagens.length} fotos</span>
       <span style="font-size:12px;color:var(--text-dim)">Confira no Seller Center (Meus Produtos → Não listados). Depois:</span>
-      <button class="btn btn-gold btn-sm" onclick="window.__dirShPublicar()">Publicar e colocar no desconto fixo a ${fmtR(precos.venda)}</button></div>`);
+      <button class="btn btn-gold btn-sm" onclick="window.__dirShPublicar()">Publicar + desconto fixo (${fmtR(precos.venda)}) + Shopee Ads</button></div>`);
   }catch(e){passo(`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`);}
   btn.disabled=false;
 };
 window.__dirShPublicar=async()=>{
   const it=window.__dirShItem;const st=document.getElementById('dirShStatus');if(!it)return;
   const c=(clientesCache||[]).find(x=>x.id===it.clienteId);
-  if(!await lbConfirmar(`Publicar o anúncio ${it.itemId} na ${c.nome}?\nEle vai pro ar e entra no desconto fixo a ${fmtR(it.venda)}.${c.shopeeDescontoFixoId?'':'\nA loja não tem desconto fixo marcado: vou criar o "Desconto fixo - LB" (5 meses, começa em ~1h).'}`,{okTxt:'Publicar'}))return;
+  if(!await lbConfirmar(`Publicar o anúncio ${it.itemId} na ${c.nome}?\nEle vai pro ar, entra no desconto fixo a ${fmtR(it.venda)} e no Shopee Ads (meta de ROAS 20, orçamento e prazo ilimitados).${c.shopeeDescontoFixoId?'':'\nA loja não tem desconto fixo marcado: vou criar o "Desconto fixo - LB" (5 meses, começa em ~1h).'}`,{okTxt:'Publicar'}))return;
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');
     st.innerHTML='Publicando...';
@@ -8242,8 +8242,17 @@ window.__dirShPublicar=async()=>{
     st.innerHTML='Colocando no desconto fixo...';
     const e=await dirShApi('produto_desconto',c,token,{discount_id:descId,item_id:it.itemId,preco:it.venda});
     if(!e.ok)throw new Error('desconto: '+e.erro);
-    await log(c.id,c.nome,'anúncio publicado na Shopee',`Item ${it.itemId} publicado e no desconto fixo ${descId} a ${fmtR(it.venda)}.`);
-    st.innerHTML=`<div class="cob-box"><b>No ar ✓</b><span>Item ${it.itemId} publicado e no desconto fixo a ${fmtR(it.venda)}.</span></div>`;
+    // Shopee Ads no padrão LB: individual, meta de ROAS 20, orçamento e prazo ilimitados (app Ads é separado do ERP)
+    let adsTxt='';
+    if(c.shopeeAdsShopId){
+      st.innerHTML='Colocando no Shopee Ads (ROAS 20)...';
+      try{const tAds=await shopeeGarantirTokenValido(c,'ads');
+        const a=await (await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ads_criar_produto',app:'ads',access_token:tAds,shop_id:c.shopeeAdsShopId,item_id:it.itemId})})).json();
+        adsTxt=a.ok?` · no Shopee Ads (ROAS 20, ilimitado), campanha ${a.campaign_id}`:` · <span style="color:var(--red)">Ads não criado: ${esc(a.erro||'')}</span>`;
+      }catch(e){adsTxt=` · <span style="color:var(--red)">Ads não criado: ${esc(e.message)}</span>`;}
+    }else adsTxt=' · <span style="color:var(--red)">loja sem o app de Ads conectado — Ads não criado</span>';
+    await log(c.id,c.nome,'anúncio publicado na Shopee',`Item ${it.itemId} publicado e no desconto fixo ${descId} a ${fmtR(it.venda)}${adsTxt.replace(/<[^>]+>/g,'')}.`);
+    st.innerHTML=`<div class="cob-box"><b>No ar ✓</b><span>Item ${it.itemId} publicado e no desconto fixo a ${fmtR(it.venda)}${adsTxt}.</span></div>`;
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
 };
 
