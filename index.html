@@ -6939,7 +6939,7 @@ function cmRenderOfertaShopee(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Shopee ainda.</div>';return;}
   el.innerHTML=lista.map(c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-    const podeBotaoApi=!!c.shopeeMktShopId;
+    const podeBotaoApi=!!(c.shopeeMktShopId||c.shopeeErpShopId); // ERP também cobre marketing (antes só o app antigo aparecia)
     // Cliente com Marketing conectado: o robô diário cuida sozinho, sem precisar marcar "feito" na mão.
     if(podeBotaoApi){
       const rodou=!!c.ofertaRelampagoUltimaVerificacao;
