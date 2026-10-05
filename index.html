@@ -2095,14 +2095,8 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="oferta" style="display:none">
-        
-        <div class="sgmv-summary">
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="sc-label">Em dia</div></div><div class="sc-value green" id="mlOfEmDia">0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="sc-label">Programar<br>Hoje</div></div><div class="sc-value" id="mlOfHoje">0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/></svg></div><div class="sc-label">Atrasadas</div></div><div class="sc-value" style="color:var(--red)" id="mlOfAtrasadas">0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Clientes com<br>Mercado Livre</div></div><div class="sc-value" id="mlOfTotal">0</div></div>
-        </div>
-        <div class="tt-list" id="mlOfLista"></div>
+        <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.55"><b>Robô de oferta relâmpago:</b> todo dia às 08:00 ele entra sozinho nas relâmpagos que o Mercado Livre oferece, com desconto de <b>no máximo 7%</b> (usa o que o ML sugere quando for menor) e reserva metade do estoque permitido. Desligue a chave pra pausar um cliente. <b>Simular</b> mostra o que ele faria, sem enviar nada.</p>
+        <div class="cm-lista-simples" id="mlOfLista"></div>
           </div>
 
           <div class="ml-subpanel" data-mlsubpanel="descontos" style="display:none">
@@ -6605,49 +6599,53 @@ function ttRenderizar(){
 function mlOfRenderizar(){
   const lista=document.getElementById('mlOfLista');
   if(!lista)return;
-  const clientesMl=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('ml')&&c.ativo!==false);
-
-  let emDia=0,hojeCount=0,atrasadas=0;
-  clientesMl.forEach(c=>{
-    const d=c.mlOfertaProxima?diffDias(c.mlOfertaProxima):null;
-    if(d===null||d<0)atrasadas++;
-    else if(d===0)hojeCount++;
-    else emDia++;
-  });
-  animateTo(document.getElementById('mlOfEmDia'),emDia,v=>Math.round(v));
-  animateTo(document.getElementById('mlOfHoje'),hojeCount,v=>Math.round(v));
-  animateTo(document.getElementById('mlOfAtrasadas'),atrasadas,v=>Math.round(v));
-  animateTo(document.getElementById('mlOfTotal'),clientesMl.length,v=>Math.round(v));
-
-  if(!clientesMl.length){
-    lista.innerHTML=`<div class="sgmv-empty-connected"><div class="ico">🛒</div><h3 style="color:var(--gold);font-family:'Oswald',sans-serif;margin-bottom:8px">Nenhum cliente com Mercado Livre ainda</h3><p>Marque "Mercado Livre" nos marketplaces de um cliente pra ele aparecer aqui.</p></div>`;
-    return;
-  }
-
-  const comStatus=clientesMl.map(c=>{
-    const d=c.mlOfertaProxima?diffDias(c.mlOfertaProxima):null;
-    let status='atrasada';
-    if(d!==null&&d===0)status='hoje';
-    else if(d!==null&&d>0)status='ok';
-    return {c,d,status};
-  });
-  const ordem={atrasada:0,hoje:1,ok:2};
-  comStatus.sort((a,b)=>ordem[a.status]-ordem[b.status]);
-
-  lista.innerHTML=comStatus.map(({c,d,status})=>{
-    let sub;
-    if(status==='atrasada')sub=c.mlOfertaProxima?`Venceu em ${fmtDate(c.mlOfertaProxima)} — ${Math.abs(d)}d atrás`:'Nunca programada';
-    else if(status==='hoje')sub='Programar hoje!';
-    else sub=`Próxima em ${fmtDate(c.mlOfertaProxima)} (em ${d}d)`;
-    const label={atrasada:'⚠ Atrasada',hoje:'⚡ Hoje',ok:'✓ Em dia'}[status];
-    return `<div class="tt-card ${status}">
-      <div class="tt-ico">🛒</div>
-      <div class="tt-info"><div class="tt-nome">${esc(c.nome)}</div><div class="tt-sub">${sub}</div></div>
-      <span class="tt-status-pill ${status}">${label}</span>
-      <button class="btn btn-gold btn-sm" onclick="window.__marcarMlOferta('${c.id}')">✓ Marcar Programada</button>
+  const clientesMl=(clientesCache||[]).filter(c=>((c.marketplaces||[]).includes('ml')||c.mlUserId)&&c.ativo!==false);
+  if(!clientesMl.length){lista.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com Mercado Livre ainda.</div>';return;}
+  const linhaRobo=c=>{
+    const auto=c.mlOfertaAuto!==false;
+    const ult=c.mlOfertaUltimaVerificacao?`Última verificação: ${new Date(c.mlOfertaUltimaVerificacao).toLocaleString('pt-BR')}`:'Ainda não rodou';
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
+      <span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}<div style="font-size:11px;color:var(--text-dim);font-weight:400">${ult}</div></span>
+      <label class="cm-switch" title="Entra sozinho nas relâmpagos do ML (desconto máx. 7%)"><input type="checkbox" ${auto?'checked':''} onchange="window.__mlToggleAuto('${c.id}',this.checked)"><span class="cm-switch-trilho"></span> Robô automático</label>
+      <button class="btn btn-ghost btn-sm" onclick="window.__mlRodarRobo('${c.id}',false)">Simular</button>
+      ${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__mlRodarRobo('${c.id}',true)">Rodar agora</button>`:''}
     </div>`;
-  }).join('');
+  };
+  // Sem API: continua o controle manual de antes (data da próxima programação)
+  const linhaManual=c=>{
+    const d=c.mlOfertaProxima?diffDias(c.mlOfertaProxima):null;
+    const sub=d===null?'Nunca programada':(d<0?`Venceu em ${fmtDate(c.mlOfertaProxima)} — ${Math.abs(d)}d atrás`:(d===0?'Programar hoje':`Próxima em ${fmtDate(c.mlOfertaProxima)} (em ${d}d)`));
+    return `<div class="cm-item" style="flex-wrap:wrap;gap:10px"><span class="nome" style="flex:1;min-width:160px">${esc(c.nome)}<div style="font-size:11px;color:var(--text-dim);font-weight:400">${sub}</div></span><button class="btn btn-ghost btn-sm" onclick="window.__marcarMlOferta('${c.id}')">Marcar programada</button></div>`;
+  };
+  const conectados=clientesMl.filter(c=>c.mlUserId&&c.mlAccessToken);
+  lista.innerHTML=cmGrupoHtml('mlof-on','Conectados — robô',conectados.map(linhaRobo),false)
+    +cmGrupoHtml('mlof-off','Sem conexão — controle manual',clientesMl.filter(c=>!(c.mlUserId&&c.mlAccessToken)).map(linhaManual),true);
 }
+window.__mlToggleAuto=async(clienteId,ligado)=>{
+  try{await updateDoc(doc(db,'clientes',clienteId),{mlOfertaAuto:!!ligado});showToast(ligado?'Robô de relâmpago do ML ligado.':'Robô de relâmpago do ML desligado.');}
+  catch(e){showToast('Erro ao salvar.');console.error(e);}
+};
+const ML_MOTIVOS={ja_participa_ou_indisponivel:'já participa / indisponível',abaixo_do_minimo_do_ml:'abaixo do preço mínimo do ML',sem_estoque_suficiente:'sem estoque suficiente',sem_preco:'sem preço',ml_recusou_preco:'ML recusou o preço',ml_recusou_estoque:'ML recusou o estoque',ml_recusou:'ML recusou'};
+window.__mlRodarRobo=async(clienteId,executar)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
+  if(executar&&!await lbConfirmar(`Entrar AGORA nas relâmpagos do ML de ${c.nome}?\nIsso envia de verdade pro Mercado Livre (desconto máx. 7%).`,{okTxt:'Entrar agora'}))return;
+  showToast(executar?'Rodando o robô...':'Simulando...');
+  try{
+    const r=await fetch(`https://lb-shopee-gmv.vercel.app/api/ml-ofertas?clienteId=${encodeURIComponent(clienteId)}${executar?'&executar=1':''}`,{headers:await authHeaders()});
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'Erro.');
+    const x=d.resultados?.[0]||{};
+    if(x.erro){lbAvisar(`${c.nome}\n${x.erro}`);return;}
+    if(x.situacao==='sem_convite'){lbAvisar(`${c.nome}\nO Mercado Livre não tem oferta relâmpago aberta pra essa loja agora.`);return;}
+    const brl=v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const L=[`${c.nome} — ${executar?'executado':'simulação (nada foi enviado)'}`,`${executar?'Entraram':'Entrariam'}: ${(x.entrou||[]).length} produto(s)`];
+    (x.entrou||[]).slice(0,6).forEach(e=>L.push(`   ${e.id}: ${brl(e.original)} → ${brl(e.preco)} (−${e.descontoPct}%) · estoque ${e.estoque}`));
+    if((x.entrou||[]).length>6)L.push(`   … e mais ${(x.entrou||[]).length-6}`);
+    const fora=[...(x.fora||[]),...(x.recusados||[])];
+    if(fora.length){const cont={};fora.forEach(f=>cont[f.motivo]=(cont[f.motivo]||0)+1);L.push(`Ficaram de fora: ${fora.length}`);Object.entries(cont).forEach(([m,n])=>L.push(`   ${n}× ${ML_MOTIVOS[m]||m}`));}
+    lbAvisar(L.join('\n'));
+  }catch(e){lbAvisar('Não foi possível rodar o robô\n'+e.message);}
+};
 window.__marcarMlOferta=async(clienteId)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
   if(!cliente)return;
