@@ -49,6 +49,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--gold-dim);}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
 .btn-ghost:hover{border-color:var(--gold-dim);color:var(--gold);}
 .btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);}
+.lb-dialog-overlay{z-index:200}
+.lb-dialog{max-width:460px;padding:24px 24px 18px}
+.lb-dialog-tit{font-size:16px;font-weight:600;margin-bottom:10px;color:var(--text)}
+.lb-dialog-txt{font-size:13.5px;line-height:1.55;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;max-height:55vh;overflow-y:auto}
+.lb-dialog-acoes{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.lb-dialog-perigo{background:var(--red);color:#fff;border-color:var(--red)}
 .btn-danger:hover{background:var(--red-bg);}
 .btn-sm{padding:8px 14px;font-size:12px;}
 /* ===== LOGIN ===== */
@@ -2736,6 +2742,34 @@ const USER_FOTOS={"Lincoln":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence,browserSessionPersistence,sendPasswordResetEmail,GoogleAuthProvider,signInWithPopup}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import{getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,onSnapshot,query,orderBy,where,serverTimestamp,limit,getDocs,setDoc,getDoc}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// ===== Janelas do próprio sistema (no lugar de alert/confirm do navegador, o "sistema.lbmarketplace.com.br diz") =====
+function lbJanela({texto,confirmar,perigo,okTxt,cancelarTxt}){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.className='modal-overlay lb-dialog-overlay';
+    const linhas=String(texto??'').split('\n');
+    const titulo=linhas.length>1&&linhas[0].length<=90?linhas.shift():'';
+    const corpo=linhas.join('\n').replace(/^\n+/,'');
+    ov.innerHTML=`<div class="modal lb-dialog" role="dialog" aria-modal="true">
+      ${titulo?`<div class="lb-dialog-tit">${esc(titulo)}</div>`:''}
+      ${corpo?`<div class="lb-dialog-txt">${esc(corpo)}</div>`:''}
+      <div class="lb-dialog-acoes">
+        ${confirmar?`<button class="btn btn-ghost" data-r="0">${esc(cancelarTxt||'Cancelar')}</button>`:''}
+        <button class="btn ${perigo?'btn-danger lb-dialog-perigo':'btn-gold'}" data-r="1">${esc(okTxt||(confirmar?'Confirmar':'OK'))}</button>
+      </div></div>`;
+    const fechar=(r)=>{document.removeEventListener('keydown',tecla,true);ov.remove();resolve(r);};
+    const tecla=(e)=>{if(e.key==='Escape'){e.preventDefault();fechar(false);}else if(e.key==='Enter'){e.preventDefault();fechar(true);}};
+    ov.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b)fechar(b.dataset.r==='1');else if(e.target===ov&&confirmar)fechar(false);});
+    document.addEventListener('keydown',tecla,true);
+    document.body.appendChild(ov);
+    ov.querySelector('[data-r="1"]').focus();
+  });
+}
+const lbPerigoso=t=>/\b(excluir|descartar|desativar|pausar|apagar|remover|reiniciar)\b/i.test(String(t||''));
+function lbConfirmar(texto,opcoes={}){return lbJanela({texto,confirmar:true,perigo:opcoes.perigo??lbPerigoso(texto),okTxt:opcoes.okTxt});}
+function lbAvisar(texto){return lbJanela({texto,confirmar:false});}
+window.lbConfirmar=lbConfirmar;window.lbAvisar=lbAvisar;
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
 const nome=e=>USERS_MAP[e]||e;
 const isLincoln=()=>currentEmail===LINCOLN_EMAIL;
@@ -2953,7 +2987,7 @@ document.getElementById('cancelContratoModal').addEventListener('click',()=>cont
 document.getElementById('saveContratoBtn').addEventListener('click',async()=>{const n=document.getElementById('ctNome').value.trim();const m=document.getElementById('ctMes').value;const o=document.getElementById('ctObs').value.trim();if(!n){showToast('Informe o nome.');return;}if(!m){showToast('Informe o mês.');return;}try{await addDoc(collection(db,"contratos"),{nomeCliente:n,indicadoPor:currentUser,mes:m,obs:o,status:'pendente',timestamp:serverTimestamp()});showToast('Enviado para aprovação!');contratoModalOverlay.classList.add('hidden');}catch{showToast('Erro ao enviar.');}});
 /* IMPORTAR */
 const INITIAL_CLIENTS=[{nome:"Sasha Modas",descontoFixoFim:"2026-11-06T14:30",cupomFim:"2026-07-20T15:09"},{nome:"Confecções Adilson",descontoFixoFim:"2026-07-31T14:00",cupomFim:"2026-09-10T12:47"},{nome:"Florecer Closet",descontoFixoFim:"2026-09-09T18:30",cupomFim:"2026-09-10T13:00"},{nome:"Wil Fashion",descontoFixoFim:"2026-11-01T17:30",cupomFim:"2026-08-08T16:26"},{nome:"SS Tendencia",descontoFixoFim:"2026-07-31T17:30",cupomFim:"2026-08-10T14:10"},{nome:"Confecções Rosas",descontoFixoFim:"2026-09-01T23:30",cupomFim:"2026-08-10T12:59"},{nome:"Fada Varejista",descontoFixoFim:"2026-11-20T10:30",cupomFim:"2026-09-10T13:02"},{nome:"Donatella",descontoFixoFim:"2026-06-30T00:00",cupomFim:"2026-09-10T13:08"},{nome:"Kelyne",descontoFixoFim:"2026-11-20T10:30",cupomFim:"2026-08-10T13:46"},{nome:"Taniw 30",descontoFixoFim:"2026-10-31T22:59",cupomFim:"2026-12-19T10:27"},{nome:"Jhuliz",descontoFixoFim:"2026-10-01T15:30",cupomFim:"2026-07-09T14:00"},{nome:"MVestuario",descontoFixoFim:"2026-10-01T17:00",cupomFim:"2026-07-09T10:40"},{nome:"JW Sport Bras",descontoFixoFim:"2026-10-26T23:44",cupomFim:"2026-07-16T13:45"},{nome:"JW Modas",descontoFixoFim:"2026-11-01T13:00",cupomFim:"2026-08-01T12:04"},{nome:"Alekey Modas",descontoFixoFim:"2026-12-10T12:30",cupomFim:"2026-08-10T17:13"},{nome:"Micaer Confecções",descontoFixoFim:"2026-08-10T15:30",cupomFim:"2026-08-10T14:54"},{nome:"João Modas",descontoFixoFim:"2026-12-07T12:00",cupomFim:"2026-09-10T18:13"},{nome:"Liz Modas",descontoFixoFim:"2026-11-20T11:00",cupomFim:"2026-09-10T13:33"},{nome:"Aconsull",descontoFixoFim:"2026-11-20T17:30",cupomFim:"2026-08-10T12:05"},{nome:"Yamelli",descontoFixoFim:"2026-07-31T11:06",cupomFim:"2026-07-20T16:18"},{nome:"Go Braz Shop",descontoFixoFim:"2026-11-06T13:00",cupomFim:"2026-09-10T13:38"},{nome:"JSE Comercial",descontoFixoFim:"2026-11-20T11:00",cupomFim:"2026-06-18T15:35"}];
-document.getElementById('importInitialBtn').addEventListener('click',async()=>{if(!confirm(`Cadastrar ${INITIAL_CLIENTS.length} clientes? NÃO clique de novo depois.`))return;showToast('Importando...');let n=0;for(const c of INITIAL_CLIENTS){try{const r=await addDoc(collection(db,"clientes"),{nome:c.nome,marketplaces:['shopee'],descontoFixoFim:c.descontoFixoFim||null,cupomFim:c.cupomFim||null,saldoAds:0,observacoes:'',ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});await log(r.id,c.nome,'criação',`Importado por ${currentUser}.`);n++;}catch(e){console.error(e);}}showToast(`${n} clientes importados!`);});
+document.getElementById('importInitialBtn').addEventListener('click',async()=>{if(!await lbConfirmar(`Cadastrar ${INITIAL_CLIENTS.length} clientes? NÃO clique de novo depois.`))return;showToast('Importando...');let n=0;for(const c of INITIAL_CLIENTS){try{const r=await addDoc(collection(db,"clientes"),{nome:c.nome,marketplaces:['shopee'],descontoFixoFim:c.descontoFixoFim||null,cupomFim:c.cupomFim||null,saldoAds:0,observacoes:'',ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});await log(r.id,c.nome,'criação',`Importado por ${currentUser}.`);n++;}catch(e){console.error(e);}}showToast(`${n} clientes importados!`);});
 /* HISTÓRICO */
 async function log(cId,cNome,acao,det){await addDoc(collection(db,"historico"),{clienteId:cId,clienteNome:cNome,acao,detalhes:det,usuario:currentUser,timestamp:serverTimestamp()});}
 const histModalOverlay=document.getElementById('historicoModalOverlay');const histList=document.getElementById('historicoList');let unsubH=null;
@@ -2964,7 +2998,7 @@ document.getElementById('closeHistoricoModal').addEventListener('click',()=>{his
 /* EXCLUIR */
 const delModalOverlay=document.getElementById('deleteModalOverlay');let delPend=null;
 window.__desativar=async(id,nm)=>{
-  if(!confirm(`Desativar "${nm}"? Ele sai das listas ativas, mas todo o histórico (GMV, contratos, cadastros) continua guardado. Dá pra reativar depois a qualquer momento.`))return;
+  if(!await lbConfirmar(`Desativar "${nm}"? Ele sai das listas ativas, mas todo o histórico (GMV, contratos, cadastros) continua guardado. Dá pra reativar depois a qualquer momento.`))return;
   try{await updateDoc(doc(db,"clientes",id),{ativo:false,desativadoEm:serverTimestamp(),desativadoPor:currentUser});showToast(`${nm} foi desativado.`);}catch(e){showToast('Erro ao desativar.');}
 };
 window.__reativar=async(id,nm)=>{
@@ -3178,7 +3212,7 @@ document.getElementById('comSalvarDiaBtn')?.addEventListener('click',async()=>{
   }catch(e){console.error(e);showToast('Erro ao salvar.');}
 });
 window.__comDel=async(id)=>{
-  if(!confirm('Excluir o lançamento de '+id+'?'))return;
+  if(!await lbConfirmar('Excluir o lançamento de '+id+'?'))return;
   try{await deleteDoc(doc(db,"comercialDiario",id));showToast('Excluído.');}catch(e){showToast('Erro.');}
 };
 const comMetasOverlay=document.getElementById('comMetasModalOverlay');
@@ -4012,7 +4046,7 @@ document.getElementById('tfFixaAdicionarBtn')?.addEventListener('click',async()=
 });
 
 window.__excluirTarefaFixa=async(id)=>{
-  if(!confirm('Excluir essa tarefa fixa? Ela vai parar de se repetir a partir de amanhã.'))return;
+  if(!await lbConfirmar('Excluir essa tarefa fixa? Ela vai parar de se repetir a partir de amanhã.'))return;
   try{await deleteDoc(doc(db,"tarefasFixas",id));showToast('Excluída.');}catch(e){showToast('Erro.');}
 };
 
@@ -4195,7 +4229,7 @@ document.getElementById('tarefaForm')?.addEventListener('submit',async e=>{
 });
 document.getElementById('tarefaExcluirBtn')?.addEventListener('click',async()=>{
   if(!tarefaEditId)return;
-  if(!confirm('Excluir esta tarefa?'))return;
+  if(!await lbConfirmar('Excluir esta tarefa?'))return;
   try{await deleteDoc(doc(db,"tarefas",tarefaEditId));showToast('Tarefa excluída.');tarefaModalOverlay.classList.add('hidden');}catch(e){showToast('Erro.');}
 });
 
@@ -4300,8 +4334,8 @@ window.__clToggle=(el)=>{
   clSalvarProgresso(nome,prog);
   clAtualizarUI(nome);
 };
-window.__clReiniciar=(nome)=>{
-  if(!confirm('Reiniciar o progresso deste checklist?'))return;
+window.__clReiniciar=async(nome)=>{
+  if(!await lbConfirmar('Reiniciar o progresso deste checklist?'))return;
   clSalvarProgresso(nome,{});
   clAtualizarUI(nome);
 };
@@ -4393,7 +4427,7 @@ document.getElementById('gastoForm')?.addEventListener('submit',async e=>{
 });
 window.__gastoExcluir=async(id)=>{
   const g=gastosCache.find(x=>x.id===id);if(!g)return;
-  if(!confirm(`Excluir "${g.nome}"? O histórico de pagamentos será mantido.`))return;
+  if(!await lbConfirmar(`Excluir "${g.nome}"? O histórico de pagamentos será mantido.`))return;
   try{await deleteDoc(doc(db,"gastosFixos",id));showToast('Gasto excluído.');gastoModalOverlay.classList.add('hidden');}catch(e){showToast('Erro.');}
 };
 /* --- MARCAR PAGO / NÃO PAGO --- */
@@ -4641,7 +4675,7 @@ document.getElementById('cadDetCriarClienteBtn')?.addEventListener('click',()=>{
   if(cadastroDetalheAtual){document.getElementById('cadastroDetalheOverlay').classList.add('hidden');window.__criarClienteDoCadastro(cadastroDetalheAtual);}
 });
 window.__descartarCadastro=async(id)=>{
-  if(!confirm('Descartar este cadastro? Ele deixará de aparecer na lista (mas os dados continuam salvos).'))return;
+  if(!await lbConfirmar('Descartar este cadastro? Ele deixará de aparecer na lista (mas os dados continuam salvos).'))return;
   try{await updateDoc(doc(db,"cadastros",id),{status:'descartado'});showToast('Cadastro descartado.');}catch(e){showToast('Erro.');}
 };
 
@@ -5913,7 +5947,7 @@ window.__shopeeAtualizarGmv=async(clienteId)=>{
     await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:gmvTotal,gmvShopeeAtualizadoEm:serverTimestamp()});
     console.log('[Shopee GMV debug]',cliente.nome,data.debug);
     if(pedidosTotal===0){
-      alert(`Diagnóstico Shopee — ${cliente.nome}:\n\nA Shopee não retornou nenhum pedido válido nesse período.\n\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`);
+      lbAvisar(`Diagnóstico Shopee — ${cliente.nome}:\n\nA Shopee não retornou nenhum pedido válido nesse período.\n\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`);
     }
     showToast(`✓ ${cliente.nome}: ${fmtR(gmvTotal)} (${pedidosTotal} pedidos concluídos)`);
     return true;
@@ -6012,7 +6046,7 @@ document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
     showToast(`✓ Cupom criado pra ${cliente.nome}! Data de vencimento atualizada automaticamente.`);
     document.getElementById('cupomModalOverlay').classList.add('hidden');
     cmRenderCupons();
-  }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(cliente.nome));else showToast('Erro ao criar cupom: '+(e.message||'desconhecido'));}
+  }catch(e){console.error(e);if(erroTokenShopee(e))lbAvisar(msgErroTokenMkt(cliente.nome));else showToast('Erro ao criar cupom: '+(e.message||'desconhecido'));}
   btn.disabled=false;btn.textContent='Criar Cupom';
 });
 /* ================= CRIAR OFERTA RELÂMPAGO (Shopee) ================= */
@@ -6038,13 +6072,13 @@ window.__excluirOfertaLoja=async(idx)=>{
   const oferta=ofertasLojaCache[idx];
   const cliente=clientesCache.find(c=>c.id===ofertasLojaClienteId);
   if(!oferta||!cliente)return;
-  if(!confirm(`Excluir essa oferta relâmpago (${ofertasLojaFmtHora(oferta.inicio)} → ${ofertasLojaFmtHora(oferta.fim)}) de ${cliente.nome}?\n\nNão tem como desfazer.`))return;
+  if(!await lbConfirmar(`Excluir essa oferta relâmpago (${ofertasLojaFmtHora(oferta.inicio)} → ${ofertasLojaFmtHora(oferta.fim)}) de ${cliente.nome}?\n\nNão tem como desfazer.`))return;
   try{
     const params=new URLSearchParams({acao:'excluir_oferta',app:ofertasLojaApp,access_token:ofertasLojaToken,shop_id:shopeeAppPreferido(cliente).shopId,flash_sale_id:oferta.flashSaleId});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Excluir Oferta debug]',cliente.nome,data);
-    if(!data.ok){alert(`Não foi possível excluir:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    if(!data.ok){lbAvisar(`Não foi possível excluir:\n\n${data.erro||'Erro desconhecido.'}`);return;}
     ofertasLojaCache.splice(idx,1);
     ofertasLojaRenderizar();
     showToast('✓ Oferta excluída.');
@@ -6063,7 +6097,7 @@ window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
     const data=await resp.json();
     console.log('[Sincronizar Ofertas debug]',clienteNome,data);
     if(!data.ok){
-      if(!silencioso)alert(`Não foi possível sincronizar ${clienteNome}:\n\n${data.erro||'Erro desconhecido.'}`);
+      if(!silencioso)lbAvisar(`Não foi possível sincronizar ${clienteNome}:\n\n${data.erro||'Erro desconhecido.'}`);
       else try{await addDoc(collection(db,"shopeeErrosOferta"),{cliente:clienteNome,acao:'Sincronizar (manual)',mensagem:(data.erro||'Erro desconhecido.').slice(0,300),quando:serverTimestamp()});}catch(e){}
       return{ok:false,erro:data.erro};
     }
@@ -6076,7 +6110,7 @@ window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
     await updateDoc(doc(db,"clientes",clienteId),atualizacao);
     if(!silencioso){
       if(!data.confiavel){
-        alert(`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`);
+        lbAvisar(`Não deu pra confirmar direito com a Shopee agora (ela não respondeu a consulta). Melhor tentar de novo em vez de confiar nesse resultado.`);
       }else{
         ofertasLojaClienteId=clienteId;
         ofertasLojaToken=token;
@@ -6097,15 +6131,15 @@ window.__sincronizarOfertas=async(clienteId,clienteNome,silencioso)=>{
 window.__rodarRoboOfertas=async()=>{
   if(!isLincoln()){showToast('Apenas Lincoln pode rodar o robô manualmente.');return;}
   const btn=document.getElementById('rodarRoboOfertasBtn');
-  if(!confirm('Rodar o robô de Oferta Relâmpago agora, pra todos os clientes prontos na fila? Pode levar até 1 minuto.'))return;
+  if(!await lbConfirmar('Rodar o robô de Oferta Relâmpago agora, pra todos os clientes prontos na fila? Pode levar até 1 minuto.'))return;
   if(btn){btn.disabled=true;btn.textContent='Rodando...';}
   try{
     const params=new URLSearchParams({acao:'rodar_robo_ofertas'});
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Rodar Robô Ofertas debug]',data);
-    if(!data.ok){alert(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
-    alert(`Robô rodou agora.\n\nClientes na fila: ${data.totalClientes}\nVerificados agora: ${data.verificados}\nOfertas criadas: ${data.ofertasCriadas}\nFicaram pra próxima: ${data.aguardando}\n\nDetalhes completos no Console (F12) → "[Rodar Robô Ofertas debug]".`);
+    if(!data.ok){lbAvisar(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    lbAvisar(`Robô rodou agora.\n\nClientes na fila: ${data.totalClientes}\nVerificados agora: ${data.verificados}\nOfertas criadas: ${data.ofertasCriadas}\nFicaram pra próxima: ${data.aguardando}\n\nDetalhes completos no Console (F12) → "[Rodar Robô Ofertas debug]".`);
   }catch(e){showToast('Erro ao rodar o robô.');console.error(e);}
   finally{if(btn){btn.disabled=false;btn.textContent='▶️ Rodar robô agora';}}
 };
@@ -6120,7 +6154,7 @@ window.__sincronizarTodasOfertas=async()=>{
     if(!r.ok)comErro++;else if(r.total>0)comOferta++;else semOferta++;
   }
   if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
-  alert(`Sincronização em massa concluída (${lista.length} cliente(s)):\n\n✅ ${comOferta} com oferta ativa/agendada\n⏳ ${semOferta} sem oferta agora\n${comErro?`❌ ${comErro} com erro (veja a aba Erros)`:''}`);
+  lbAvisar(`Sincronização em massa concluída (${lista.length} cliente(s)):\n\n✅ ${comOferta} com oferta ativa/agendada\n⏳ ${semOferta} sem oferta agora\n${comErro?`❌ ${comErro} com erro (veja a aba Erros)`:''}`);
 };
 window.__abrirModalOferta=(clienteId,clienteNome)=>{
   ofertaClienteAtual=clienteId;
@@ -6164,7 +6198,7 @@ async function criarOfertaCore(cliente,opcoes,silencioso){
     const data=await resp.json();
     console.log('[Oferta Relâmpago debug]',cliente.nome,data);
     if(!data.ok){
-      if(!silencioso)alert(`Não foi possível criar a oferta relâmpago de ${cliente.nome}:\n\n${data.erro||'Erro desconhecido.'}\n\nAbra o Console (F12) e veja "[Oferta Relâmpago debug]" pra mais detalhes.`);
+      if(!silencioso)lbAvisar(`Não foi possível criar a oferta relâmpago de ${cliente.nome}:\n\n${data.erro||'Erro desconhecido.'}\n\nAbra o Console (F12) e veja "[Oferta Relâmpago debug]" pra mais detalhes.`);
       try{await addDoc(collection(db,"shopeeErrosOferta"),{cliente:cliente.nome,acao:silencioso?'Não criou (em massa)':'Não criou (manual)',mensagem:(data.erro||'Erro desconhecido.').slice(0,300),quando:serverTimestamp()});}catch(e){console.error('Não salvou o erro no painel:',e);}
       return{ok:false,erro:data.erro,semDesconto:/nenhum desconto em andamento/.test(data.erro||'')};
     }
@@ -6185,12 +6219,12 @@ async function criarOfertaCore(cliente,opcoes,silencioso){
       if(data.produtos_descartados_por_estoque)resumo+=` (${data.produtos_descartados_por_estoque} produto(s) do catálogo não têm estoque suficiente pra oferta relâmpago).`;
       else if(data.falhas&&data.falhas.length)resumo+=`\n\nA Shopee recusou alguns produtos. Exemplo:\n${JSON.stringify(data.falhas[0]).slice(0,240)}`;
       showToast(`✓ ${data.total_ofertas} oferta(s) criada(s) pra ${cliente.nome}.`);
-      alert(resumo);
+      lbAvisar(resumo);
     }
     return{ok:true,totalOfertas:data.total_ofertas,totalProdutos:data.total_produtos,jaExistiam:data.ja_existiam||0};
   }catch(e){
     console.error(e);
-    if(erroTokenShopee(e)){if(!silencioso)alert(msgErroTokenMkt(cliente.nome));return{ok:false,erro:e.message,tokenVencido:true};}
+    if(erroTokenShopee(e)){if(!silencioso)lbAvisar(msgErroTokenMkt(cliente.nome));return{ok:false,erro:e.message,tokenVencido:true};}
     if(!silencioso)showToast('Erro ao criar oferta relâmpago: '+(e.message||'desconhecido'));
     return{ok:false,erro:e.message};
   }
@@ -6214,7 +6248,7 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
 window.__criarOfertasEmTodas=async()=>{
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&c.shopeeMktShopId);
   if(!lista.length){showToast('Nenhum cliente com Marketing conectado.');return;}
-  if(!confirm(`Vai tentar criar oferta relâmpago em TODOS os ${lista.length} clientes com Marketing conectado, preenchendo todos os horários disponíveis de cada um.\n\nPode demorar vários minutos (cada cliente roda um de cada vez). Continuar?`))return;
+  if(!await lbConfirmar(`Vai tentar criar oferta relâmpago em TODOS os ${lista.length} clientes com Marketing conectado, preenchendo todos os horários disponíveis de cada um.\n\nPode demorar vários minutos (cada cliente roda um de cada vez). Continuar?`))return;
   const btn=document.getElementById('criarEmTodasBtn');
   if(btn){btn.disabled=true;btn.textContent='Criando em todos... (não feche a aba)';}
   const overlay=document.getElementById('ofertaEmMassaOverlay');
@@ -6243,7 +6277,7 @@ window.__criarOfertasEmTodas=async()=>{
   }
   overlay?.classList.add('hidden');
   if(btn){btn.disabled=false;btn.textContent='⚡ Criar em Todas';}
-  alert(`Checkup completo (${lista.length} cliente(s)):\n\n⚡ ${comOferta} cliente(s) com oferta nova criada (${totalOfertas} oferta(s), ${totalProdutos} produto(s) no total)\n📋 ${semDesconto} sem desconto fixo marcado — marque em Descontos > 🔍 Descontos da loja\n${comErro?`❌ ${comErro} com erro (veja a aba ⚠️ Erros)`:''}\n\nHorários que já tinham oferta foram pulados automaticamente, sem duplicar.`);
+  lbAvisar(`Checkup completo (${lista.length} cliente(s)):\n\n⚡ ${comOferta} cliente(s) com oferta nova criada (${totalOfertas} oferta(s), ${totalProdutos} produto(s) no total)\n📋 ${semDesconto} sem desconto fixo marcado — marque em Descontos > 🔍 Descontos da loja\n${comErro?`❌ ${comErro} com erro (veja a aba ⚠️ Erros)`:''}\n\nHorários que já tinham oferta foram pulados automaticamente, sem duplicar.`);
 };
 
 
@@ -6540,7 +6574,7 @@ window.__tiktokRodarRobo=async(clienteId,executar)=>{
   if(!c)return;
   if(executar){
     if(!isLincoln()){showToast('Apenas Lincoln pode rodar o robô de verdade.');return;}
-    if(!confirm(`Criar AGORA as ofertas relâmpago na loja de ${c.nome}?\n\nIsso cria de verdade no TikTok Shop.`))return;
+    if(!await lbConfirmar(`Criar AGORA as ofertas relâmpago na loja de ${c.nome}?\n\nIsso cria de verdade no TikTok Shop.`))return;
   }
   showToast(executar?'Rodando o robô...':'Simulando...');
   try{
@@ -6549,8 +6583,8 @@ window.__tiktokRodarRobo=async(clienteId,executar)=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Robô TikTok debug]',c.nome,data);
-    if(!data.ok){alert(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
-    alert(ttResumoRobo((data.resultados||[])[0],data.modo));
+    if(!data.ok){lbAvisar(`Não foi possível rodar o robô:\n\n${data.erro||'Erro desconhecido.'}`);return;}
+    lbAvisar(ttResumoRobo((data.resultados||[])[0],data.modo));
   }catch(e){showToast('Erro ao rodar o robô do TikTok.');console.error(e);}
 };
 // ---- TikTok Shop: DESCONTO FIXO via API (sincroniza vencimento, simula e renova por duplicação) ----
@@ -6582,7 +6616,7 @@ window.__tiktokDescontoRodar=async(clienteId,tipo,silencioso)=>{
   if(!c)return null;
   if(tipo==='executar'){
     if(!isLincoln()){showToast('Apenas Lincoln pode renovar de verdade.');return null;}
-    if(!confirm(`Renovar AGORA o desconto fixo de ${c.nome} no TikTok Shop?\n\nIsso cria um desconto novo de verdade, com os mesmos produtos e preços do atual.`))return null;
+    if(!await lbConfirmar(`Renovar AGORA o desconto fixo de ${c.nome} no TikTok Shop?\n\nIsso cria um desconto novo de verdade, com os mesmos produtos e preços do atual.`))return null;
   }
   if(!silencioso)showToast(tipo==='executar'?'Renovando...':(tipo==='sincronizar'?'Sincronizando...':'Simulando...'));
   try{
@@ -6592,9 +6626,9 @@ window.__tiktokDescontoRodar=async(clienteId,tipo,silencioso)=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Desconto TikTok debug]',c.nome,data);
-    if(!data.ok){if(!silencioso)alert(`Não foi possível:\n\n${data.erro||'Erro desconhecido.'}`);return{ok:false,erro:data.erro};}
+    if(!data.ok){if(!silencioso)lbAvisar(`Não foi possível:\n\n${data.erro||'Erro desconhecido.'}`);return{ok:false,erro:data.erro};}
     const r=(data.resultados||[])[0]||{};
-    if(!silencioso)alert(ttResumoDesconto(r,data.modo));
+    if(!silencioso)lbAvisar(ttResumoDesconto(r,data.modo));
     return{ok:!r.erro,r};
   }catch(e){if(!silencioso)showToast('Erro ao falar com o servidor.');console.error(e);return{ok:false,erro:e.message};}
 };
@@ -6611,7 +6645,7 @@ window.__tiktokDescontoSincronizarTodos=async()=>{
     else cont.em_dia++;
   }
   if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
-  alert(`Sincronização de descontos do TikTok concluída (${lista.length} cliente(s)):\n\n✅ ${cont.em_dia} em dia\n⏰ ${cont.precisa_renovar} precisam renovar (faltam 30 dias ou menos)\n📋 ${cont.sem_desconto_fixo} sem desconto fixo ativo${cont.erro?`\n⚠️ ${cont.erro} com erro (veja o Console)`:''}`);
+  lbAvisar(`Sincronização de descontos do TikTok concluída (${lista.length} cliente(s)):\n\n✅ ${cont.em_dia} em dia\n⏰ ${cont.precisa_renovar} precisam renovar (faltam 30 dias ou menos)\n📋 ${cont.sem_desconto_fixo} sem desconto fixo ativo${cont.erro?`\n⚠️ ${cont.erro} com erro (veja o Console)`:''}`);
 };
 function cmRenderOfertaShopee(){
   const el=document.getElementById('cmOfertaShopeeLista');
@@ -6722,7 +6756,7 @@ async function cupomBuscarTodos(cliente){
 async function cupomSincronizarCore(cliente,silencioso){
   const r=await (async()=>{try{return await cupomBuscarTodos(cliente);}catch(e){return{ok:false,erro:e.message};}})();
   if(!r.ok){
-    if(!silencioso){if(erroTokenShopee(r)||/token/i.test(r.erro||''))alert(msgErroTokenMkt(cliente.nome));else alert(`Não foi possível sincronizar o cupom de ${cliente.nome}:\n\n${r.erro}`);}
+    if(!silencioso){if(erroTokenShopee(r)||/token/i.test(r.erro||''))lbAvisar(msgErroTokenMkt(cliente.nome));else lbAvisar(`Não foi possível sincronizar o cupom de ${cliente.nome}:\n\n${r.erro}`);}
     return{ok:false,erro:r.erro};
   }
   // havendo mais de um cupom ativo ao mesmo tempo, considera o de vencimento mais distante como referência
@@ -6784,7 +6818,7 @@ window.__cupomSincronizarTodos=async()=>{
     if(!r.ok)comErro++;else if(r.ativo)ativos++;else semCupom++;
   }
   if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
-  alert(`Sincronização de cupons concluída (${lista.length} cliente(s)):\n\n✅ ${ativos} com cupom ativo\n❌ ${semCupom} sem cupom ativo\n${comErro?`⚠️ ${comErro} com erro (veja o Console)`:''}`);
+  lbAvisar(`Sincronização de cupons concluída (${lista.length} cliente(s)):\n\n✅ ${ativos} com cupom ativo\n❌ ${semCupom} sem cupom ativo\n${comErro?`⚠️ ${comErro} com erro (veja o Console)`:''}`);
 };
 // Confere na Shopee se o desconto MARCADO (📌) de cada cliente ainda está ativo de verdade —
 // igual o "🔍 Descontos da loja" individual, só que em massa, sem abrir modal pra cada um.
@@ -6815,7 +6849,7 @@ window.__descontoSincronizarTodos=async()=>{
     }catch(e){console.error(e);comErro++;}
   }
   if(btn){btn.disabled=false;btn.textContent='🔄 Sincronizar Todos';}
-  alert(`Sincronização de descontos concluída (${lista.length} cliente(s)):\n\n✅ ${ativos} com desconto fixo ativo\n⏰ ${vencidos} com o desconto marcado vencido/não encontrado — precisa duplicar\n📋 ${semMarcado} sem desconto marcado ainda — use 🔍 Descontos da loja\n${comErro?`⚠️ ${comErro} com erro (veja o Console)`:''}`);
+  lbAvisar(`Sincronização de descontos concluída (${lista.length} cliente(s)):\n\n✅ ${ativos} com desconto fixo ativo\n⏰ ${vencidos} com o desconto marcado vencido/não encontrado — precisa duplicar\n📋 ${semMarcado} sem desconto marcado ainda — use 🔍 Descontos da loja\n${comErro?`⚠️ ${comErro} com erro (veja o Console)`:''}`);
 };
 function cmRenderDevolucao(){
   const el=document.getElementById('cmDevolucaoLista');
@@ -6899,8 +6933,8 @@ window.__logPedidosRecentes=async(clienteId)=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Pedidos recentes debug]',c.nome,data);
-    if(!data.ok){alert(`Erro: ${data.erro||'desconhecido'}`);return;}
-    if(!data.pedidos.length){alert(`${c.nome} não tem pedidos nos últimos 14 dias.`);return;}
+    if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
+    if(!data.pedidos.length){lbAvisar(`${c.nome} não tem pedidos nos últimos 14 dias.`);return;}
     const lista=data.pedidos.slice(0,15).map(p=>`• ${p.orderSn} (${p.status})`).join('\n');
     const escolha=prompt(`Pedidos recentes de ${c.nome}:\n\n${lista}\n\nCola o número do pedido que quer rastrear:`);
     if(escolha)window.__logRastrear(clienteId,escolha.trim());
@@ -6967,7 +7001,7 @@ window.__prodSimular=async(clienteId)=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Simular reajuste debug]',ctx.c.nome,data);
-    if(!data.ok||!data.totalProdutos){alert(`Não foi possível simular: ${data.erro||'nenhum produto válido encontrado'}`);return;}
+    if(!data.ok||!data.totalProdutos){lbAvisar(`Não foi possível simular: ${data.erro||'nenhum produto válido encontrado'}`);return;}
     prodSimClienteId=clienteId;prodSimCache=data;
     document.getElementById('prodSimTitulo').textContent=`Simulação — ${ctx.c.nome} (${perc>0?'+':''}${perc}%)`;
     const linhas=[];
@@ -6982,7 +7016,7 @@ window.__prodSimular=async(clienteId)=>{
 document.getElementById('prodSimCancelarBtn')?.addEventListener('click',()=>document.getElementById('prodSimModalOverlay').classList.add('hidden'));
 document.getElementById('prodSimAplicarBtn')?.addEventListener('click',async()=>{
   if(!prodSimCache||!prodSimClienteId)return;
-  if(!confirm(`Aplicar o reajuste em ${prodSimCache.totalProdutos} produto(s) de verdade na Shopee? Não tem como desfazer automaticamente.`))return;
+  if(!await lbConfirmar(`Aplicar o reajuste em ${prodSimCache.totalProdutos} produto(s) de verdade na Shopee? Não tem como desfazer automaticamente.`))return;
   const btn=document.getElementById('prodSimAplicarBtn');
   btn.disabled=true;btn.textContent='Aplicando...';
   try{
@@ -6991,7 +7025,7 @@ document.getElementById('prodSimAplicarBtn')?.addEventListener('click',async()=>
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Aplicar reajuste debug]',data);
-    alert(`✓ ${data.totalAplicados} produto(s) atualizado(s).${data.totalFalhas?` ${data.totalFalhas} falharam (veja o Console).`:''}`);
+    lbAvisar(`✓ ${data.totalAplicados} produto(s) atualizado(s).${data.totalFalhas?` ${data.totalFalhas} falharam (veja o Console).`:''}`);
     document.getElementById('prodSimModalOverlay').classList.add('hidden');
   }catch(e){showToast('Erro ao aplicar.');console.error(e);}
   btn.disabled=false;btn.textContent='Aplicar reajuste';
@@ -7007,12 +7041,12 @@ window.__prodAjustarEstoque=async(clienteId)=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Ajustar estoque debug]',data);
-    if(!data.ok){alert(`Erro: ${data.erro||'desconhecido'}`);return;}
+    if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
     showToast('✓ Estoque atualizado.');
   }catch(e){showToast('Erro ao ajustar estoque.');console.error(e);}
 };
 window.__prodAutoPausar=async(clienteId)=>{
-  if(!confirm('Isso vai PAUSAR na Shopee (despublicar) todo produto desse cliente que estiver com estoque zerado. Confirma?'))return;
+  if(!await lbConfirmar('Isso vai PAUSAR na Shopee (despublicar) todo produto desse cliente que estiver com estoque zerado. Confirma?'))return;
   showToast('Verificando catálogo...');
   try{
     const ctx=await prodAppECliente(clienteId);
@@ -7020,8 +7054,8 @@ window.__prodAutoPausar=async(clienteId)=>{
     const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
     const data=await resp.json();
     console.log('[Auto-pausar debug]',data);
-    if(!data.ok){alert(`Erro: ${data.erro||'desconhecido'}`);return;}
-    alert(`Verificados: ${data.totalVerificados}\nPausados agora: ${data.totalPausados}${data.erros.length?`\n${data.erros.length} com erro (veja o Console).`:''}`);
+    if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
+    lbAvisar(`Verificados: ${data.totalVerificados}\nPausados agora: ${data.totalPausados}${data.erros.length?`\n${data.erros.length} com erro (veja o Console).`:''}`);
   }catch(e){showToast('Erro no auto-pausar.');console.error(e);}
 };
 /* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
@@ -7092,7 +7126,7 @@ window.__marcarDescontoFixo=async(idx)=>{
 async function duplicarDescontoCore(c,discountId,nome){
   const prefDup=shopeeAppPreferido(c);
   if(!prefDup.shopId){showToast('Cliente não conectado ao app Marketing/ERP da Shopee.');return;}
-  if(!confirm(`Duplicar "${nome||discountId}" de ${c.nome}?\n\nVai criar um desconto novo com o mesmo nome, os mesmos produtos e preços, por 5 meses — começando logo depois que o atual acabar (ou em cerca de 1 hora, se ele já venceu).`))return;
+  if(!await lbConfirmar(`Duplicar "${nome||discountId}" de ${c.nome}?\n\nVai criar um desconto novo com o mesmo nome, os mesmos produtos e preços, por 5 meses — começando logo depois que o atual acabar (ou em cerca de 1 hora, se ele já venceu).`))return;
   showToast('Duplicando... (pode levar alguns segundos)');
   try{
     const token=await shopeeGarantirTokenValido(c,prefDup.app);
@@ -7101,15 +7135,15 @@ async function duplicarDescontoCore(c,discountId,nome){
     const data=await resp.json();
     console.log('[Duplicar desconto debug]',c.nome,data);
     if(!data.ok){
-      alert(`Não foi possível duplicar o desconto de ${c.nome}:\n\n${data.erro||'Erro desconhecido.'}\n\nAbra o Console (F12) e veja "[Duplicar desconto debug]" pra mais detalhes.`);
+      lbAvisar(`Não foi possível duplicar o desconto de ${c.nome}:\n\n${data.erro||'Erro desconhecido.'}\n\nAbra o Console (F12) e veja "[Duplicar desconto debug]" pra mais detalhes.`);
       return;
     }
     await updateDoc(doc(db,"clientes",c.id),{shopeeDescontoFixoId:data.novoDiscountId,shopeeDescontoFixoNome:data.nome,descontoFixoFim:data.novoFimLocal,ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});
     descLojaRefId=data.novoDiscountId;
     showToast(`✓ Desconto duplicado pra ${c.nome}! ${data.totalProdutos} produto(s) copiado(s).`);
-    if(data.falhas&&data.falhas.length)alert(`Atenção: ${data.falhas.length} produto(s) não entraram no desconto novo. Veja o Console (F12) → "[Duplicar desconto debug]".`);
+    if(data.falhas&&data.falhas.length)lbAvisar(`Atenção: ${data.falhas.length} produto(s) não entraram no desconto novo. Veja o Console (F12) → "[Duplicar desconto debug]".`);
     if(!document.getElementById('descontoLojaModalOverlay').classList.contains('hidden'))window.__descontosLoja(c.id);
-  }catch(e){console.error(e);if(erroTokenShopee(e))alert(msgErroTokenMkt(c.nome));else showToast('Erro ao duplicar o desconto: '+(e.message||'desconhecido'));}
+  }catch(e){console.error(e);if(erroTokenShopee(e))lbAvisar(msgErroTokenMkt(c.nome));else showToast('Erro ao duplicar o desconto: '+(e.message||'desconhecido'));}
 }
 window.__duplicarDescontoLoja=(idx)=>{
   const d=descLojaCache[idx];const c=clientesCache.find(x=>x.id===descLojaClienteId);
@@ -7162,7 +7196,7 @@ window.__irParaMarketing=(painel,subtab)=>{
   },50);
 };
 window.__migrarPalomaGuilherme=async()=>{
-  if(!confirm('Isso vai trocar TODAS as tarefas da Paloma pro Guilherme. Confirma?'))return;
+  if(!await lbConfirmar('Isso vai trocar TODAS as tarefas da Paloma pro Guilherme. Confirma?'))return;
   let total=0;
   for(const colecao of ['tarefas','tarefasFixas']){
     const q=query(collection(db,colecao),where('responsavelEmail','==','paloma@lbmarketplace.com.br'));
@@ -7172,10 +7206,10 @@ window.__migrarPalomaGuilherme=async()=>{
       total++;
     }
   }
-  alert(`Pronto! ${total} tarefa(s) migrada(s) da Paloma pro Guilherme.`);
+  lbAvisar(`Pronto! ${total} tarefa(s) migrada(s) da Paloma pro Guilherme.`);
 };
 window.__gerarTarefasFixasPorCliente=async()=>{
-  if(!confirm('Isso vai criar tarefas fixas automáticas pra cada cliente (Oferta Relâmpago TikTok, Relatório Mensal, Saldo Ads Shopee), atribuídas ao responsável de cada um. Confirma?'))return;
+  if(!await lbConfirmar('Isso vai criar tarefas fixas automáticas pra cada cliente (Oferta Relâmpago TikTok, Relatório Mensal, Saldo Ads Shopee), atribuídas ao responsável de cada um. Confirma?'))return;
   let criadas=0;
   for(const c of clientesCache){
     if(!c.responsavelGeral)continue;
@@ -7198,10 +7232,10 @@ window.__gerarTarefasFixasPorCliente=async()=>{
       criadas++;
     }
   }
-  alert(`Pronto! ${criadas} tarefas fixas criadas.`);
+  lbAvisar(`Pronto! ${criadas} tarefas fixas criadas.`);
 };
 window.__migrarCarteiraClientes=async()=>{
-  if(!confirm('Isso vai definir 1 responsável único por cliente, substituindo o modelo antigo (1 por marketplace). Confirma?'))return;
+  if(!await lbConfirmar('Isso vai definir 1 responsável único por cliente, substituindo o modelo antigo (1 por marketplace). Confirma?'))return;
   const CAROL='caroline@lbmarketplace.com.br',GUILHERME='guilherme@lbmarketplace.com.br',MIRELA='mirela@lbmarketplace.com.br';
   const carteira={
     [CAROL]:['AVIAMENTOS SÃO PAULO','Bela Brás','Empório Baby','Golden Mind Gallery','LAB PAPER','LMFIT','LT ASSESSORIOS','MAVE ECOMMERCE','Noble Tables','Potencial Ecomm','Primor Bagss','RODAN USINAGEM','ROMA AVIAMENTOS','SS Tendencia','TOLDOS RENASCER','Yashop','Confecções Rosas','SJ Comércio'],
@@ -7224,7 +7258,7 @@ window.__migrarCarteiraClientes=async()=>{
   }
   let msg=`Pronto! ${migrados} cliente(s) migrado(s) pra 1 responsável único.`;
   if(naoAchados.length)msg+=`\n\n⚠️ ${naoAchados.length} cliente(s) NÃO encontrados na lista de divisão (nome não bateu exato) — continuam com o responsável antigo:\n${naoAchados.join(', ')}`;
-  alert(msg);
+  lbAvisar(msg);
 };
 window.__cmVoltar=()=>{
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.remove('active'));
@@ -7907,7 +7941,7 @@ window.__crmSubmitForm=async()=>{
 };
 
 window.__crmDeleteLead=async(id)=>{
-  if(!confirm('Excluir esse lead?'))return;
+  if(!await lbConfirmar('Excluir esse lead?'))return;
   const lead=crmLeads.find(l=>l.id===id);
   try{
     await log(id,lead?lead.nome:'—','exclusão de lead',`Lead excluído por ${currentUser}.`);
