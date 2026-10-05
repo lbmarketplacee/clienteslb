@@ -7452,7 +7452,7 @@ document.getElementById('prodSimAplicarBtn')?.addEventListener('click',async()=>
   try{
     const ctx=await prodAppECliente(prodSimClienteId);
     const params=new URLSearchParams({acao:'aplicar_reajuste_preco',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,simulacao:JSON.stringify(prodSimCache)});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Aplicar reajuste debug]',data);
     lbAvisar(`✓ ${data.totalAplicados} produto(s) atualizado(s).${data.totalFalhas?` ${data.totalFalhas} falharam (veja o Console).`:''}`);
@@ -7468,7 +7468,7 @@ window.__prodAjustarEstoque=async(clienteId)=>{
   try{
     const ctx=await prodAppECliente(clienteId);
     const params=new URLSearchParams({acao:'ajustar_estoque',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,item_id:itemId,novo_estoque:novoEstoque});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Ajustar estoque debug]',data);
     if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
@@ -7481,7 +7481,7 @@ window.__prodAutoPausar=async(clienteId)=>{
   try{
     const ctx=await prodAppECliente(clienteId);
     const params=new URLSearchParams({acao:'auto_pausar_sem_estoque',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
+    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
     const data=await resp.json();
     console.log('[Auto-pausar debug]',data);
     if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
