@@ -6282,7 +6282,7 @@ document.getElementById('cupomCancelarBtn')?.addEventListener('click',()=>docume
 document.getElementById('cupomSalvarBtn')?.addEventListener('click',async()=>{
   if(!cupomClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===cupomClienteAtual);
-  if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee. Conecte primeiro.');return;}
+  if(!cliente||!shopeeAppPreferido(cliente).shopId){showToast('Cliente não conectado ao ERP/Marketing da Shopee. Conecte primeiro.');return;}
   const codigo=document.getElementById('cupomCodigo').value.trim().toUpperCase();
   if(!codigo){showToast('Preenche o código do cupom.');return;}
   const btn=document.getElementById('cupomSalvarBtn');
@@ -6409,8 +6409,8 @@ window.__rodarRoboOfertas=async()=>{
   finally{if(btn){btn.disabled=false;btn.textContent='▶️ Rodar robô agora';}}
 };
 window.__sincronizarTodasOfertas=async()=>{
-  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&c.shopeeMktShopId);
-  if(!lista.length){showToast('Nenhum cliente com Marketing conectado.');return;}
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&shopeeAppPreferido(c).shopId);
+  if(!lista.length){showToast('Nenhum cliente com ERP/Marketing conectado.');return;}
   const btn=document.getElementById('sincronizarTodasBtn');
   if(btn){btn.disabled=true;btn.textContent='Sincronizando...';}
   let comOferta=0,semOferta=0,comErro=0;
@@ -6497,7 +6497,7 @@ async function criarOfertaCore(cliente,opcoes,silencioso){
 document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
   if(!ofertaClienteAtual)return;
   const cliente=clientesCache.find(c=>c.id===ofertaClienteAtual);
-  if(!cliente||!cliente.shopeeMktShopId){showToast('Cliente não conectado ao app Marketing da Shopee.');return;}
+  if(!cliente||!shopeeAppPreferido(cliente).shopId){showToast('Cliente não conectado ao ERP/Marketing da Shopee.');return;}
   const btn=document.getElementById('ofertaCriarBtn');
   btn.disabled=true;btn.textContent='Criando... (pode levar alguns segundos)';
   const opcoes={
@@ -6511,9 +6511,9 @@ document.getElementById('ofertaCriarBtn')?.addEventListener('click',async()=>{
   btn.disabled=false;btn.textContent='Criar Oferta';
 });
 window.__criarOfertasEmTodas=async()=>{
-  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&c.shopeeMktShopId);
-  if(!lista.length){showToast('Nenhum cliente com Marketing conectado.');return;}
-  if(!await lbConfirmar(`Vai tentar criar oferta relâmpago em TODOS os ${lista.length} clientes com Marketing conectado, preenchendo todos os horários disponíveis de cada um.\n\nPode demorar vários minutos (cada cliente roda um de cada vez). Continuar?`))return;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&shopeeAppPreferido(c).shopId);
+  if(!lista.length){showToast('Nenhum cliente com ERP/Marketing conectado.');return;}
+  if(!await lbConfirmar(`Vai tentar criar oferta relâmpago em TODOS os ${lista.length} clientes com ERP/Marketing conectado, preenchendo todos os horários disponíveis de cada um.\n\nPode demorar vários minutos (cada cliente roda um de cada vez). Continuar?`))return;
   const btn=document.getElementById('criarEmTodasBtn');
   if(btn){btn.disabled=true;btn.textContent='Criando em todos... (não feche a aba)';}
   const overlay=document.getElementById('ofertaEmMassaOverlay');
@@ -6978,15 +6978,15 @@ function cmRenderDescontosMp(key,elId,extrasFn){
 }
 function cmDescontoExtrasShopee(c){
   const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
-  if(!c.shopeeMktShopId){
-    return `<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">Conectar Marketing</button>`;
+  if(!shopeeAppPreferido(c).shopId){
+    return `<button class="btn btn-ghost btn-sm" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','erp')">Conectar ERP</button>`;
   }
   const ref=c.shopeeDescontoFixoId
     ?`<span class="cadastro-doc-pill ok" title="Desconto fixo marcado na Shopee">📌 ${esc(c.shopeeDescontoFixoNome||'marcado')}</span>`
     :'<span class="cadastro-doc-pill" style="font-size:10px">nenhum desconto marcado</span>';
   const auto=c.descontoAutoUltimaRenovacao?'<span class="cadastro-doc-pill ok" title="Já renovado automaticamente">🤖 auto</span>':'';
   const dup=c.shopeeDescontoFixoId?`<button class="btn btn-gold btn-sm" onclick="window.__duplicarDescontoFixo('${c.id}')">Duplicar</button>`:'';
-  return `${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__descontosLoja('${c.id}')">Descontos da loja</button>${dup}<button class="icon-btn" title="Reconectar Marketing (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','mkt')">🔄</button>`;
+  return `${ref}${auto}<button class="btn btn-ghost btn-sm" onclick="window.__descontosLoja('${c.id}')">Descontos da loja</button>${dup}<button class="icon-btn cm-ico-btn" title="Reconectar (use se der erro de token vencido)" onclick="window.__shopeeConectar('${c.id}','${nomeEsc}','${shopeeAppPreferido(c).app}')">${CM_ICO.reconectar}</button>`;
 }
 function cmRenderDescontosTodos(){
   cmRenderDescontosMp('shopee','cmDescontosShopeeLista',cmDescontoExtrasShopee);
