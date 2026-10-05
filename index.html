@@ -8299,7 +8299,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const attrs=await ler(`/categories/${cat.category_id}/attributes`)||[];
     // variação → atributo da categoria (Cor→COLOR, Tamanho→SIZE, Voltagem→VOLTAGE...) ou atributo próprio (UP permite)
     const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-    const mapVar=nome=>{if(!nome)return null;if(/^cor(es)?$/.test(norm(nome)))return attrs.some(a=>a.id==='COLOR')?'COLOR':null;if(/^tamanho/.test(norm(nome)))return attrs.some(a=>a.id==='SIZE')?'SIZE':null;return attrs.find(a=>!a.tags?.read_only&&norm(a.name)===norm(nome))?.id||null;};
+    const mapVar=nome=>{if(!nome)return null;if(/^cor(es)?$/.test(norm(nome)))return attrs.some(a=>a.id==='COLOR')?'COLOR':(attrs.find(a=>a.tags?.allow_variations&&/COLOR$/.test(a.id))?.id||null); /* luminária: Cor da estrutura */if(/^tamanho/.test(norm(nome)))return attrs.some(a=>a.id==='SIZE')?'SIZE':null;return attrs.find(a=>!a.tags?.read_only&&norm(a.name)===norm(nome))?.id||null;};
     const id1=mapVar(u.nome1),id2=mapVar(u.nome2);const idsVar=[id1,id2].filter(Boolean);
     const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
     const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_|IS_)/.test(id);
@@ -8308,6 +8308,8 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     linhaMl('ML: preenchendo a ficha técnica...');
     let ia=[];if(paraIA.length){const r=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
     const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
+    // fabricante obrigatório (ex.: caixas de embalagem) e a IA não soube → nome da loja
+    if(paraIA.some(a=>a.id==='MANUFACTURER')&&!extras.some(e=>e.id==='MANUFACTURER'))extras.push({id:'MANUFACTURER',value_name:c.nome});
     const faltaReq=paraIA.filter(a=>!ia.some(x=>x.id===a.id)).map(a=>a.nome);
     if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
     const textoReq=[];
