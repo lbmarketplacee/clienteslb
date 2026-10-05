@@ -1010,6 +1010,13 @@ textarea{resize:vertical;min-height:70px;}
 .wa-crm-row-nome.nao-lida{color:var(--text);font-weight:700}
 .wa-nao-lidas{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--green);color:#0a0a0a;font-size:10.5px;font-weight:700;vertical-align:middle}
 .wa-rr-wrap{position:relative}
+.wa-janela-aviso{display:flex;align-items:center;gap:10px;padding:8px 14px;border-top:1px solid var(--border);background:var(--gold-soft);font-size:12px;color:var(--text-dim)}
+.wa-janela-aviso span{flex:1}
+.wa-janela-aviso b{color:var(--gold)}
+.wa-tpl-modal{max-width:500px}
+.wa-tpl-lbl{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);margin:12px 0 5px}
+.wa-tpl-modal input,.wa-tpl-modal select{padding:9px 11px;font-size:13px}
+.wa-tpl-previa{background:#16324a;color:#bfe0ff;border-radius:12px;border-top-right-radius:3px;padding:10px 12px;font-size:13px;line-height:1.5;white-space:pre-wrap}
 .wa-rr-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .wa-rr-painel{position:absolute;bottom:46px;left:0;width:340px;max-width:80vw;max-height:360px;overflow:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:10px;z-index:20}
 .wa-rr-tit{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin:2px 4px 8px}
@@ -1404,6 +1411,10 @@ textarea{resize:vertical;min-height:70px;}
                 <button class="icon-act" onclick="window.__waFecharChat()" aria-label="Fechar" title="Fechar conversa">✕</button>
               </div>
               <div id="waModalMensagens" class="wa-crm-chat-body"></div>
+              <div class="wa-janela-aviso hidden" id="waJanelaAviso">
+                <span>Fora da janela de 24h: o WhatsApp só deixa enviar <b>template aprovado</b> até o lead responder.</span>
+                <button class="btn btn-gold btn-sm" onclick="window.__waTemplateAbrir()">Enviar template</button>
+              </div>
               <div class="wa-crm-chat-input">
                 <div class="wa-rr-wrap">
                   <button class="wa-rr-btn" id="waRRBtn" title="Respostas rápidas (ou digite / )" onclick="window.__waRRAlternar()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></button>
@@ -3677,15 +3688,43 @@ function waPreviewTexto(m){
   const tpl=String(m.texto||'').match(/^\[Template aprovado "([^"]+)"/);
   return tpl?`Mensagem automática · ${tpl[1].replace(/_/g,' ')}`:String(m.texto||'');
 }
+// ---- Templates aprovados (Meta) — usados pra falar com quem está fora da janela de 24h ----
+let waTemplates=null,waTemplatesCarregando=null;
+const WA_TPL_OCULTOS=['hello_world'];
+function waCarregarTemplates(){
+  if(waTemplates||waTemplatesCarregando)return waTemplatesCarregando;
+  waTemplatesCarregando=(async()=>{
+    try{
+      const r=await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'listar_templates'})});
+      const d=await r.json();
+      waTemplates=d.ok?d.templates.filter(t=>t.suportado&&!WA_TPL_OCULTOS.includes(t.nome)):[];
+      if(waConversaAtualTelefone)waAbrirConversa(waConversaAtualTelefone);
+    }catch(e){waTemplates=[];console.error('templates',e);}
+    waTemplatesCarregando=null;
+  })();
+  return waTemplatesCarregando;
+}
+function waPreencherTpl(corpo,valores){return String(corpo||'').replace(/\{\{\s*(\w+)\s*\}\}/g,(_,v)=>valores?.[v]??`{{${v}}}`);}
+// Janela de 24h: texto livre só se o lead escreveu nas últimas 24h.
+function waForaDaJanela(c){
+  const ult=[...(c?.mensagens||[])].reverse().find(m=>m.de==='lead');
+  return !ult||!ult.em||(Date.now()-new Date(ult.em).getTime())>24*3600*1000;
+}
 // Conteúdo da bolha: template vira um cartão legível (não o texto técnico); mídia ganha destaque.
 function waConteudoBolha(m){
   const t=String(m.texto||'');
   const tpl=t.match(/^\[Template aprovado "([^"]+)" enviado — (.*)\]$/);
   if(tpl){
+    const conhecido=(waTemplates||[]).find(x=>x.nome===tpl[1]);
+    if(conhecido){ // mostra o texto que o lead realmente recebeu
+      const valores=Object.fromEntries([...tpl[2].matchAll(/(\w+): "([^"]*)"/g)].map(x=>[x[1],x[2]]));
+      return `<div class="wa-tpl-tit">Template · ${esc(tpl[1].replace(/_/g,' '))}</div>${esc(waPreencherTpl(conhecido.corpo,valores))}`;
+    }
     const nomeTpl=tpl[1].replace(/_/g,' ');
     const params=[...tpl[2].matchAll(/(\w+): "([^"]*)"/g)].map(x=>`<span class="wa-tpl-param"><b>${esc(x[1].replace(/_/g,' '))}:</b> ${esc(x[2])}</span>`).join('');
     return `<div class="wa-tpl"><div class="wa-tpl-tit">Mensagem automática · ${esc(nomeTpl)}</div>${params?`<div class="wa-tpl-params">${params}</div>`:''}</div>`;
   }
+  if(m.tipo==='template')return `<div class="wa-tpl-tit">Template · ${esc(String(m.template||'').replace(/_/g,' '))}</div>${esc(t)}`;
   if(m.tipo&&m.tipo!=='text'){
     const rotulo={audio:'Ouvir',image:'Ver foto',video:'Ver vídeo',document:'Abrir documento',sticker:'Ver figurinha'}[m.tipo];
     const btn=m.midia?.id&&rotulo?`<button class="wa-midia-btn" onclick="window.__waAbrirMidia(this,'${esc(m.midia.id)}','${esc(m.tipo)}','${esc(m.midia.nome||'')}')">${rotulo}</button>`:'';
@@ -3740,7 +3779,45 @@ function waAbrirConversa(telefone){
   msgsEl.scrollTop=msgsEl.scrollHeight;
   document.getElementById('waModalAssumirBtn').textContent=conversa.modo==='humano'?'Devolver pra IA':'Assumir conversa (pausa a IA)';
   waMarcarVista(conversa);
+  document.getElementById('waJanelaAviso')?.classList.toggle('hidden',!waForaDaJanela(conversa));
+  waCarregarTemplates();
 }
+window.__waTemplateAbrir=async()=>{
+  const c=whatsappConversasCache.find(x=>x.id===waConversaAtualTelefone);if(!c)return;
+  await waCarregarTemplates();
+  if(!waTemplates?.length){lbAvisar('Nenhum template aprovado disponível.\nCrie e aprove templates no WhatsApp Manager da Meta.');return;}
+  const ov=document.createElement('div');ov.className='modal-overlay lb-dialog-overlay';
+  ov.innerHTML=`<div class="modal lb-dialog wa-tpl-modal" role="dialog" aria-modal="true">
+    <div class="lb-dialog-tit">Enviar template para ${esc(c.nome||c.telefone||c.id)}</div>
+    <label class="wa-tpl-lbl">Template</label>
+    <select id="waTplSel">${waTemplates.map((t,i)=>`<option value="${i}">${esc(t.nome.replace(/_/g,' '))} · ${esc(t.categoria==='MARKETING'?'marketing':'utilidade')}</option>`).join('')}</select>
+    <div id="waTplVars"></div>
+    <label class="wa-tpl-lbl">Prévia (o que o lead vai receber)</label>
+    <div class="wa-tpl-previa" id="waTplPrevia"></div>
+    <div class="lb-dialog-acoes"><button class="btn btn-ghost" data-r="0">Cancelar</button><button class="btn btn-gold" data-r="1" id="waTplEnviar">Enviar</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const sel=ov.querySelector('#waTplSel'),vars=ov.querySelector('#waTplVars'),previa=ov.querySelector('#waTplPrevia');
+  const sugestao={nome_lead:(c.nome||'').split(' ')[0]};
+  const valores=()=>Object.fromEntries([...vars.querySelectorAll('input')].map(i=>[i.dataset.v,i.value.trim()]));
+  const atualizar=()=>{const t=waTemplates[sel.value];previa.textContent=waPreencherTpl(t.corpo,valores());};
+  const montar=()=>{const t=waTemplates[sel.value];vars.innerHTML=t.variaveis.map(v=>`<label class="wa-tpl-lbl">${esc(v.replace(/_/g,' '))}</label><input data-v="${esc(v)}" value="${esc(sugestao[v]||'')}">`).join('');vars.querySelectorAll('input').forEach(i=>i.addEventListener('input',atualizar));atualizar();};
+  sel.addEventListener('change',montar);montar();
+  const fechar=()=>ov.remove();
+  ov.addEventListener('click',async e=>{
+    const b=e.target.closest('[data-r]');if(!b&&e.target!==ov)return;
+    if(!b||b.dataset.r==='0'){fechar();return;}
+    const t=waTemplates[sel.value],v=valores();
+    const falta=t.variaveis.find(x=>!v[x]);if(falta){showToast(`Preencha "${falta.replace(/_/g,' ')}".`);return;}
+    b.disabled=true;b.textContent='Enviando...';
+    try{
+      const r=await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'enviar_template',telefone:c.id,nome:t.nome,idioma:t.idioma,parametros:v,corpo:t.corpo})});
+      const d=await r.json();
+      if(!r.ok||!d.ok)throw new Error(d.erro||'Erro ao enviar.');
+      fechar();showToast('✓ Template enviado. A conversa ficou com você.');
+    }catch(err){b.disabled=false;b.textContent='Enviar';lbAvisar('Não foi possível enviar o template.\n'+err.message);}
+  });
+};
 // ---- Respostas rápidas (mensagens prontas da equipe) — coleção whatsappRespostasRapidas ----
 let waRR=[],waRRIniciado=false,waRRFormAberto=false;
 function waRRIniciar(){
@@ -3754,7 +3831,7 @@ function waRRRender(){
   const lista=waRR.filter(r=>!filtro||(r.titulo+' '+r.texto).toLowerCase().includes(filtro));
   el.innerHTML=`<div class="wa-rr-tit">Respostas rápidas</div>
     <div class="wa-rr-lista">${lista.map(r=>`<div class="wa-rr-item" onclick="window.__waRRUsar('${r.id}')"><div><b>${esc(r.titulo)}</b><span>${esc(r.texto)}</span></div><button class="wa-rr-del" title="Excluir" onclick="event.stopPropagation();window.__waRRExcluir('${r.id}')">×</button></div>`).join('')||'<div class="wa-rr-vazio">Nenhuma resposta ainda.</div>'}</div>
-    ${waRRFormAberto?`<div class="wa-rr-form"><input id="waRRTitulo" placeholder="Atalho (ex: preço, horário)"><textarea id="waRRTexto" rows="3" placeholder="Texto da mensagem"></textarea><div class="wa-rr-form-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__waRRForm(false)">Cancelar</button><button class="btn btn-gold btn-sm" onclick="window.__waRRSalvar()">Salvar</button></div></div>`:`<button class="wa-rr-nova" onclick="window.__waRRForm(true)">+ Nova resposta rápida</button>`}`;
+    ${waRRFormAberto?`<div class="wa-rr-form"><input id="waRRTitulo" placeholder="Atalho (ex: preço, horário)"><textarea id="waRRTexto" rows="3" placeholder="Texto da mensagem"></textarea><div class="wa-rr-form-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__waRRForm(false)">Cancelar</button><button class="btn btn-gold btn-sm" onclick="window.__waRRSalvar()">Salvar</button></div></div>`:`<button class="wa-rr-nova" onclick="window.__waRRForm(true)">+ Nova resposta rápida</button><button class="wa-rr-nova" onclick="window.__waRRAlternar(false);window.__waTemplateAbrir()">Enviar template aprovado</button>`}`;
 }
 window.__waRRAlternar=(abrir)=>{
   waRRIniciar();
@@ -3802,7 +3879,9 @@ document.getElementById('waModalEnviarBtn')?.addEventListener('click',async()=>{
     });
     const data=await resp.json();
     if(!resp.ok||data.ok===false){
-      showToast(data.erro||'Erro ao enviar mensagem.');
+      const c=whatsappConversasCache.find(x=>x.id===waConversaAtualTelefone);
+      if(waForaDaJanela(c)){if(await lbConfirmar(`Fora da janela de 24h\nO WhatsApp não deixa enviar texto livre pra quem não respondeu nas últimas 24h. Enviar um template aprovado?`,{okTxt:'Escolher template'}))window.__waTemplateAbrir();}
+      else showToast(data.erro||'Erro ao enviar mensagem.');
     }else{
       document.getElementById('waModalTexto').value='';
     }
