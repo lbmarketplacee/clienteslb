@@ -1914,12 +1914,13 @@ textarea{resize:vertical;min-height:70px;}
 
                 <div class="cm-secao cm-painel" data-cmpainel="relatorio">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
-          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><h3>Relatório Mensal — Ads x GMV</h3></div>
+          <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><h3>Relatório Mensal do Cliente</h3></div>
+          <p style="font-size:12.5px;color:var(--text-dim);margin:-4px 0 14px;line-height:1.5">Vendas do mês em cada marketplace (só pedidos válidos), comparação com o mês anterior e o que a automação fez. Gera um <b>link</b> pra mandar pro cliente, com botão de baixar PDF.</p>
           <div class="form-row" style="margin-bottom:20px">
             <div class="field"><label>Cliente</label><select id="relClienteSelect"></select></div>
             <div class="field"><label>Mês</label><input type="month" id="relMesInput"></div>
           </div>
-          <button class="btn btn-gold btn-sm" id="relGerarBtn" style="margin-bottom:20px">Gerar Relatório</button>
+          <button class="btn btn-gold btn-sm" id="relClienteBtn" style="margin-bottom:20px">Gerar relatório do cliente</button>
           <div id="relResultado"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
@@ -5325,6 +5326,42 @@ function relPreencherClientes(){
   }
 }
 
+// ===== Relatório mensal do cliente (link público com PDF) — backend lb-shopee-gmv/api/relatorio =====
+const RELATORIO_API='https://lb-shopee-gmv.vercel.app/api/relatorio';
+document.getElementById('relClienteBtn')?.addEventListener('click',async()=>{
+  const clienteId=document.getElementById('relClienteSelect').value;
+  const mes=document.getElementById('relMesInput').value;
+  const resEl=document.getElementById('relResultado');
+  const btn=document.getElementById('relClienteBtn');
+  if(!clienteId||!mes){showToast('Escolha um cliente e um mês.');return;}
+  const cliente=clientesCache.find(c=>c.id===clienteId);
+  btn.disabled=true;
+  try{
+    let d=null;
+    // Lojas grandes podem precisar de mais de uma rodada: cada mês fechado fica guardado e a próxima rodada continua.
+    for(let tentativa=1;tentativa<=4;tentativa++){
+      btn.textContent=tentativa===1?'Gerando... (até 1 minuto)':`Completando... (rodada ${tentativa})`;
+      resEl.innerHTML=`<div class="empty-state" style="padding:20px">Buscando as vendas de ${esc(cliente?.nome||'')} nos marketplaces...</div>`;
+      const r=await fetch(`${RELATORIO_API}?acao=gerar&clienteId=${encodeURIComponent(clienteId)}&mes=${mes}`,{headers:await authHeaders()});
+      d=await r.json().catch(()=>({ok:false,erro:'O servidor demorou demais. Tente de novo.'}));
+      if(!d.ok)throw new Error(d.erro||'Erro ao gerar.');
+      if(!d.dados.incompleto)break;
+    }
+    const link=`${location.origin}/relatorio.html?r=${d.token}`;
+    const x=d.dados;
+    resEl.innerHTML=`
+      ${x.incompleto?`<div class="step-alert" style="margin-bottom:12px">Ainda incompleto: ${esc((x.avisos||[]).join(' · '))}. Clique em gerar de novo em alguns minutos.</div>`:''}
+      <div class="cm-item" style="flex-wrap:wrap;gap:10px"><span class="nome">Vendido em ${esc(x.mesNome)}${x.emAndamento?' (parcial)':''}</span><b>${fmtR(x.total)}</b>${x.variacao!==null&&x.variacao!==undefined?`<span style="color:${x.variacao>=0?'var(--green)':'var(--red)'}">${x.variacao>=0?'▲':'▼'} ${Math.abs(x.variacao).toLocaleString('pt-BR')}%</span>`:''}</div>
+      ${Object.entries(x.porMarketplace).map(([n,m])=>`<div class="cm-item"><span class="nome">${esc(n)}</span><span style="color:var(--text-dim)">${m.pedidos.toLocaleString('pt-BR')} pedidos</span><b>${fmtR(m.gmv)}</b></div>`).join('')}
+      ${x.resumo?`<div class="cm-item" style="font-size:13px;line-height:1.5;color:var(--text-dim)">${esc(x.resumo)}</div>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <input type="text" readonly value="${esc(link)}" style="flex:1;min-width:240px;font-size:12.5px;padding:9px 11px" onclick="this.select()">
+        <button class="btn btn-gold btn-sm" onclick="navigator.clipboard.writeText('${esc(link)}').then(()=>showToast('✓ Link copiado. Cola no WhatsApp do cliente.'))">Copiar link</button>
+        <a class="btn btn-ghost btn-sm" href="${esc(link)}" target="_blank" rel="noopener">Abrir</a>
+      </div>`;
+  }catch(e){resEl.innerHTML=`<div class="empty-state" style="padding:20px;color:var(--red)">${esc(e.message)}</div>`;}
+  btn.disabled=false;btn.textContent='Gerar relatório do cliente';
+});
 document.getElementById('relGerarBtn')?.addEventListener('click',async()=>{
   const clienteId=document.getElementById('relClienteSelect').value;
   const mes=document.getElementById('relMesInput').value; // formato YYYY-MM

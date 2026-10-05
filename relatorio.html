@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Relatório Mensal · LB Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{--ouro:#d4a94a;--ouro-esc:#a8863c;--preto:#0a0a09;--texto:#1d1b17;--suave:#6f6a60;--linha:#e7e1d3;--fundo:#f7f4ec;--card:#fff;--verde:#2f8f5b;--vermelho:#c0453a}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--fundo);color:var(--texto);-webkit-font-smoothing:antialiased}
+  header{background:var(--preto);border-bottom:4px solid var(--ouro);color:#f3f0e8}
+  .topo{max-width:960px;margin:0 auto;padding:22px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .marca b{display:block;font-family:Oswald,sans-serif;font-size:30px;color:var(--ouro);line-height:1;letter-spacing:.02em}
+  .marca span{font-size:9px;letter-spacing:.42em;color:var(--ouro)}
+  .btn-pdf{background:var(--ouro);color:#181712;border:none;border-radius:8px;padding:10px 16px;font:600 13px Inter,sans-serif;cursor:pointer}
+  main{max-width:960px;margin:0 auto;padding:28px 20px 60px}
+  .titulo small{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ouro-esc);font-weight:600}
+  .titulo h1{font-family:Oswald,sans-serif;font-weight:600;font-size:32px;margin:6px 0 4px;letter-spacing:.01em}
+  .titulo p{margin:0;color:var(--suave);font-size:14px}
+  .resumo{margin:22px 0;background:var(--card);border:1px solid var(--linha);border-left:4px solid var(--ouro);border-radius:12px;padding:18px 20px;font-size:16px;line-height:1.6}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .kpi{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:16px}
+  .kpi label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);font-weight:600}
+  .kpi b{display:block;font-family:Oswald,sans-serif;font-weight:500;font-size:26px;margin-top:6px}
+  .kpi i{font-style:normal;font-size:12px;color:var(--suave)}
+  .sobe{color:var(--verde)} .desce{color:var(--vermelho)}
+  section{margin-top:26px}
+  h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ouro-esc);margin:0 0 12px}
+  .painel{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:6px 18px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--suave);font-weight:600;padding:12px 6px;border-bottom:1px solid var(--linha)}
+  td{padding:12px 6px;border-bottom:1px solid var(--linha)}
+  tr:last-child td{border-bottom:none}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  .grafico{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:16px;height:280px}
+  .feito{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .feito div{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:16px}
+  .feito b{font-family:Oswald,sans-serif;font-weight:500;font-size:24px;display:block}
+  .feito span{font-size:13px;color:var(--suave)}
+  .fora{margin-top:12px;font-size:13px;color:var(--suave);line-height:1.6}
+  .aviso{background:#fff7e3;border:1px solid #f0dca8;border-radius:10px;padding:12px 14px;font-size:13px;margin-top:16px}
+  .estado{padding:80px 20px;text-align:center;color:var(--suave)}
+  footer{max-width:960px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:var(--suave)}
+  @media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}.feito{grid-template-columns:1fr}.titulo h1{font-size:26px}}
+  @media print{
+    body{background:#fff}.btn-pdf{display:none}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    main{padding-top:16px}.kpi,.painel,.grafico,.feito div,.resumo{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<header><div class="topo"><div class="marca"><b>LB</b><span>MARKETPLACE</span></div><button class="btn-pdf" id="btnPdf" hidden onclick="window.print()">Baixar PDF</button></div></header>
+<main id="conteudo"><div class="estado">Carregando relatório...</div></main>
+<footer id="rodape"></footer>
+<script>
+const API='https://lb-shopee-gmv.vercel.app/api/relatorio';
+const brl=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=v=>Number(v||0).toLocaleString('pt-BR');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=v=>v===null||v===undefined?'':`<span class="${v>=0?'sobe':'desce'}">${v>=0?'▲':'▼'} ${Math.abs(v).toLocaleString('pt-BR')}%</span>`;
+function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="estado">${esc(msg)}</div>`;}
+(async()=>{
+  const codigo=new URLSearchParams(location.search).get('r');
+  if(!codigo)return erro('Link de relatório inválido.');
+  let d;
+  try{const r=await fetch(`${API}?r=${encodeURIComponent(codigo)}`);const j=await r.json();if(!j.ok)return erro(j.erro||'Relatório não encontrado.');d=j.dados;}
+  catch(e){return erro('Não foi possível carregar o relatório agora. Tente de novo em instantes.');}
+  document.title=`${d.cliente} · Relatório de ${d.mesNome} · LB Marketplace`;
+  const mps=Object.entries(d.porMarketplace||{}).sort((a,b)=>b[1].gmv-a[1].gmv);
+  const a=d.automacao||{};const fora=Object.entries(a.produtosForaPorMotivo||{});
+  const linhasMp=mps.map(([n,m])=>`<tr><td><b>${esc(n)}</b></td><td class="n">${brl(m.gmv)}</td><td class="n">${num(m.pedidos)}</td><td class="n">${brl(m.ticketMedio)}</td><td class="n">${m.anterior?brl(m.anterior.gmv):'—'}</td><td class="n">${pct(m.variacao)||'—'}</td></tr>`).join('');
+  document.getElementById('conteudo').innerHTML=`
+    <div class="titulo"><small>Relatório mensal${d.emAndamento?' · parcial':''}</small><h1>${esc(d.cliente)}</h1><p>${esc(d.mesNome.charAt(0).toUpperCase()+d.mesNome.slice(1))}${d.emAndamento?' (até hoje)':''}</p></div>
+    ${d.resumo?`<div class="resumo">${esc(d.resumo)}</div>`:''}
+    ${d.incompleto?`<div class="aviso">Este relatório ainda está sendo atualizado — alguns números podem mudar.</div>`:''}
+    <div class="kpis">
+      <div class="kpi"><label>Vendido no mês</label><b>${brl(d.total)}</b>${d.variacao!==null&&d.variacao!==undefined?`<i>${pct(d.variacao)} vs ${esc(d.mesAnteriorNome)}</i>`:''}</div>
+      <div class="kpi"><label>Pedidos</label><b>${num(d.pedidos)}</b></div>
+      <div class="kpi"><label>Ticket médio</label><b>${brl(d.ticketMedio)}</b></div>
+      <div class="kpi"><label>Mês anterior</label><b>${d.totalAnterior!==null&&d.totalAnterior!==undefined?brl(d.totalAnterior):'—'}</b>${d.comparacaoConsidera?`<i>considera ${esc(d.comparacaoConsidera.join(', '))}</i>`:''}</div>
+    </div>
+    ${mps.length?`<section><h2>Vendas por marketplace</h2><div class="painel"><table><thead><tr><th>Marketplace</th><th class="n">Vendido</th><th class="n">Pedidos</th><th class="n">Ticket médio</th><th class="n">Mês anterior</th><th class="n">Variação</th></tr></thead><tbody>${linhasMp}</tbody></table></div></section>`:''}
+    ${Object.keys(d.porDia||{}).length?`<section><h2>Vendas por dia</h2><div class="grafico"><canvas id="graf"></canvas></div></section>`:''}
+    <section><h2>O que a LB fez por você</h2>
+      <div class="feito">
+        <div><b>${num(a.ofertasRelampago)}</b><span>ofertas relâmpago mantidas no ar automaticamente</span></div>
+        <div><b>${num(a.descontosRenovados)}</b><span>descontos fixos renovados sem interrupção</span></div>
+      </div>
+      ${fora.length?`<div class="fora">Produtos que ficaram de fora das ofertas: ${fora.map(([m,q])=>`${num(q)} por ${esc(m)}`).join(' · ')}.</div>`:''}
+    </section>`;
+  document.getElementById('rodape').textContent=`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} · LB Marketplace Assessoria · Vendas consideram apenas pedidos válidos (cancelados e não pagos ficam de fora).`;
+  document.getElementById('btnPdf').hidden=false;
+  const dias=Object.keys(d.porDia||{}).sort();
+  if(dias.length&&window.Chart){
+    new Chart(document.getElementById('graf'),{type:'bar',data:{labels:dias.map(x=>x.slice(8)),datasets:[{label:'Vendido',data:dias.map(x=>d.porDia[x]),backgroundColor:'#d4a94a',borderRadius:4,maxBarThickness:22}]},
+      options:{maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:t=>`Dia ${t[0].label}`,label:t=>brl(t.raw)}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'R$ '+Number(v).toLocaleString('pt-BR')},grid:{color:'#eee7d6'}}}}});
+  }
+})();
+</script>
+</body>
+</html>
