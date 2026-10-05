@@ -50,6 +50,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--gold-dim);}
 .btn-ghost:hover{border-color:var(--gold-dim);color:var(--gold);}
 .btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);}
 .lb-dialog-overlay{z-index:200}
+.cob-resumo{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
+.cob-resumo div{flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:11.5px;color:var(--text-dim)}
+.cob-resumo b{display:block;font-family:'Oswald',sans-serif;font-size:20px;font-weight:500;color:var(--text)}
+.cob-resumo b.ok{color:var(--green)}.cob-resumo b.atr{color:var(--red)}.cob-resumo b.aviso{color:var(--gold)}
+.cob-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--text-dim)}
+.cob-box>b{color:var(--text);font-size:12.5px}
 .brd-mes{display:inline-flex;align-items:center;gap:6px;cursor:default}
 .brd-mes button{background:none;border:none;color:inherit;font-size:16px;line-height:1;padding:0 4px;cursor:pointer;opacity:.8}
 .brd-mes button:disabled{opacity:.25;cursor:default}
@@ -1242,6 +1248,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="summary-card metric-card glow-purple"><div class="sc-top"><div class="sc-icon purple metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saldo Total<br>em Ads</div></div></div><div class="sc-value green metric-value" id="sumSaldo">R$ 0</div><svg class="sc-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,18 15,15 30,17 45,10 60,12 75,5 100,3" fill="none" stroke="var(--green)" stroke-width="2"/></svg></div>
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">GMV Total<br>Acumulado</div></div></div><div class="sc-value green metric-value" id="sumGmv">R$ 0</div><div class="sc-foot" id="sumGmvFoot">&nbsp;</div></div>
         </div>
+        <div class="panel hidden" id="dashCobrancas" style="margin-top:18px"></div>
         <div class="dash-row">
           <div class="panel">
             <div class="panel-head"><h3>GMV Acumulado</h3><span class="p-sub">Evolução mensal</span></div>
@@ -2337,6 +2344,7 @@ textarea{resize:vertical;min-height:70px;}
         <label class="cm-switch" style="flex:2;margin-bottom:14px"><input type="checkbox" id="fUpseller"><span class="cm-switch-trilho"></span> UpSeller absorvido pela LB</label>
         <div class="field" style="flex:1"><label>Valor UpSeller (R$/mês)</label><input type="text" inputmode="decimal" id="fUpsellerValor" value="150,00"></div>
       </div>
+      <div id="asaasClienteBox" class="hidden" style="margin:14px 0 4px"></div>
       <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">Gerar Contrato (.pdf)</button>
       <div class="field"><label>Marketplaces</label><div class="chip-toggle-group">
         <button type="button" class="chip-toggle" data-val="shopee">Shopee</button>
@@ -2971,7 +2979,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();ttGmvRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
+function renderAll(){if(isLincoln())renderDashCobrancas();renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();ttGmvRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
 function renderSummary(){let da=0,ca=0,st=0;const clientesAtivos=clientesCache.filter(c=>c.ativo!==false);clientesAtivos.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesAtivos.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
@@ -3025,7 +3033,7 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c&&c.mensalidade?lbFmtValorBR(c.mensalidade):'';document.getElementById('fWhatsappContrato').value=c?(c.whatsappContrato||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+function openClientModal(c){setTimeout(()=>renderAsaasCliente(c),0);window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c&&c.mensalidade?lbFmtValorBR(c.mensalidade):'';document.getElementById('fWhatsappContrato').value=c?(c.whatsappContrato||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
 const docs=c?.documentosCadastro;
 const fDocsWrap=document.getElementById('fDocumentosCadastroWrap'),fDocsLista=document.getElementById('fDocumentosCadastroLista');
 if(docs&&(docs.docFrente||docs.docVerso||docs.docCnpj)){
@@ -5405,6 +5413,88 @@ document.getElementById('relGerarBtn')?.addEventListener('click',async()=>{
   }catch(e){console.error(e);resEl.innerHTML=`<div class="empty-state" style="padding:20px">Erro ao gerar relatório: ${e.message}</div>`;}
 });
 
+
+// ===== Cobranças (Asaas) — só Lincoln. Backend: lb-asaas-rh (situacao_cobrancas, criar_cliente_assinatura, atualizar_valor_assinatura)
+let asaasSituacao=null,asaasSituacaoEm=0,asaasCarregando=null;
+async function asaasCarregar(forcar){
+  if(!isLincoln())return null;
+  if(!forcar&&asaasSituacao&&Date.now()-asaasSituacaoEm<5*60*1000)return asaasSituacao;
+  if(asaasCarregando)return asaasCarregando;
+  asaasCarregando=(async()=>{
+    try{const r=await fetch(`${ASAAS_API}?acao=situacao_cobrancas`,{headers:await authHeaders()});const d=await r.json();if(d.ok){asaasSituacao=d.porCliente;asaasSituacaoEm=Date.now();}}
+    catch(e){console.error('asaas',e);}
+    asaasCarregando=null;return asaasSituacao;
+  })();
+  return asaasCarregando;
+}
+const asaasMensal=(v,ciclo)=>Math.round(Number(v)*({WEEKLY:52/12,BIWEEKLY:2,MONTHLY:1}[ciclo]??1)*100)/100;
+const fmtDataBR=iso=>iso?iso.split('-').reverse().join('/'):'—';
+async function renderDashCobrancas(){
+  const el=document.getElementById('dashCobrancas');if(!el)return;
+  if(!isLincoln()){el.classList.add('hidden');return;}
+  el.classList.remove('hidden');
+  el.innerHTML='<div class="panel-head"><h3>Cobranças</h3><span class="p-sub">Asaas</span></div><div class="empty-state" style="padding:14px">Carregando...</div>';
+  const sit=await asaasCarregar();
+  if(!sit){el.innerHTML='<div class="panel-head"><h3>Cobranças</h3><span class="p-sub">Asaas</span></div><div class="empty-state" style="padding:14px">Não foi possível ler o Asaas agora.</div>';return;}
+  const cli=(clientesCache||[]).filter(c=>c.ativo!==false&&c.asaasCustomerId);
+  const linhas=cli.map(c=>({c,s:sit[c.asaasCustomerId]}));
+  const atr=linhas.filter(x=>x.s?.situacao==='atrasado').sort((a,b)=>b.s.valorAtrasado-a.s.valorAtrasado);
+  const emDia=linhas.filter(x=>x.s?.situacao==='em_dia').length,pend=linhas.filter(x=>!x.s||x.s.situacao==='pendente').length;
+  const semAssin=(clientesCache||[]).filter(c=>c.ativo!==false&&!c.asaasSubscriptionId&&!c.gratuito&&!c.cobradoJuntoCom&&Number(c.mensalidade)>0);
+  const totalAtr=atr.reduce((t,x)=>t+x.s.valorAtrasado,0);
+  el.innerHTML=`<div class="panel-head"><h3>Cobranças</h3><span class="p-sub">Asaas · atualizado ${new Date(asaasSituacaoEm).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} <a href="#" onclick="event.preventDefault();asaasCarregar(true).then(renderDashCobrancas)" style="color:var(--gold)">atualizar</a></span></div>
+    <div class="cob-resumo"><div><b class="ok">${emDia}</b>em dia</div><div><b>${pend}</b>pendentes</div><div><b class="atr">${atr.length}</b>atrasados</div><div><b class="atr">${fmtR(totalAtr)}</b>em atraso</div>${semAssin.length?`<div title="${esc(semAssin.map(c=>c.nome).join(', '))}"><b class="aviso">${semAssin.length}</b>sem cobrança no Asaas</div>`:''}</div>
+    ${atr.map(({c,s})=>`<div class="cm-item" style="flex-wrap:wrap;gap:10px"><span class="nome">${esc(c.nome)}<div style="font-size:11px;color:var(--text-dim);font-weight:400">${s.atrasadas.length} cobrança(s) · venc. ${s.atrasadas.map(a=>fmtDataBR(a.vencimento)).join(', ')} · último pagamento ${s.ultimoPagamento?fmtDataBR(s.ultimoPagamento.data):'nenhum na janela'}</div></span><b style="color:var(--red)">${fmtR(s.valorAtrasado)}</b>${s.atrasadas[0]?.link?`<a class="btn btn-ghost btn-sm" href="${esc(s.atrasadas[0].link)}" target="_blank" rel="noopener">Boleto</a>`:''}</div>`).join('')}
+    ${semAssin.length?`<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Sem cobrança no Asaas: ${esc(semAssin.map(c=>`${c.nome} (${fmtR(c.mensalidade)})`).join(' · '))}</div>`:''}`;
+}
+window.asaasCarregar=asaasCarregar;window.renderDashCobrancas=renderDashCobrancas;
+async function renderAsaasCliente(c){
+  const el=document.getElementById('asaasClienteBox');if(!el)return;
+  if(!isLincoln()||!c){el.classList.add('hidden');el.innerHTML='';return;}
+  el.classList.remove('hidden');
+  if(c.gratuito||c.cobradoJuntoCom){el.innerHTML=`<div class="cob-box"><b>Cobrança (Asaas)</b><span>${c.gratuito?'Cliente gratuito — sem cobrança.':`Cobrado junto com ${esc(c.cobradoJuntoCom)}.`}</span></div>`;return;}
+  if(!c.asaasSubscriptionId){
+    el.innerHTML=`<div class="cob-box"><b>Cobrança (Asaas)</b><span>Sem assinatura no Asaas.</span><button type="button" class="btn btn-gold btn-sm" onclick="window.__asaasCriar('${c.id}')">Criar cobrança no Asaas</button></div>`;return;
+  }
+  el.innerHTML=`<div class="cob-box"><b>Cobrança (Asaas)</b><span>Carregando...</span></div>`;
+  const sit=await asaasCarregar();const s=sit?.[c.asaasCustomerId];
+  const mensalAsaas=asaasMensal(c.asaasValor,c.asaasCiclo);
+  const diverge=Number(c.mensalidade)>0&&c.asaasCiclo==='MONTHLY'&&Math.abs(mensalAsaas-Number(c.mensalidade))>0.5;
+  const pill=s?.situacao==='atrasado'?`<span class="tt-status-pill atrasada">Atrasado ${fmtR(s.valorAtrasado)}</span>`:s?.situacao==='em_dia'?'<span class="cadastro-doc-pill ok">Em dia</span>':'<span class="cadastro-doc-pill">Pendente</span>';
+  el.innerHTML=`<div class="cob-box"><b>Cobrança (Asaas)</b>${pill}
+    <span>Assinatura ${fmtR(c.asaasValor)} ${c.asaasCiclo==='MONTHLY'?'/mês':c.asaasCiclo==='BIWEEKLY'?'a cada 15 dias':c.asaasCiclo==='WEEKLY'?'/semana':esc(c.asaasCiclo||'')}${s?.proxima?` · próxima ${fmtDataBR(s.proxima.vencimento)}`:''}${s?.ultimoPagamento?` · último pgto ${fmtDataBR(s.ultimoPagamento.data)}`:''}</span>
+    ${s?.proxima?.link?`<a class="btn btn-ghost btn-sm" href="${esc(s.proxima.link)}" target="_blank" rel="noopener">Boleto</a>`:''}
+    ${diverge?`<button type="button" class="btn btn-gold btn-sm" onclick="window.__asaasAtualizarValor('${c.id}')">Atualizar Asaas para ${fmtR(c.mensalidade)}</button>`:''}</div>`;
+}
+window.__asaasCriar=async(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
+  const doc=String(c.cnpjCpf||'').replace(/\D/g,'');
+  const falta=[!(doc.length===11||doc.length===14)&&'CPF/CNPJ',!(Number(c.mensalidade)>=100)&&'mensalidade',!(Number(c.diaVencimento)>=1)&&'dia de vencimento'].filter(Boolean);
+  if(falta.length){lbAvisar(`Falta preencher no cadastro\n${falta.join(', ')} (e salvar o cliente).`);return;}
+  if(!await lbConfirmar(`Criar cobrança no Asaas\nCliente: ${c.nome}\nCPF/CNPJ: ${c.cnpjCpf}\nMensalidade: ${fmtR(c.mensalidade)} por mês, sem data de fim\nVencimento: todo dia ${String(c.diaVencimento).padStart(2,'0')}\nForma de pagamento: o cliente escolhe (boleto, PIX ou cartão)\nO próprio Asaas envia a cobrança pro cliente.`,{okTxt:'Criar no Asaas'}))return;
+  try{
+    const r=await fetch(ASAAS_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'criar_cliente_assinatura',nome:c.nome,cpfCnpj:c.cnpjCpf,email:c.email||'',telefone:c.whatsappContrato||'',valor:Number(c.mensalidade),diaVencimento:Number(c.diaVencimento),clienteId:c.id})});
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'Erro ao criar.');
+    await updateDoc(doc(db,'clientes',c.id),{asaasCustomerId:d.customer,asaasSubscriptionId:d.assinatura,asaasValor:d.valor,asaasCiclo:d.ciclo||'MONTHLY',asaasFormaPagamento:'UNDEFINED',asaasVinculadoEm:Date.now()});
+    await log(c.id,c.nome,'cobrança criada no Asaas',`Assinatura ${d.assinatura}: ${fmtR(d.valor)}/mês, 1º vencimento ${fmtDataBR(d.primeiroVencimento)}${d.reaproveitado?' (cliente já existia no Asaas)':''}.`);
+    lbAvisar(`Cobrança criada no Asaas\n${c.nome}: ${fmtR(d.valor)}/mês, primeiro vencimento em ${fmtDataBR(d.primeiroVencimento)}.`);
+    asaasSituacaoEm=0;
+  }catch(e){lbAvisar('Não foi possível criar no Asaas\n'+e.message);}
+};
+window.__asaasAtualizarValor=async(clienteId)=>{
+  const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
+  if(!await lbConfirmar(`Atualizar valor no Asaas\n${c.nome}: de ${fmtR(c.asaasValor)} para ${fmtR(c.mensalidade)} por mês.\nVale pras próximas cobranças e pras pendentes.`,{okTxt:'Atualizar'}))return;
+  try{
+    const r=await fetch(ASAAS_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'atualizar_valor_assinatura',assinaturaId:c.asaasSubscriptionId,valor:Number(c.mensalidade)})});
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'Erro ao atualizar.');
+    await updateDoc(doc(db,'clientes',c.id),{asaasValor:d.valor});
+    await log(c.id,c.nome,'valor atualizado no Asaas',`Assinatura ${c.asaasSubscriptionId}: ${fmtR(c.asaasValor)} → ${fmtR(d.valor)}.`);
+    lbAvisar(`Valor atualizado no Asaas\n${c.nome}: ${fmtR(d.valor)}/mês.`);
+    asaasSituacaoEm=0;
+  }catch(e){lbAvisar('Não foi possível atualizar no Asaas\n'+e.message);}
+};
 
 // ===== Contrato (PDF) — valores em formato brasileiro, conferência antes de gerar =====
 // "2.000" num campo numérico virava 2 (contrato de R$ 2,00). Agora o campo é texto e este parser entende BR.
