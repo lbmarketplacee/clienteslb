@@ -8160,7 +8160,7 @@ function dirShopeeRender(){
     </div>
     <div id="dirShPrecoTxt" style="font-size:13px;color:var(--text-dim);margin:-4px 0 10px"></div>
     <div class="form-row">
-      <div class="field"><label>Estoque por variação</label><input type="number" id="dirShEst" value="10" min="0"></div>
+      <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
       <div class="field"><label>SKU (base)</label><input type="text" id="dirShSku" value="${esc(skuSug)}"></div>
       <div class="field"><label>Peso (kg)</label><input type="text" id="dirShPeso" value="0,5"></div>
       <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" value="25 x 35 x 5"></div>
@@ -8188,6 +8188,7 @@ window.__dirShCriar=async()=>{
   if(falta.length){lbAvisar('Falta preencher\n'+falta.join(', '));return;}
   if(sel.length>(u.guia?8:9)){lbAvisar(`Máximo de ${u.guia?8:9} fotos${u.guia?' (a guia de tamanhos é a 9ª)':''}.`);return;}
   const est=Math.max(0,parseInt(document.getElementById('dirShEst').value)||0);
+  if(est<50&&!await lbConfirmar(`Estoque abaixo de 50 por variação (${est})\nCom menos de 50 o produto pode ficar fora da oferta relâmpago. Só use se a cliente não tiver 50.`,{okTxt:'Continuar assim'}))return;
   const nVar=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
   if(!await lbConfirmar(`Criar anúncio OCULTO na Shopee\nLoja: ${c.nome}\nTítulo: ${u.titulo}\nPreço cheio ${fmtR(precos.cheio)} · venda ${fmtR(precos.venda)} (no desconto fixo, depois de publicar)\n${nVar} variação(ões) com ${est} un. cada\n${sel.length+(u.guia?1:0)} fotos · marca Malaysia Collection\nNada vai pro ar ainda: você confere e publica no próximo passo.`,{okTxt:'Criar oculto'}))return;
   btn.disabled=true;const passo=t=>{st.innerHTML=t;};
