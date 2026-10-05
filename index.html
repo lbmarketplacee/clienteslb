@@ -50,6 +50,9 @@ input:focus,textarea:focus,select:focus{border-color:var(--gold-dim);}
 .btn-ghost:hover{border-color:var(--gold-dim);color:var(--gold);}
 .btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);}
 .lb-dialog-overlay{z-index:200}
+.brd-mes{display:inline-flex;align-items:center;gap:6px;cursor:default}
+.brd-mes button{background:none;border:none;color:inherit;font-size:16px;line-height:1;padding:0 4px;cursor:pointer;opacity:.8}
+.brd-mes button:disabled{opacity:.25;cursor:default}
 .lb-dialog{max-width:460px;padding:24px 24px 18px}
 .lb-dialog-tit{font-size:16px;font-weight:600;margin-bottom:10px;color:var(--text)}
 .lb-dialog-txt{font-size:13.5px;line-height:1.55;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;max-height:55vh;overflow-y:auto}
@@ -7554,8 +7557,14 @@ BRD_DATA.comercial.gauges=[{key:'taxa_agendamento',label:'Taxa de Agendamento',m
 let brdLogOpen={marketing:false,comercial:false};
 let brdSaveTimer={};
 
-function brdTodayStr(){return new Date().toISOString().slice(0,10);}
-function brdSumHistory(boardKey,field){return BRD_DATA[boardKey].history.reduce((acc,e)=>acc+(Number(e[field])||0),0);}
+// Data local (antes usava UTC: depois das 21h o lançamento caía no dia seguinte).
+function brdTodayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+// Mês exibido no painel (as metas são mensais; antes somava todos os lançamentos desde sempre).
+let brdMes=brdTodayStr().slice(0,7);
+function brdMesLabel(m){const [a,mm]=m.split('-').map(Number);const t=new Date(a,mm-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(' de ',' ');return t.charAt(0).toUpperCase()+t.slice(1);}
+function brdDoMes(boardKey){return BRD_DATA[boardKey].history.filter(e=>String(e.date||'').startsWith(brdMes));}
+function brdSumHistory(boardKey,field){return brdDoMes(boardKey).reduce((acc,e)=>acc+(Number(e[field])||0),0);}
+window.brdMudarMes=function(delta){const [a,m]=brdMes.split('-').map(Number);const d=new Date(a,m-1+delta,1);brdMes=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;brdRecompute();brdRenderBoard('marketing');brdRenderBoard('comercial');};
 function brdFindRow(boardKey,rowKey){return BRD_DATA[boardKey].rows.find(r=>r.key===rowKey);}
 
 function brdRecompute(){
@@ -7663,7 +7672,7 @@ function brdRenderBoard(key){
 
   const rawFieldsHtml=BRD_RAW_FIELDS[key].map(f=>`<div class="brd-field"><label>${f.label}</label><input type="text" inputmode="decimal" id="brd-input-${key}-${f.key}" placeholder="0"></div>`).join('');
 
-  const historyRows=[...board.history].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  const historyRows=[...brdDoMes(key)].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
   const historyHtml=historyRows.length?historyRows.map(e=>{
     const parts=BRD_RAW_FIELDS[key].map(f=>{const val=f.type==='currency'?BRD_FORMATTERS.currency(e[f.key]):BRD_FORMATTERS.number(e[f.key]);return `${f.label.split(' ')[0]}: ${val}`;}).join(', ');
     const [y,m,d]=e.date.split('-');
@@ -7679,7 +7688,7 @@ function brdRenderBoard(key){
           <div class="brd-title-block"><div class="brd-eyebrow">${board.eyebrow}</div><h1>Meta &nbsp;vs&nbsp; Realizado</h1></div>
         </div>
         <div class="brd-head-actions">
-          <div class="brd-period" contenteditable="true" spellcheck="false" data-board="${key}" onblur="brdOnPeriodEdit(this)">${board.period}</div>
+          <div class="brd-period brd-mes"><button onclick="brdMudarMes(-1)" title="Mês anterior">‹</button><span>${brdMesLabel(brdMes)}</span><button onclick="brdMudarMes(1)" title="Próximo mês" ${brdMes>=brdTodayStr().slice(0,7)?'disabled':''}>›</button></div>
           <button class="brd-btn-log ${brdLogOpen[key]?'on':''}" onclick="brdToggleLog('${key}')">${brdLogOpen[key]?'Fechar':'+ Lançar dados de hoje'}</button>
         </div>
       </div>
