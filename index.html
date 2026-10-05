@@ -951,8 +951,14 @@ textarea{resize:vertical;min-height:70px;}
 .wa-crm-chat-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:13.5px;text-align:center;padding:20px}
 .wa-crm-chat-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg-card)}
 .wa-crm-chat-header-info{flex:1;min-width:0}
-.wa-crm-chat-nome{font-weight:600;font-size:14px}
-.wa-crm-chat-sub{font-size:12px;color:var(--text-dim)}
+.wa-crm-chat-nome{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-crm-chat-sub{font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-tpl{display:flex;flex-direction:column;gap:6px}
+.wa-tpl-tit{font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.85}
+.wa-tpl-params{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}
+.wa-tpl-param b{font-weight:600;opacity:.75}
+.wa-midia{font-weight:600}
+.wa-midia-dica{font-size:11px;opacity:.7;margin-top:3px}
 .wa-crm-chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:2px}
 .wa-crm-date-divider{align-self:center;background:var(--bg-card);color:var(--text-dim);font-size:11px;padding:3px 12px;border-radius:10px;margin:10px 0;border:1px solid var(--border)}
 .wa-crm-bubble-row{display:flex;flex-direction:column;margin-bottom:2px;max-width:72%}
@@ -3519,7 +3525,7 @@ function whatsappRenderizarLista(){
           <span class="wa-crm-row-nome">${esc(c.nome||c.telefone||c.id)}</span>
           <span class="wa-crm-row-hora">${waFmtHoraLista(ultima?.em)}</span>
         </div>
-        <div class="wa-crm-row-preview">${vistoLista}${esc(prefixo+(ultima?ultima.texto:''))}</div>
+        <div class="wa-crm-row-preview">${vistoLista}${esc(prefixo+waPreviewTexto(ultima))}</div>
         <div class="wa-crm-row-tags">
           <span class="wa-crm-tag${pendente?' pendente':''}">${labelModo[c.modo]||c.modo}</span>
           ${c.qualificacao?`<span class="wa-crm-tag auto">${labelQualif[c.qualificacao]||c.qualificacao}</span>`:''}
@@ -3531,6 +3537,26 @@ function whatsappRenderizarLista(){
 window.__waAbrirConversa=(telefone)=>{waConversaAtualTelefone=telefone;waAbrirConversa(telefone);document.getElementById('waChatEmpty').style.display='none';const ativa=document.getElementById('waChatAtiva');ativa.style.display='flex';ativa.classList.remove('hidden');whatsappRenderizarLista();};
 window.__waFecharChat=()=>{waConversaAtualTelefone=null;document.getElementById('waChatAtiva').style.display='none';document.getElementById('waChatEmpty').style.display='flex';whatsappRenderizarLista();};
 window.__waSalvarQualificacaoAtiva=(valor)=>{if(waConversaAtualTelefone)window.__waSalvarQualificacao(waConversaAtualTelefone,valor);};
+function waPreviewTexto(m){
+  if(!m)return'';
+  const tpl=String(m.texto||'').match(/^\[Template aprovado "([^"]+)"/);
+  return tpl?`Mensagem automática · ${tpl[1].replace(/_/g,' ')}`:String(m.texto||'');
+}
+// Conteúdo da bolha: template vira um cartão legível (não o texto técnico); mídia ganha destaque.
+function waConteudoBolha(m){
+  const t=String(m.texto||'');
+  const tpl=t.match(/^\[Template aprovado "([^"]+)" enviado — (.*)\]$/);
+  if(tpl){
+    const nomeTpl=tpl[1].replace(/_/g,' ');
+    const params=[...tpl[2].matchAll(/(\w+): "([^"]*)"/g)].map(x=>`<span class="wa-tpl-param"><b>${esc(x[1].replace(/_/g,' '))}:</b> ${esc(x[2])}</span>`).join('');
+    return `<div class="wa-tpl"><div class="wa-tpl-tit">Mensagem automática · ${esc(nomeTpl)}</div>${params?`<div class="wa-tpl-params">${params}</div>`:''}</div>`;
+  }
+  if(m.tipo&&m.tipo!=='text'){
+    const extra=m.tipo==='audio'||m.tipo==='image'||m.tipo==='video'||m.tipo==='document'?'<div class="wa-midia-dica">Abra no WhatsApp do celular pra ver o conteúdo.</div>':'';
+    return `<div class="wa-midia">${esc(t)}</div>${extra}`;
+  }
+  return esc(t);
+}
 function waAbrirConversa(telefone){
   const conversa=whatsappConversasCache.find(c=>c.id===telefone);
   if(!conversa)return;
@@ -3554,7 +3580,7 @@ function waAbrirConversa(telefone){
     const visto=!deLead?waSeloVisto(m.status):'';
     html+=`<div class="wa-crm-bubble-row ${deLead?'left':'right'}">
       ${rotulo?`<span class="wa-crm-bubble-label">${rotulo}</span>`:''}
-      <div class="wa-crm-bubble ${esc(m.de||'lead')}">${esc(m.texto)}</div>
+      <div class="wa-crm-bubble ${esc(m.de||'lead')}">${waConteudoBolha(m)}</div>
       <span class="wa-crm-bubble-hora">${waFmtHoraCurta(m.em)}${visto}</span>
     </div>`;
   });
@@ -3569,7 +3595,7 @@ document.getElementById('waModalEnviarBtn')?.addEventListener('click',async()=>{
   btn.disabled=true;
   try{
     const resp=await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},
       body:JSON.stringify({acao:'enviar_mensagem',telefone:waConversaAtualTelefone,texto})
     });
     const data=await resp.json();
@@ -3586,10 +3612,11 @@ document.getElementById('waModalAssumirBtn')?.addEventListener('click',async()=>
   const conversa=whatsappConversasCache.find(c=>c.id===waConversaAtualTelefone);
   const novoModo=conversa?.modo==='humano'?'auto':'humano';
   try{
-    await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{
+      method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},
       body:JSON.stringify({acao:'definir_modo',telefone:waConversaAtualTelefone,modo:novoModo})
     });
+    if(!r.ok){const d=await r.json().catch(()=>({}));showToast(d.erro||'Erro ao mudar o modo.');return;}
     showToast(novoModo==='humano'?'✓ Você assumiu a conversa.':'✓ Devolvido pra IA.');
   }catch(e){showToast('Erro ao mudar o modo.');}
 });
@@ -8226,7 +8253,7 @@ async function whatsappTrocarCodePorToken(code) {
   try {
     const resp = await fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...await authHeaders() },
       body: JSON.stringify({ code })
     });
 
