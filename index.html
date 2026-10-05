@@ -761,6 +761,17 @@ textarea{resize:vertical;min-height:70px;}
 .cm-tool-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;display:flex;gap:14px;align-items:flex-start;}
 .cm-tool-card:hover{border-color:var(--gold-dim);transform:translateY(-2px);}
 .cm-tool-card.active{border-color:var(--gold);background:var(--gold-soft);}
+.cm-card-destaque{grid-column:1/-1;align-items:center;padding:24px 26px;border-color:var(--gold-dim);background:linear-gradient(120deg,rgba(201,162,77,.18) 0%,rgba(201,162,77,.05) 45%,var(--bg-card) 100%);position:relative;overflow:hidden}
+.cm-card-destaque::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,77,.22),transparent 70%);pointer-events:none}
+.cm-card-destaque .cm-tool-titulo{font-size:22px}
+.cm-card-destaque .cm-tool-desc{max-width:720px}
+.cm-destaque-ico{width:56px!important;height:56px!important;border-radius:16px!important;background:var(--gold)!important;color:#111!important;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.cm-destaque-tags{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.cm-destaque-seta{margin-left:auto;font-size:26px;color:var(--gold);padding-left:12px}
+.cp-plat{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.cp-plat label{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:600}
+.cp-plat label:has(input:checked){border-color:var(--gold);background:var(--gold-soft)}
+@media (max-width:640px){.cm-card-destaque{flex-wrap:wrap}.cm-destaque-seta{display:none}}
 .cm-tool-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;font-size:20px;}
 .cm-tool-body{flex:1;min-width:0;}
 .cm-tool-titulo{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:6px;}
@@ -1912,6 +1923,7 @@ textarea{resize:vertical;min-height:70px;}
         </div>
 
         <div class="cm-card-grid" id="cmCardGrid">
+          <div class="cm-tool-card cm-card-destaque hidden" data-cmtab="criarprodutos" id="cmCardCriarProdutos"><div class="cm-tool-ico cm-destaque-ico"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/><path d="M17 3.5v5M14.5 6h5"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Criar Produtos</div><div class="cm-destaque-tags"><span class="cm-tool-tag">Shopee</span><span class="cm-tool-tag">Mercado Livre</span><span class="cm-tool-tag ia">Fotos e textos com IA</span></div><div class="cm-tool-desc">Da foto ao anúncio no ar: fotos, título e descrição pela Central Criativa, preço no padrão LB, guia de tamanhos, desconto fixo e Ads — nas duas plataformas de uma vez ou em cada uma.</div></div><div class="cm-destaque-seta">→</div></div>
           <div class="cm-tool-card" data-cmtab="shopee"><div class="cm-tool-ico" style="background:#ee4d2d1f"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="#ee4d2d" d="M19.5 7.5h-2.6C16.7 5 14.6 3.2 12 3.2S7.3 5 7.1 7.5H4.5c-.5 0-.8.4-.8.8l-.7 10.8c-.1 1.6 1.1 2.9 2.7 2.9h12.6c1.6 0 2.8-1.3 2.7-2.9l-.7-10.8c0-.4-.3-.8-.8-.8zM12 4.9c1.6 0 2.9 1.1 3.1 2.6H8.9c.2-1.5 1.5-2.6 3.1-2.6z"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="700" font-family="Arial,sans-serif">S</text></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Shopee</div><span class="cm-tool-tag mkt">Marketplace</span><div class="cm-tool-desc">GMV, oferta relâmpago, saúde da loja e saldo de Ads — tudo num só lugar.</div></div></div>
           <div class="cm-tool-card" data-cmtab="tiktokshop"><div class="cm-tool-ico" style="background:#0b0b0b;border:1px solid var(--border)"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#25F4EE" transform="translate(-0.7,0.5)"/><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#FE2C55" transform="translate(0.7,-0.3)"/><path d="M15.2 4.8c.3 1.8 1.4 2.9 3.1 3.1v2.3c-1.1 0-2.1-.3-3.1-1v4.7c0 2.6-1.9 4.4-4.4 4.4-2.4 0-4.3-1.8-4.3-4.2 0-2.4 1.9-4.2 4.3-4.2h.7v2.4h-.7c-1.1 0-1.9.8-1.9 1.8s.8 1.8 1.9 1.8c1.1 0 2-.8 2-1.9V4.8h2.4z" fill="#fff"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">TikTok Shop</div><span class="cm-tool-tag mkt">Marketplace</span><div class="cm-tool-desc">Conectar loja, GMV e oferta relâmpago via API.</div></div></div>
           <div class="cm-tool-card" data-cmtab="mercadolivre"><div class="cm-tool-ico" style="background:#ffe6001a"><svg viewBox="0 0 24 24" width="24" height="24"><ellipse cx="12" cy="12" rx="10" ry="7.6" fill="#FFE600" stroke="#2D3277" stroke-width="1.5"/><path d="M5.5 12.2c1.6-1.7 3.1-2.6 4.6-1.1l1.9 1.7 1.9-1.7c1.5-1.5 3-.6 4.6 1.1" stroke="#2D3277" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg></div><div class="cm-tool-body"><div class="cm-tool-titulo">Mercado Livre</div><span class="cm-tool-tag mkt">Marketplace</span><div class="cm-tool-desc">GMV, conexão, oferta relâmpago e gross up — tudo num só lugar.</div></div></div>
@@ -1932,6 +1944,10 @@ textarea{resize:vertical;min-height:70px;}
           </div>
           <button class="btn btn-gold btn-sm" id="relClienteBtn" style="margin-bottom:20px">Gerar relatório do cliente</button>
           <div id="relResultado"></div>
+        </div>
+                <div class="cm-secao cm-painel" data-cmpainel="criarprodutos">
+          <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
+          <div id="cpPainel"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -1983,7 +1999,6 @@ textarea{resize:vertical;min-height:70px;}
 
           <div class="sub-bar">
             <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">APIs</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Cadastro</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="criarproduto" onclick="window.__shopeeSubTab('criarproduto')">Criar Produto</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">GMV</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="caixaloja" onclick="window.__shopeeSubTab('caixaloja')">Caixa da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="envios" onclick="window.__shopeeSubTab('envios')">Envios</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="catalogo" onclick="window.__shopeeSubTab('catalogo')">Catálogo</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">Saúde da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">Ads — Saldo</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="descontos" onclick="window.__shopeeSubTab('descontos')">Descontos</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">Cupons</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Alertas</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">Erros <span id="shopeeErrosContador" style="display:none"></span></button></div></div>
@@ -2063,7 +2078,6 @@ textarea{resize:vertical;min-height:70px;}
           <div id="logLista"></div>
           </div>
 
-          <div class="shopee-subpanel" data-shopeesubpanel="criarproduto" style="display:none"><div id="cpPainel"></div></div>
           <div class="shopee-subpanel" data-shopeesubpanel="catalogo" style="display:none">
           <div class="sub-cab" style="--acc-bg:#a855f712;--acc-bd:#a855f740"><span class="sub-cab-ico" style="color:#a855f7">🗂️</span><div><b>Gestão de Catálogo</b><div class="sub-cab-desc">Reajuste de preço em massa (sempre com simulação antes de aplicar), ajuste de estoque e pausa automática. Requer o app <b>ERP</b> ou <b>Produto</b> conectado.</div></div></div>
           <div id="prodLista"></div>
@@ -2991,7 +3005,7 @@ function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev',
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
 function avatarInicial(nm){const p=nm.trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||nm.charAt(0).toUpperCase();}
-function renderAll(){if(isLincoln())renderDashCobrancas();renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();ttGmvRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
+function renderAll(){document.getElementById('cmCardCriarProdutos')?.classList.toggle('hidden',!isLincoln());if(isLincoln())renderDashCobrancas();renderSummary();renderTable();renderDashCharts();notifRecalcular();sgmvRenderizar();mlApiRenderizar();ttRenderizar();ttGmvRenderizar();mlOfRenderizar();guRenderizar();cmRenderTudo();adsRenderizar();relPreencherClientes();}
 function renderSummary(){let da=0,ca=0,st=0;const clientesAtivos=clientesCache.filter(c=>c.ativo!==false);clientesAtivos.forEach(c=>{const dd=diffDias(c.descontoFixoFim),dc=diffDias(c.cupomFim);if(dd!==null&&dd<=7&&dd>=0)da++;if(dc!==null&&dc<=7&&dc>=0)ca++;st+=Number(c.saldoAds)||0;});const gt=gmvCache.reduce((a,g)=>a+(Number(g.gmv)||0),0);animateTo(document.getElementById('sumTotal'),clientesAtivos.length,v=>Math.round(v));animateTo(document.getElementById('sumDesconto'),da,v=>Math.round(v));animateTo(document.getElementById('sumCupom'),ca,v=>Math.round(v));animateTo(document.getElementById('sumSaldo'),st,v=>fmtR(v));animateTo(document.getElementById('sumGmv'),gt,v=>fmtR(v));
 document.getElementById('sumDescontoFoot').innerHTML=da===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
 document.getElementById('sumCupomFoot').innerHTML=ca===0?'<span class="ok">Tudo em dia! 🎉</span>':'<span class="down">Atenção necessária</span>';
@@ -5718,7 +5732,6 @@ window.__shopeeSubTab=(nome)=>{
   // Saúde da Loja consome a API da Shopee pra cada cliente conectado —
   // só carrega quando o usuário realmente abre essa aba, nunca automático.
   if(nome==='saude')saudeLojaRenderizar();
-  if(nome==='criarproduto')cpRender();
   if(nome==='erros')shopeeErrosRenderizar();
 };
 function mlAdsPopularSelect(){
@@ -7603,6 +7616,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
   if(alvo==='shopee')window.__shopeeSubTab('apis');
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
+  if(alvo==='criarprodutos')cpRender();
 }));
 window.__irParaMarketing=(painel,subtab)=>{
   document.querySelector('[data-page="marketing"]')?.click();
@@ -8147,19 +8161,22 @@ function dirPara34(dataUrl){return new Promise((ok,erro)=>{const im=new Image();
   ok(cv.toDataURL('image/jpeg',0.88));};im.onerror=()=>erro(new Error('imagem inválida'));im.src=dataUrl;});}
 function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
   const u=window.__dirUltimo;const el=document.getElementById(alvoId);if(!el||!u)return;
-  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.shopeeErpShopId&&c.shopeeErpRefreshToken)||(c.mlUserId&&c.mlRefreshToken))).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const plats=u.plataformas||['shopee'];const temSh=plats.includes('shopee'),temMl=plats.includes('ml');
+  const familiaSug=dirNomeFamiliaMl(u.titulo);
   const cands=[...(u.fotos[0]?[{tipo:'IA · '+u.fotos[0].tipo,img:u.fotos[0].imagem}]:[]),...u.reais.map((r,i)=>({tipo:'Foto real '+(i+1),img:r})),...u.fotos.slice(1).map(f=>({tipo:'IA · '+f.tipo,img:f.imagem}))];
   window.__dirCands=cands;
   const maxSel=u.guia?8:9;
   const skuSug=(u.titulo||u.produto).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().split(/\s+/).filter(w=>w.length>2).slice(0,3).join('-').replace(/[^A-Z0-9-]/g,'');
   el.innerHTML=`<div class="cm-secao" style="border:1px solid var(--gold);border-radius:12px;padding:16px">
-    <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">2. Conferir e criar o anúncio</h3></div>
+    <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">2. Conferir e criar — ${[temSh&&'Shopee',temMl&&'Mercado Livre'].filter(Boolean).join(' + ')}</h3></div>
     <div class="form-row">
-      <div class="field"><label>Loja (conectada pelo ERP)</label><select id="dirShLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}" ${c.id===lojaId?'selected':''}>${esc(c.nome)}</option>`).join('')}</select></div>
+      <div class="field"><label>Cliente</label><select id="dirShLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}" ${c.id===lojaId?'selected':''}>${esc(c.nome)}</option>`).join('')}</select></div>
       <div class="field"><label>Valor que a cliente quer receber (R$)</label><input type="text" inputmode="decimal" id="dirShLiq" placeholder="60,00" oninput="window.__dirShPreco()"></div>
     </div>
     <div id="dirShPrecoTxt" style="font-size:13px;color:var(--text-dim);margin:-4px 0 10px"></div>
-    <div class="field"><label>Título (pode editar)</label><input type="text" id="dirShTitulo" maxlength="120" value="${esc(u.titulo)}"></div>
+    ${temSh?`<div class="field"><label>Título na Shopee (pode editar)</label><input type="text" id="dirShTitulo" maxlength="120" value="${esc(u.titulo)}"></div>`:`<input type="hidden" id="dirShTitulo" value="${esc(u.titulo)}">`}
+    ${temMl?`<div class="field"><label>Nome no Mercado Livre (até 60, sem cor e tamanho — o ML completa o título)</label><input type="text" id="dirShFamilia" maxlength="60" value="${esc(familiaSug)}"></div>`:''}
     <div class="field"><label>Descrição (pode editar)</label><textarea id="dirShDesc" style="min-height:120px">${esc(u.descricao)}</textarea></div>
     <div class="form-row">
       <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
@@ -8171,7 +8188,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">${cands.map((c,i)=>`<label style="cursor:pointer;font-size:10px;color:var(--text-dim);text-align:center"><img src="${c.img}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><br><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''}> ${esc(c.tipo)}</label>`).join('')}</div>
     ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada cor</b> (variação 1 = Cor${u.tamanhos.length?', variação 2 = Tamanho':''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--red);margin-top:10px">Sem cores preenchidas: o anúncio sai sem variação.</div>'}
     ${u.tamanhos.length?'':'<div style="font-size:12px;color:var(--red)">Sem tamanhos preenchidos: sem variação de tamanho e sem guia.</div>'}
-    <button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">Criar anúncio (oculto)</button>
+    ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl?'1. Criar na Shopee (oculto) — o ML entra no passo de publicar':'Criar anúncio (oculto)'}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre</button>`}
     <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
 }
 window.__dirShopeeRender=dirShopeeRender;
@@ -8180,19 +8197,23 @@ let cpFotos=[];
 function cpRender(){
   const el=document.getElementById('cpPainel');if(!el||el.dataset.pronto)return;
   if(!isLincoln()){el.innerHTML='<div class="empty-state" style="padding:20px">Criar produto pela API é só pro Lincoln.</div>';return;}
-  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const temShopee=c=>!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken),temMl=c=>!!(c.mlUserId&&c.mlRefreshToken);
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&(temShopee(c)||temMl(c))).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.dataset.pronto='1';
-  el.innerHTML=`<div class="sub-cab" style="margin-bottom:12px"><b>Criar Produto na Shopee</b> — fotos e textos pela Central Criativa, anúncio criado oculto, depois publica no desconto fixo e no Shopee Ads (ROAS 20).</div>
+  el.innerHTML=`<div class="cm-secao-titulo" style="margin-bottom:6px"><div class="cm-secao-ico" style="background:var(--gold);color:#111"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></div><h3>Criar Produtos</h3></div>
+  <div style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.6"><b>Shopee:</b> preço cheio +30%, desconto fixo pelo preço de venda, marca Malaysia Collection, Shopee Ads ROAS 20. <b>Mercado Livre:</b> Clássico, preço de venda direto (7% de folga p/ promoções), marca = nome da loja, 1 anúncio por cor e tamanho, tabela de medidas (ABNT se não tiver medida). O Ads do ML continua manual (o ML não libera escrita de Ads pro nosso app).</div>
   <div class="cm-secao" style="border:1px solid var(--border);border-radius:12px;padding:16px">
     <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">1. Cliente, fotos e informações</h3></div>
-    <div class="field"><label>Cliente (loja conectada pelo ERP)</label><select id="cpLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+    <div class="cp-plat"><label><input type="checkbox" id="cpPlatShopee" checked> Shopee</label><label><input type="checkbox" id="cpPlatMl" checked> Mercado Livre</label></div>
+    <div class="field"><label>Cliente</label><select id="cpLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${temShopee(c)?' · Shopee':''}${temMl(c)?' · ML':''}</option>`).join('')}</select></div>
     <div class="field"><label>Fotos reais (até 5 — a 1ª é a principal; uma de cada cor, na ordem das cores)</label>
       <div class="dz" id="cpDrop" style="padding:18px;cursor:pointer"><input type="file" id="cpFotoInput" accept="image/*" multiple style="display:none"><div id="cpDropTxt">Clique ou arraste as fotos aqui</div><div id="cpPrev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div></div></div>
     <div class="field"><label>Descrição do produto (tecido, modelagem, detalhes reais)</label><textarea id="cpDesc" style="min-height:80px" placeholder="Vestido longo em chiffon, decote coração, manga bufante 3/4 com elástico, costas com lastex..."></textarea></div>
     <div class="form-row">
       <div class="field"><label>Cores (na ordem das fotos)</label><input type="text" id="cpCores" placeholder="Preto, Verde Musgo"></div>
-      <div class="field"><label>Tamanhos (1 por linha)</label><textarea id="cpTam" style="min-height:58px" placeholder="M: veste 38/40&#10;G: veste 42/44"></textarea></div>
+      <div class="field"><label>Tamanhos (1 por linha — "veste" ou medidas em cm)</label><textarea id="cpTam" style="min-height:58px" placeholder="M: veste 38/40&#10;G: veste 42/44; busto 96; cintura 78; quadril 104"></textarea></div>
     </div>
+    <div class="field"><label>Material / tecido</label><input type="text" id="cpMaterial" placeholder="Chiffon"></div>
     <button class="btn btn-gold" id="cpGerarBtn" onclick="window.__cpGerar()">Gerar fotos, título e descrição</button>
     <div id="cpStatus" style="margin-top:10px;font-size:13px"></div>
   </div>
@@ -8212,22 +8233,116 @@ window.__cpGerar=async()=>{
   const lojaId=document.getElementById('cpLoja').value;const produto=document.getElementById('cpDesc').value.trim();
   const cores=document.getElementById('cpCores').value.split(',').map(x=>x.trim()).filter(Boolean);
   const tamanhos=dirLerTamanhos(document.getElementById('cpTam').value);
-  const falta=[!lojaId&&'cliente',!cpFotos.length&&'fotos',!produto&&'descrição',!cores.length&&'cores',!tamanhos.length&&'tamanhos'].filter(Boolean);
+  const plataformas=[document.getElementById('cpPlatShopee').checked&&'shopee',document.getElementById('cpPlatMl').checked&&'ml'].filter(Boolean);
+  const material=document.getElementById('cpMaterial').value.trim();
+  const falta=[!plataformas.length&&'plataforma',!lojaId&&'cliente',!cpFotos.length&&'fotos',!produto&&'descrição',!cores.length&&'cores',!tamanhos.length&&'tamanhos'].filter(Boolean);
   if(falta.length){lbAvisar('Falta preencher\n'+falta.join(', '));return;}
+  const cli=(clientesCache||[]).find(c=>c.id===lojaId);
+  const semCon=plataformas.filter(p=>p==='shopee'?!(cli.shopeeErpShopId&&cli.shopeeErpRefreshToken):!(cli.mlUserId&&cli.mlRefreshToken));
+  if(semCon.length){lbAvisar(`${cli.nome} não está conectada em: ${semCon.map(p=>p==='shopee'?'Shopee (ERP)':'Mercado Livre').join(', ')}\nDesmarque essa plataforma ou conecte a loja primeiro.`);return;}
   if(cores.length>cpFotos.length&&!await lbConfirmar(`Tem ${cores.length} cores e ${cpFotos.length} foto(s)\nO ideal é 1 foto de cada cor. Continuar assim?`,{okTxt:'Continuar'}))return;
-  const produtoIA=produto+`\nCores disponíveis: ${cores.join(', ')}.`+`\nTamanhos disponíveis: ${tamanhos.map(t=>t.tam+(Object.keys(t.campos).length?` (${Object.entries(t.campos).map(([k,v])=>k+' '+v).join(', ')})`:'')).join('; ')}.`;
+  const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+`\nCores disponíveis: ${cores.join(', ')}.`+`\nTamanhos disponíveis: ${tamanhos.map(t=>t.tam+(Object.keys(t.campos).length?` (${Object.entries(t.campos).map(([k,v])=>k+' '+v).join(', ')})`:'')).join('; ')}.`;
   btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';
   try{
     const d=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:7})})).json();
     if(!d.ok)throw new Error(d.erro||'a Central Criativa não respondeu');
     const fotos=(d.fotos||[]).filter(f=>f.imagem);
-    window.__dirUltimo={titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:dirGuiaTamanhos(tamanhos,''),reais:cpFotos.slice(),cores,tamanhos};
+    window.__dirUltimo={titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:dirGuiaTamanhos(tamanhos,''),reais:cpFotos.slice(),cores,tamanhos,plataformas,material,lojaId};
     st.textContent=`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''} + guia de tamanhos. Confira abaixo e desmarque o que não ficou fiel.`;
     dirShopeeRender('cpPasso2',lojaId);
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
   btn.disabled=false;
 };
-window.__dirShPreco=()=>{const p=dirPrecosLB(lbValorBR(document.getElementById('dirShLiq').value));document.getElementById('dirShPrecoTxt').innerHTML=p?`Preço de venda (desconto fixo): <b>${fmtR(p.venda)}</b> · preço cheio no anúncio: <b>${fmtR(p.cheio)}</b> · ela recebe ~${fmtR(p.liquido)} (com cupom 3% + relâmpago 5%)`:'';};
+/* ---- Mercado Livre no Criar Produtos (backend: lb-mercadolivre ml_* — testado ao vivo na Killachay 05/10/2026) ---- */
+const ML_API='https://lb-mercadolivre.vercel.app/api/mercadolivre';
+// "Vestido Feminino Longo Chiffon Manga Bufante Elegante..." → até 60 caracteres, cortando em palavra
+function dirNomeFamiliaMl(t){t=String(t||'').trim();if(t.length<=60)return t;const c=t.slice(0,61);return c.slice(0,c.lastIndexOf(' ')>30?c.lastIndexOf(' '):60).trim();}
+// estimativa (Clássico 14% + frete da Calculadora + 7%) — o valor final vem de ml_preco com a comissão real da categoria
+function dirPrecoMlEstimado(liq,peso){liq=Number(liq);if(!(liq>0))return null;const liqDe=p=>p-p*0.14-freteML(peso,p)-p*0.07;let lo=liq,hi=liq*6+500;for(let i=0;i<80;i++){const m=(lo+hi)/2;if(liqDe(m)<liq)lo=m;else hi=m;}let p=dir99(hi);for(let i=0;i<5&&liqDe(p)<liq-0.005;i++)p=dir99(p+0.01);return p;}
+// ABNT NBR 16933 (medidas do CORPO) — espelho de lb-mercadolivre/lib/produto-ml.js medidasAbnt (testado lá)
+const DIR_ABNT={38:{busto:88,cintura:70,quadril:96},40:{busto:92,cintura:74,quadril:100},42:{busto:96,cintura:78,quadril:104},44:{busto:100,cintura:82,quadril:108}};
+function dirMedidasMl(t){
+  const n=x=>Number(String(x||'').replace(',','.').match(/\d+(\.\d+)?/)?.[0])||0;
+  const c=t.campos||{};
+  if(n(c.Busto)){const m={CHEST_CIRCUMFERENCE_FROM:n(c.Busto)};if(n(c.Cintura))m.WAIST_CIRCUMFERENCE_FROM=n(c.Cintura);if(n(c.Quadril))m.HIP_CIRCUMFERENCE_FROM=n(c.Quadril);return{medidas:m,fonte:'cliente'};}
+  const ns=(String(c.Veste||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);if(!ns.length)return null;
+  const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
+  return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:'ABNT'};
+}
+async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST',headers:{'Content-Type':'application/json',...(login?await authHeaders():{})},body:JSON.stringify({acao,...corpo})});return r.json();}
+window.__cpCriarMl=async(depoisDaShopee=false)=>{
+  const u=window.__dirUltimo;const st=document.getElementById('dirShStatus');const btn=document.getElementById('dirShCriarBtn');
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('dirShLoja').value);
+  const liq=lbValorBR(document.getElementById('dirShLiq').value);const peso=lbValorBR(document.getElementById('dirShPeso').value);const dim=(document.getElementById('dirShDim').value.match(/\d+/g)||[]).map(Number);
+  const est=Math.max(0,parseInt(document.getElementById('dirShEst').value)||0);const familia=(document.getElementById('dirShFamilia')?.value||'').trim();
+  const sel=[...document.querySelectorAll('.dirShFoto:checked')].map(x=>window.__dirCands[Number(x.dataset.i)]);
+  const linhaMl=(t)=>{const old=st.querySelector('.cpMlStatus');const box=old||Object.assign(document.createElement('div'),{className:'cpMlStatus'});box.style.marginTop='10px';box.innerHTML=t;if(!old)st.appendChild(box);};
+  const falta=[!c&&'cliente',!(c?.mlUserId&&c?.mlRefreshToken)&&'conexão do ML da loja',!(liq>0)&&'valor a receber',!familia&&'nome no ML',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
+  if(falta.length){lbAvisar('Mercado Livre — falta\n'+falta.join(', '));return;}
+  const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
+  if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por cor e tamanho), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria`,{okTxt:'Criar no ML'}))return;
+  if(!depoisDaShopee)st.innerHTML='';
+  if(btn)btn.disabled=true;
+  try{
+    const token=await mlGarantirTokenValido(c);
+    const ler=async caminho=>(await dirMl('ler_api',{access_token:token,caminho})).data;
+    linhaMl('ML: escolhendo a categoria...');
+    const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));const cat=Array.isArray(dd)?dd[0]:null;
+    if(!cat)throw new Error('o ML não sugeriu categoria pro nome');
+    const attrs=await ler(`/categories/${cat.category_id}/attributes`)||[];
+    const TRATADOS=/^(BRAND|MODEL|COLOR|SIZE|SIZE_GRID_ID|SIZE_GRID_ROW_ID|ITEM_CONDITION|SELLER_PACKAGE_.*|FILTRABLE_.*|IS_.*|GTIN|MAIN_MATERIAL)$/;
+    const paraIA=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!TRATADOS.test(a.id)&&(a.values||[]).length).map(a=>({id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}));
+    linhaMl('ML: preenchendo a ficha técnica...');
+    let ia=[];if(paraIA.length){const r=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}\nCores: ${u.cores.join(', ')}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
+    const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
+    const faltaReq=paraIA.filter(a=>!ia.some(x=>x.id===a.id)).map(a=>a.nome);
+    if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
+    const textoReq=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!(a.values||[]).length&&!TRATADOS.test(a.id)).map(a=>a.name);
+    if(attrs.some(a=>a.id==='MAIN_MATERIAL'&&a.tags?.required)&&!u.material)throw new Error('a categoria exige material/tecido — preencha no passo 1');
+    // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
+    let gridId=null,linhas={};
+    if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&u.tamanhos.length){
+      linhaMl('ML: tabela de medidas...');
+      const genVal=attrs.find(a=>a.id==='GENDER')?.values?.find(v=>String(v.id)===String(genero?.value_id));
+      const busca=await dirMl('tabela_medidas_buscar',{access_token:token,domain_id:cat.domain_id,corpo:{domain_id:cat.domain_id.replace(/^MLB-/,''),site_id:'MLB',seller_id:Number(c.mlUserId),attributes:[{id:'GENDER',values:[{name:genVal?.name||'Feminino'}]},{id:'BRAND',values:[{name:c.nome}]}]}});
+      const tams=u.tamanhos.map(t=>t.tam.toUpperCase());
+      const temTodos=ch=>tams.every(t=>(ch.rows||[]).some(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t))));
+      const reuso=(busca.data?.charts||[]).find(ch=>/^LB /.test(ch.names?.MLB||'')&&temTodos(ch));
+      if(reuso){gridId=reuso.id;for(const t of u.tamanhos){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
+      else{
+        const ls=u.tamanhos.map(t=>({tam:t.tam,m:dirMedidasMl(t)}));const sem=ls.filter(x=>!x.m).map(x=>x.tam);
+        if(sem.length)throw new Error(`sem medidas pro ML nos tamanhos ${sem.join(', ')} — escreva "veste 38/40" ou busto/cintura/quadril em cm`);
+        const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
+        const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:['CHEST_CIRCUMFERENCE_FROM'],linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
+        if(!r.ok)throw new Error('tabela de medidas: '+r.erro);
+        gridId=r.id;linhas=r.linhas;
+      }
+    }
+    linhaMl('ML: calculando o preço com a comissão real...');
+    const pr=await dirMl('ml_preco',{access_token:token,categoria:cat.category_id,liquido:liq,peso},true);if(!pr.ok)throw new Error('preço: '+pr.erro);
+    // fotos: a 1ª cor leva as fotos escolhidas; as outras cores levam a(s) foto(s) real(is) delas
+    const ids=new Map();const subir=async(img,rot)=>{if(ids.has(img))return ids.get(img);linhaMl(`ML: subindo fotos (${rot})...`);const r=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:img},true);if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.id);return r.id;};
+    const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
+    const fotosDa={};
+    for(const [i,cor] of (u.cores.length?u.cores:['']).entries()){
+      const lista=i===0?[...(fotoCor[cor]?[fotoCor[cor]]:[]),...sel.map(x=>x.img)]:[fotoCor[cor]].filter(Boolean);
+      const unicos=[...new Set(lista)].slice(0,10);fotosDa[cor]=[];for(const [j,img] of unicos.entries())fotosDa[cor].push(await subir(img,`${cor||'produto'} ${j+1}/${unicos.length}`));
+    }
+    const criados=[],erros=[];
+    for(const cor of (u.cores.length?u.cores:[''])){for(const t of (u.tamanhos.length?u.tamanhos:[{tam:''}])){
+      linhaMl(`ML: criando ${cor} ${t.tam}... (${criados.length+erros.length+1}/${nItens})`);
+      const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:est,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:cor||undefined,tamanho:t.tam||undefined,material:u.material||undefined,gridId,gridRowId:t.tam?linhas[t.tam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras,descricao:document.getElementById('dirShDesc').value.trim()};
+      const r=await dirMl('ml_criar_item',{access_token:token,item},true);
+      if(r.ok)criados.push(r);else erros.push(`${cor} ${t.tam}: ${r.erro}`);
+    }}
+    await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
+    linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
+  }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span>`);}
+  if(btn)btn.disabled=false;
+};
+window.__dirShPreco=()=>{const u=window.__dirUltimo||{};const plats=u.plataformas||['shopee'];const liq=lbValorBR(document.getElementById('dirShLiq').value);
+  const p=plats.includes('shopee')?dirPrecosLB(liq):null;const m=plats.includes('ml')?dirPrecoMlEstimado(liq,lbValorBR(document.getElementById('dirShPeso')?.value)||0.5):null;
+  document.getElementById('dirShPrecoTxt').innerHTML=[p&&`<b>Shopee:</b> venda (desconto fixo) <b>${fmtR(p.venda)}</b> · cheio <b>${fmtR(p.cheio)}</b> · ela recebe ~${fmtR(p.liquido)} (cupom 3% + relâmpago 5%)`,m&&`<b>Mercado Livre:</b> venda <b>~${fmtR(m)}</b> (Clássico 14% + frete + 7% de folga; confirmo com a comissão real da categoria ao criar)`].filter(Boolean).join('<br>');};
 async function dirShApi(acao,c,token,extra={}){
   const r=await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,app:'erp',access_token:token,shop_id:c.shopeeErpShopId,...extra})});
   return r.json();
@@ -8287,7 +8402,7 @@ window.__dirShCriar=async()=>{
 window.__dirShPublicar=async()=>{
   const it=window.__dirShItem;const st=document.getElementById('dirShStatus');if(!it)return;
   const c=(clientesCache||[]).find(x=>x.id===it.clienteId);
-  if(!await lbConfirmar(`Publicar o anúncio ${it.itemId} na ${c.nome}?\nEle vai pro ar, entra no desconto fixo a ${fmtR(it.venda)} e no Shopee Ads (meta de ROAS 20, orçamento e prazo ilimitados).${c.shopeeDescontoFixoId?'':'\nA loja não tem desconto fixo marcado no sistema: uso o desconto longo que ela já tiver na Shopee (qualquer nome) ou, se não tiver, crio o "Desconto fixo - LB" (5 meses, começa em ~1h).'}`,{okTxt:'Publicar'}))return;
+  if(!await lbConfirmar(`Publicar o anúncio ${it.itemId} na ${c.nome}?${(window.__dirUltimo?.plataformas||[]).includes('ml')?'\nEm seguida cria os anúncios no Mercado Livre (1 por cor e tamanho, já ativos).':''}\nEle vai pro ar, entra no desconto fixo a ${fmtR(it.venda)} e no Shopee Ads (meta de ROAS 20, orçamento e prazo ilimitados).${c.shopeeDescontoFixoId?'':'\nA loja não tem desconto fixo marcado no sistema: uso o desconto longo que ela já tiver na Shopee (qualquer nome) ou, se não tiver, crio o "Desconto fixo - LB" (5 meses, começa em ~1h).'}`,{okTxt:'Publicar'}))return;
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');
     st.innerHTML='Publicando...';
@@ -8308,7 +8423,8 @@ window.__dirShPublicar=async()=>{
       }catch(e){adsTxt=` · <span style="color:var(--red)">Ads não criado: ${esc(e.message)}</span>`;}
     }else adsTxt=' · <span style="color:var(--red)">loja sem o app de Ads conectado — Ads não criado</span>';
     await log(c.id,c.nome,'anúncio publicado na Shopee',`Item ${it.itemId} publicado e no desconto fixo ${descId} a ${fmtR(it.venda)}${adsTxt.replace(/<[^>]+>/g,'')}.`);
-    st.innerHTML=`<div class="cob-box"><b>No ar ✓</b><span>Item ${it.itemId} publicado e no desconto fixo a ${fmtR(it.venda)}${adsTxt}.</span></div>`;
+    st.innerHTML=`<div class="cob-box"><b>Shopee no ar ✓</b><span>Item ${it.itemId} publicado e no desconto fixo a ${fmtR(it.venda)}${adsTxt}.</span></div>`;
+    if((window.__dirUltimo?.plataformas||[]).includes('ml'))await window.__cpCriarMl(true);
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
 };
 
