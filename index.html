@@ -3939,11 +3939,12 @@ window.__dreAtualizar=async()=>{
   document.getElementById('dreListaColaboradoras').innerHTML='<div class="empty-state" style="padding:20px">Buscando...</div>';
 
   try{
+    const hAsaas=await authHeaders(); // financeiro exige o login do Lincoln (backend)
     const [respCobrancas,respTransfer,respClientes,respAssinaturas]=await Promise.all([
-      fetch(`${ASAAS_API}?acao=listar_cobrancas&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
-      fetch(`${ASAAS_API}?acao=listar_transferencias&data_inicio=${dataInicio}&data_fim=${dataFim}`).then(r=>r.json()),
-      fetch(`${ASAAS_API}?acao=listar_clientes_asaas`).then(r=>r.json()),
-      fetch(`${ASAAS_API}?acao=listar_assinaturas`).then(r=>r.json())
+      fetch(`${ASAAS_API}?acao=listar_cobrancas&data_inicio=${dataInicio}&data_fim=${dataFim}`,{headers:hAsaas}).then(r=>r.json()),
+      fetch(`${ASAAS_API}?acao=listar_transferencias&data_inicio=${dataInicio}&data_fim=${dataFim}`,{headers:hAsaas}).then(r=>r.json()),
+      fetch(`${ASAAS_API}?acao=listar_clientes_asaas`,{headers:hAsaas}).then(r=>r.json()),
+      fetch(`${ASAAS_API}?acao=listar_assinaturas`,{headers:hAsaas}).then(r=>r.json())
     ]);
 
     if(!respCobrancas.ok){showToast('Erro ao buscar cobranças: '+(respCobrancas.erro||'desconhecido'));return;}
@@ -4180,7 +4181,7 @@ document.getElementById('rhConfirmarPagtoOkBtn')?.addEventListener('click',async
   btn.disabled=true;btn.textContent='Enviando...';
   try{
     const resp=await fetch(ASAAS_API,{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},
       body:JSON.stringify({acao:'criar_transferencia',value:valor,pixAddressKey:c.chavePix,pixAddressKeyType:c.tipoPix||'CPF',description:`Salário ${c.nome} - ${parcela}ª parcela - ${mesAtualStr()}`,externalReference:`salario-${c.id}-${mesAtualStr()}-p${parcela}`})
     });
     const data=await resp.json();
