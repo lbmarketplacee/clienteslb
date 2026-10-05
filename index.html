@@ -2348,6 +2348,7 @@ textarea{resize:vertical;min-height:70px;}
         <label class="cm-switch" style="flex:2;margin-bottom:14px"><input type="checkbox" id="fUpseller"><span class="cm-switch-trilho"></span> UpSeller absorvido pela LB</label>
         <div class="field" style="flex:1"><label>Valor UpSeller (R$/mês)</label><input type="text" inputmode="decimal" id="fUpsellerValor" value="150,00"></div>
       </div>
+      <label class="cm-switch" style="margin:6px 0 10px"><input type="checkbox" id="fEmitirNota"><span class="cm-switch-trilho"></span> Emitir nota fiscal (Asaas)</label>
       <div id="asaasClienteBox" class="hidden" style="margin:14px 0 4px"></div>
       <button type="button" class="btn btn-gold btn-sm" id="gerarContratoBtn" style="margin-top:6px">Gerar Contrato (.pdf)</button>
       </div>
@@ -3038,7 +3039,7 @@ function renderDashCharts(){
 }
 /* MODAL CLIENTE */
 const clientModalOverlay=document.getElementById('clientModalOverlay');let editOrig=null;
-function openClientModal(c){document.getElementById('clienteContratoBox')?.classList.toggle('hidden',!isLincoln());setTimeout(()=>renderAsaasCliente(c),0);window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c&&c.mensalidade?lbFmtValorBR(c.mensalidade):'';document.getElementById('fWhatsappContrato').value=c?(c.whatsappContrato||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fInicio').value=c?(c.dataInicio||''):'';document.getElementById('fSegmento').value=c?(c.segmento||''):'';document.getElementById('fUpseller').checked=!!c?.upsellerAbsorvido;document.getElementById('fUpsellerValor').value=lbFmtValorBR(c?.upsellerValor||150);document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
+function openClientModal(c){document.getElementById('clienteContratoBox')?.classList.toggle('hidden',!isLincoln());setTimeout(()=>renderAsaasCliente(c),0);window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;window.__cadastroOrigemEndereco=null;editOrig=c||null;document.getElementById('clientModalTitle').textContent=c?'Editar Cliente':'Novo Cliente';document.getElementById('clientId').value=c?c.id:'';document.getElementById('fNome').value=c?c.nome:'';document.getElementById('fEmail').value=c?(c.email||''):'';document.getElementById('fDrive').value=c?(c.driveUrl||''):'';document.getElementById('fCnpjCpf').value=c?(c.cnpjCpf||''):'';document.getElementById('fEndereco').value=c?(c.endereco||''):'';document.getElementById('fMensalidade').value=c&&c.mensalidade?lbFmtValorBR(c.mensalidade):'';document.getElementById('fWhatsappContrato').value=c?(c.whatsappContrato||''):'';document.getElementById('fDuracaoMeses').value=c?(c.duracaoMeses||''):'';document.getElementById('fDiaVencimento').value=c?(c.diaVencimento||''):'';document.getElementById('fInicio').value=c?(c.dataInicio||''):'';document.getElementById('fSegmento').value=c?(c.segmento||''):'';document.getElementById('fUpseller').checked=!!c?.upsellerAbsorvido;document.getElementById('fEmitirNota').checked=!!c?.emitirNotaFiscal;document.getElementById('fUpsellerValor').value=lbFmtValorBR(c?.upsellerValor||150);document.getElementById('fDesconto').value=c?(c.descontoFixoFim||''):'';document.getElementById('fCupom').value=c?(c.cupomFim||''):'';document.getElementById('fSaldo').value=c?(c.saldoAds??''):'';document.getElementById('fObs').value=c?(c.observacoes||''):'';document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>{b.classList.toggle('on',!!(c&&(c.marketplaces||[]).includes(b.dataset.val)));});
 const docs=c?.documentosCadastro;
 const fDocsWrap=document.getElementById('fDocumentosCadastroWrap'),fDocsLista=document.getElementById('fDocumentosCadastroLista');
 if(docs&&(docs.docFrente||docs.docVerso||docs.docCnpj)){
@@ -3061,7 +3062,7 @@ const responsaveisPorMarketplace={
   tiktok:responsavelGeral,
   shein:responsavelGeral
 };
-const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:lbValorBR(document.getElementById('fMensalidade').value)||0,whatsappContrato:document.getElementById('fWhatsappContrato').value.trim(),duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,dataInicio:document.getElementById('fInicio').value||'',segmento:document.getElementById('fSegmento').value.trim(),upsellerAbsorvido:document.getElementById('fUpseller').checked,upsellerValor:lbValorBR(document.getElementById('fUpsellerValor').value)||0,marketplaces:mps,responsavelGeral,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:lbValorBR(document.getElementById('fMensalidade').value)||0,whatsappContrato:document.getElementById('fWhatsappContrato').value.trim(),duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,dataInicio:document.getElementById('fInicio').value||'',segmento:document.getElementById('fSegmento').value.trim(),upsellerAbsorvido:document.getElementById('fUpseller').checked,emitirNotaFiscal:document.getElementById('fEmitirNota').checked,upsellerValor:lbValorBR(document.getElementById('fUpsellerValor').value)||0,marketplaces:mps,responsavelGeral,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}if(!id&&window.__cadastroOrigemEndereco){dados.enderecoPartes=window.__cadastroOrigemEndereco;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
 function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
@@ -4895,6 +4896,9 @@ window.__criarClienteDoCadastro=(id)=>{
   });
   window.__cadastroOrigemAtual=id;
   window.__cadastroOrigemDocs={docFrente:cad.urlDocFrente||null,docVerso:cad.urlDocVerso||null,docCnpj:cad.urlDocCnpj||null};
+  window.__cadastroOrigemEndereco={rua:cad.rua||'',numero:cad.numero||'',bairro:cad.bairro||'',cep:cad.cep||'',cidade:cad.cidade||'',estado:cad.estado||''};
+  document.getElementById('fCnpjCpf').value=cad.documento||'';document.getElementById('fWhatsappContrato').value=cad.telefone||'';
+  document.getElementById('fEndereco').value=`${cad.rua||''}, ${cad.numero||''} - ${cad.bairro||''}, ${cad.cidade||''}/${cad.estado||''} - CEP ${cad.cep||''}`;
   clientModalOverlay.classList.remove('hidden');
 };
 let cadastroDetalheAtual=null;
@@ -5471,19 +5475,44 @@ async function renderAsaasCliente(c){
     ${s?.proxima?.link?`<a class="btn btn-ghost btn-sm" href="${esc(s.proxima.link)}" target="_blank" rel="noopener">Boleto</a>`:''}
     ${diverge?`<button type="button" class="btn btn-gold btn-sm" onclick="window.__asaasAtualizarValor('${c.id}')">Atualizar Asaas para ${fmtR(c.mensalidade)}</button>`:''}</div>`;
 }
+// Endereço em partes pro Asaas (nota fiscal exige rua + CEP). Usa o do cadastro; senão lê o texto "Rua, nº - Bairro, Cidade/UF - CEP 00000-000".
+function asaasEnderecoPartes(c){
+  if(c.enderecoPartes?.rua&&c.enderecoPartes?.cep)return c.enderecoPartes;
+  const t=String(c.endereco||'');const cep=(t.match(/\d{5}-?\d{3}/)||[])[0];if(!cep)return null;
+  const m=t.match(/^\s*([^,]+),\s*([^-,]+?)\s*-\s*([^,]+),/);
+  return m?{rua:m[1].trim(),numero:m[2].trim(),bairro:m[3].trim(),cep}:null;
+}
+// Contrato em PDF (base64) a partir da ficha salva — mesmo gerador do botão "Gerar Contrato"
+async function contratoPdfBase64(c){
+  const r=await fetch('https://lb-gerador-contrato.vercel.app/api/gerar-contrato',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nomeCliente:c.nome,cnpjCpfCliente:c.cnpjCpf||'',emailCliente:c.email||'',whatsappCliente:c.whatsappContrato||'',enderecoCliente:c.endereco||'',segmento:c.segmento||'',mensalidade:Number(c.mensalidade),duracaoMeses:Number(c.duracaoMeses),diaVencimento:Number(c.diaVencimento),dataInicio:c.dataInicio||lbHojeISO(),dataAssinatura:lbHojeISO(),upsellerAbsorvido:!!c.upsellerAbsorvido,upsellerValor:Number(c.upsellerValor)||150})});
+  if(!r.ok)throw new Error('não gerou o contrato');
+  const u8=new Uint8Array(await r.arrayBuffer());let bin='';for(let i=0;i<u8.length;i+=8192)bin+=String.fromCharCode(...u8.subarray(i,i+8192));
+  return btoa(bin);
+}
 window.__asaasCriar=async(clienteId)=>{
   const c=clientesCache.find(x=>x.id===clienteId);if(!c)return;
-  const doc=String(c.cnpjCpf||'').replace(/\D/g,'');
-  const falta=[!(doc.length===11||doc.length===14)&&'CPF/CNPJ',!(Number(c.mensalidade)>=100)&&'mensalidade',!(Number(c.diaVencimento)>=1)&&'dia de vencimento'].filter(Boolean);
+  const documento=String(c.cnpjCpf||'').replace(/\D/g,'');
+  const endereco=asaasEnderecoPartes(c);
+  const falta=[!(documento.length===11||documento.length===14)&&'CPF/CNPJ',!(Number(c.mensalidade)>=100)&&'mensalidade',!(Number(c.diaVencimento)>=1)&&'dia de vencimento',c.emitirNotaFiscal&&!endereco&&'endereço com CEP (a nota fiscal exige)'].filter(Boolean);
   if(falta.length){lbAvisar(`Falta preencher no cadastro\n${falta.join(', ')} (e salvar o cliente).`);return;}
-  if(!await lbConfirmar(`Criar cobrança no Asaas\nCliente: ${c.nome}\nCPF/CNPJ: ${c.cnpjCpf}\nMensalidade: ${fmtR(c.mensalidade)} por mês, sem data de fim\nVencimento: todo dia ${String(c.diaVencimento).padStart(2,'0')}\nForma de pagamento: o cliente escolhe (boleto, PIX ou cartão)\nO próprio Asaas envia a cobrança pro cliente.`,{okTxt:'Criar no Asaas'}))return;
+  const temContrato=Number(c.duracaoMeses)>=1;
+  if(!await lbConfirmar(`Criar cobrança no Asaas\nCliente: ${c.nome}\nCPF/CNPJ: ${c.cnpjCpf}\nMensalidade: ${fmtR(c.mensalidade)} por mês, sem data de fim\nVencimento: todo dia ${String(c.diaVencimento).padStart(2,'0')}\nForma de pagamento: o cliente escolhe (boleto, PIX ou cartão)\nAvisos: só WhatsApp (dia do vencimento, pagamento confirmado e atraso)\nNota fiscal: ${c.emitirNotaFiscal?'SIM, emitida quando o pagamento for confirmado':'não'}\nContrato: ${temContrato?'anexado na 1ª cobrança':'sem (preencha a duração pra anexar)'}`,{okTxt:'Criar no Asaas'}))return;
   try{
-    const r=await fetch(ASAAS_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'criar_cliente_assinatura',nome:c.nome,cpfCnpj:c.cnpjCpf,email:c.email||'',telefone:c.whatsappContrato||'',valor:Number(c.mensalidade),diaVencimento:Number(c.diaVencimento),clienteId:c.id})});
+    const r=await fetch(ASAAS_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'criar_cliente_assinatura',nome:c.nome,cpfCnpj:c.cnpjCpf,email:c.email||'',telefone:c.whatsappContrato||'',valor:Number(c.mensalidade),diaVencimento:Number(c.diaVencimento),clienteId:c.id,emitirNota:!!c.emitirNotaFiscal,endereco})});
     const d=await r.json();
     if(!d.ok)throw new Error(d.erro||'Erro ao criar.');
     await updateDoc(doc(db,'clientes',c.id),{asaasCustomerId:d.customer,asaasSubscriptionId:d.assinatura,asaasValor:d.valor,asaasCiclo:d.ciclo||'MONTHLY',asaasFormaPagamento:'UNDEFINED',asaasVinculadoEm:Date.now()});
-    await log(c.id,c.nome,'cobrança criada no Asaas',`Assinatura ${d.assinatura}: ${fmtR(d.valor)}/mês, 1º vencimento ${fmtDataBR(d.primeiroVencimento)}${d.reaproveitado?' (cliente já existia no Asaas)':''}.`);
-    lbAvisar(`Cobrança criada no Asaas\n${c.nome}: ${fmtR(d.valor)}/mês, primeiro vencimento em ${fmtDataBR(d.primeiroVencimento)}.`);
+    const avisos=[];
+    if(d.padrao?.avisos?.ok===false)avisos.push('Avisos por WhatsApp NÃO configurados: '+d.padrao.avisos.erro);
+    if(c.emitirNotaFiscal&&d.padrao?.notaFiscal?.ok===false)avisos.push('Nota fiscal NÃO configurada: '+d.padrao.notaFiscal.erro);
+    let contratoTxt='';
+    if(temContrato){
+      try{const a=await fetch(ASAAS_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'anexar_contrato',assinaturaId:d.assinatura,nomeArquivo:`Contrato - ${c.nome}.pdf`,pdfBase64:await contratoPdfBase64(c)})}).then(r=>r.json());
+        if(a.ok)contratoTxt=`\nContrato anexado na cobrança de ${fmtDataBR(a.vencimento)}.`;else avisos.push('Contrato não anexado: '+a.erro);
+      }catch(e){avisos.push('Contrato não anexado: '+e.message);}
+    }
+    await log(c.id,c.nome,'cobrança criada no Asaas',`Assinatura ${d.assinatura}: ${fmtR(d.valor)}/mês, 1º vencimento ${fmtDataBR(d.primeiroVencimento)}${d.reaproveitado?' (cliente já existia no Asaas)':''}. Avisos só WhatsApp${c.emitirNotaFiscal?', com nota fiscal':''}.${contratoTxt}`);
+    lbAvisar(`Cobrança criada no Asaas\n${c.nome}: ${fmtR(d.valor)}/mês, primeiro vencimento em ${fmtDataBR(d.primeiroVencimento)}.${contratoTxt}${avisos.length?'\n\nATENÇÃO:\n'+avisos.join('\n'):''}`);
     asaasSituacaoEm=0;
   }catch(e){lbAvisar('Não foi possível criar no Asaas\n'+e.message);}
 };
