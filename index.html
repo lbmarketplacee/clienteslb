@@ -8731,7 +8731,7 @@ function dirMedidasMl(t){
   const c=t.campos||{};
   if(n(c.Busto)){const m={CHEST_CIRCUMFERENCE_FROM:n(c.Busto)};if(n(c.Cintura))m.WAIST_CIRCUMFERENCE_FROM=n(c.Cintura);if(n(c.Quadril))m.HIP_CIRCUMFERENCE_FROM=n(c.Quadril);return{medidas:m,fonte:'cliente'};}
   // só a letra (P/M/G) sem medida nem "veste": régua brasileira usada na Killachay/Djan (M = 38/40, G = 42/44; P e PP extrapolados −4 cm)
-  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44',GG:'46/48',G1:'50'};const tl=String(t.tam||'').trim().toUpperCase().match(/^(PP|P|M|GG|G1|G)(?![A-Z0-9])/)?.[1];const letra=LETRA[tl]||'';
+  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44',GG:'46/48',G1:'50',U:'36/42','ÚNICO':'36/42',UNICO:'36/42'};const tl=String(t.tam||'').trim().toUpperCase().match(/^(PP|P|M|GG|G1|G|ÚNICO|UNICO|U)(?![A-Z0-9À-Ú])/)?.[1];const letra=LETRA[tl]||'';
   const numeros=(v)=>(String(v||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
   // "veste" digitado que a régua não entende (ex.: "M: veste M") → cai na régua pela letra em vez de travar
   let ns=numeros(c.Veste);if(!ns.length)ns=numeros(letra);
@@ -8765,7 +8765,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const exigeCor=attrs.some(a=>a.id==='COLOR'&&a.tags?.required);
   if(exigeCor&&id1!=='COLOR'&&id2!=='COLOR'){if(!id1&&/estampa/.test(norm(u.nome1)))id1='COLOR';else if(!id2&&/estampa/.test(norm(u.nome2)))id2='COLOR';}const idsVar=[id1,id2].filter(Boolean);
   const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
-  const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_|IS_)/.test(id);
+  const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_)/.test(id); // IS_* obrigatório (IS_SPORTIVE, Killachay 07/10/2026) vai pra IA
   const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
   const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:a.name,livre:true});
   linhaMl('ML: preenchendo a ficha técnica...');
@@ -8804,7 +8804,12 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
       const obrigTab=obrig.length?obrig:['CHEST_CIRCUMFERENCE_FROM'];
       const sem=ls.filter(x=>!x.m||obrigTab.some(k=>!(Number(x.m.medidas[k])>0))).map(x=>x.tam);
       if(sem.length){console.log('[ML medidas] tamanhos lidos:',JSON.stringify(opTam));throw new Error(`essa categoria do ML exige tabela de medidas: faltam medidas nos tamanhos ${ls.filter(x=>!x.m).map(x=>`"${x.tam}" (lido: ${JSON.stringify(opTam.find(o=>o.tam===x.tam)?.campos||{})})`).join(', ')} — no passo 1, em "medidas por tamanho", escreva "M: veste 38/40" ou busto/cintura/quadril em cm`);}
-      const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
+      const nomesUsados=new Set((busca.data?.charts||[]).map(ch=>String(ch.names?.MLB||'').toLowerCase()));
+        const limpa=t=>t.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim();
+        // o ML recusa nome de tabela repetido ("Chart validation errors found — The chart's name...", Killachay 07/10/2026)
+        let nomeTab=limpa(`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`).slice(0,60);
+        if(nomesUsados.has(nomeTab.toLowerCase()))nomeTab=limpa(`LB ${cat.category_name} ${c.nome} ${opTam.map(t=>t.tam).join(' ')}`).slice(0,60);
+        for(let k=2;nomesUsados.has(nomeTab.toLowerCase())&&k<20;k++)nomeTab=limpa(`${nomeTab.slice(0,56)} ${k}`);
       const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
       if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
       gridId=r.id;linhas=r.linhas;
@@ -9999,10 +10004,16 @@ window.__mig2Criar=async()=>{
         let tiers=[],models=[];
         if(b.has_model){const m=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_model_list',query:{item_id:it.id}});tiers=m?.response?.tier_variation||[];models=(m?.response?.model||[]).filter(md=>!md.model_status||md.model_status==='MODEL_NORMAL');}
         const op=k=>(tiers[k]?.option_list||[]).map(o=>o.option);
-        const u={cores:op(0),tamanhos:op(1).map(t=>({tam:t,campos:{}})),nome1:tiers[0]?.name||'',nome2:tiers[1]?.name||'',produto:`${b.item_name}\n${String(b.description||'').slice(0,600)}`,material:'',medidas:{}};
+        // tamanho com a medida no texto ("M (veste 38/40)", "Único (veste 36 ao 42)", "M 38-42", Killachay 07/10/2026) → tamanho limpo + veste
+        const tamLimpo=o=>String(o).replace(/\(.*?\)/g,' ').replace(/\b\d{2}\s*(?:-|a|ao|\/|até)\s*\d{2}\b/gi,' ').replace(/veste/gi,' ').replace(/\s+/g,' ').trim()||String(o).trim();
+        const vesteDe=o=>{const m=String(o).match(/(\d{2})\D{1,6}(\d{2})/);return m?`${m[1]}/${m[2]}`:(String(o).match(/\b(3\d|4\d|5\d)\b/)?.[1]||'');};
+        const tierTam=k=>/tamanho|size/i.test(tiers[k]?.name||'');
+        const opV=k=>op(k).map(o=>tierTam(k)?tamLimpo(o):o);
+        const u={cores:opV(0),tamanhos:op(1).map(t=>({tam:tamLimpo(t),campos:vesteDe(t)?{Veste:vesteDe(t)}:{}})),nome1:tiers[0]?.name||'',nome2:tiers[1]?.name||'',produto:`${b.item_name}\n${String(b.description||'').slice(0,600)}`,material:'',medidas:{}};
         // estoque por combinação (estoque do vendedor) e preço: maior venda entre as variações (a cliente nunca recebe menos)
         const est={};let venda=it.precoMin;
-        if(models.length){for(const md of models){const k=`${op(0)[md.tier_index?.[0]]??''}|${op(1)[md.tier_index?.[1]]??''}`;est[k]=(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0);}
+        if(tierTam(0))u.medidas=Object.fromEntries(op(0).map(o=>[tamLimpo(o).toUpperCase(),vesteDe(o)?{Veste:vesteDe(o)}:{}]));
+        if(models.length){for(const md of models){const k=`${opV(0)[md.tier_index?.[0]]??''}|${opV(1)[md.tier_index?.[1]]??''}`;est[k]=(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0);}
           venda=Math.max(...models.map(md=>Number(md.price_info?.[0]?.current_price)||0));}
         if(models.length){const ord=Object.entries(est).filter(([,n])=>n>0).sort((a,b2)=>b2[1]-a[1]);for(const k of Object.keys(est))est[k]=0;ord.slice(0,30).forEach(([k,n])=>est[k]=n);if(!ord.length)throw new Error('nenhuma variação com estoque');
           const vivas=ord.slice(0,30).map(([k])=>k.split('|'));u.cores=u.cores.filter(c1=>vivas.some(v=>v[0]===c1));u.tamanhos=u.tamanhos.filter(t=>vivas.some(v=>v[1]===t.tam));}
@@ -10015,7 +10026,7 @@ window.__mig2Criar=async()=>{
         const urls=b.image?.image_url_list||[];const jpg={};const pega=async url=>jpg[url]||(jpg[url]=await migJpg(url));
         const fotosPorCor={};
         for(const [k,cor] of (u.cores.length?u.cores:['']).entries()){
-          const opImg=(tiers[0]?.option_list||[]).find(o=>o.option===cor)?.image?.image_url;
+          const opImg=(tiers[0]?.option_list||[]).find(o=>(tierTam(0)?tamLimpo(o.option):o.option)===cor)?.image?.image_url;
           const lista=k===0?[...(opImg?[opImg]:[]),...urls]:[opImg||urls[0]].filter(Boolean);
           fotosPorCor[cor]=[];for(const url of [...new Set(lista)].slice(0,10))fotosPorCor[cor].push(await pega(url));}
         const dim=[b.dimension?.package_length,b.dimension?.package_width,b.dimension?.package_height].map(n=>Math.max(1,Math.round(Number(n)||0)));
