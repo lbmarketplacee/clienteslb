@@ -10004,7 +10004,8 @@ window.__mig2Criar=async()=>{
         const est={};let venda=it.precoMin;
         if(models.length){for(const md of models){const k=`${op(0)[md.tier_index?.[0]]??''}|${op(1)[md.tier_index?.[1]]??''}`;est[k]=(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0);}
           venda=Math.max(...models.map(md=>Number(md.price_info?.[0]?.current_price)||0));}
-        if(models.length){const ord=Object.entries(est).filter(([,n])=>n>0).sort((a,b2)=>b2[1]-a[1]);for(const k of Object.keys(est))est[k]=0;ord.slice(0,30).forEach(([k,n])=>est[k]=n);if(!ord.length)throw new Error('nenhuma variação com estoque');}
+        if(models.length){const ord=Object.entries(est).filter(([,n])=>n>0).sort((a,b2)=>b2[1]-a[1]);for(const k of Object.keys(est))est[k]=0;ord.slice(0,30).forEach(([k,n])=>est[k]=n);if(!ord.length)throw new Error('nenhuma variação com estoque');
+          const vivas=ord.slice(0,30).map(([k])=>k.split('|'));u.cores=u.cores.filter(c1=>vivas.some(v=>v[0]===c1));u.tamanhos=u.tamanhos.filter(t=>vivas.some(v=>v[1]===t.tam));}
         const liq=dirLiquido(venda);if(!(liq>0))throw new Error('sem preço na Shopee');
         linha('título do ML...');
         const tt=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:`${b.item_name}${u.cores.length?`\n(variações: ${[...u.cores,...op(1)].join(', ')} — NÃO coloque cor nem tamanho no título)`:''}`})}).then(r=>r.json()).catch(()=>({}));
