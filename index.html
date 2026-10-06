@@ -8475,18 +8475,20 @@ function dirNomeFamiliaMl(t){t=String(t||'').trim();if(t.length<=60)return t;con
 // estimativa (Clássico 14% + frete da Calculadora + 7%) — o valor final vem de ml_preco com a comissão real da categoria
 function dirPrecoMlEstimado(liq,peso){liq=Number(liq);if(!(liq>0))return null;const liqDe=p=>p-p*0.14-freteML(peso,p)-p*0.07;let lo=liq,hi=liq*6+500;for(let i=0;i<80;i++){const m=(lo+hi)/2;if(liqDe(m)<liq)lo=m;else hi=m;}let p=dir99(hi);for(let i=0;i<5&&liqDe(p)<liq-0.005;i++)p=dir99(p+0.01);return p;}
 // ABNT NBR 16933 (medidas do CORPO) — espelho de lb-mercadolivre/lib/produto-ml.js medidasAbnt (testado lá)
-const DIR_ABNT={38:{busto:88,cintura:70,quadril:96},40:{busto:92,cintura:74,quadril:100},42:{busto:96,cintura:78,quadril:104},44:{busto:100,cintura:82,quadril:108}};
+const DIR_ABNT={34:{busto:80,cintura:62,quadril:88},36:{busto:84,cintura:66,quadril:92},38:{busto:88,cintura:70,quadril:96},40:{busto:92,cintura:74,quadril:100},42:{busto:96,cintura:78,quadril:104},44:{busto:100,cintura:82,quadril:108}};
 function dirMedidasMl(t){
   const n=x=>Number(String(x||'').replace(',','.').match(/\d+(\.\d+)?/)?.[0])||0;
   const c=t.campos||{};
   if(n(c.Busto)){const m={CHEST_CIRCUMFERENCE_FROM:n(c.Busto)};if(n(c.Cintura))m.WAIST_CIRCUMFERENCE_FROM=n(c.Cintura);if(n(c.Quadril))m.HIP_CIRCUMFERENCE_FROM=n(c.Quadril);return{medidas:m,fonte:'cliente'};}
-  const ns=(String(c.Veste||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
+  // só a letra (P/M/G) sem medida nem "veste": régua brasileira usada na Killachay/Djan (M = 38/40, G = 42/44; P e PP extrapolados −4 cm)
+  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44'};const veste=c.Veste||LETRA[String(t.tam||'').trim().toUpperCase()]||'';
+  const ns=(String(veste).match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
   // plus size sem medida: só o busto (obrigatório no ML) por tabela de referência brasileira — cintura/quadril não são inventados
   const PLUS={GG:[104,108],G1:[112,116],G2:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
   if(!ns.length&&pl)return{medidas:{CHEST_CIRCUMFERENCE_FROM:pl[0],CHEST_CIRCUMFERENCE_TO:pl[1]},fonte:'referência plus size'};
   if(!ns.length)return null;
   const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
-  return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:'ABNT'};
+  return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:c.Veste?'ABNT':'referência BR pela letra'};
 }
 async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST',headers:{'Content-Type':'application/json',...(login?await authHeaders():{})},body:JSON.stringify({acao,...corpo})});return r.json();}
 window.__cpCriarMl=async(depoisDaShopee=false)=>{
@@ -8578,7 +8580,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     }}
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
-  }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span>`);}
+  }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`);}
   if(btn)btn.disabled=false;
 };
 // Foto com IA por opção da variação 1 (cor/estampa): a partir da foto real escolhida pra ela (lb-diretor-criativo capa_variacao)
