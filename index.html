@@ -8783,7 +8783,10 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const textoReq=[];
   // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
   let gridId=null,linhas={};
-  const opTam=id1==='SIZE'?u.cores.map(o=>({tam:o,campos:u.medidas?.[o.toUpperCase()]||{}})):id2==='SIZE'?u.tamanhos:[];
+  let opTam=id1==='SIZE'?u.cores.map(o=>({tam:o,campos:u.medidas?.[o.toUpperCase()]||{}})):id2==='SIZE'?u.tamanhos:[];
+  // moda sem variação de tamanho (só cor/estampa, Isabina 07/10/2026): o ML exige SIZE_GRID_ID → vai como tamanho "Único" (veste 36/42)
+  let tamImplicito=null;
+  if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&!opTam.length){tamImplicito='Único';opTam=[{tam:'Único',campos:{}}];}
   if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&opTam.length){
     linhaMl('ML: tabela de medidas...');
     const genVal=attrs.find(a=>a.id==='GENDER')?.values?.find(v=>String(v.id)===String(genero?.value_id));
@@ -8825,7 +8828,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   for(const cor of (u.cores.length?u.cores:[''])){for(const t of (u.tamanhos.length?u.tamanhos:[{tam:''}])){
     linhaMl(`ML: criando ${[cor,t.tam].filter(Boolean).join(' ')||'anúncio'}... (${criados.length+erros.length+1}/${nItens})`);
     const vars=[[u.nome1,id1,cor],[u.nome2,id2,t.tam]].filter(v=>v[2]);
-    const vCor=vars.find(v=>v[1]==='COLOR')?.[2],vTam=vars.find(v=>v[1]==='SIZE')?.[2];
+    const vCor=vars.find(v=>v[1]==='COLOR')?.[2],vTam=vars.find(v=>v[1]==='SIZE')?.[2]||tamImplicito;
     const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
     const estC=typeof est==='object'?Number(est[`${cor}|${t.tam||''}`]??est[cor]??0):est;
     if(typeof est==='object'&&!(estC>0))continue; // migração: combinação sem estoque (ou fora das 30 com mais estoque) não vira anúncio
