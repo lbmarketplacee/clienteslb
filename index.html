@@ -1952,6 +1952,7 @@ textarea{resize:vertical;min-height:70px;}
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico" style="background:var(--gold-soft);color:var(--gold)"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></div><h3>Central Criativa IA</h3></div>
+          <div class="ia-gasto" style="font-size:12.5px;margin:-6px 0 14px"></div>
           <div class="ia-mk-sel" style="margin-bottom:16px">
             <button class="ia-mk-btn active" data-dirmk="shopee"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px;margin-right:5px"><path fill="#ee4d2d" d="M19.5 7.5h-2.6C16.7 5 14.6 3.2 12 3.2S7.3 5 7.1 7.5H4.5c-.5 0-.8.4-.8.8l-.7 10.8c-.1 1.6 1.1 2.9 2.7 2.9h12.6c1.6 0 2.8-1.3 2.7-2.9l-.7-10.8c0-.4-.3-.8-.8-.8zM12 4.9c1.6 0 2.9 1.1 3.1 2.6H8.9c.2-1.5 1.5-2.6 3.1-2.6z"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="700" font-family="Arial,sans-serif">S</text></svg> Shopee</button>
             <button class="ia-mk-btn" data-dirmk="ml"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px;margin-right:5px"><ellipse cx="12" cy="12" rx="10" ry="7.6" fill="#FFE600" stroke="#2D3277" stroke-width="1.5"/><path d="M5.5 12.2c1.6-1.7 3.1-2.6 4.6-1.1l1.9 1.7 1.9-1.7c1.5-1.5 3-.6 4.6 1.1" stroke="#2D3277" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg> Mercado Livre</button>
@@ -5973,7 +5974,7 @@ window.__mlPubGerar=async(id)=>{
     l.atributos=(dataAttr.ok?dataAttr.atributos:[]).map(a=>({...a,obrigatorio:true,value_id:null,value_name:null}));
 
     // 3) gerar título e descrição com a IA (motor leve, sem funil de fotos pesado)
-    const respIa=await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:l.nome,marketplace:'mercadolivre',imagem:null})});
+    const respIa=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:l.nome,marketplace:'mercadolivre',imagem:null})});
     const dataIa=await respIa.json();
     if(respIa.ok&&!dataIa.erro){l.titulo=dataIa.titulo||l.nome;l.descricao=dataIa.descricao||'';}
     else{l.titulo=l.nome;}
@@ -7618,6 +7619,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='shopee')window.__shopeeSubTab('apis');
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
   if(alvo==='criarprodutos')cpRender();
+  if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
 }));
 window.__irParaMarketing=(painel,subtab)=>{
   document.querySelector('[data-page="marketing"]')?.click();
@@ -7971,6 +7973,45 @@ function crmWhatsLink(numero){
   const comDDI=limpo.length<=11?'55'+limpo:limpo;
   return `https://wa.me/${comDDI}`;
 }
+/* ================= CONTADOR DE GASTO COM IA (Lincoln 06/10/2026) =================
+   Toda chamada de IA (Central Criativa, Criar Produtos, logo, títulos, ficha técnica) passa por iaFetch:
+   confere o limite diário ANTES de gerar foto, conta as fotos que vieram e grava o custo ESTIMADO em iaUso.
+   Preço Google (gemini-3.1-flash-image 1K): US$ 0,067/foto; texto ~US$ 0,003/chamada. Config em configuracoes/ia. */
+const IA_US_FOTO=0.067,IA_US_TEXTO=0.003;
+let iaConfigCache=null;
+async function iaConfig(){if(iaConfigCache)return iaConfigCache;try{const d=await getDoc(doc(db,'configuracoes','ia'));iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5,...(d.exists()?d.data():{})};}catch(e){iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5};}return iaConfigCache;}
+const iaHoje=()=>lbHojeISO();
+async function iaGasto(){const hoje=iaHoje(),mes=hoje.slice(0,7);const q=await getDocs(query(collection(db,'iaUso'),where('mes','==',mes)));let dia=0,m=0,fotosMes=0;q.docs.forEach(d=>{const x=d.data();m+=x.custoBRL||0;fotosMes+=x.fotos||0;if(x.dia===hoje)dia+=x.custoBRL||0;});return{dia,mes:m,fotosMes};}
+function iaPrevisaoFotos(corpo){if(!corpo)return 0;if(corpo.acao==='capa_variacao'||corpo.acao==='logo')return 1;if(!corpo.acao&&Array.isArray(corpo.imagens))return Math.min(Number(corpo.quantidadeFotos)||5,6);return 0;}
+async function iaFetch(url,opts){
+  let corpo=null;try{corpo=JSON.parse(opts?.body||'{}');}catch(e){}
+  const prev=iaPrevisaoFotos(corpo);const cfg=await iaConfig();
+  if(prev>0){const g=await iaGasto().catch(()=>({dia:0}));const custoPrev=prev*IA_US_FOTO*cfg.cotacao;
+    if(cfg.limiteDiarioBRL>0&&g.dia+custoPrev>cfg.limiteDiarioBRL){
+      const msg=`Limite diário de IA\nHoje já foram ~${fmtR(g.dia)} (limite ${fmtR(cfg.limiteDiarioBRL)}).\nEsta geração custa ~${fmtR(custoPrev)}.`;
+      if(cfg.modo==='bloquear'){lbAvisar(msg+'\nBloqueado até amanhã.');throw new Error('limite diário de IA atingido');}
+      if(!await lbConfirmar(msg+'\nGerar mesmo assim?',{okTxt:'Gerar'}))throw new Error('cancelado (limite diário de IA)');}}
+  const r=await fetch(url,opts);
+  r.clone().json().then(async d=>{
+    const fotos=Array.isArray(d?.fotos)?d.fotos.filter(f=>f.imagem).length:(d?.imagem?1:0);
+    const textos=prev===0||(!corpo?.acao&&Array.isArray(corpo?.imagens))?1:0;
+    if(!fotos&&!textos)return;
+    const usd=fotos*IA_US_FOTO+textos*IA_US_TEXTO;const hoje=iaHoje();
+    await addDoc(collection(db,'iaUso'),{dia:hoje,mes:hoje.slice(0,7),quando:serverTimestamp(),tipo:corpo?.acao||(url===IA_ENDPOINT?'texto':'funil'),fotos,textos,custoUSD:Math.round(usd*10000)/10000,custoBRL:Math.round(usd*cfg.cotacao*100)/100,usuario:currentUser||''});
+    iaAtualizarPainel();
+  }).catch(()=>{});
+  return r;
+}
+async function iaAtualizarPainel(){
+  const g=await iaGasto().catch(()=>null);const cfg=await iaConfig();if(!g)return;
+  document.querySelectorAll('.ia-gasto').forEach(el=>{el.innerHTML=`<span>Gasto com IA (estimado): <b>hoje ${fmtR(g.dia)}</b> · mês ${fmtR(g.mes)} · ${g.fotosMes} foto(s) no mês</span>${isLincoln()?` <span style="color:var(--text-dim)">· limite ${fmtR(cfg.limiteDiarioBRL)}/dia (${cfg.modo}) <a href="#" style="color:var(--gold)" onclick="event.preventDefault();window.__iaLimite()">mudar</a></span>`:''}`;});
+}
+window.__iaLimite=async()=>{
+  const cfg=await iaConfig();const v=prompt(`Limite diário de gasto com IA (R$). 0 = sem limite.`,String(cfg.limiteDiarioBRL));if(v===null)return;
+  const n=lbValorBR(v);if(!(n>=0)){lbAvisar('Valor inválido.');return;}
+  const bloquear=await lbConfirmar(`Quando passar de ${fmtR(n)} no dia:\nOK = BLOQUEAR novas gerações\nCancelar = só AVISAR e perguntar`,{okTxt:'Bloquear',cancelarTxt:'Só avisar'});
+  await setDoc(doc(db,'configuracoes','ia'),{limiteDiarioBRL:n,modo:bloquear?'bloquear':'avisar',cotacao:cfg.cotacao||5.5},{merge:true});iaConfigCache=null;iaAtualizarPainel();showToast('Limite salvo.');
+};
 /* ================= DIRETOR CRIATIVO — Funil de Fotos ================= */
 const DIRETOR_API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
 let dirMarketplace = 'shopee';
@@ -8108,12 +8149,12 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   try{
     let data = null;
     if(soTexto){
-      const resp = await fetch(IA_ENDPOINT, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ produto: produtoIA, marketplace: dirMarketplace, imagem: dirImagensB64[0] || null })});
+      const resp = await iaFetch(IA_ENDPOINT, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ produto: produtoIA, marketplace: dirMarketplace, imagem: dirImagensB64[0] || null })});
       data = await resp.json();
       if(!resp.ok || data.erro){resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;btn.disabled=false;btn.textContent='Gerar';return;}
       data.ok = true;
     }else if(querFotos){
-      const resp = await fetch(DIRETOR_API, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ produto: produtoIA, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })});
+      const resp = await iaFetch(DIRETOR_API, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ produto: produtoIA, marketplace: dirMarketplace, imagens: dirImagensB64, quantidadeFotos: qtd })});
       data = await resp.json();
       if(!data.ok){resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;btn.disabled=false;btn.textContent='Gerar';return;}
     }
@@ -8200,7 +8241,7 @@ function cpRender(){
   const temShopee=c=>!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken),temMl=c=>!!(c.mlUserId&&c.mlRefreshToken);
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&(temShopee(c)||temMl(c))).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.dataset.pronto='1';
-  el.innerHTML=`<div class="cm-secao-titulo" style="margin-bottom:6px"><div class="cm-secao-ico" style="background:var(--gold);color:#111"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></div><h3>Criar Produtos</h3></div>
+  el.innerHTML=`<div class="ia-gasto" style="font-size:12.5px;margin:0 0 10px"></div><div class="cm-secao-titulo" style="margin-bottom:6px"><div class="cm-secao-ico" style="background:var(--gold);color:#111"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></div><h3>Criar Produtos</h3></div>
   <div style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.6"><b>Shopee:</b> preço cheio +30%, desconto fixo pelo preço de venda, marca Malaysia Collection, Shopee Ads ROAS 20. <b>Mercado Livre:</b> Clássico, preço de venda direto (7% de folga p/ promoções), marca = nome da loja, 1 anúncio por cor e tamanho, tabela de medidas (ABNT se não tiver medida). O Ads do ML continua manual (o ML não libera escrita de Ads pro nosso app).</div>
   <div class="cm-secao" style="border:1px solid var(--border);border-radius:12px;padding:16px">
     <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">1. Cliente, fotos e informações</h3></div>
@@ -8249,12 +8290,12 @@ window.__cpGerar=async()=>{
   const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+(v1?`\n${v1.nome} disponíveis: ${v1.op.join(', ')}.`:'')+(v2?`\n${v2.nome} disponíveis: ${v2.op.map(o=>{const c=medidas[o.toUpperCase()];return o+(c&&Object.keys(c).length?` (${Object.entries(c).map(([k,v])=>k+' '+v).join(', ')})`:'');}).join('; ')}.`:'');
   btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';
   try{
-    const d=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:5})})).json();
+    const d=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:5})})).json();
     if(!d.ok)throw new Error(d.erro||'a Central Criativa não respondeu');
     const fotos=(d.fotos||[]).filter(f=>f.imagem);
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
     let tituloMl='';
-    if(plataformas.includes('ml')){st.textContent='Gerando o título do Mercado Livre...';try{const t=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:produtoIA})})).json();tituloMl=t.ok?t.titulo:'';}catch(e){}}
+    if(plataformas.includes('ml')){st.textContent='Gerando o título do Mercado Livre...';try{const t=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:produtoIA})})).json();tituloMl=t.ok?t.titulo:'';}catch(e){}}
     window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:linhasGuia.length?dirGuiaTamanhos(linhasGuia,''):null,reais:cpFotos.slice(),cores,tamanhos,nome1,nome2,medidas,plataformas,material,lojaId};
     st.textContent=`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
     dirShopeeRender('cpPasso2',lojaId);
@@ -8316,7 +8357,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
     const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:a.name,livre:true});
     linhaMl('ML: preenchendo a ficha técnica...');
-    let ia=[];if(paraIA.length){const r=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
+    let ia=[];if(paraIA.length){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
     const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
     // fabricante obrigatório (ex.: caixas de embalagem) e a IA não soube → nome da loja
     if(paraIA.some(a=>a.id==='MANUFACTURER')&&!extras.some(e=>e.id==='MANUFACTURER'))extras.push({id:'MANUFACTURER',value_name:c.nome});
@@ -8385,7 +8426,7 @@ window.__cpGerarVar=async()=>{
   let feitos=0,erros=0;
   for(const op of u.cores){
     st.textContent=`Gerando ${op}... (${feitos+erros+1}/${u.cores.length}, ~30s cada)`;
-    try{const r=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',opcao:op,imagem:sel[op],produto:u.produto,marketplace:'shopee'})})).json();
+    try{const r=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',opcao:op,imagem:sel[op],produto:u.produto,marketplace:'shopee'})})).json();
       if(r.ok){u.fotosVar[op]=await dirPara34(r.imagem);feitos++;dirRenderVar();}else erros++;}catch(e){erros++;}
   }
   st.textContent=`${feitos} foto(s) geradas${erros?` · ${erros} falharam (essas ficam com a foto real)`:''}. Desmarque a que não ficou fiel à estampa.`;btn.disabled=false;
@@ -8423,7 +8464,7 @@ window.__dirShCriar=async()=>{
     const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
     passo('Preenchendo as especificações...');
     let atributos=[];
-    if(arvore.length){try{const ra=await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${u.titulo}\n${u.produto}\nCores: ${u.cores.join(', ')}`,arvore})}).then(r=>r.json());atributos=ra.atributos||[];}catch(e){console.warn('atributos',e);}}
+    if(arvore.length){try{const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${u.titulo}\n${u.produto}\nCores: ${u.cores.join(', ')}`,arvore})}).then(r=>r.json());atributos=ra.atributos||[];}catch(e){console.warn('atributos',e);}}
     const canais=await ler('/api/v2/logistics/get_channel_list',{});
     const logisticas=(canais?.response?.logistics_channel_list||[]).filter(x=>x.enabled&&!x.mask_channel_id).map(x=>x.logistics_channel_id);
     if(!logisticas.length)throw new Error('a loja não tem frete ativo');
@@ -8490,7 +8531,7 @@ document.getElementById('logoGerarBtn')?.addEventListener('click', async ()=>{
   btn.disabled = true; btn.textContent = '🏷️ Gerando...';
   resEl.innerHTML = '<div class="empty-state" style="padding:14px">Gerando logotipo, aguarde...</div>';
   try{
-    const resp = await fetch(DIRETOR_API, {
+    const resp = await iaFetch(DIRETOR_API, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ acao: 'logo', nomeLoja, estilo })
