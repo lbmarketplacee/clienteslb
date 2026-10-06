@@ -1100,7 +1100,8 @@ textarea{resize:vertical;min-height:70px;}
 
 /* ===== Catálogo ===== */
 .cat-barra{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.cat-barra select,.cat-barra input,.cat-acoes input{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px}
-.cat-barra select:first-child{min-width:220px}.cat-barra input{flex:1;min-width:180px}
+.cat-barra select{width:auto;flex:0 0 auto}.cat-barra select:first-child{min-width:220px}.cat-barra input{flex:1;min-width:180px;width:auto}
+.cat-linha input[type=checkbox]{width:16px;height:16px;flex:0 0 16px;margin:0}.cat-acoes input{flex:0 0 130px}
 .cat-filtros{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .cat-chip{border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer}.cat-chip b{color:var(--text);margin-left:3px}
 .cat-chip.on{border-color:#a855f7;color:#a855f7;background:#a855f712}.cat-chip.sem_estoque b{color:var(--red)}.cat-chip.variacao_zerada b,.cat-chip.estoque_baixo b{color:var(--amber)}
