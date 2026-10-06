@@ -983,6 +983,15 @@ textarea{resize:vertical;min-height:70px;}
 .c360-title{flex:1;min-width:0}.c360-title h2{margin:0 0 4px;font-size:25px;color:var(--text)}.c360-title p{margin:0;color:var(--text-dim);font-size:12px}
 .c360-status{font-size:10px;font-weight:800;padding:6px 10px;border-radius:7px;background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
 .c360-body{padding:24px 28px;max-height:72vh;overflow-y:auto}
+.ml-termo{display:flex;gap:4px;align-items:center;height:14px;margin-top:4px}.ml-termo i{flex:1;height:9px;border-radius:3px;transition:.2s}
+.ml-sub{display:block;font-size:11px;font-weight:500;color:var(--text-dim);margin-top:5px;letter-spacing:0;text-transform:none}
+.ml-pill{font-size:11px;padding:3px 9px;border-radius:99px;white-space:nowrap;align-self:center}.ml-pill.ok{background:#22c55e22;color:#22c55e}.ml-pill.info{background:#3b82f622;color:#60a5fa}.ml-pill.warn{background:#f59e0b22;color:#f59e0b}.ml-pill.dim{background:#94a3b822;color:var(--text-dim)}
+.ml-rep-top{max-width:360px;margin-bottom:12px}
+.ml-rep-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ml-rep-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font-size:12px}.ml-rep-item span{color:var(--text-dim);font-size:11px}.ml-rep-item b{font-size:18px}.ml-rep-item b small{font-size:11px;color:var(--text-dim);font-weight:500}.ml-rep-item>small{color:var(--text-dim);font-size:10.5px}
+.ml-rep-item.ok b{color:#22c55e}.ml-rep-item.warn b{color:#f59e0b}.ml-rep-item.bad b{color:#ef4444}.ml-rep-item.ok{border-color:#22c55e40}.ml-rep-item.warn{border-color:#f59e0b55}.ml-rep-item.bad{border-color:#ef444466}
+.ml-rep-rodape{margin-top:10px;font-size:12px;color:var(--text-dim)}.ml-rep-rodape b{color:var(--text)}
+@media(max-width:800px){.ml-rep-grid{grid-template-columns:repeat(2,1fr)}}
 .c360-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .c360-kpi{background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:15px}.c360-kpi span{display:block;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}.c360-kpi b{font-family:'Oswald',sans-serif;font-size:22px;color:var(--text)}
 .c360-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
@@ -6233,21 +6242,62 @@ window.__mlCliente360=async(clienteId)=>{
   document.getElementById('mlc360ListaPromocoes').innerHTML='<div class="c360-empty">Carregando...</div>';
   document.getElementById('mlCliente360Overlay').classList.remove('hidden');
 
+  document.getElementById('mlc360RepDet').innerHTML='<div class="c360-empty">Carregando...</div>';
+  const ML=`https://lb-mercadolivre.vercel.app/api/mercadolivre`;
+  const tk=cliente.mlAccessToken;
+  const hoje=new Date(),ini=new Date(hoje.getTime()-30*864e5),dia=d=>d.toISOString().slice(0,10);
   const [respRep,respProm,respAds]=await Promise.all([
-    fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_reputacao&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`).then(r=>r.json()).catch(()=>({ok:false})),
-    fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=listar_promocoes&access_token=${cliente.mlAccessToken}&user_id=${cliente.mlUserId}`).then(r=>r.json()).catch(()=>({ok:false})),
-    fetch(`https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=buscar_limites_ads&access_token=${cliente.mlAccessToken}`).then(r=>r.json()).catch(()=>({ok:false}))
+    fetch(`${ML}?acao=buscar_reputacao&access_token=${tk}&user_id=${cliente.mlUserId}`).then(r=>r.json()).catch(()=>({ok:false})),
+    fetch(`${ML}?acao=listar_promocoes&access_token=${tk}&user_id=${cliente.mlUserId}`).then(r=>r.json()).catch(()=>({ok:false})),
+    // Ads: o "limite diário" (buscar_limites_ads) não funciona mais no ML — mostra investimento e ROAS dos últimos 30 dias
+    (async()=>{try{const a=await fetch(`${ML}?acao=buscar_advertiser_id&access_token=${tk}`).then(r=>r.json());if(!a.ok)return{ok:false,sem:true};
+      const c=await fetch(`${ML}?acao=listar_campanhas_ads&access_token=${tk}&advertiser_id=${a.advertiser_id}&site_id=${a.site_id||'MLB'}&data_inicio=${dia(ini)}&data_fim=${dia(hoje)}`).then(r=>r.json());
+      if(!c.ok)return{ok:false};const m=(c.campanhas||[]).reduce((t,x)=>{const mm=x.metrics||{};t.custo+=Number(mm.cost)||0;t.receita+=Number(mm.total_amount)||0;if(x.status==='active')t.ativas++;return t;},{custo:0,receita:0,ativas:0});return{ok:true,...m,total:(c.campanhas||[]).length};}catch(e){return{ok:false};}})()
   ]);
-
-  document.getElementById('mlc360Reputacao').textContent=(respRep.ok&&respRep.reputacao)?(respRep.reputacao.level_id||'sem nível'):'—';
-  document.getElementById('mlc360Ads').textContent=respAds.ok?`${fmtR(respAds.minimo)} – ${fmtR(respAds.maximo)}`:'—';
+  if(mlc360ClienteAtual!==clienteId)return;
+  document.getElementById('mlc360Reputacao').innerHTML=mlTermometroHtml(respRep.ok?respRep.reputacao:null,true);
+  document.getElementById('mlc360RepDet').innerHTML=respRep.ok?mlReputacaoDetalheHtml(respRep.reputacao):'<div class="c360-empty">Não foi possível ler a reputação agora.</div>';
+  document.getElementById('mlc360Ads').innerHTML=respAds.ok?`${fmtR(respAds.custo)}<small class="ml-sub">${respAds.custo>0?`ROAS ${(respAds.receita/respAds.custo).toFixed(1)} · ${fmtR(respAds.receita)} em vendas`:'sem investimento no período'}</small>`:(respAds.sem?'<span style="font-size:13px;color:var(--text-dim)">Sem Product Ads</span>':'—');
 
   const promocoes=(respProm.ok&&respProm.promocoes)?respProm.promocoes:[];
-  document.getElementById('mlc360Promocoes').textContent=promocoes.length;
+  const ativas=promocoes.filter(p=>p.status==='started'),agendadas=promocoes.filter(p=>p.status==='pending');
+  document.getElementById('mlc360Promocoes').innerHTML=`${ativas.length}${agendadas.length?`<small class="ml-sub">+ ${agendadas.length} agendada(s)</small>`:''}`;
+  const ordem={started:0,pending:1,candidate:2};
   document.getElementById('mlc360ListaPromocoes').innerHTML=promocoes.length
-    ?promocoes.map(p=>`<div class="c360-row"><span>${esc(p.name||p.type)}</span><b>${esc(p.status||'')}</b></div>`).join('')
-    :'<div class="c360-empty">Nenhuma promoção/cupom ativo.</div>';
+    ?[...promocoes].sort((a,b)=>(ordem[a.status]??9)-(ordem[b.status]??9)).map(p=>{const st=ML_PROMO_STATUS[p.status]||[p.status||'—','dim'];const tipo=ML_PROMO_TIPO[p.type]||p.type||'Promoção';
+      const nome=p.name&&!/^Impulsione suas vendas$/i.test(p.name)?p.name:tipo;const det=p.type==='SELLER_COUPON_CAMPAIGN'&&p.fixed_percentage?` · ${p.fixed_percentage}% (mín. ${fmtR(p.min_purchase_amount||0)})`:'';
+      const quando=p.status==='pending'&&p.start_date?`começa ${new Date(p.start_date).toLocaleDateString('pt-BR')}`:p.finish_date?`até ${new Date(p.finish_date).toLocaleDateString('pt-BR')}`:'';
+      return `<div class="c360-row"><span><b style="color:var(--text)">${esc(nome)}</b><br><small style="color:var(--text-dim)">${esc(nome===tipo?'':tipo)}${det}${quando?`${nome===tipo&&!det?'':' · '}${quando}`:''}</small></span><b class="ml-pill ${st[1]}">${st[0]}</b></div>`;}).join('')
+    :'<div class="c360-empty">Nenhuma promoção ou cupom no momento.</div>';
 };
+// ===== Mercado Livre: reputação em português e com o termômetro de cores =====
+const ML_TERMO=[{id:'1_red',cor:'#e53935',nome:'Vermelho'},{id:'2_orange',cor:'#fb8c00',nome:'Laranja'},{id:'3_yellow',cor:'#fdd835',nome:'Amarelo'},{id:'4_light_green',cor:'#9ccc65',nome:'Verde-claro'},{id:'5_green',cor:'#2e7d32',nome:'Verde'}];
+const ML_LIDER={platinum:'MercadoLíder Platinum',gold:'MercadoLíder Gold',silver:'MercadoLíder'};
+const ML_PROMO_TIPO={LIGHTNING:'Oferta relâmpago',DEAL:'Campanha do Mercado Livre',SMART:'Campanha co-participada (ML ajuda no desconto)',SELLER_COUPON_CAMPAIGN:'Cupom da loja',SELLER_CAMPAIGN:'Campanha da loja',UNHEALTHY_STOCK:'Acelere as vendas do Full',PRICE_DISCOUNT:'Desconto no preço',MARKETPLACE_CAMPAIGN:'Campanha do Mercado Livre',VOLUME:'Desconto por quantidade',PRE_NEGOTIATED:'Desconto negociado',PRICE_MATCHING:'Preço competitivo'};
+const ML_PROMO_STATUS={started:['Ativa','ok'],pending:['Agendada','info'],candidate:['Convite','warn'],finished:['Encerrada','dim'],paused:['Pausada','warn']};
+function mlTermometroHtml(rep,compacto){
+  const i=ML_TERMO.findIndex(t=>t.id===rep?.level_id);
+  const barra=`<div class="ml-termo">${ML_TERMO.map((t,k)=>`<i style="background:${t.cor};opacity:${k===i?1:.22}${k===i?';transform:scaleY(1.35)':''}"></i>`).join('')}</div>`;
+  if(i<0)return `${barra}<small class="ml-sub">Sem reputação ainda (poucas vendas)</small>`;
+  const lider=ML_LIDER[rep.power_seller_status];
+  return `${barra}<small class="ml-sub" style="color:${ML_TERMO[i].cor==='#fdd835'?'#e0b400':ML_TERMO[i].cor};font-weight:700">${ML_TERMO[i].nome}${lider?` · ${lider}`:''}</small>`;
+}
+function mlReputacaoDetalheHtml(rep){
+  if(!rep)return '<div class="c360-empty">Sem dados de reputação.</div>';
+  const m=rep.metrics||{},tr=rep.transactions||{},rt=tr.ratings||{};
+  const pct=x=>`${(Number(x||0)*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}%`;
+  // cor de cada métrica: 0 = verde; o resto, quanto maior pior (referência conservadora — o ML não devolve os limites pela API)
+  const cor=(rate,amarelo,vermelho)=>rate<=0?'ok':rate<amarelo?'ok':rate<vermelho?'warn':'bad';
+  const itens=[
+    ['Vendas concluídas',`${m.sales?.completed??'—'}`,'neutro','últimos 60 dias'],
+    ['Reclamações',`${pct(m.claims?.rate)} <small>(${m.claims?.value??0})</small>`,cor(m.claims?.rate||0,.01,.025),'das vendas, 60 dias'],
+    ['Envios com atraso',`${pct(m.delayed_handling_time?.rate)} <small>(${m.delayed_handling_time?.value??0})</small>`,cor(m.delayed_handling_time?.rate||0,.06,.12),'despachados fora do prazo'],
+    ['Cancelamentos pela loja',`${pct(m.cancellations?.rate)} <small>(${m.cancellations?.value??0})</small>`,cor(m.cancellations?.rate||0,.005,.015),'vendas canceladas, 60 dias']
+  ];
+  const aval=(rt.positive||0)+(rt.neutral||0)+(rt.negative||0);
+  return `<div class="ml-rep-top">${mlTermometroHtml(rep)}</div><div class="ml-rep-grid">${itens.map(([n,v,c,d])=>`<div class="ml-rep-item ${c}"><span>${n}</span><b>${v}</b><small>${d}</small></div>`).join('')}</div>
+    <div class="ml-rep-rodape">Histórico: <b>${tr.completed??0}</b> vendas concluídas · <b>${tr.canceled??0}</b> canceladas${aval?` · avaliações: <b style="color:#2e7d32">${Math.round((rt.positive||0)*100)}% positivas</b>, ${Math.round((rt.neutral||0)*100)}% neutras, ${Math.round((rt.negative||0)*100)}% negativas`:''}</div>`;
+}
 window.__closeMlCliente360=()=>document.getElementById('mlCliente360Overlay')?.classList.add('hidden');
 document.getElementById('mlCliente360Overlay')?.addEventListener('click',e=>{if(e.target.id==='mlCliente360Overlay')window.__closeMlCliente360();});
 document.getElementById('mlc360AtualizarGmvBtn')?.addEventListener('click',async()=>{
@@ -9637,10 +9687,11 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
         <div class="c360-kpi"><span>GMV mês atual</span><b id="mlc360Gmv">R$ 0</b></div>
         <div class="c360-kpi"><span>Reputação</span><b id="mlc360Reputacao">—</b></div>
         <div class="c360-kpi"><span>Promoções ativas</span><b id="mlc360Promocoes">0</b></div>
-        <div class="c360-kpi"><span>Limite diário Ads</span><b id="mlc360Ads" style="font-size:15px">—</b></div>
+        <div class="c360-kpi"><span>Mercado Ads (30 dias)</span><b id="mlc360Ads" style="font-size:15px">—</b></div>
       </div>
+      <div class="c360-card" style="margin-bottom:16px"><h3>Reputação no Mercado Livre</h3><div id="mlc360RepDet"><div class="c360-empty">Carregando...</div></div></div>
       <div class="c360-grid">
-        <div class="c360-card"><h3>Cupons/Promoções ativas</h3><div id="mlc360ListaPromocoes"><div class="c360-empty">Carregando...</div></div></div>
+        <div class="c360-card"><h3>Promoções e cupons</h3><div id="mlc360ListaPromocoes"><div class="c360-empty">Carregando...</div></div></div>
         <div class="c360-card"><h3>Ações rápidas</h3><div class="c360-actions" style="flex-direction:column"><button class="btn btn-gold btn-sm" id="mlc360AtualizarGmvBtn">Atualizar GMV</button><button class="btn btn-ghost btn-sm" id="mlc360CupomBtn">Configurar Cupom Automático</button><button class="btn btn-ghost btn-sm" id="mlc360ConvitesBtn">Ver Convites de Oferta Relâmpago</button></div></div>
       </div>
     </div>
