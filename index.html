@@ -1136,6 +1136,11 @@ textarea{resize:vertical;min-height:70px;}
 .fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
 .fin-row:last-child{border-bottom:none}
 
+/* ===== TikTok promoções + modo revisor ===== */
+.ttp-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin:8px 0}.ttp-form .field{margin:0}.ttp-preco,.ttp-novo-preco{padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px}
+@media(max-width:800px){.ttp-form{grid-template-columns:1fr}}
+body.modo-revisor .nav-item:not([data-page="marketing"]){display:none!important}
+body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!important}
 /* ===== Catálogo ===== */
 .cat-barra{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.cat-barra select,.cat-barra input,.cat-acoes input{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px}
 .cat-barra select{width:auto;flex:0 0 auto}.cat-barra select:first-child{min-width:220px}.cat-barra input{flex:1;min-width:180px;width:auto}
@@ -2316,7 +2321,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="sub-bar">
             <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">Conexão e GMV</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Catálogo</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">Produtos</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">Descontos</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="promocoes" onclick="window.__tiktokSubTab('promocoes')">Gerenciar promoções</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">Descontos</button></div></div>
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="gmv">
@@ -2375,6 +2380,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="cm-lista-simples" id="cmDescontosTiktokLista"></div>
           </div>
 
+          <div class="tiktok-subpanel" data-tiktoksubpanel="promocoes" style="display:none"><div id="ttpPainel"></div></div>
           <div class="tiktok-subpanel" data-tiktoksubpanel="oferta" style="display:none">
           <div class="sub-cab" style="--acc-bg:#ffffff12;--acc-bd:#ffffff40"><span class="sub-cab-ico" style="color:#ffffff">🤖</span><div><b>Robô de oferta relâmpago</b><div class="sub-cab-desc">Conectou a loja, o robô liga sozinho: cria as ofertas do mês todo (preço do desconto fixo −5%, 72h cada, 3 minutos de intervalo) e agenda o mês seguinte nos últimos dias. Desmarque o quadradinho pra pausar um cliente. <b>🔎 Simular</b> mostra o que ele faria, sem criar nada.</div></div></div>
           <div id="ttRoboLista" style="margin-bottom:24px"></div>
@@ -3072,7 +3078,14 @@ function abrirPaginaDaUrl(){
   if(btn&&!btn.classList.contains('hidden')&&btn.offsetParent!==null)btn.click();
 }
 let unsubC=null,unsubG=null,unsubCt=null;
-function startListeners(){if(unsubC)return;startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
+// Usuário de revisão da TikTok (revisor@): vê só a loja de demonstração (catolis = AQUARIOS) e só o card do TikTok.
+const REVISOR_EMAIL='revisor@lbmarketplace.com.br',CLIENTE_DEMO='Cvxb1UTWldoo1yLljP5d';
+const ehRevisor=()=>currentEmail===REVISOR_EMAIL;
+function startListeners(){if(unsubC)return;
+  if(ehRevisor()){document.body.classList.add('modo-revisor');
+    unsubC=onSnapshot(doc(db,"clientes",CLIENTE_DEMO),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();},e=>console.error('[revisor]',e));
+    setTimeout(()=>{try{window.__irParaMarketing('tiktokshop');window.__tiktokSubTab('promocoes');}catch(e){}},800);
+    return;}startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
 /* NAV */
 /* ===== MENU MOBILE (abrir/fechar) ===== */
 function fecharMenuMobile(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
@@ -5162,6 +5175,135 @@ function tiktokAtualizarStatusModal(c){
 }
 const SHOPEE_API = 'https://lb-shopee-gmv.vercel.app/api/shopee';
 const TIKTOK_API = 'https://lb-tiktok-shop.vercel.app/api/tiktok-shop';
+/* ============== TikTok — Gerenciar promoções da loja (pedido da revisão do app, 07/10/2026) ==============
+   Consulta, cria, altera e desativa promoções DA PLATAFORMA (não o calendário interno do robô). Backend:
+   lb-shopee-gmv/api/tiktok-promocoes.js — tudo confirmado ao vivo na catolis. */
+const TTP_API='https://lb-shopee-gmv.vercel.app/api/tiktok-promocoes';
+const ttp={clienteId:'',lista:[],produtos:null,aberta:null,detalhe:null};
+async function ttpApi(acao,extra={}){
+  const r=await fetch(TTP_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:ttp.clienteId,...extra})});
+  return r.json();
+}
+const ttpData=u=>u?new Date(u*1000).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+const ttpLocal=u=>{const d=new Date((u-3*3600)*1000);return d.toISOString().slice(0,16);};
+const ttpUnix=v=>v?Math.floor(new Date(v+':00-03:00').getTime()/1000):null;
+const TTP_COR={ONGOING:'ok',NOT_START:'info',EXPIRED:'dim',DEACTIVATED:'dim'};
+function ttpRender(){
+  const el=document.getElementById('ttpPainel');if(!el)return;
+  const lojas=(clientesCache||[]).filter(c=>c.tiktokShopCipher&&c.tiktokAccessToken&&c.ativo!==false);
+  if(!el.dataset.pronto){
+    el.dataset.pronto='1';
+    el.innerHTML=`<div class="sub-cab" style="--acc-bg:#25f4ee12;--acc-bd:#25f4ee40"><span class="sub-cab-ico" style="color:#25f4ee">%</span><div><b>Gerenciar promoções <span style="font-weight:400;color:var(--text-dim)">· Manage TikTok Shop promotions</span></b><div class="sub-cab-desc">Promoções reais da loja no TikTok Shop (pela API de Promotion): consultar, criar oferta relâmpago ou desconto fixo, alterar nome, horário, produtos e preços, e desativar. <i>Query, create, update and deactivate the shop's platform promotions.</i></div></div></div>
+      <div class="cat-barra"><select id="ttpLoja" onchange="window.__ttpCarregar()"><option value="">Escolha a loja… (choose shop)</option></select><button class="btn btn-ghost btn-sm" onclick="window.__ttpCarregar()">Atualizar · Refresh</button><button class="btn btn-gold btn-sm" onclick="window.__ttpNova()">+ Nova promoção · New promotion</button></div>
+      <div id="ttpStatus" class="saude-vazio"></div><div id="ttpCorpo"></div>`;
+  }
+  const sel=document.getElementById('ttpLoja'),atual=sel.value;
+  sel.innerHTML='<option value="">Escolha a loja… (choose shop)</option>'+lojas.map(c=>`<option value="${c.id}"${c.id===atual?' selected':''}>${esc(c.tiktokShopName||c.nome)}${c.tiktokShopName&&c.nome?` — ${esc(c.nome)}`:''}</option>`).join('');
+  if(lojas.length===1&&!sel.value){sel.value=lojas[0].id;window.__ttpCarregar();}
+}
+window.__ttpCarregar=async()=>{
+  ttp.clienteId=document.getElementById('ttpLoja').value;ttp.aberta=null;ttp.produtos=null;
+  const corpo=document.getElementById('ttpCorpo'),st=document.getElementById('ttpStatus');
+  if(!ttp.clienteId){corpo.innerHTML='';return;}
+  st.textContent='Consultando as promoções no TikTok Shop… (loading promotions)';corpo.innerHTML='';
+  const r=await ttpApi('listar').catch(e=>({ok:false,erro:e.message}));
+  if(!r.ok){st.textContent='Erro: '+r.erro;return;}
+  ttp.lista=r.atividades;st.textContent=`${r.atividades.length} promoções na loja ${r.loja} · ${r.atividades.filter(a=>a.status==='ONGOING').length} ativas, ${r.atividades.filter(a=>a.status==='NOT_START').length} agendadas`;
+  ttpRenderLista();
+};
+function ttpRenderLista(){
+  const corpo=document.getElementById('ttpCorpo');
+  const mostrar=ttp.lista.filter(a=>a.status==='ONGOING'||a.status==='NOT_START').concat(ttp.lista.filter(a=>a.status!=='ONGOING'&&a.status!=='NOT_START').slice(0,15));
+  corpo.innerHTML=`<div class="cat-lista">${mostrar.map(a=>`<div class="cat-item"><div class="cat-linha">
+    <div class="cat-nome"><b>${esc(a.titulo)}</b><small>${esc(a.tipoTexto)} · ${ttpData(a.inicio)} → ${ttpData(a.fim)} · ID ${a.id}</small></div>
+    <span class="ml-pill ${TTP_COR[a.status]||'dim'}">${esc(a.statusTexto)}</span>
+    <button class="btn btn-ghost btn-sm" onclick="window.__ttpAbrir('${a.id}')">Ver / editar · View / edit</button>
+    ${a.status==='ONGOING'||a.status==='NOT_START'?`<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="window.__ttpDesativar('${a.id}')">Desativar · Deactivate</button>`:''}
+  </div></div>`).join('')||'<div class="saude-vazio">Nenhuma promoção.</div>'}</div>`;
+}
+async function ttpCarregarProdutos(){if(!ttp.produtos){const r=await ttpApi('produtos');if(!r.ok)throw new Error(r.erro);ttp.produtos=r.produtos.filter(p=>p.status==='ACTIVATE');}return ttp.produtos;}
+window.__ttpAbrir=async(id)=>{
+  const corpo=document.getElementById('ttpCorpo'),st=document.getElementById('ttpStatus');
+  st.textContent='Abrindo a promoção…';
+  const r=await ttpApi('detalhe',{id});if(!r.ok){st.textContent='Erro: '+r.erro;return;}
+  ttp.aberta=id;ttp.detalhe=r;st.textContent='';
+  const a=r.atividade;const editavel=a.status==='NOT_START'||a.status==='ONGOING';
+  corpo.innerHTML=`<div class="cat-barra" style="align-items:center"><button class="btn btn-ghost btn-sm" onclick="window.__ttpCarregar()">← Voltar · Back</button><b style="flex:1">${esc(a.titulo)}</b><span class="ml-pill ${TTP_COR[a.status]||'dim'}">${esc(a.statusTexto)}</span></div>
+    ${editavel?`<div class="ttp-form"><div class="field"><label>Nome · Title</label><input id="ttpTit" value="${esc(a.titulo)}" maxlength="50"></div>
+      <div class="field"><label>Início · Start</label><input type="datetime-local" id="ttpIni" value="${ttpLocal(a.inicio)}" ${a.status==='ONGOING'?'disabled':''}></div>
+      <div class="field"><label>Fim · End</label><input type="datetime-local" id="ttpFim" value="${ttpLocal(a.fim)}"></div>
+      <button class="btn btn-gold btn-sm" onclick="window.__ttpSalvarDados()">Salvar nome e horário · Save</button></div>`:`<p class="saude-vazio">${esc(a.tipoTexto)} · ${ttpData(a.inicio)} → ${ttpData(a.fim)} (não pode mais ser alterada · read only)</p>`}
+    <h4 style="margin:14px 0 6px">Produtos na promoção · Products (${r.produtos.length})</h4>
+    <div class="cat-lista">${r.produtos.map(p=>`<div class="cat-item"><div class="cat-linha"><div class="cat-nome"><b>${esc(p.titulo||p.id)}</b><small>ID ${p.id}${p.precoNormal?` · preço normal ${fmtR(p.precoNormal)}`:''}</small></div>
+      <div class="cat-num"><small>Preço promo · Price</small>${editavel&&p.preco!=null?`<input type="text" inputmode="decimal" class="ttp-preco" data-id="${p.id}" value="${String(p.preco).replace('.',',')}" style="width:90px">`:(p.preco!=null?fmtR(p.preco):(p.desconto!=null?p.desconto+'%':'—'))}</div>
+      ${editavel?`<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="window.__ttpRemover('${p.id}')">Remover · Remove</button>`:''}</div></div>`).join('')||'<div class="saude-vazio">Sem produtos.</div>'}</div>
+    ${editavel?`<div class="cat-acoes"><span></span><button class="btn btn-gold btn-sm" onclick="window.__ttpSalvarPrecos()">Salvar preços · Save prices</button><button class="btn btn-ghost btn-sm" onclick="window.__ttpAdicionar()">+ Adicionar produtos · Add products</button><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="window.__ttpDesativar('${a.id}')">Desativar · Deactivate</button></div><div id="ttpPicker"></div>`:''}`;
+};
+window.__ttpSalvarDados=async()=>{
+  const a=ttp.detalhe.atividade;const titulo=document.getElementById('ttpTit').value.trim();const ini=document.getElementById('ttpIni');const fim=ttpUnix(document.getElementById('ttpFim').value);
+  const extra={id:a.id,titulo};if(!ini.disabled)extra.inicio=ttpUnix(ini.value);extra.fim=fim;
+  if(a.tipo==='FLASHSALE'&&(extra.fim-(extra.inicio||a.inicio))>72*3600){lbAvisar('Oferta relâmpago dura no máximo 72 horas.');return;}
+  const r=await ttpApi('atualizar',extra);if(!r.ok){lbAvisar('Erro: '+r.erro);return;}
+  showToast('✓ Promoção atualizada no TikTok Shop');window.__ttpAbrir(a.id);
+};
+window.__ttpSalvarPrecos=async()=>{
+  const itens=[...document.querySelectorAll('.ttp-preco')].map(i=>({id:i.dataset.id,preco:lbValorBR(i.value)}));
+  if(itens.some(x=>!(x.preco>0))){lbAvisar('Preço inválido.');return;}
+  const r=await ttpApi('precos',{id:ttp.aberta,itens});if(!r.ok){lbAvisar('Erro: '+r.erro);return;}
+  showToast('✓ Preços salvos no TikTok Shop');window.__ttpAbrir(ttp.aberta);
+};
+window.__ttpRemover=async(pid)=>{
+  if(!await lbConfirmar('Tirar este produto da promoção? · Remove this product?',{okTxt:'Remover'}))return;
+  const r=await ttpApi('remover',{id:ttp.aberta,produtos:[pid]});if(!r.ok){lbAvisar('Erro: '+r.erro);return;}
+  showToast('✓ Produto removido da promoção');window.__ttpAbrir(ttp.aberta);
+};
+window.__ttpDesativar=async(id)=>{
+  if(!await lbConfirmar('Desativar esta promoção no TikTok Shop? Não tem como reativar. · Deactivate this promotion?',{okTxt:'Desativar'}))return;
+  const r=await ttpApi('desativar',{id});if(!r.ok){lbAvisar('Erro: '+r.erro);return;}
+  showToast('✓ Promoção desativada');window.__ttpCarregar();
+};
+// seletor de produtos (nova promoção ou adicionar em uma existente) — preço sugerido: 5% abaixo do preço normal
+async function ttpPickerHtml(jaNaPromo=new Set()){
+  const prods=(await ttpCarregarProdutos()).filter(p=>!jaNaPromo.has(p.id));
+  return `<div class="cat-lista" style="max-height:340px;overflow:auto">${prods.map(p=>`<div class="cat-item"><div class="cat-linha"><input type="checkbox" class="ttp-sel" data-id="${p.id}"><div class="cat-nome"><b>${esc(p.titulo)}</b><small>ID ${p.id} · estoque ${p.estoque} · preço ${p.preco?fmtR(p.preco):'—'}</small></div>
+    <div class="cat-num"><small>Preço promo · Price</small><input type="text" inputmode="decimal" class="ttp-novo-preco" data-id="${p.id}" value="${p.preco?String(Math.floor(p.preco*0.95*100)/100).replace('.',','):''}" style="width:90px"></div></div></div>`).join('')||'<div class="saude-vazio">Nenhum produto disponível.</div>'}</div>`;
+}
+const ttpSelecionados=()=>[...document.querySelectorAll('.ttp-sel:checked')].map(c=>({id:c.dataset.id,preco:lbValorBR(document.querySelector(`.ttp-novo-preco[data-id="${c.dataset.id}"]`)?.value)}));
+window.__ttpAdicionar=async()=>{
+  const el=document.getElementById('ttpPicker');el.innerHTML='<div class="saude-vazio">Carregando produtos…</div>';
+  const ja=new Set((ttp.detalhe.produtos||[]).map(p=>p.id));
+  el.innerHTML=`<h4 style="margin:14px 0 6px">Adicionar produtos · Add products</h4>${await ttpPickerHtml(ja)}<div class="cat-acoes"><span></span><button class="btn btn-gold btn-sm" onclick="window.__ttpAdicionarSalvar()">Adicionar marcados · Add selected</button></div>`;
+};
+window.__ttpAdicionarSalvar=async()=>{
+  const itens=ttpSelecionados();if(!itens.length){showToast('Marque ao menos 1 produto.');return;}
+  if(itens.some(x=>!(x.preco>0))){lbAvisar('Preço inválido.');return;}
+  const r=await ttpApi('precos',{id:ttp.aberta,itens});if(!r.ok){lbAvisar('Erro: '+r.erro);return;}
+  showToast(`✓ ${itens.length} produto(s) adicionado(s)`);window.__ttpAbrir(ttp.aberta);
+};
+window.__ttpNova=async()=>{
+  if(!ttp.clienteId){showToast('Escolha a loja.');return;}
+  const corpo=document.getElementById('ttpCorpo');const ini=Math.ceil(Date.now()/1000/3600)*3600+3600;
+  corpo.innerHTML=`<div class="cat-barra" style="align-items:center"><button class="btn btn-ghost btn-sm" onclick="window.__ttpCarregar()">← Voltar · Back</button><b style="flex:1">Nova promoção · New promotion</b></div>
+    <div class="ttp-form"><div class="field"><label>Tipo · Type</label><select id="ttpTipo"><option value="FLASHSALE">Oferta relâmpago (até 72h) · Flash sale</option><option value="FIXED_PRICE">Desconto fixo (até 340 dias) · Fixed price discount</option></select></div>
+      <div class="field"><label>Nome · Title (único · unique)</label><input id="ttpNTit" maxlength="50" value="LB ${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(new Date().getHours()).padStart(2,'0')}${String(new Date().getMinutes()).padStart(2,'0')}"></div>
+      <div class="field"><label>Início · Start</label><input type="datetime-local" id="ttpNIni" value="${ttpLocal(ini)}"></div>
+      <div class="field"><label>Fim · End</label><input type="datetime-local" id="ttpNFim" value="${ttpLocal(ini+24*3600)}"></div></div>
+    <h4 style="margin:14px 0 6px">Produtos · Products</h4><div id="ttpNovaProds"><div class="saude-vazio">Carregando produtos…</div></div>
+    <div class="cat-acoes"><span></span><button class="btn btn-gold btn-sm" onclick="window.__ttpCriar()">Criar no TikTok Shop · Create</button></div>`;
+  document.getElementById('ttpNovaProds').innerHTML=await ttpPickerHtml().catch(e=>`<div class="saude-vazio">Erro: ${esc(e.message)}</div>`);
+};
+window.__ttpCriar=async()=>{
+  const tipo=document.getElementById('ttpTipo').value,titulo=document.getElementById('ttpNTit').value.trim(),inicio=ttpUnix(document.getElementById('ttpNIni').value),fim=ttpUnix(document.getElementById('ttpNFim').value);
+  const itens=ttpSelecionados();
+  if(!itens.length){lbAvisar('Marque ao menos 1 produto.');return;}
+  if(!await lbConfirmar(`Criar "${titulo}" no TikTok Shop?\n${tipo==='FLASHSALE'?'Oferta relâmpago':'Desconto fixo'} · ${itens.length} produto(s) · ${ttpData(inicio)} → ${ttpData(fim)}`,{okTxt:'Criar'}))return;
+  const st=document.getElementById('ttpStatus');st.textContent='Criando no TikTok Shop…';
+  const r=await ttpApi('criar',{tipo,titulo,inicio,fim,itens});
+  if(!r.ok){st.textContent='';lbAvisar('Erro: '+r.erro);return;}
+  st.textContent=`✓ Criada (ID ${r.id}): ${r.confirmados} produto(s)${r.recusados?.length?` · ${r.recusados.length} recusado(s) pela TikTok (preço acima do menor dos últimos 30 dias)`:''}`;
+  await window.__ttpCarregar();window.__ttpAbrir(r.id);
+};
+
 
 window.__tiktokSubTab=(nome)=>{
   document.querySelectorAll('.tiktok-subtab-btn').forEach(b=>{
@@ -5173,6 +5315,7 @@ window.__tiktokSubTab=(nome)=>{
   document.querySelectorAll('.tiktok-subpanel').forEach(p=>{
     p.style.display=p.dataset.tiktoksubpanel===nome?'':'none';
   });
+  if(nome==='promocoes')ttpRender();
 };
 
 window.__tiktokConectar=async(clienteId,clienteNome)=>{
