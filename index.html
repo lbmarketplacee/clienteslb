@@ -10099,6 +10099,7 @@ const pxDimsOk=d=>d&&d.c>1&&d.l>1&&d.a>1;
 const pxCriar={
   async shopee(c,P,linha,ctx){
     if(P.vars.length>2)throw new Error('a Shopee aceita no máximo 2 variações');
+    if(ctx.simular){const ps=[...new Set(P.skus.map(s=>dirPrecosLB(s.liq)?.venda))];return{id:null,msg:`simulado · ${P.skus.length} SKU · venda ${ps.map(fmtR).join('/')} · ${P.fotos.length} fotos`};}
     const token=await shopeeGarantirTokenValido(c,'erp');
     if(!ctx.logisticas){const canais=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/logistics/get_channel_list',query:{}});
       ctx.logisticas=(canais?.response?.logistics_channel_list||[]).filter(x=>x.enabled&&!x.mask_channel_id).map(x=>x.logistics_channel_id);
@@ -10146,6 +10147,7 @@ const pxCriar={
       u.cores=u.cores.filter(x=>ord.some(s=>s.op[0]===x));if(v2)u.tamanhos=u.tamanhos.filter(t=>ord.some(s=>s.op[1]===t.tam));}
     else est=P.skus[0]?.est||0;
     const liq=Math.max(...P.skus.filter(s=>!v1||s.est>0).map(s=>s.liq));if(!(liq>0))throw new Error('sem preço na origem');
+    if(ctx.simular)return{id:null,msg:`simulado · ${v1?Object.keys(est).length:1} anúncio(s) · líquido ${fmtR(liq)} · ${P.fotos.length} fotos`};
     linha('ML: título...');
     if(!ctx.usadosMl)ctx.usadosMl=new Set();
     const tt=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:`${P.titulo}${P.vars.length?`\n(variações: ${P.vars.flatMap(v=>v.opcoes.map(o=>o.nome)).join(', ')} — NÃO coloque cor nem tamanho no título)`:''}`})}).then(r=>r.json()).catch(()=>({}));
