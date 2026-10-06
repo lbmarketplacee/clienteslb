@@ -1098,6 +1098,23 @@ textarea{resize:vertical;min-height:70px;}
 .fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
 .fin-row:last-child{border-bottom:none}
 
+/* ===== Catálogo ===== */
+.cat-barra{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.cat-barra select,.cat-barra input,.cat-acoes input{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px}
+.cat-barra select:first-child{min-width:220px}.cat-barra input{flex:1;min-width:180px}
+.cat-filtros{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.cat-chip{border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer}.cat-chip b{color:var(--text);margin-left:3px}
+.cat-chip.on{border-color:#a855f7;color:#a855f7;background:#a855f712}.cat-chip.sem_estoque b{color:var(--red)}.cat-chip.variacao_zerada b,.cat-chip.estoque_baixo b{color:var(--amber)}
+.cat-lista{display:flex;flex-direction:column;gap:6px}
+.cat-item{border:1px solid var(--border);border-radius:10px;background:var(--bg-card)}.cat-item.aberto{border-color:#a855f766}
+.cat-linha{display:flex;align-items:center;gap:10px;padding:8px 10px;flex-wrap:wrap}.cat-linha img,.cat-semfoto{width:42px;height:42px;border-radius:6px;object-fit:cover;background:var(--bg)}
+.cat-nome{flex:1;min-width:180px;cursor:pointer;display:flex;flex-direction:column;font-size:12.5px}.cat-nome small{color:var(--text-dim);font-size:11px}
+.cat-num{display:flex;flex-direction:column;font-size:12.5px;min-width:78px}.cat-num small{color:var(--text-dim);font-size:10px;text-transform:uppercase}
+.cat-est{font-weight:600}.cat-est.zero{color:var(--red)}.cat-est.baixo{color:var(--amber)}
+.cat-vars{border-top:1px solid var(--border);padding:8px 12px 10px;display:flex;flex-direction:column;gap:4px}
+.cat-var{display:grid;grid-template-columns:1fr 90px 50px 90px;gap:8px;align-items:center;font-size:12px}.cat-var span small{display:block;color:var(--text-dim);font-size:10.5px}.cat-var.inativa{opacity:.5}
+.cat-var input{padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;width:100%}
+.cat-acoes{position:sticky;bottom:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:10px 12px;border:1px solid #a855f740;border-radius:10px;background:var(--bg-card);font-size:12.5px}.cat-acoes:empty{display:none}.cat-acoes>span{flex:1;min-width:180px}.cat-acoes a{color:#a855f7;margin-left:6px}.cat-acoes input{width:130px}
+@media(max-width:600px){.cat-var{grid-template-columns:1fr 70px 40px 70px}}
 /* ===== Saúde da Loja + Pedidos em risco ===== */
 .saude-resumo{font-size:13px;color:var(--text-dim);margin:4px 0 12px}
 .saude-card{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--bg-card)}
@@ -2112,7 +2129,7 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="catalogo" style="display:none">
-          <div class="sub-cab" style="--acc-bg:#a855f712;--acc-bd:#a855f740"><span class="sub-cab-ico" style="color:#a855f7">🗂️</span><div><b>Gestão de Catálogo</b><div class="sub-cab-desc">Reajuste de preço em massa (sempre com simulação antes de aplicar), ajuste de estoque e pausa automática. Requer o app <b>ERP</b> ou <b>Produto</b> conectado.</div></div></div>
+          <div class="sub-cab" style="--acc-bg:#a855f712;--acc-bd:#a855f740"><span class="sub-cab-ico" style="color:#a855f7">🗂️</span><div><b>Gestão de Catálogo</b><div class="sub-cab-desc">Escolha a loja e veja todos os produtos com preço, estoque por variação e vendas. Filtre quem está sem estoque, marque e reajuste preço (sempre com simulação antes), ajuste estoque ou pause. Requer o app <b>ERP</b> ou <b>Produto</b>.</div></div></div>
           <div id="prodLista"></div>
           </div>
 
@@ -7458,26 +7475,122 @@ document.getElementById('logRastreioFecharBtn')?.addEventListener('click',()=>do
 
 /* ============== 🏷️ GESTÃO DE CATÁLOGO (Produto) ============== */
 let prodSimClienteId=null,prodSimCache=null;
+// Catálogo: escolhe a loja e lista os produtos de verdade (preço, estoque do VENDEDOR, variações, vendas) — sem digitar ID.
+const cat={clienteId:'',status:'NORMAL',itens:[],temMais:false,offset:0,total:null,carregando:false,filtro:'todos',busca:'',sel:new Set(),aberto:null};
+function catSituacao(it){if((it.estoque??0)<=0)return 'sem_estoque';if(it.variacoesZeradas>0)return 'variacao_zerada';if(it.estoque<10)return 'estoque_baixo';return 'ok';}
+const CAT_FILTROS=[['todos','Todos'],['sem_estoque','Sem estoque'],['variacao_zerada','Variação zerada'],['estoque_baixo','Estoque baixo (<10)']];
 function cmRenderCatalogo(){
   const el=document.getElementById('prodLista');
   if(!el)return;
-  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.shopeeErpShopId||c.shopeeProdutoShopId));
-  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP ou Produto conectado ainda.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="prod-card">
-    <div style="font-weight:600;margin-bottom:8px">${esc(c.nome)}</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-      <input type="text" id="prodItens_${c.id}" placeholder="IDs dos produtos, separados por vírgula" style="flex:2;min-width:200px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
-      <input type="number" id="prodPerc_${c.id}" placeholder="% (ex: 5 ou -10)" style="width:120px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
-      <button class="btn btn-gold btn-sm" onclick="window.__prodSimular('${c.id}')">Simular reajuste</button>
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-      <input type="text" id="prodEstItem_${c.id}" placeholder="ID do produto" style="width:140px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
-      <input type="number" id="prodEstNovo_${c.id}" placeholder="Novo estoque" style="width:110px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px">
-      <button class="btn btn-ghost btn-sm" onclick="window.__prodAjustarEstoque('${c.id}')">Ajustar estoque</button>
-      <button class="btn btn-ghost btn-sm" onclick="window.__prodAutoPausar('${c.id}')" title="Pausa sozinho quem zerou o estoque">Auto-pausar sem estoque</button>
-    </div>
-  </div>`).join('');
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.shopeeErpShopId||c.shopeeProdutoShopId));
+  if(!lojas.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP ou Produto conectado ainda.</div>';return;}
+  if(!document.getElementById('catLoja')){
+    el.innerHTML=`<div class="cat-barra">
+      <select id="catLoja" onchange="window.__catCarregar(true)"><option value="">Escolha a loja…</option></select>
+      <select id="catStatus" onchange="window.__catCarregar(true)"><option value="NORMAL">Ativos</option><option value="UNLIST">Pausados</option></select>
+      <input id="catBusca" placeholder="Buscar nome, SKU ou ID" oninput="window.__catBuscar(this.value)">
+      <button class="btn btn-ghost btn-sm" onclick="window.__catCarregar(true)">Recarregar</button>
+    </div><div class="cat-filtros" id="catFiltros"></div><div id="catCorpo"><div class="empty-state" style="padding:20px">Escolha uma loja pra ver o catálogo.</div></div><div class="cat-acoes" id="catAcoes"></div>`;
+  }
+  const sel=document.getElementById('catLoja'),atual=sel.value;
+  sel.innerHTML='<option value="">Escolha a loja…</option>'+lojas.map(c=>`<option value="${c.id}"${c.id===atual?' selected':''}>${esc(c.nome)}</option>`).join('');
 }
+function catVisiveis(){
+  const b=cat.busca.trim().toLowerCase();
+  return cat.itens.filter(it=>(cat.filtro==='todos'||catSituacao(it)===cat.filtro)&&(!b||(it.nome+' '+it.sku+' '+it.id+' '+it.variacoes.map(v=>v.sku).join(' ')).toLowerCase().includes(b)));
+}
+function catRender(){
+  const corpo=document.getElementById('catCorpo');if(!corpo)return;
+  const cont={};cat.itens.forEach(it=>{const k=catSituacao(it);cont[k]=(cont[k]||0)+1;});
+  document.getElementById('catFiltros').innerHTML=cat.itens.length?CAT_FILTROS.map(([k,l])=>`<button class="cat-chip ${cat.filtro===k?'on':''} ${k}" onclick="window.__catFiltro('${k}')">${l} <b>${k==='todos'?cat.itens.length:(cont[k]||0)}</b></button>`).join('')+`<span class="fin-dim">${cat.total!=null?`${cat.itens.length} de ${cat.total} carregados`:''}</span>`:'';
+  if(cat.carregando&&!cat.itens.length){corpo.innerHTML='<div class="empty-state" style="padding:20px">Lendo o catálogo na Shopee (uns 10–20s por 50 produtos)...</div>';return;}
+  const vis=catVisiveis();
+  const pf=(it)=>it.precoMin==null?'—':(it.precoMin===it.precoMax?fmtR(it.precoMin):`${fmtR(it.precoMin)} – ${fmtR(it.precoMax)}`);
+  const est=(n)=>`<span class="cat-est ${n<=0?'zero':n<10?'baixo':''}">${n??'—'}</span>`;
+  corpo.innerHTML=(vis.length?`<div class="cat-lista">${vis.map(it=>`<div class="cat-item ${cat.aberto===it.id?'aberto':''}">
+      <div class="cat-linha">
+        <input type="checkbox" ${cat.sel.has(it.id)?'checked':''} onclick="event.stopPropagation();window.__catSel(${it.id},this.checked)">
+        ${it.foto?`<img src="${esc(it.foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
+        <div class="cat-nome" onclick="window.__catAbrir(${it.id})"><b>${esc(it.nome)}</b><small>${esc(it.sku||'sem SKU')} · ID ${it.id}${it.temVariacao?` · ${it.variacoes.length} variações${it.variacoesZeradas?` (<span style="color:var(--red)">${it.variacoesZeradas} zerada(s)</span>)`:''}`:''}</small></div>
+        <div class="cat-num"><small>Preço</small>${pf(it)}</div>
+        <div class="cat-num"><small>Estoque</small>${est(it.estoque)}</div>
+        <div class="cat-num"><small>Vendas</small>${it.vendas??'—'}</div>
+        <button class="btn btn-ghost btn-sm" onclick="window.__catAbrir(${it.id})">${cat.aberto===it.id?'Fechar':'Estoque'}</button>
+      </div>
+      ${cat.aberto===it.id?`<div class="cat-vars">${(it.temVariacao?it.variacoes:[{id:0,nome:'Produto',sku:it.sku,atual:it.precoMin,estoque:it.estoque,ativo:true}]).map(v=>`<div class="cat-var ${v.ativo?'':'inativa'}"><span>${esc(v.nome)}<small>${esc(v.sku||'')}</small></span><span>${v.atual!=null?fmtR(v.atual):'—'}</span>${est(v.estoque)}<input type="number" min="0" id="catEst_${it.id}_${v.id}" value="${v.estoque??''}"></div>`).join('')}
+        <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="window.__catTodasEstoque(${it.id},50)">Tudo 50</button><button class="btn btn-gold btn-sm" onclick="window.__catSalvarEstoque(${it.id})">Salvar estoque</button></div></div>`:''}
+    </div>`).join('')}</div>`:`<div class="empty-state" style="padding:20px">${cat.itens.length?'Nenhum produto nesse filtro.':'Nenhum produto.'}</div>`)+
+    (cat.temMais?`<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" ${cat.carregando?'disabled':''} onclick="window.__catCarregar(false)">${cat.carregando?'Carregando...':'Carregar mais 50'}</button> <button class="btn btn-ghost btn-sm" ${cat.carregando?'disabled':''} onclick="window.__catCarregarTudo()">Carregar tudo</button></div>`:'');
+  const n=cat.sel.size;
+  document.getElementById('catAcoes').innerHTML=cat.clienteId?`<span>${n?`<b>${n}</b> selecionado(s)`:'Marque produtos pra agir em lote'} ${vis.length?`<a href="#" onclick="window.__catSelTodos();return false">${vis.every(i=>cat.sel.has(i.id))?'desmarcar':'marcar'} os ${vis.length} da lista</a>`:''}</span>
+    <input type="number" id="catPerc" placeholder="% (ex: 5 ou -10)">
+    <button class="btn btn-gold btn-sm" ${n?'':'disabled'} onclick="window.__catSimular()">Simular reajuste</button>
+    ${cat.status==='NORMAL'?`<button class="btn btn-ghost btn-sm" ${n?'':'disabled'} onclick="window.__catVisibilidade(false)">Pausar</button><button class="btn btn-ghost btn-sm" onclick="window.__prodAutoPausar(cat.clienteId)" title="Pausa quem zerou o estoque em todas as variações">Auto-pausar sem estoque</button>`:`<button class="btn btn-ghost btn-sm" ${n?'':'disabled'} onclick="window.__catVisibilidade(true)">Reativar</button>`}`:'';
+}
+window.cat=cat;
+window.__catFiltro=(k)=>{cat.filtro=k;catRender();};
+window.__catBuscar=(v)=>{cat.busca=v;catRender();};
+window.__catSel=(id,on)=>{on?cat.sel.add(id):cat.sel.delete(id);catRender();};
+window.__catSelTodos=()=>{const vis=catVisiveis();const todos=vis.every(i=>cat.sel.has(i.id));vis.forEach(i=>todos?cat.sel.delete(i.id):cat.sel.add(i.id));catRender();};
+window.__catAbrir=(id)=>{cat.aberto=cat.aberto===id?null:id;catRender();};
+window.__catCarregar=async(doZero)=>{
+  const clienteId=document.getElementById('catLoja').value;cat.status=document.getElementById('catStatus').value;
+  if(doZero){Object.assign(cat,{clienteId,itens:[],temMais:false,offset:0,total:null,aberto:null});cat.sel.clear();}
+  if(!cat.clienteId){catRender();return;}
+  if(cat.carregando)return;cat.carregando=true;catRender();
+  try{
+    const ctx=await prodAppECliente(cat.clienteId);
+    const params=new URLSearchParams({acao:'catalogo_listar',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,offset:String(cat.offset),status:cat.status});
+    const d=await fetch(`${SHOPEE_API}?${params}`,{headers:await authHeaders()}).then(r=>r.json());
+    if(clienteId!==cat.clienteId&&doZero)return;
+    if(!d.ok){lbAvisar('Erro: '+(d.erro||'desconhecido'));}
+    else{cat.itens.push(...d.itens);cat.temMais=d.temMais;cat.offset=d.proximoOffset||0;cat.total=d.total;}
+  }catch(e){console.error(e);showToast('Erro ao ler o catálogo.');}
+  cat.carregando=false;catRender();
+};
+window.__catCarregarTudo=async()=>{for(let i=0;i<60&&cat.temMais;i++){await window.__catCarregar(false);}};
+window.__catTodasEstoque=(id,n)=>{document.querySelectorAll(`[id^="catEst_${id}_"]`).forEach(i=>i.value=n);};
+window.__catSalvarEstoque=async(id)=>{
+  const it=cat.itens.find(x=>x.id===id);if(!it)return;
+  const vars=it.temVariacao?it.variacoes:[{id:0,estoque:it.estoque}];
+  const mud=vars.map(v=>({v,novo:document.getElementById(`catEst_${id}_${v.id}`)?.value})).filter(x=>x.novo!==''&&x.novo!=null&&Number(x.novo)!==Number(x.v.estoque));
+  if(!mud.length){showToast('Nada mudou.');return;}
+  if(mud.some(x=>Number(x.novo)<0)){showToast('Estoque não pode ser negativo.');return;}
+  if(!await lbConfirmar(`Gravar o estoque de ${mud.length} variação(ões) de "${it.nome}" na Shopee?`))return;
+  let ok=0;const erros=[];
+  try{
+    const ctx=await prodAppECliente(cat.clienteId);
+    for(const x of mud){
+      const params=new URLSearchParams({acao:'ajustar_estoque',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,item_id:String(id),novo_estoque:String(Number(x.novo))});
+      if(x.v.id)params.set('model_id',String(x.v.id));
+      const d=await fetch(`${SHOPEE_API}?${params}`,{headers:await authHeaders()}).then(r=>r.json());
+      if(d.ok){ok++;x.v.estoque=Number(x.novo);}else erros.push(d.erro);
+    }
+  }catch(e){console.error(e);erros.push(e.message);}
+  if(it.temVariacao){it.estoque=it.variacoes.reduce((t,v)=>t+(v.estoque||0),0);it.variacoesZeradas=it.variacoes.filter(v=>v.ativo&&(v.estoque??0)<=0).length;}else it.estoque=vars[0].estoque;
+  catRender();
+  erros.length?lbAvisar(`${ok} gravado(s), ${erros.length} com erro: ${erros[0]}`):showToast(`✓ Estoque gravado (${ok}). A Shopee leva uns segundos pra mostrar.`);
+};
+window.__catSimular=()=>{
+  const perc=document.getElementById('catPerc').value;
+  if(!perc){showToast('Coloca o percentual (ex: 5 ou -10).');return;}
+  window.__prodSimular(cat.clienteId,[...cat.sel].join(','),perc);
+};
+window.__catVisibilidade=async(visivel)=>{
+  const ids=[...cat.sel];if(!ids.length)return;
+  if(!await lbConfirmar(`${visivel?'Reativar':'Pausar'} ${ids.length} produto(s) na Shopee?`))return;
+  let ok=0;const erros=[];
+  try{
+    const ctx=await prodAppECliente(cat.clienteId);
+    for(const id of ids){
+      const params=new URLSearchParams({acao:'mudar_visibilidade_produto',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,item_id:String(id),visivel:String(visivel)});
+      const d=await fetch(`${SHOPEE_API}?${params}`,{headers:await authHeaders()}).then(r=>r.json());
+      if(d.ok){ok++;cat.itens=cat.itens.filter(x=>x.id!==id);cat.sel.delete(id);}else erros.push(d.erro);
+    }
+  }catch(e){console.error(e);erros.push(e.message);}
+  catRender();
+  erros.length?lbAvisar(`${ok} ok, ${erros.length} com erro: ${erros[0]}`):showToast(`✓ ${ok} produto(s) ${visivel?'reativado(s)':'pausado(s)'}.`);
+};
 async function prodAppECliente(clienteId){
   const c=clientesCache.find(x=>x.id===clienteId);
   if(!c)return null;
@@ -7486,9 +7599,7 @@ async function prodAppECliente(clienteId){
   const token=await shopeeGarantirTokenValido(c,app);
   return{c,app,shopId,token};
 }
-window.__prodSimular=async(clienteId)=>{
-  const itensTxt=document.getElementById(`prodItens_${clienteId}`).value.trim();
-  const perc=document.getElementById(`prodPerc_${clienteId}`).value;
+window.__prodSimular=async(clienteId,itensTxt,perc)=>{
   if(!itensTxt||!perc){showToast('Preenche os IDs dos produtos e o percentual.');return;}
   showToast('Simulando...');
   try{
@@ -7500,10 +7611,10 @@ window.__prodSimular=async(clienteId)=>{
     if(!data.ok||!data.totalProdutos){lbAvisar(`Não foi possível simular: ${data.erro||'nenhum produto válido encontrado'}`);return;}
     prodSimClienteId=clienteId;prodSimCache=data;
     document.getElementById('prodSimTitulo').textContent=`Simulação — ${ctx.c.nome} (${perc>0?'+':''}${perc}%)`;
-    const linhas=[];
+    const linhas=[];const nomeDe=(id)=>{const x=cat.itens.find(i=>String(i.id)===String(id));return x?x.nome.slice(0,50):String(id);};
     data.itens.forEach(it=>{
-      if(it.temVariacao)it.modelos.forEach(m=>linhas.push(`<tr><td>${esc(String(it.itemId))} — ${esc(m.nome||'')}</td><td>${fmtR(m.precoAtual)}</td><td class="prod-preco-novo">${fmtR(m.precoNovo)}</td></tr>`));
-      else linhas.push(`<tr><td>${esc(String(it.itemId))}</td><td>${fmtR(it.precoAtual)}</td><td class="prod-preco-novo">${fmtR(it.precoNovo)}</td></tr>`);
+      if(it.temVariacao)it.modelos.forEach(m=>linhas.push(`<tr><td>${esc(nomeDe(it.itemId))} — ${esc(m.nome||'')}</td><td>${fmtR(m.precoAtual)}</td><td class="prod-preco-novo">${fmtR(m.precoNovo)}</td></tr>`));
+      else linhas.push(`<tr><td>${esc(nomeDe(it.itemId))}</td><td>${fmtR(it.precoAtual)}</td><td class="prod-preco-novo">${fmtR(it.precoNovo)}</td></tr>`);
     });
     document.getElementById('prodSimCorpo').innerHTML=`<table class="prod-sim-tabela"><thead><tr><th>Produto</th><th>Preço atual</th><th>Preço novo</th></tr></thead><tbody>${linhas.join('')}</tbody></table>${data.erros.length?`<p style="font-size:11.5px;color:var(--text-dim);margin-top:8px">${data.erros.length} produto(s) não entraram na simulação (id errado ou sem preço).</p>`:''}`;
     document.getElementById('prodSimModalOverlay').classList.remove('hidden');
@@ -7523,26 +7634,12 @@ document.getElementById('prodSimAplicarBtn')?.addEventListener('click',async()=>
     console.log('[Aplicar reajuste debug]',data);
     lbAvisar(`✓ ${data.totalAplicados} produto(s) atualizado(s).${data.totalFalhas?` ${data.totalFalhas} falharam (veja o Console).`:''}`);
     document.getElementById('prodSimModalOverlay').classList.add('hidden');
+    if(cat.clienteId===prodSimClienteId)window.__catCarregar(true);
   }catch(e){showToast('Erro ao aplicar.');console.error(e);}
   btn.disabled=false;btn.textContent='Aplicar reajuste';
 });
-window.__prodAjustarEstoque=async(clienteId)=>{
-  const itemId=document.getElementById(`prodEstItem_${clienteId}`).value.trim();
-  const novoEstoque=document.getElementById(`prodEstNovo_${clienteId}`).value;
-  if(!itemId||novoEstoque==='')
-  {showToast('Preenche o ID do produto e o novo estoque.');return;}
-  try{
-    const ctx=await prodAppECliente(clienteId);
-    const params=new URLSearchParams({acao:'ajustar_estoque',app:ctx.app,access_token:ctx.token,shop_id:ctx.shopId,item_id:itemId,novo_estoque:novoEstoque});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`,{headers:await authHeaders()});
-    const data=await resp.json();
-    console.log('[Ajustar estoque debug]',data);
-    if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
-    showToast('✓ Estoque atualizado.');
-  }catch(e){showToast('Erro ao ajustar estoque.');console.error(e);}
-};
 window.__prodAutoPausar=async(clienteId)=>{
-  if(!await lbConfirmar('Isso vai PAUSAR na Shopee (despublicar) todo produto desse cliente que estiver com estoque zerado. Confirma?'))return;
+  if(!await lbConfirmar('Isso vai PAUSAR na Shopee (despublicar) todo produto desse cliente com o estoque zerado em todas as variações. Confirma?'))return;
   showToast('Verificando catálogo...');
   try{
     const ctx=await prodAppECliente(clienteId);
@@ -7551,7 +7648,8 @@ window.__prodAutoPausar=async(clienteId)=>{
     const data=await resp.json();
     console.log('[Auto-pausar debug]',data);
     if(!data.ok){lbAvisar(`Erro: ${data.erro||'desconhecido'}`);return;}
-    lbAvisar(`Verificados: ${data.totalVerificados}\nPausados agora: ${data.totalPausados}${data.erros.length?`\n${data.erros.length} com erro (veja o Console).`:''}`);
+    lbAvisar(`Verificados: ${data.totalVerificados}${data.completo===false?' (loja grande — rode de novo pra continuar)':''}\nPausados agora: ${data.totalPausados}${data.erros.length?`\n${data.erros.length} com erro (veja o Console).`:''}`);
+    if(cat.clienteId===clienteId)window.__catCarregar(true);
   }catch(e){showToast('Erro no auto-pausar.');console.error(e);}
 };
 /* ================= EDIÇÃO RÁPIDA DE DATA (Descontos/Cupons na Central de Marketing) ================= */
