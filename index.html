@@ -8313,7 +8313,9 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     // número de peça obrigatório (autopeças, ex.: Pontas de Eixos — erro visto ao vivo na Rodan 05/10/2026) → SKU do produto
     const skuMl=(document.getElementById('dirShSku')?.value||'').trim();
     for(const id of ['PART_NUMBER','MPN','SELLER_SKU'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
-    const faltaReq=paraIA.filter(a=>!ia.some(x=>x.id===a.id)).map(a=>a.nome);
+    // o que ficou SEM valor depois da IA e dos padrões (o ML pode preencher sozinho — conferir no anúncio)
+    const faltaReq=paraIA.filter(a=>a.id!=='GENDER'&&!extras.some(x=>x.id===a.id)).map(a=>a.nome);
+
     if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
     const textoReq=[];
     // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
