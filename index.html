@@ -2034,6 +2034,7 @@ textarea{resize:vertical;min-height:70px;}
                 <div class="cm-secao cm-painel" data-cmpainel="criarprodutos">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div id="cpPainel"></div>
+          <div id="migPainel"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -7660,6 +7661,7 @@ function cmRenderCatalogo(){
       <select id="catStatus" onchange="window.__catCarregar(true)"><option value="NORMAL">Ativos</option><option value="UNLIST">Pausados</option></select>
       <input id="catBusca" placeholder="Buscar nome, SKU ou ID" oninput="window.__catBuscar(this.value)">
       <button class="btn btn-ghost btn-sm" onclick="window.__catCarregar(true)">Recarregar</button>
+      <button class="btn btn-gold btn-sm" onclick="window.__padAbrir()" title="Marca Malaysia Collection, preço cheio + desconto fixo, título Shopee e Ads ROAS 20 nos anúncios que estão fora do padrão">Padronizar anúncios</button>
     </div><div class="cat-filtros" id="catFiltros"></div><div id="catCorpo"><div class="empty-state" style="padding:20px">Escolha uma loja pra ver o catálogo.</div></div><div class="cat-acoes" id="catAcoes"></div>`;
   }
   const sel=document.getElementById('catLoja'),atual=sel.value;
@@ -7951,7 +7953,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   document.querySelectorAll('.cm-painel').forEach(p=>p.classList.toggle('active',p.dataset.cmpainel===alvo));
   if(alvo==='shopee')window.__shopeeSubTab('apis');
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
-  if(alvo==='criarprodutos')cpRender();
+  if(alvo==='criarprodutos'){cpRender();migRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
 }));
 window.__irParaMarketing=(painel,subtab)=>{
@@ -9743,6 +9745,254 @@ document.getElementById('whatsappEmbeddedBtn')?.addEventListener('click', () => 
     }
   });
 });
+
+/* ============== PADRÃO LB NA SHOPEE: migrar do ML e padronizar anúncios (Lincoln, 07/10/2026) ==============
+   Mesmo fluxo feito à mão na Rodan: preço = MESMO LÍQUIDO do ML (preço − tarifa real de /sites/MLB/listing_prices − frete
+   grátis quando o vendedor paga) → precosLB (venda no desconto fixo, cheio = venda×1,3), marca Malaysia Collection, título no
+   padrão Shopee (IA, único na loja), desconto fixo da loja e Shopee Ads ROAS 20. Fotos do ML vêm em WebP → JPEG quadrado. */
+const MIG_MARCA={brand_id:1145793,original_brand_name:'Malaysia Collection'};
+const migR2=v=>Math.round(v*100+1e-7)/100;
+const migAttr=(i,id)=>(i.attributes||[]).find(a=>a.id===id)?.value_name||'';
+function migPesoKg(i){const g=parseFloat(migAttr(i,'SELLER_PACKAGE_WEIGHT'));return g>0?Math.round(g)/1000:null;}
+function migDim(i){const v=['SELLER_PACKAGE_LENGTH','SELLER_PACKAGE_WIDTH','SELLER_PACKAGE_HEIGHT'].map(k=>Math.round(parseFloat(migAttr(i,k))||0));return v.every(x=>x>0)?{c:v[0],l:v[1],a:v[2]}:null;}
+async function migMl(c,caminho){const token=await mlGarantirTokenValido(c);return (await dirMl('ler_api',{access_token:token,caminho})).data;}
+// anúncios do ML (status) com o líquido real de cada um
+async function migLerMl(c,status='active',passo=()=>{}){
+  const ids=[];for(let off=0;off<1000;off+=50){const s=await migMl(c,`/users/${c.mlUserId}/items/search?status=${status}&limit=50&offset=${off}`);ids.push(...(s?.results||[]));if(!s||off+50>=(s.paging?.total||0))break;}
+  const itens=[];for(let i=0;i<ids.length;i+=20){passo(`Lendo anúncios do ML... ${Math.min(i+20,ids.length)}/${ids.length}`);const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(','));itens.push(...(d||[]).map(x=>x.body).filter(Boolean));}
+  const taxa={};
+  for(const it of itens){const k=`${it.price}|${it.listing_type_id}|${it.category_id}`;
+    if(taxa[k]==null){const lp=await migMl(c,`/sites/MLB/listing_prices?price=${it.price}&listing_type_id=${it.listing_type_id}&category_id=${it.category_id}`);taxa[k]=Number(lp?.sale_fee_amount??lp?.[0]?.sale_fee_amount);if(!(taxa[k]>=0))taxa[k]=migR2(it.price*0.14);}
+    it._frete=it.shipping?.free_shipping?freteML(migPesoKg(it)||0.5,it.price):0;
+    it._liquido=migR2(it.price-taxa[k]-it._frete);}
+  return itens;
+}
+// nomes dos anúncios que já estão na Shopee (pra não duplicar e pra casar anúncio Shopee ↔ ML)
+async function migNomesShopee(c,token){
+  const ids=[];for(const st of ['NORMAL','UNLIST']){let off=0;for(let pg=0;pg<20;pg++){const l=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_list',query:{offset:off,page_size:100,item_status:st}});ids.push(...(l?.response?.item||[]).map(x=>x.item_id));if(!l?.response?.has_next_page)break;off=l.response.next_offset;}}
+  const nomes=[];for(let i=0;i<ids.length;i+=50){const b=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:ids.slice(i,i+50).join(',')}});nomes.push(...(b?.response?.item_list||[]).map(x=>x.item_name));}
+  return nomes;
+}
+const migChave=t=>tfNorm(t).slice(0,40);
+function migAcharMl(nomeShopee,mlItens){const n=tfNorm(nomeShopee);return mlItens.find(a=>tfNorm(a.title)===n)||mlItens.find(a=>n.startsWith(migChave(a.title)));}
+// título Shopee (70–100, com palavras de busca) diferente de todos os da loja
+async function migTitulo(texto,usados){
+  let t='';for(let k=0;k<3;k++){
+    const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'shopee',produto:texto+(k?`\nUse palavras e ordem DIFERENTES destes títulos que já existem na loja: ${[...usados].slice(-6).join(' | ')}`:'')})}).then(r=>r.json()).catch(()=>({}));
+    t=String(r.titulo||'').replace(/\s+/g,' ').trim();if(t&&!usados.has(t.toLowerCase()))break;}
+  if(t)usados.add(t.toLowerCase());return t;
+}
+async function migJpg(url){
+  const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
+  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
+  const L=Math.min(1200,Math.max(img.width,img.height,500));const cv=document.createElement('canvas');cv.width=cv.height=L;const g=cv.getContext('2d');
+  g.fillStyle='#fff';g.fillRect(0,0,L,L);const e=Math.min(L/img.width,L/img.height);g.drawImage(img,(L-img.width*e)/2,(L-img.height*e)/2,img.width*e,img.height*e);URL.revokeObjectURL(u);
+  return cv.toDataURL('image/jpeg',0.92);
+}
+async function migAdsToken(c){try{return c.shopeeAdsShopId?await shopeeGarantirTokenValido(c,'ads'):null;}catch(e){return null;}}
+async function migAds(c,tAds,itemId){if(!tAds)return 'sem conexão de Ads';try{const a=await (await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ads_criar_produto',app:'ads',access_token:tAds,shop_id:c.shopeeAdsShopId,item_id:itemId})})).json();return a.ok?'ok':String(a.erro||'erro').slice(0,80);}catch(e){return e.message;}}
+// desconto fixo: anúncio recém-publicado dá discount.item_status_invalid por ~1 min → tenta de novo
+async function migDesconto(c,token,descId,itemId,extra){
+  for(let k=0;k<4;k++){const r=await dirShApi('produto_desconto',c,token,{discount_id:descId,item_id:itemId,...extra});if(r.ok)return 'ok';if(!/item_status_invalid/.test(String(r.erro))||k===3)return String(r.erro||'erro').slice(0,120);await new Promise(ok=>setTimeout(ok,25000));}
+}
+async function migDescontoId(c,token){
+  if(c.shopeeDescontoFixoId)return c.shopeeDescontoFixoId;
+  const d=await dirShApi('desconto_fixo_criar',c,token);if(!d.ok)throw new Error('desconto fixo: '+d.erro);
+  await updateDoc(doc(db,'clientes',c.id),{shopeeDescontoFixoId:String(d.discount_id),shopeeDescontoFixoNome:d.nome,descontoFixoFim:new Date((d.fim-3*3600)*1000).toISOString().slice(0,16)});
+  return String(d.discount_id);
+}
+
+/* ---------- Migrar do Mercado Livre (Criar Produtos) ---------- */
+const mig={c:null,grupos:[],criados:[]};
+function migRender(){
+  const el=document.getElementById('migPainel');if(!el||el.dataset.pronto)return;
+  if(!isLincoln()){el.innerHTML='';return;}
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.mlUserId&&c.mlRefreshToken&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome));
+  el.dataset.pronto='1';
+  el.innerHTML=`<div class="cm-secao" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:16px">
+    <div class="cm-secao-titulo" style="margin-bottom:6px"><h3 style="font-size:16px">Migrar do Mercado Livre pra Shopee</h3></div>
+    <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Pra cliente que já vende no ML: o sistema lê os anúncios e cria na Shopee no padrão LB — <b>mesmo valor líquido do ML</b> (desconta a tarifa real e o frete grátis), título novo da Shopee, fotos do ML, marca Malaysia Collection. Anúncios do mesmo produto com cor/tamanho viram <b>1 anúncio com variações</b>. Cria <b>oculto</b>; depois "Publicar" coloca no desconto fixo e no Ads ROAS 20.</p>
+    <div class="cat-barra"><select id="migLoja"><option value="">Cliente com ML e Shopee…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select><button class="btn btn-gold btn-sm" onclick="window.__migLer()">Ler anúncios do ML</button></div>
+    <div id="migStatus" class="saude-vazio"></div><div id="migLista"></div><div id="migAcoes"></div></div>`;
+}
+window.__migLer=async()=>{
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('migLoja').value);if(!c){showToast('Escolha o cliente.');return;}
+  const st=document.getElementById('migStatus'),passo=t=>st.textContent=t;
+  mig.c=c;mig.grupos=[];mig.criados=[];document.getElementById('migLista').innerHTML='';document.getElementById('migAcoes').innerHTML='';
+  try{
+    const itens=await migLerMl(c,'active',passo);
+    passo('Conferindo o que já está na Shopee...');
+    const token=await shopeeGarantirTokenValido(c,'erp');mig.nomesShopee=await migNomesShopee(c,token);
+    const naShopee=new Set(mig.nomesShopee.map(migChave));
+    // agrupa: mesmo family_name (anúncios "User Products" de cor/tamanho) = 1 produto com variações
+    const porFam={};for(const it of itens){const k=it.family_name?('F:'+tfNorm(it.family_name)):('I:'+it.id);(porFam[k]=porFam[k]||[]).push(it);}
+    mig.grupos=Object.values(porFam).map((lista,i)=>{
+      lista.sort((a,b)=>(b.sold_quantity||0)-(a.sold_quantity||0));
+      const base=lista[0];const cores=[...new Set(lista.map(x=>migAttr(x,'COLOR')).filter(Boolean))],tams=[...new Set(lista.map(x=>migAttr(x,'SIZE')).filter(Boolean))];
+      const temVar=lista.length>1&&(cores.length>1||tams.length>1);
+      const liquido=Math.max(...lista.map(x=>x._liquido));const pr=dirPrecosLB(liquido);
+      const mapa=c.migracaoMlShopee||{};// MLB → item da Shopee (gravado ao migrar/padronizar; o título da Shopee muda depois)
+      const existe=lista.some(x=>mapa[x.id]||naShopee.has(migChave(x.title)))||naShopee.has(migChave(base.family_name||base.title));
+      return{i,lista,base,temVar,cores:temVar?(cores.length?cores:['Único']):[],tams:temVar?tams:[],liquido,venda:pr?.venda,cheio:pr?.cheio,existe,sel:!existe,estado:''};
+    });
+    passo(`${itens.length} anúncios ativos no ML → ${mig.grupos.length} produto(s). Os que já estão na Shopee vêm desmarcados.`);
+    migRenderLista();
+  }catch(e){passo('Erro: '+e.message);console.error(e);}
+};
+function migRenderLista(){
+  const el=document.getElementById('migLista');if(!el)return;
+  el.innerHTML=`<div class="cat-lista">${mig.grupos.map(g=>{const b=g.base;const foto=(b.pictures?.[0]?.secure_url||b.thumbnail||'').replace(/^http:/,'https:');
+    return `<div class="cat-item"><div class="cat-linha">
+      <input type="checkbox" ${g.sel?'checked':''} ${g.estado==='criado'?'disabled':''} onclick="window.__migSel(${g.i},this.checked)">
+      ${foto?`<img src="${esc(foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
+      <div class="cat-nome"><b>${esc(b.family_name||b.title)}</b><small>${g.lista.length>1?`${g.lista.length} anúncios no ML${g.temVar?` · vira variação: ${esc([...g.cores,...g.tams].join(', ')).slice(0,80)}`:''}`:esc(b.id)}${g.existe?' · <span style="color:var(--amber)">parece que já está na Shopee</span>':''}${b._frete?` · frete grátis ${fmtR(b._frete)}`:''}</small></div>
+      <div class="cat-num"><small>ML</small>${fmtR(b.price)}</div>
+      <div class="cat-num"><small>Líquido</small>${fmtR(g.liquido)}</div>
+      <div class="cat-num"><small>Shopee</small>${g.venda?`${fmtR(g.cheio)} → <b>${fmtR(g.venda)}</b>`:'—'}</div>
+      <div class="cat-num" style="min-width:120px"><small>Situação</small>${g.estado?esc(g.estado):'—'}</div>
+    </div></div>`;}).join('')}</div>`;
+  const n=mig.grupos.filter(g=>g.sel&&g.estado!=='criado').length,cri=mig.criados.length;
+  document.getElementById('migAcoes').innerHTML=`<div class="cat-acoes"><span>${n} produto(s) marcados${cri?` · ${cri} criado(s) oculto(s)`:''}</span>
+    <button class="btn btn-gold btn-sm" onclick="window.__migCriar()">Criar na Shopee (ocultos)</button>
+    ${cri?`<button class="btn btn-gold btn-sm" onclick="window.__migPublicar()">Publicar ${cri} + desconto fixo + Ads</button>`:''}</div>`;
+}
+window.__migSel=(i,on)=>{const g=mig.grupos.find(x=>x.i===i);if(g)g.sel=on;migRenderLista();};
+window.__migCriar=async()=>{
+  const c=mig.c;const sel=mig.grupos.filter(g=>g.sel&&g.estado!=='criado');if(!c||!sel.length){showToast('Marque ao menos 1 produto.');return;}
+  if(!await lbConfirmar(`Criar ${sel.length} anúncio(s) OCULTOS na Shopee da ${c.nome}?\nPreço pelo mesmo líquido do ML, fotos do ML, título novo pela IA. Nada vai pro ar ainda.`,{okTxt:'Criar ocultos'}))return;
+  const st=document.getElementById('migStatus'),passo=t=>st.textContent=t;
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const canais=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/logistics/get_channel_list',query:{}});
+    const logisticas=(canais?.response?.logistics_channel_list||[]).filter(x=>x.enabled&&!x.mask_channel_id).map(x=>x.logistics_channel_id);
+    if(!logisticas.length)throw new Error('a loja não tem frete ativo na Shopee');
+    const usados=new Set((mig.nomesShopee||[]).map(x=>x.toLowerCase()));
+    const pt=x=>(x.multi_lang||[]).find(m=>/pt/i.test(m.language))?.value||x.name||x.display_value_name||x.original_value_name;
+    for(const g of sel){
+      const b=g.base;const nome=b.family_name||b.title;
+      try{
+        const atr=(b.attributes||[]).filter(a=>a.value_name&&!/SELLER_PACKAGE|ITEM_CONDITION|GTIN|SELLER_SKU|SIZE_GRID/.test(a.id)).map(a=>`${a.name}: ${a.value_name}`).join('; ');
+        g.estado='título...';migRenderLista();passo(`${nome}: título e descrição...`);
+        const titulo=await migTitulo(`${nome}. ${atr}`,usados);if(!titulo)throw new Error('a IA não gerou título');
+        let descricao=(await migMl(c,`/items/${b.id}/description`))?.plain_text||'';
+        if(descricao.length<40){const ia=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`${nome}. ${atr}`,marketplace:'shopee',imagem:null})}).then(r=>r.json()).catch(()=>({}));descricao=ia.descricao||`${nome}.\n\n${atr}`;}
+        g.estado='categoria...';migRenderLista();
+        const rec=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/category_recommend',query:{item_name:titulo}});const catId=rec?.response?.category_id?.[0];
+        if(!catId)throw new Error('a Shopee não sugeriu categoria');
+        const arvR=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_attribute_tree',query:{category_id_list:String(catId),language:'pt-br'}});
+        const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
+        let atributos=[];if(arvore.length){const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${titulo}\n${atr}`,arvore})}).then(r=>r.json()).catch(()=>({}));atributos=ra.atributos||ra.attribute_list||[];}
+        g.estado='fotos...';migRenderLista();
+        const subir=async url=>{const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await migJpg(url),ratio:'1:1'});if(!r.ok)throw new Error('foto: '+r.erro);return r.image_id;};
+        const imagens=[];for(const p of (b.pictures||[]).slice(0,9)){passo(`${nome}: fotos ${imagens.length+1}/${Math.min(9,(b.pictures||[]).length)}`);imagens.push(await subir(p.secure_url||p.url));}
+        if(!imagens.length)throw new Error('anúncio do ML sem fotos');
+        const peso=Math.max(...g.lista.map(x=>migPesoKg(x)||0))||0.5;const dim=migDim(b)||{c:20,l:15,a:10};
+        const dados={item_name:titulo,description:descricao,category_id:catId,imagens,ratio:'1:1',peso,dimensao:dim,logisticas,precoCheio:g.cheio,atributos,item_sku:migAttr(b,'SELLER_SKU')||migAttr(b,'PART_NUMBER')||''};
+        if(g.temVar){
+          const nome1=g.cores.length>1?'Cor':'Tamanho';
+          const op1=g.cores.length>1?g.cores:g.tams,op2=g.cores.length>1?g.tams:[];
+          const estoque={},fotosCor={};
+          for(const x of g.lista){const a=g.cores.length>1?migAttr(x,'COLOR'):migAttr(x,'SIZE'),bb=g.cores.length>1?migAttr(x,'SIZE'):'';estoque[`${a}|${bb}`]=(estoque[`${a}|${bb}`]||0)+(x.available_quantity||0);
+            if(g.cores.length>1&&!fotosCor[a]&&x.pictures?.[0])fotosCor[a]=await subir(x.pictures[0].secure_url||x.pictures[0].url);}
+          Object.assign(dados,{cores:op1,tamanhos:op2,nome1,nome2:'Tamanho',fotosCor,estoque,skuBase:dados.item_sku||'LB',estoqueTotal:Object.values(estoque).reduce((t,n)=>t+n,0)});
+        }else dados.estoqueTotal=b.available_quantity||0;
+        g.estado='criando...';migRenderLista();
+        const r=await dirShApi('produto_criar',c,token,{dados});
+        if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}`);
+        mig.criados.push({itemId:r.item_id,venda:g.venda,titulo});g.estado='criado';g.sel=false;
+        await updateDoc(doc(db,'clientes',c.id),Object.fromEntries(g.lista.map(x=>[`migracaoMlShopee.${x.id}`,r.item_id]))).catch(()=>{});
+        await log(c.id,c.nome,'migração ML → Shopee (oculto)',`Item ${r.item_id}: "${titulo}" — de ${g.lista.map(x=>x.id).join(', ')}; cheio ${fmtR(g.cheio)}, venda ${fmtR(g.venda)} (líquido ML ${fmtR(g.liquido)}).`);
+      }catch(e){g.estado='erro: '+e.message.slice(0,60);console.error(e);}
+      migRenderLista();
+    }
+    passo(`Pronto: ${mig.criados.length} criado(s) oculto(s). Confira no Seller Center (Não listados) e clique em Publicar.`);
+  }catch(e){passo('Erro: '+e.message);}
+};
+window.__migPublicar=async()=>{
+  const c=mig.c;if(!c||!mig.criados.length)return;
+  if(!await lbConfirmar(`Publicar ${mig.criados.length} anúncio(s) na ${c.nome}?\nVão pro ar, entram no desconto fixo e no Shopee Ads (ROAS 20).`,{okTxt:'Publicar'}))return;
+  const st=document.getElementById('migStatus');
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');const descId=await migDescontoId(c,token);const tAds=await migAdsToken(c);const res=[];
+    for(const it of mig.criados){st.textContent=`Publicando ${it.titulo.slice(0,50)}...`;
+      const p=await dirShApi('produto_publicar',c,token,{item_id:it.itemId});
+      const d=p.ok?await migDesconto(c,token,descId,it.itemId,{preco:it.venda}):'não publicado';
+      const a=p.ok?await migAds(c,tAds,it.itemId):'—';
+      res.push(`${it.itemId}: publicar ${p.ok?'ok':p.erro} · desconto ${d} · Ads ${a}`);}
+    st.innerHTML=res.map(esc).join('<br>');mig.criados=[];migRenderLista();
+  }catch(e){st.textContent='Erro: '+e.message;}
+};
+
+/* ---------- Padronizar anúncios da loja (Catálogo) ---------- */
+// fora do padrão = marca diferente de Malaysia Collection ou sem desconto (cópia do UpSeller, anúncio antigo...)
+const pad={linhas:[]};
+window.__padAbrir=async()=>{
+  const c=clientesCache.find(x=>x.id===cat.clienteId);if(!c)return;
+  if(cat.status!=='NORMAL'){showToast('Use a lista de Ativos.');return;}
+  const el=document.getElementById('catCorpo');
+  if(cat.temMais){el.insertAdjacentHTML('afterbegin','<div class="saude-vazio" id="padMsg">Carregando o catálogo inteiro...</div>');await window.__catCarregarTudo();}
+  let mlItens=[];
+  if(c.mlUserId&&c.mlRefreshToken){try{const m=document.getElementById('padMsg');if(m)m.textContent='Lendo os anúncios do ML pra pegar o líquido...';mlItens=[...await migLerMl(c,'active'),...await migLerMl(c,'paused')];}catch(e){console.warn('[padronizar] ML',e);}}
+  pad.c=c;
+  pad.linhas=cat.itens.filter(it=>it.marca!=='Malaysia Collection'||!it.emPromocao).map(it=>{
+    const ml=mlItens.length?migAcharMl(it.nome,mlItens):null;
+    let venda,origem;
+    if(ml){venda=dirPrecosLB(ml._liquido)?.venda;origem=`líquido ML ${fmtR(ml._liquido)} (${ml.id})`;}
+    else{venda=it.emPromocao?it.precoMin:(it.precoMin);origem='preço atual (sem anúncio no ML)';}
+    return{it,ml,venda,origem,titulo:true,sel:true};
+  });
+  padRender();
+};
+function padRender(){
+  const el=document.getElementById('catCorpo');if(!el)return;
+  if(!pad.linhas.length){el.innerHTML='<div class="saude-vazio">Todos os anúncios ativos já estão no padrão (Malaysia Collection e no desconto).</div>';return;}
+  el.innerHTML=`<div class="cat-barra" style="align-items:center"><b style="flex:1">Padronizar ${pad.linhas.length} anúncio(s) fora do padrão</b><button class="btn btn-ghost btn-sm" onclick="window.__catCarregar(true)">Voltar ao catálogo</button></div>
+    <p style="font-size:12px;color:var(--text-dim);margin:0 0 10px">Venda = o que entra no desconto fixo (mesmo líquido do ML quando o anúncio existe lá). Cheio = venda × 1,3. Marca vira Malaysia Collection, título refeito no padrão Shopee (se marcado), e entra no Shopee Ads ROAS 20. Dá pra ajustar a venda antes de aplicar.</p>
+    <div class="cat-lista">${pad.linhas.map((l,i)=>`<div class="cat-item"><div class="cat-linha">
+      <input type="checkbox" ${l.sel?'checked':''} onclick="pad.linhas[${i}].sel=this.checked">
+      ${l.it.foto?`<img src="${esc(l.it.foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
+      <div class="cat-nome"><b>${esc(l.it.nome)}</b><small>${esc(l.it.marca||'sem marca')} · ${l.it.emPromocao?'já em desconto':'sem desconto'} · ${esc(l.origem)}</small><label style="font-size:11px;color:var(--text-dim)"><input type="checkbox" style="width:auto" ${l.titulo?'checked':''} onclick="pad.linhas[${i}].titulo=this.checked"> refazer título${l.it.nome.length<70?' (curto: '+l.it.nome.length+')':''}</label></div>
+      <div class="cat-num"><small>Hoje</small>${l.it.precoMin!=null?fmtR(l.it.precoMin):'—'}</div>
+      <div class="cat-num"><small>Venda</small><input type="text" inputmode="decimal" value="${l.venda?String(l.venda).replace('.',','):''}" style="width:80px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px" onchange="pad.linhas[${i}].venda=lbValorBR(this.value);padRender()"></div>
+      <div class="cat-num"><small>Cheio</small>${l.venda?fmtR(dirTerminar99(l.venda*1.3)):'—'}</div>
+      <div class="cat-num" style="min-width:110px"><small>Situação</small>${esc(l.estado||'—')}</div>
+    </div></div>`).join('')}</div>
+    <div class="cat-acoes"><span>${pad.linhas.filter(l=>l.sel).length} marcado(s)</span><button class="btn btn-gold btn-sm" onclick="window.__padAplicar()">Aplicar padrão LB</button></div>`;
+}
+window.pad=pad;window.padRender=padRender;
+function dirTerminar99(v){const r=Math.round(v*100+1e-7)/100;return Math.round((Math.ceil(r-0.99-1e-9)+0.99)*100)/100;}
+window.__padAplicar=async()=>{
+  const c=pad.c;const sel=pad.linhas.filter(l=>l.sel);if(!c||!sel.length)return;
+  if(sel.some(l=>!(l.venda>0))){lbAvisar('Tem anúncio marcado sem preço de venda.');return;}
+  if(!await lbConfirmar(`Aplicar o padrão LB em ${sel.length} anúncio(s) da ${c.nome}?\nMuda marca, ${sel.some(l=>l.titulo)?'título, ':''}preço cheio, entra no desconto fixo e no Shopee Ads. Os anúncios continuam no ar.`,{okTxt:'Aplicar'}))return;
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');const descId=await migDescontoId(c,token);const tAds=await migAdsToken(c);
+    const usados=new Set(cat.itens.map(x=>x.nome.toLowerCase()));
+    for(const l of sel){const it=l.it;
+      try{
+        l.estado='título...';padRender();
+        const mud={brand:MIG_MARCA};
+        if(l.titulo){const t=await migTitulo(`${it.nome}${l.ml?'. '+(l.ml.attributes||[]).filter(a=>a.value_name&&!/SELLER_PACKAGE|GTIN|SELLER_SKU/.test(a.id)).map(a=>`${a.name}: ${a.value_name}`).slice(0,12).join('; '):''}`,usados);if(t)mud.item_name=t;}
+        const a=await dirShApi('produto_atualizar',c,token,{item_id:it.id,mudancas:mud});if(!a.ok)throw new Error('marca/título: '+a.erro);
+        l.estado='preço...';padRender();
+        // variações com preços diferentes: mantém a proporção entre elas (a venda digitada vale pra mais barata)
+        const base=it.precoMin||l.venda;const vendaDe=v=>it.temVariacao&&v.atual&&base?dirTerminar99(l.venda*(v.atual/base))-0:l.venda;
+        const sim=it.temVariacao?{itens:[{itemId:it.id,temVariacao:true,modelos:it.variacoes.map(v=>({modelId:v.id,precoNovo:dirTerminar99(vendaDe(v)*1.3)}))}]}:{itens:[{itemId:it.id,temVariacao:false,precoNovo:dirTerminar99(l.venda*1.3)}]};
+        const p=await (await fetch(`${SHOPEE_API}?${new URLSearchParams({acao:'aplicar_reajuste_preco',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,simulacao:JSON.stringify(sim)})}`,{headers:await authHeaders()})).json();
+        if(!p.totalAplicados)throw new Error('preço: '+JSON.stringify(p.falhas||p.erro).slice(0,100));
+        l.estado='desconto...';padRender();
+        const extra=it.temVariacao?{precos_por_modelo:JSON.stringify(Object.fromEntries(it.variacoes.map(v=>[v.id,vendaDe(v)])))}:{preco:l.venda};
+        const d=await migDesconto(c,token,descId,it.id,extra);
+        const ad=await migAds(c,tAds,it.id);
+        l.estado=`ok · desconto ${d==='ok'?'ok':d.slice(0,40)} · Ads ${ad==='ok'?'ok':'já tinha/erro'}`;
+        if(l.ml)await updateDoc(doc(db,'clientes',c.id),{[`migracaoMlShopee.${l.ml.id}`]:it.id}).catch(()=>{});
+      }catch(e){l.estado='erro: '+e.message.slice(0,70);console.error(e);}
+      padRender();
+    }
+    await log(c.id,c.nome,'anúncios padronizados (Shopee)',`${sel.length} anúncio(s): marca Malaysia Collection, preço cheio + desconto fixo, Ads ROAS 20.`);
+    showToast('Padronização concluída — veja a coluna Situação.');
+  }catch(e){lbAvisar('Erro: '+e.message);}
+};
 
 </script>
 
