@@ -1090,6 +1090,27 @@ textarea{resize:vertical;min-height:70px;}
 .fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
 .fin-row:last-child{border-bottom:none}
 
+/* ===== Saúde da Loja + Pedidos em risco ===== */
+.saude-resumo{font-size:13px;color:var(--text-dim);margin:4px 0 12px}
+.saude-card{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--bg-card)}
+.saude-card.prob{border-color:#ef444466}
+.saude-cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.saude-cab b{flex:1;min-width:140px}
+.saude-quando{font-size:11.5px;color:var(--text-dim)}
+.saude-nota{font-size:11px;padding:2px 8px;border-radius:99px;background:#94a3b822;color:var(--text-dim)}
+.saude-nota.n1{background:#ef444422;color:var(--red)}.saude-nota.n2{background:#f59e0b22;color:var(--amber)}.saude-nota.n3,.saude-nota.n4{background:#22c55e22;color:var(--green)}
+.saude-alerta{margin-top:8px;padding:7px 10px;border-radius:8px;background:#ef444414;color:var(--red);font-size:12.5px}.saude-alerta a{color:inherit;margin-left:6px}
+.saude-aviso{margin-top:8px;padding:7px 10px;border-radius:8px;background:#f59e0b14;color:var(--amber);font-size:12.5px}
+.saude-mets{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;margin-top:10px}
+.saude-met{border:1px solid var(--border);border-radius:8px;padding:6px 9px;display:flex;flex-direction:column;font-size:12px}
+.saude-met b{font-size:15px}.saude-met small{color:var(--text-dim);font-size:10.5px}
+.saude-met.ruim{border-color:#ef444466;background:#ef44440d}.saude-met.ruim b{color:var(--red)}.saude-met.ok b{color:var(--green)}
+.saude-vazio{font-size:12.5px;color:var(--text-dim);margin-top:6px}
+.env-risco{border:1px solid #3b82f640;border-radius:12px;padding:12px 14px;background:linear-gradient(135deg,#3b82f60a,transparent)}
+.env-risco-tit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.env-risco-tit span{font-size:11.5px;color:var(--text-dim);flex:1}
+.env-risco-loja{border-top:1px solid var(--border);padding:8px 0}.env-risco-loja summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+.env-risco-loja summary small{color:var(--text-dim);font-size:11px}
+.env-risco-lista{display:flex;flex-direction:column;gap:4px;margin:8px 0 2px 4px;font-size:12px}.env-risco-lista a{color:var(--gold)}
+.pill-red,.pill-amber,.pill-dim{font-size:11px;padding:2px 8px;border-radius:99px}.pill-red{background:#ef444422;color:var(--red)}.pill-amber{background:#f59e0b22;color:var(--amber)}.pill-dim{background:#94a3b822;color:var(--text-dim)}
 /* ===== Central de Envios (Logística) — tema azul ===== */
 .log-card{border:1px solid #3b82f630;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:linear-gradient(135deg,#3b82f608,transparent)}
 .log-timeline{position:relative;padding-left:18px;margin-top:10px}
@@ -2040,7 +2061,9 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="saude" style="display:none">
-          <div class="sgmv-list" id="saudeLojaLista"></div>
+          <div class="sub-cab" style="--acc-bg:#22c55e12;--acc-bd:#22c55e40"><span class="sub-cab-ico" style="color:#22c55e">💚</span><div><b>Saúde da Loja</b><div class="sub-cab-desc">Métricas da conta comparadas com a meta da Shopee (atraso no envio, cancelamento, resposta do chat, avaliação…) + pedidos atrasados. O robô confere sozinho 4x por dia (6h, 9h, 12h e 15h) e avisa na aba Erros quando algo sai da meta. Requer o app <b>ERP</b>.</div></div></div>
+          <div class="toolbar"><div class="spacer"></div><button class="btn btn-gold btn-sm" id="saudeAtualizarTodasBtn" onclick="window.__saudeAtualizar()">Atualizar todas</button></div>
+          <div id="saudeLojaLista"></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="ads" style="display:none">
@@ -6380,36 +6403,39 @@ document.getElementById('sgmvAtualizarTodosBtn')?.addEventListener('click',async
   btn.disabled=false;btn.textContent='🔄 Atualizar Todas as Lojas';
   showToast(`Concluído! ${sucesso} de ${conectados.length} lojas atualizadas.`);
 });
-/* ================= SAÚDE DA LOJA (Shopee) ================= */
-async function saudeLojaRenderizar(){
+/* ================= SAÚDE DA LOJA (Shopee, app ERP) ================= */
+// Dados gravados pelo robô (clientes.saudeShopee, cron ?modo=saude). Lista as lojas com problema primeiro.
+function saudeHaQuanto(ms){if(!ms)return 'nunca';const m=Math.round((Date.now()-ms)/60000);return m<60?`há ${m} min`:m<1440?`há ${Math.round(m/60)}h`:`há ${Math.round(m/1440)} dia(s)`;}
+function saudePeso(c){const s=c.saudeShopee;if(!s)return c.saudeErro?50:40;return (s.pedidos?.atrasados||0)*1000+(s.foraDaMeta?.length||0)*100+(s.pedidos?.vencendo24h||0);}
+function saudeLojaRenderizar(){
   const el=document.getElementById('saudeLojaLista');
   if(!el)return;
-  const conectados=(clientesCache||[]).filter(c=>c.shopeeShopId);
-  if(!conectados.length){
-    el.innerHTML='<div class="sgmv-empty-connected"><div class="ico">💚</div><h3 style="color:var(--gold);font-family:\'Oswald\',sans-serif;text-transform:uppercase;margin-bottom:8px">Nenhuma loja Shopee conectada ainda</h3><p>Conecte uma loja na aba Shopee GMV API pra ver a saúde dela aqui.</p></div>';
-    return;
-  }
-  el.innerHTML=conectados.map(c=>`<div class="sgmv-card"><div class="sgmv-ico">S</div><div class="sgmv-info"><div class="sgmv-nome">${esc(c.nome)}</div><div class="sgmv-sub" id="saudeSub-${c.id}">Carregando...</div></div></div>`).join('');
-  for(const c of conectados){
-    try{
-      const accessToken=await shopeeGarantirTokenValido(c);
-      const resp=await fetch(`${SHOPEE_API}?acao=saude_loja&access_token=${accessToken}&shop_id=${c.shopeeShopId}`);
-      const data=await resp.json();
-      const sub=document.getElementById(`saudeSub-${c.id}`);
-      if(!sub)continue;
-      if(!data.ok){sub.textContent='Erro ao buscar dados.';continue;}
-      const perf=data.performance?.response?.overall_performance;
-      const pen=data.penalidade?.response?.penalty_points;
-      const nota=perf?.rating!=null?perf.rating:'—';
-      const pontos=pen?.overall_penalty_points!=null?pen.overall_penalty_points:'—';
-      const cor=Number(pontos)>=6?'var(--red)':Number(pontos)>=1?'var(--amber)':'var(--green)';
-      sub.innerHTML=`Nota geral: <b style="color:var(--text)">${nota}</b> &nbsp;•&nbsp; Pontos de penalidade: <b style="color:${cor}">${pontos}</b>`;
-    }catch(e){
-      const sub=document.getElementById(`saudeSub-${c.id}`);
-      if(sub)sub.textContent='Erro ao buscar dados.';
-    }
-  }
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId).sort((a,b)=>saudePeso(b)-saudePeso(a));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhuma loja com o app ERP conectado ainda.</div>';return;}
+  const comProb=lista.filter(c=>c.saudeShopee&&(c.saudeShopee.foraDaMeta?.length||c.saudeShopee.pedidos?.atrasados)).length;
+  el.innerHTML=`<div class="saude-resumo">${comProb?`<b style="color:var(--red)">${comProb}</b> de ${lista.length} lojas com algo fora da meta ou pedido atrasado`:`<b style="color:var(--green)">Todas as ${lista.length} lojas dentro da meta</b>`}</div>`+lista.map(c=>{
+    const s=c.saudeShopee;
+    const cab=`<div class="saude-cab"><b>${esc(c.nome)}</b>${s?`<span class="saude-nota n${s.nota||0}">${esc(s.notaTexto||'—')}</span>`:''}<span class="saude-quando">${saudeHaQuanto(s?.quando)}</span><button class="btn btn-ghost btn-sm" onclick="window.__saudeAtualizar('${c.id}')">Atualizar</button></div>`;
+    if(!s)return `<div class="saude-card">${cab}<div class="saude-vazio">${c.saudeErro?'Erro: '+esc(c.saudeErro):'Ainda não conferida — clique em Atualizar.'}</div></div>`;
+    const p=s.pedidos||{};
+    const ped=p.atrasados?`<div class="saude-alerta">${p.atrasados} pedido(s) atrasado(s) — pior: ${p.piorAtrasoHoras}h · ${p.vencendo24h||0} vencem em 24h <a href="#" onclick="window.__shopeeSubTab('envios');return false">ver em Envios</a></div>`:(p.vencendo24h?`<div class="saude-aviso">${p.vencendo24h} pedido(s) precisam ser postados nas próximas 24h</div>`:'');
+    const mets=(s.metricas||[]).filter(m=>!m.pai).map(m=>`<div class="saude-met ${m.ok?'ok':'ruim'}"><span>${esc(m.nome)}</span><b>${esc(m.texto)}</b><small>meta ${esc(m.meta)}${m.anterior!=null?` · antes ${esc(String(m.anterior))}`:''}</small></div>`).join('');
+    const erro=c.saudeErro?`<div class="saude-vazio">Última tentativa falhou: ${esc(c.saudeErro)}</div>`:'';
+    return `<div class="saude-card ${s.foraDaMeta?.length||p.atrasados?'prob':''}">${cab}${ped}<div class="saude-mets">${mets}</div>${erro}</div>`;
+  }).join('');
 }
+window.__saudeAtualizar=async(clienteId)=>{
+  const btn=clienteId?null:document.getElementById('saudeAtualizarTodasBtn');
+  if(btn){btn.disabled=true;btn.textContent='Conferindo...';}
+  showToast(clienteId?'Conferindo a saúde da loja na Shopee...':'Conferindo as lojas (até ~50s)...');
+  try{
+    const params=new URLSearchParams({acao:'rodar_saude'});if(clienteId)params.set('clienteId',clienteId);
+    const r=await fetch(`${SHOPEE_API}?${params}`,{headers:await authHeaders()}).then(x=>x.json());
+    if(r.ok===false||!r.resultados){lbAvisar('Erro: '+(r.erro||'desconhecido'));}
+    else{const feitas=r.resultados.filter(x=>!x.pulado).length,falt=r.resultados.length-feitas;showToast(`✓ ${feitas} loja(s) conferidas${falt?` — ${falt} ficaram pra próxima (clique de novo)`:''}`);}
+  }catch(e){console.error(e);showToast('Erro ao conferir a saúde.');}
+  if(btn){btn.disabled=false;btn.textContent='Atualizar todas';}
+};
 
 /* ================= CRIAR CUPOM (Shopee) ================= */
 let cupomClienteAtual=null;
@@ -7290,7 +7316,7 @@ function cmRenderDevolucao(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
-function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();cmRenderTiktokRobo();}
+function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();cmRenderTiktokRobo();saudeLojaRenderizar();}
 
 /* ============== 💰 CAIXA DA LOJA (Financeiro) ============== */
 function cmRenderFinanceiro(){
@@ -7342,7 +7368,12 @@ function cmRenderEnvios(){
   if(!el)return;
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId);
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP conectado ainda.</div>';return;}
-  el.innerHTML=lista.map(c=>`<div class="log-card">
+  // Pedidos em risco (do robô da Saúde): atrasados e vencendo em 24h, piores primeiro
+  const risco=lista.filter(c=>c.saudeShopee?.pedidos&&(c.saudeShopee.pedidos.atrasados||c.saudeShopee.pedidos.vencendo24h))
+    .sort((a,b)=>(b.saudeShopee.pedidos.atrasados-a.saudeShopee.pedidos.atrasados)||(b.saudeShopee.pedidos.vencendo24h-a.saudeShopee.pedidos.vencendo24h));
+  const fmtH=h=>h<0?`<b style="color:var(--red)">${Math.round(-h)}h atrasado</b>`:`vence em ${Math.round(h)}h`;
+  const riscoHtml=`<div class="env-risco"><div class="env-risco-tit"><b>Pedidos em risco</b><span>pagos e ainda não coletados, pelo prazo de postagem da Shopee · atualizado pelo robô às 6h, 9h, 12h e 15h</span><button class="btn btn-ghost btn-sm" onclick="window.__saudeAtualizar()">Atualizar</button></div>${risco.length?risco.map(c=>{const p=c.saudeShopee.pedidos;return `<details class="env-risco-loja"><summary><b>${esc(c.nome)}</b> ${p.atrasados?`<span class="pill-red">${p.atrasados} atrasado(s)</span>`:''} ${p.vencendo24h?`<span class="pill-amber">${p.vencendo24h} vencem em 24h</span>`:''} ${p.semEtiqueta?`<span class="pill-dim">${p.semEtiqueta} sem etiqueta</span>`:''} <small>${saudeHaQuanto(c.saudeShopee.quando)}</small></summary><div class="env-risco-lista">${(p.lista||[]).map(o=>`<div><code>${esc(o.sn)}</code> ${fmtH(o.horas)} · ${esc(o.transp||'')} ${o.status==='READY_TO_SHIP'?'· sem etiqueta':''} <a href="#" onclick="window.__logRastrear('${c.id}','${esc(o.sn)}');return false">rastrear</a></div>`).join('')}${p.pendentes>(p.lista||[]).length?`<small>+ ${p.pendentes-(p.lista||[]).length} pedido(s) com prazo mais longo</small>`:''}</div></details>`;}).join(''):'<div class="saude-vazio">Nenhum pedido atrasado ou vencendo nas próximas 24h nas lojas conferidas.</div>'}</div>`;
+  el.innerHTML=riscoHtml+'<div class="env-risco-tit" style="margin-top:14px"><b>Rastrear pedido</b></div>'+lista.map(c=>`<div class="log-card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <span style="font-weight:600">${esc(c.nome)}</span>
       <div style="display:flex;gap:6px">
