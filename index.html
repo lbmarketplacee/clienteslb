@@ -6009,10 +6009,10 @@ document.getElementById('mlQualidadeCarregarBtn')?.addEventListener('click',asyn
       else if(nota>=80){cor='green';label='Ótimo';verde++;}
       else if(nota>=50){cor='amber';label='Pode melhorar';amarelo++;}
       else{cor='red';label='Precisa de atenção';vermelho++;}
-      const pendencias=(it.acoes_pendentes||[]).slice(0,3);
+      const pendencias=(it.acoes_pendentes||[]).slice(0,4);
       return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:flex-start">
         <span class="nome" style="flex:2;min-width:200px">${it.permalink?`<a href="${esc(it.permalink)}" target="_blank" style="color:inherit;text-decoration:underline">${esc(it.title)}</a>`:esc(it.title)}</span>
-        <span class="tt-status-pill ${cor==='green'?'ok':cor==='amber'?'hoje':'atrasada'}">${nota!=null?nota+'% — ':''}${label}</span>
+        <span class="tt-status-pill ${cor==='green'?'ok':cor==='amber'?'hoje':'atrasada'}">${nota!=null?nota+' pts — ':''}${label}</span>${it.anuncios>1?`<span style="font-size:11px;color:var(--text-dim)">${it.anuncios} anúncios (cor/tamanho)</span>`:''}
         ${pendencias.length?`<div style="flex-basis:100%;font-size:12px;color:var(--text-dim)">Melhorar: ${pendencias.map(esc).join(' • ')}</div>`:''}
       </div>`;
     }).join('');
