@@ -3084,7 +3084,7 @@ const ehRevisor=()=>currentEmail===REVISOR_EMAIL;
 function startListeners(){if(unsubC)return;
   if(ehRevisor()){document.body.classList.add('modo-revisor');
     unsubC=onSnapshot(doc(db,"clientes",CLIENTE_DEMO),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();},e=>console.error('[revisor]',e));
-    setTimeout(()=>{try{window.__irParaMarketing('tiktokshop');window.__tiktokSubTab('promocoes');}catch(e){}},800);
+    setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('tiktokshop');setTimeout(()=>window.__tiktokSubTab('promocoes'),700);}catch(e){}},900);
     return;}startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
 /* NAV */
 /* ===== MENU MOBILE (abrir/fechar) ===== */
