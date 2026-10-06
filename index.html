@@ -5509,6 +5509,7 @@ function ttGmvRenderizar(){
         <span class="cadastro-doc-pill ok">${CM_ICO.ok} Conectado</span>
         <span style="font-size:13px;color:var(--text-dim)">GMV: ${fmtR(Number(c.tiktokGmv)||0)}</span>
         <button class="btn btn-ghost btn-sm cm-conectar" onclick="window.__tiktokAtualizarGmv('${c.id}')">${CM_ICO.reconectar} Atualizar GMV</button>
+        <button class="btn btn-ghost btn-sm cm-conectar" title="Autorizar de novo (libera as permissões novas do app)" onclick="window.__tiktokConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">${CM_ICO.conectar} Reconectar</button>
       </div>`;
   const linhaOff=c=>{
     const nomeEsc=esc(c.nome).replace(/'/g,"\\'");
