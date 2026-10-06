@@ -8748,7 +8748,7 @@ async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST'
 // Products), marca = nome da loja, já ATIVOS. Usado pelo Criar Produtos e pela migração Shopee → ML.
 // spec: {familia, liq, peso, dim:[c,l,a], est (nº ou {'cor|tam':n}), u:{cores, tamanhos:[{tam,campos}], nome1, nome2, produto, material, medidas}, sku, descricao, fotosPorCor:{cor:[dataURL]}}
 async function mlCriarProduto(c,spec,linhaMl=()=>{}){
-  const {familia,liq,peso,dim,est,u,sku,descricao,fotosPorCor}=spec;const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
+  const {familia,liq,peso,dim,est,u,sku,descricao,fotosPorCor}=spec;const nItens=typeof est==='object'?Object.values(est).filter(n=>n>0).length:Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
   const token=await mlGarantirTokenValido(c);
   const ler=async caminho=>(await dirMl('ler_api',{access_token:token,caminho})).data;
   linhaMl('ML: escolhendo a categoria...');
@@ -8823,6 +8823,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const vCor=vars.find(v=>v[1]==='COLOR')?.[2],vTam=vars.find(v=>v[1]==='SIZE')?.[2];
     const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
     const estC=typeof est==='object'?Number(est[`${cor}|${t.tam||''}`]??est[cor]??0):est;
+    if(typeof est==='object'&&!(estC>0))continue; // migração: combinação sem estoque (ou fora das 30 com mais estoque) não vira anúncio
     const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:descricao||''};
     const r=await dirMl('ml_criar_item',{access_token:token,item},true);
     if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
@@ -9973,7 +9974,7 @@ function mig2Render(){
     return `<div class="cat-item"><div class="cat-linha">
       <input type="checkbox" ${x.sel?'checked':''} ${x.estado.startsWith('ok')?'disabled':''} onclick="window.__mig2Sel(${x.i},this.checked)">
       ${it.foto?`<img src="${esc(it.foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
-      <div class="cat-nome"><b>${esc(it.nome)}</b><small>${it.temVariacao?`${it.variacoes.length} variações → ${it.variacoes.length} anúncios no ML`:'1 anúncio no ML'} · ${it.estoque||0} em estoque${x.existe?' · <span style="color:var(--amber)">parece que já está no ML</span>':''}</small></div>
+      <div class="cat-nome"><b>${esc(it.nome)}</b><small>${it.temVariacao?(()=>{const n=it.variacoes.filter(v=>v.ativo&&(v.estoque||0)>0).length;return `${it.variacoes.length} variações · ${n} com estoque → ${Math.min(n,30)} anúncio(s) no ML${n>30?' (limite do ML: 30 por produto, vão as com mais estoque)':''}`;})():'1 anúncio no ML'} · ${it.estoque||0} em estoque${x.existe?' · <span style="color:var(--amber)">parece que já está no ML</span>':''}</small></div>
       <div class="cat-num"><small>Shopee</small>${venda?fmtR(venda):'—'}</div>
       <div class="cat-num"><small>Líquido</small>${liq?fmtR(liq):'—'}</div>
       <div class="cat-num" style="min-width:150px"><small>Situação</small>${esc(x.estado||'—')}</div>
@@ -9984,7 +9985,7 @@ function mig2Render(){
 window.__mig2Sel=(i,on)=>{const x=mig2.itens.find(y=>y.i===i);if(x)x.sel=on;mig2Render();};
 window.__mig2Criar=async()=>{
   const c=mig2.c;const sel=mig2.itens.filter(x=>x.sel&&!x.estado.startsWith('ok'));if(!c||!sel.length){showToast('Marque ao menos 1 anúncio.');return;}
-  const nAn=sel.reduce((t,x)=>t+Math.max(1,x.it.variacoes.length),0);
+  const nAn=sel.reduce((t,x)=>t+(x.it.temVariacao?Math.min(30,x.it.variacoes.filter(v=>v.ativo&&(v.estoque||0)>0).length):1),0);
   if(!await lbConfirmar(`Criar ${sel.length} produto(s) no Mercado Livre da ${c.nome}?\nSão ~${nAn} anúncio(s) (1 por cor e tamanho), Clássico, já ATIVOS, com o mesmo líquido da Shopee.`,{okTxt:'Criar no ML'}))return;
   const st=document.getElementById('migStatus');
   try{
@@ -10003,6 +10004,7 @@ window.__mig2Criar=async()=>{
         const est={};let venda=it.precoMin;
         if(models.length){for(const md of models){const k=`${op(0)[md.tier_index?.[0]]??''}|${op(1)[md.tier_index?.[1]]??''}`;est[k]=(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0);}
           venda=Math.max(...models.map(md=>Number(md.price_info?.[0]?.current_price)||0));}
+        if(models.length){const ord=Object.entries(est).filter(([,n])=>n>0).sort((a,b2)=>b2[1]-a[1]);for(const k of Object.keys(est))est[k]=0;ord.slice(0,30).forEach(([k,n])=>est[k]=n);if(!ord.length)throw new Error('nenhuma variação com estoque');}
         const liq=dirLiquido(venda);if(!(liq>0))throw new Error('sem preço na Shopee');
         linha('título do ML...');
         const tt=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:`${b.item_name}${u.cores.length?`\n(variações: ${[...u.cores,...op(1)].join(', ')} — NÃO coloque cor nem tamanho no título)`:''}`})}).then(r=>r.json()).catch(()=>({}));
