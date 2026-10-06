@@ -1087,6 +1087,14 @@ textarea{resize:vertical;min-height:70px;}
 .fin-saldo{font-size:20px;font-weight:700;color:#f5d040}
 .fin-variacao-up{color:#22c55e;font-weight:600}
 .fin-variacao-down{color:#ef4444;font-weight:600}
+.fin-card.prob{border-color:#ef444466}
+.fin-cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.fin-cab b{flex:1;min-width:140px}
+.fin-dim{color:var(--text-dim);font-size:11px}
+.fin-total{font-size:12.5px;color:var(--text-dim);margin:2px 0 12px}.fin-total b{color:var(--text)}
+.fin-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.fin-grade>div{display:flex;flex-direction:column;gap:2px;font-size:12px}.fin-grade small{color:var(--text-dim);font-size:10.5px;text-transform:uppercase;letter-spacing:.3px}.fin-grade b{font-size:16px}.fin-grade .fin-saldo{font-size:18px}
+.fin-barras{display:flex;align-items:flex-end;gap:3px;height:42px;margin-top:10px}.fin-barras span{flex:1;background:#f5d04066;border-radius:3px 3px 0 0;min-width:4px}.fin-barras span:last-child{background:#f5d040}
+.fin-sub{margin:14px 0 4px;font-size:12px;color:var(--text-dim)}
 .fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
 .fin-row:last-child{border-bottom:none}
 
@@ -2093,7 +2101,8 @@ textarea{resize:vertical;min-height:70px;}
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="caixaloja" style="display:none">
-          <div class="sub-cab" style="--acc-bg:#f5d04012;--acc-bd:#f5d04040"><span class="sub-cab-ico" style="color:#f5d040">💰</span><div><b>Caixa da Loja</b><div class="sub-cab-desc">Extrato financeiro direto da Shopee. Só funciona em clientes com o app <b>ERP</b> conectado (é a única conexão com permissão de Financeiro). O robô confere todo dia às 8h e avisa na aba ⚠️ Erros se a receita da semana cair 40% ou mais.</div></div></div>
+          <div class="sub-cab" style="--acc-bg:#f5d04012;--acc-bd:#f5d04040"><span class="sub-cab-ico" style="color:#f5d040">💰</span><div><b>Caixa da Loja</b><div class="sub-cab-desc">Extrato financeiro direto da Shopee. Só funciona em clientes com o app <b>ERP</b> conectado (é a única conexão com permissão de Financeiro). Mostra o que a Shopee <b>liberou</b> na carteira (não é o GMV), separado de saques, recarga de Ads e devoluções. O robô atualiza 3x por dia (5h, 11h e 17h) e avisa na aba Erros se as vendas liberadas da semana caírem 40% ou mais.</div></div></div>
+          <div class="toolbar"><div class="spacer"></div><button class="btn btn-gold btn-sm" id="finAtualizarTodasBtn" onclick="window.__finAtualizarTodas()">Atualizar todas</button></div>
           <div id="finLista"></div>
           </div>
 
@@ -7319,45 +7328,69 @@ function cmRenderDevolucao(){
 function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();cmRenderTiktokRobo();saudeLojaRenderizar();}
 
 /* ============== 💰 CAIXA DA LOJA (Financeiro) ============== */
+// Caixa da Loja: dados gravados pelo robô financeiro (clientes.financeiroResumo, 3x/dia) — vendas LIBERADAS pela Shopee
+// (não é GMV: é o dinheiro que caiu na carteira), separado de saques, recarga de Ads e ajustes/devoluções.
+function finBarras(diario){
+  if(!diario?.length)return '';
+  const max=Math.max(...diario.map(d=>d.vendas),1);
+  return `<div class="fin-barras" title="Vendas liberadas por dia (14 dias)">${diario.map(d=>`<span style="height:${Math.max(3,Math.round(d.vendas/max*100))}%" title="${d.dia.slice(8,10)}/${d.dia.slice(5,7)}: ${fmtR(d.vendas)}"></span>`).join('')}</div>`;
+}
+function finResumoHtml(r){
+  const v=r.variacaoPercentual;
+  const varTxt=v==null?'<span class="fin-dim">sem comparação</span>':`<span class="${v>=0?'fin-variacao-up':'fin-variacao-down'}">${v>=0?'▲':'▼'} ${Math.abs(v)}%</span> <span class="fin-dim">vs semana anterior (${fmtR(r.vendasSemanaAnterior)})</span>`;
+  return `<div class="fin-grade">
+    <div><small>Saldo na carteira</small><b class="fin-saldo">${r.saldoAtual!=null?fmtR(r.saldoAtual):'—'}</b></div>
+    <div><small>Vendas liberadas (7 dias)</small><b>${fmtR(r.vendas7d)}</b><span>${r.pedidos7d} pedido(s) · ${varTxt}</span></div>
+    <div><small>Recarga de Ads (7 dias)</small><b>${fmtR(r.ads7d)}</b></div>
+    <div><small>Saques (7 dias)</small><b>${fmtR(r.saques7d)}</b><span class="fin-dim">${r.ultimoSaque?'último: '+fmtR(r.ultimoSaque.valor)+' em '+new Date(r.ultimoSaque.quando*1000).toLocaleDateString('pt-BR'):'nenhum nos 14 dias'}</span></div>
+    <div><small>Ajustes/devoluções (7 dias)</small><b class="${r.ajustes7d<0?'fin-variacao-down':''}">${fmtR(r.ajustes7d)}</b></div>
+  </div>${finBarras(r.diario)}`;
+}
 function cmRenderFinanceiro(){
   const el=document.getElementById('finLista');
   if(!el)return;
-  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId);
-  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP conectado ainda. Vá em 🔌 APIs e conecte o ERP de um cliente pra começar.</div>';return;}
-  el.innerHTML=lista.map(c=>{
-    const saldo=c.financeiroSaldoAtual;
-    const variacao=c.financeiroVariacaoSemanal;
-    const corVar=variacao==null?'':(variacao>=0?'fin-variacao-up':'fin-variacao-down');
-    const setaVar=variacao==null?'':(variacao>=0?'▲':'▼');
-    const varTxt=variacao==null?'<span style="color:var(--text-dim);font-size:11px">ainda sem comparação</span>':`<span class="${corVar}">${setaVar} ${Math.abs(variacao)}% na semana</span>`;
-    return `<div class="fin-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-        <div><div style="font-weight:600">${esc(c.nome)}</div><div class="fin-saldo">${saldo!=null?fmtR(saldo):'—'}</div>${varTxt}</div>
-        <button class="btn btn-gold btn-sm" onclick="window.__finVerExtrato('${c.id}')">Ver extrato</button>
-      </div>
-    </div>`;
+  const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId)
+    .sort((a,b)=>(Number(!!b.financeiroResumo?.quedaForte)-Number(!!a.financeiroResumo?.quedaForte))||((b.financeiroResumo?.vendas7d||0)-(a.financeiroResumo?.vendas7d||0)));
+  if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente com o app ERP conectado ainda. Vá em APIs e conecte o ERP de um cliente pra começar.</div>';return;}
+  const tot=lista.reduce((a,c)=>{const r=c.financeiroResumo;if(r){a.v+=r.vendas7d||0;a.s+=Number(r.saldoAtual)||0;a.ads+=r.ads7d||0;a.q+=r.quedaForte?1:0;}return a;},{v:0,s:0,ads:0,q:0});
+  el.innerHTML=`<div class="fin-total">Todas as lojas · vendas liberadas 7 dias <b>${fmtR(tot.v)}</b> · saldo nas carteiras <b>${fmtR(tot.s)}</b> · Ads <b>${fmtR(tot.ads)}</b>${tot.q?` · <span class="fin-variacao-down">${tot.q} com queda forte</span>`:''}</div>`+lista.map(c=>{
+    const r=c.financeiroResumo;
+    const cab=`<div class="fin-cab"><b>${esc(c.nome)}</b>${r?.quedaForte?'<span class="pill-red">queda forte</span>':''}<span class="fin-dim">${r?saudeHaQuanto(r.quando):'ainda não lido'}</span><button class="btn btn-gold btn-sm" onclick="window.__finVerExtrato('${c.id}')">${r?'Ver extrato':'Ler agora'}</button></div>`;
+    if(!r)return `<div class="fin-card">${cab}${c.financeiroErro?`<div class="saude-vazio">Erro: ${esc(c.financeiroErro)}</div>`:''}</div>`;
+    return `<div class="fin-card ${r.quedaForte?'prob':''}">${cab}${finResumoHtml(r)}</div>`;
   }).join('');
 }
+window.__finAtualizarTodas=async()=>{
+  const btn=document.getElementById('finAtualizarTodasBtn');btn.disabled=true;btn.textContent='Lendo...';
+  showToast('Lendo o caixa das lojas (até ~50s)...');
+  try{
+    const r=await fetch(`${SHOPEE_API}?acao=rodar_financeiro`,{headers:await authHeaders()}).then(x=>x.json());
+    if(r.ok===false||r.verificados==null)lbAvisar('Erro: '+(r.erro||'desconhecido'));
+    else showToast(`✓ ${r.verificados} loja(s) lidas${r.aguardando?` — ${r.aguardando} ficaram pra próxima (clique de novo)`:''}`);
+  }catch(e){console.error(e);showToast('Erro ao atualizar.');}
+  btn.disabled=false;btn.textContent='Atualizar todas';
+};
 window.__finVerExtrato=async(clienteId)=>{
   const c=clientesCache.find(x=>x.id===clienteId);
   if(!c||!c.shopeeErpShopId)return;
   document.getElementById('finExtratoTitulo').textContent=`Extrato — ${c.nome}`;
   const corpo=document.getElementById('finExtratoCorpo');
-  corpo.innerHTML='<div class="empty-state" style="padding:20px">Buscando extrato na Shopee...</div>';
+  corpo.innerHTML='<div class="empty-state" style="padding:20px">Lendo os últimos 14 dias na Shopee (loja grande pode levar uns 20s)...</div>';
   document.getElementById('finExtratoModalOverlay').classList.remove('hidden');
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');
     const params=new URLSearchParams({acao:'buscar_extrato_financeiro',app:'erp',access_token:token,shop_id:c.shopeeErpShopId});
-    const resp=await fetch(`${SHOPEE_API}?${params.toString()}`);
-    const data=await resp.json();
-    console.log('[Extrato Financeiro debug]',c.nome,data);
+    const data=await fetch(`${SHOPEE_API}?${params.toString()}`).then(r=>r.json());
     if(!data.ok){
       const venceu=/token/i.test(data.erro||'');
-      corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?'O acesso do app ERP expirou. Reconecta na aba 🔌 APIs.':('Erro: '+(data.erro||'desconhecido')))}</div>`;
+      corpo.innerHTML=`<div class="empty-state" style="padding:20px">${esc(venceu?'O acesso do app ERP expirou. Reconecta na aba APIs.':('Erro: '+(data.erro||'desconhecido')))}</div>`;
       return;
     }
-    corpo.innerHTML=`<div class="fin-saldo" style="margin-bottom:10px">Saldo atual: ${fmtR(data.saldoAtual)}</div>`+
-      data.transacoes.map(t=>`<div class="fin-row"><span>${esc(t.data)}<br><span style="color:var(--text-dim)">${esc(t.descricao)}${t.pedido?' · #'+esc(t.pedido):''}</span></span><span style="color:${t.tipo==='Entrada'?'#22c55e':'#ef4444'};font-weight:600">${t.tipo==='Entrada'?'+':'-'}${fmtR(t.valor)}</span></div>`).join('');
+    const r=data.resumo;
+    updateDoc(doc(db,'clientes',c.id),{financeiroResumo:{...r,quando:Date.now(),completo:data.completo},financeiroSaldoAtual:r.saldoAtual,financeiroVariacaoSemanal:r.variacaoPercentual,financeiroUltimaVerificacao:Date.now(),financeiroErro:null}).catch(()=>{});
+    corpo.innerHTML=finResumoHtml(r)+`<div class="fin-sub">Outras movimentações (vendas liberadas estão somadas por dia no gráfico)</div>`+
+      (data.transacoes.length?data.transacoes.map(t=>`<div class="fin-row"><span>${esc(t.data)} · <b>${esc(t.rotulo)}</b><br><span class="fin-dim">${esc(t.descricao)}${t.pedido?' · #'+esc(t.pedido):''}</span></span><span style="color:${t.valor>=0?'#22c55e':'#ef4444'};font-weight:600">${t.valor>=0?'+':'-'}${fmtR(Math.abs(t.valor))}</span></div>`).join(''):'<div class="saude-vazio">Nenhuma nos últimos 14 dias.</div>')+
+      (data.completo?'':'<div class="saude-vazio">Loja com muito movimento: só parte dos 14 dias foi lida.</div>');
   }catch(e){corpo.innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar o extrato.</div>';console.error(e);}
 };
 document.getElementById('finExtratoFecharBtn')?.addEventListener('click',()=>document.getElementById('finExtratoModalOverlay').classList.add('hidden'));
