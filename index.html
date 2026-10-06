@@ -8484,12 +8484,12 @@ function dirMedidasMl(t){
   const c=t.campos||{};
   if(n(c.Busto)){const m={CHEST_CIRCUMFERENCE_FROM:n(c.Busto)};if(n(c.Cintura))m.WAIST_CIRCUMFERENCE_FROM=n(c.Cintura);if(n(c.Quadril))m.HIP_CIRCUMFERENCE_FROM=n(c.Quadril);return{medidas:m,fonte:'cliente'};}
   // só a letra (P/M/G) sem medida nem "veste": régua brasileira usada na Killachay/Djan (M = 38/40, G = 42/44; P e PP extrapolados −4 cm)
-  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44'};const tl=String(t.tam||'').trim().toUpperCase().match(/^(PP|P|M|G)(?![A-Z0-9])/)?.[1];const letra=LETRA[tl]||'';
+  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44',GG:'46/48',G1:'50'};const tl=String(t.tam||'').trim().toUpperCase().match(/^(PP|P|M|GG|G1|G)(?![A-Z0-9])/)?.[1];const letra=LETRA[tl]||'';
   const numeros=(v)=>(String(v||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
   // "veste" digitado que a régua não entende (ex.: "M: veste M") → cai na régua pela letra em vez de travar
   let ns=numeros(c.Veste);if(!ns.length)ns=numeros(letra);
   // plus size sem medida: só o busto (obrigatório no ML) por tabela de referência brasileira — cintura/quadril não são inventados
-  const PLUS={GG:[104,108],G1:[112,116],G2:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
+  const PLUS={G2:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
   if(!ns.length&&pl)return{medidas:{CHEST_CIRCUMFERENCE_FROM:pl[0],CHEST_CIRCUMFERENCE_TO:pl[1]},fonte:'referência plus size'};
   if(!ns.length)return null;
   const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
@@ -8554,10 +8554,19 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
       const reuso=(busca.data?.charts||[]).find(ch=>/^LB /.test(ch.names?.MLB||'')&&temTodos(ch));
       if(reuso){gridId=reuso.id;for(const t of opTam){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
       else{
-        const ls=opTam.map(t=>({tam:t.tam,m:dirMedidasMl(t)}));const sem=ls.filter(x=>!x.m).map(x=>x.tam);
+        // cada domínio tem a sua ficha (vestido = CHEST_CIRCUMFERENCE; pijama = BUST_ + HIP_ obrigatórios — SS Tendência 07/10/2026).
+        // Lê a ficha, troca CHEST→BUST quando for o caso e manda só medidas DO CORPO que o domínio aceita (GARMENT_* o ML recusa).
+        const ficha=await dirMl('tabela_medidas_ficha',{access_token:token,domain_id:cat.domain_id,corpo:{attributes:[{id:'GENDER',value_id:String(genVal?.id||'339665')},{id:'BRAND',value_name:c.nome}]}},true);
+        const fAt=[];const walk=o=>{if(!o||typeof o!=='object')return;if(Array.isArray(o.attributes))o.attributes.forEach(a=>a?.id&&a.hierarchy==='CHILD_DEPENDENT'&&fAt.push(a));Object.values(o).forEach(walk);};walk(ficha?.data);
+        const aceitos=new Set(fAt.map(a=>a.id).filter(id=>!/^GARMENT_/.test(id)));
+        const obrig=[...new Set(fAt.filter(a=>(a.tags||[]).includes('required')&&!/^GARMENT_/.test(a.id)).map(a=>a.id))];
+        const ajustar=m=>{if(!m||!aceitos.size)return m;const o={};for(const[k,v]of Object.entries(m.medidas)){let id=k;if(!aceitos.has(id)&&/^CHEST_CIRCUMFERENCE/.test(id))id=id.replace('CHEST_','BUST_');if(aceitos.has(id))o[id]=v;}return{...m,medidas:o};};
+        const ls=opTam.map(t=>({tam:t.tam,m:ajustar(dirMedidasMl(t))}));
+        const obrigTab=obrig.length?obrig:['CHEST_CIRCUMFERENCE_FROM'];
+        const sem=ls.filter(x=>!x.m||obrigTab.some(k=>!(Number(x.m.medidas[k])>0))).map(x=>x.tam);
         if(sem.length){console.log('[ML medidas] tamanhos lidos:',JSON.stringify(opTam));throw new Error(`essa categoria do ML exige tabela de medidas: faltam medidas nos tamanhos ${ls.filter(x=>!x.m).map(x=>`"${x.tam}" (lido: ${JSON.stringify(opTam.find(o=>o.tam===x.tam)?.campos||{})})`).join(', ')} — no passo 1, em "medidas por tamanho", escreva "M: veste 38/40" ou busto/cintura/quadril em cm`);}
         const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
-        const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:['CHEST_CIRCUMFERENCE_FROM'],linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
+        const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
         if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
         gridId=r.id;linhas=r.linhas;
       }
