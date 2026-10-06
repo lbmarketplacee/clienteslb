@@ -2015,7 +2015,7 @@ textarea{resize:vertical;min-height:70px;}
           <div class="field"><label>Descrição do produto</label><textarea id="dirDescricao" placeholder="Descreva o produto com o máximo de detalhes reais possível..." style="min-height:80px"></textarea></div>
           <div class="form-row">
             <div class="field"><label>Cores (na mesma ordem das fotos)</label><input type="text" id="dirCores" placeholder="Preto, Verde Musgo"></div>
-            <div class="field"><label>Tamanhos (1 por linha — só o que for real)</label><textarea id="dirTamanhos" placeholder="M: veste 38/40&#10;G: veste 42/44; busto 92; comprimento 130" style="min-height:58px"></textarea></div>
+            <div class="field"><label>Tamanhos (só os que existem — as medidas o sistema preenche pelo padrão brasileiro)</label><textarea id="dirTamanhos" placeholder="P, M, G, GG&#10;(opcional, se tiver a medida real: G: busto 96; comprimento 130)" style="min-height:58px"></textarea></div>
           </div>
 
           <div class="calc-toggles-title">O que você quer gerar?</div>
@@ -8148,7 +8148,7 @@ let iaConfigCache=null;
 async function iaConfig(){if(iaConfigCache)return iaConfigCache;try{const d=await getDoc(doc(db,'configuracoes','ia'));iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5,...(d.exists()?d.data():{})};}catch(e){iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5};}return iaConfigCache;}
 const iaHoje=()=>lbHojeISO();
 async function iaGasto(){const hoje=iaHoje(),mes=hoje.slice(0,7);const q=await getDocs(query(collection(db,'iaUso'),where('mes','==',mes)));let dia=0,m=0,fotosMes=0;q.docs.forEach(d=>{const x=d.data();m+=x.custoBRL||0;fotosMes+=x.fotos||0;if(x.dia===hoje)dia+=x.custoBRL||0;});return{dia,mes:m,fotosMes};}
-function iaPrevisaoFotos(corpo){if(!corpo)return 0;if(corpo.acao==='capa_variacao'||corpo.acao==='logo')return 1;if(!corpo.acao&&Array.isArray(corpo.imagens))return Math.min(Number(corpo.quantidadeFotos)||5,6);return 0;}
+function iaPrevisaoFotos(corpo){if(!corpo)return 0;if(corpo.acao==='capa_variacao'||corpo.acao==='logo'||corpo.acao==='guia_fundo')return 1;if(!corpo.acao&&Array.isArray(corpo.imagens))return Math.min(Number(corpo.quantidadeFotos)||5,6);return 0;}
 async function iaFetch(url,opts){
   let corpo=null;try{corpo=JSON.parse(opts?.body||'{}');}catch(e){}
   const prev=iaPrevisaoFotos(corpo);const cfg=await iaConfig();
@@ -8262,7 +8262,10 @@ function dirLerTamanhos(txt){
   // aceita "M: veste 38/40; busto 88", "M veste 38/40", "M - busto 88" e "M" sozinho. Linha que começa com medida (sem tamanho)
   // vira {tam:'',erro} — antes a linha inteira virava o nome do tamanho (guia da Mirela, 07/10/2026)
   const TAM=/^(PP|P|M|GG|G\d?|XG|EG|EGG|XGG|U|ÚNICO|UNICO|TAMANHO ÚNICO|\d{1,2}(?:\/\d{1,2})?)(?![\p{L}\d])/iu;
-  return String(txt||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+  let linhas=String(txt||'').split('\n').map(l=>l.trim()).filter(Boolean);
+  // "P, M, G, GG" numa linha só (sem medidas) → um tamanho por item
+  if(linhas.length===1&&!/:/.test(linhas[0])&&/,/.test(linhas[0]))linhas=linhas[0].split(',').map(x=>x.trim()).filter(Boolean);
+  return linhas.map(l=>{
     let tam,resto;
     if(/:/.test(l)&&!/^(veste|busto|cintura|quadril|comprimento|ombro|manga|largura)\b/i.test(l)){[tam,resto='']=l.split(/:(.*)/s);}
     else{const m=l.match(TAM);if(m){tam=m[1];resto=l.slice(m[0].length).replace(/^\s*[-–=]\s*/,'');}else{tam='';resto=l;}}
@@ -8302,6 +8305,57 @@ function dirGuiaTamanhos(lista,subtitulo){
   g.fillStyle='#888';g.font='400 22px Arial';g.fillText('As medidas podem variar até 2 cm.',W/2,yb+44);
   return cv.toDataURL('image/jpeg',0.92);
 }
+// Medidas da GUIA sem digitar (Lincoln, 07/10/2026): o que a cliente informou vale; o que faltar de busto/cintura/quadril vem da
+// régua brasileira pelo "veste" ou pela letra (mesma régua da tabela do ML). Marca t.ref quando usou a régua.
+function dirMedidasGuia(lista){
+  const LETRA={PP:'34',P:'34/36',M:'38/40',GG:'46/48',G1:'50',G:'42/44'};
+  const faixa=(a,b)=>a===b?String(a):`${a}-${b}`;
+  return (lista||[]).filter(t=>t.tam&&!t.erro).map(t=>{
+    const c={...t.campos};const tl=String(t.tam).trim().toUpperCase().match(/^(PP|P|M|GG|G1|G)(?![A-Z0-9])/)?.[1];
+    const veste=c.Veste||(/^\d{2}$/.test(String(t.tam).trim())?String(t.tam).trim():LETRA[tl]);
+    const ns=(String(veste||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
+    let ref=false;
+    if(ns.length){const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
+      if(!c.Veste&&tl){c.Veste=veste;}
+      if(!c.Busto){c.Busto=faixa(a.busto,b.busto);ref=true;}if(!c.Cintura){c.Cintura=faixa(a.cintura,b.cintura);ref=true;}if(!c.Quadril){c.Quadril=faixa(a.quadril,b.quadril);ref=true;}}
+    const ordem=['Veste','Busto','Cintura','Quadril'];const o={};ordem.forEach(k=>{if(c[k])o[k]=c[k];});Object.keys(c).forEach(k=>{if(!o[k])o[k]=c[k];});
+    return{tam:t.tam,campos:o,ref};
+  });
+}
+// Guia com ARTE DA IA (modelo com a peça real, lb-diretor-criativo guia_fundo) + tabela desenhada pelo sistema por cima.
+// Sem foto ou se a IA falhar → guia simples (dirGuiaTamanhos).
+async function dirGuiaIA(lista,fotoB64,produto){
+  const linhas=dirMedidasGuia(lista);if(!linhas.length)return null;
+  const simples=()=>dirGuiaTamanhos(linhas,linhas.some(t=>t.ref)?'Medidas do corpo em cm · referência padrão brasileiro':'');
+  if(!fotoB64)return simples();
+  let fundo=null;
+  try{const d=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'guia_fundo',imagem:fotoB64,produto})})).json();fundo=d?.imagem||null;}catch(e){console.warn('[guia IA]',e);}
+  if(!fundo)return simples();
+  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=fundo;}).catch(()=>null);
+  if(!img)return simples();
+  const W=900,H=1200,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const esc=Math.max(W/img.width,H/img.height);g.drawImage(img,(W-img.width*esc)/2,(H-img.height*esc)/2,img.width*esc,img.height*esc);
+  const caber=(txt,peso,max,larg)=>{let fs=max;do{g.font=`${peso} ${fs}px Arial`;fs-=1;}while(g.measureText(txt).width>larg&&fs>11);return g.font;};
+  const cols=['Tam.',...[...new Set(linhas.flatMap(t=>Object.keys(t.campos)))].slice(0,5)];
+  const px=318,pw=W-px-30,py=70,ph=H-140,r=26;
+  g.save();g.shadowColor='rgba(0,0,0,.18)';g.shadowBlur=30;g.fillStyle='rgba(255,255,255,.93)';g.beginPath();g.roundRect(px,py,pw,ph,r);g.fill();g.restore();
+  g.textAlign='center';g.textBaseline='middle';const cx=px+pw/2;
+  g.fillStyle='#1a1a1a';g.font=caber('GUIA DE','300',40,pw-60);g.fillText('GUIA DE',cx,py+80);
+  g.font=caber('TAMANHOS','800',64,pw-60);g.fillText('TAMANHOS',cx,py+138);
+  g.fillStyle='#b08d57';g.fillRect(cx-40,py+180,80,4);
+  g.fillStyle='#666';g.font=caber('Medidas do corpo em centímetros','400',22,pw-60);g.fillText('Medidas do corpo em centímetros',cx,py+215);
+  const tx=px+22,tw=pw-44,cw=tw/cols.length,n=linhas.length+1,th=Math.min(92,Math.max(56,560/n)),ty=py+260;
+  g.save();g.beginPath();g.roundRect(tx,ty,tw,th*n,14);g.clip();
+  g.fillStyle='#1f1f1f';g.fillRect(tx,ty,tw,th);
+  const AB={COMPRIMENTO:'COMPR.',CINTURA:'CINTURA',QUADRIL:'QUADRIL'};
+  cols.forEach((c,i)=>{let t=c.toUpperCase();g.font='700 20px Arial';if(g.measureText(t).width>cw-10&&AB[t])t=AB[t];g.fillStyle='#fff';g.font=caber(t,'700',20,cw-10);g.fillText(t,tx+cw*i+cw/2,ty+th/2);});
+  linhas.forEach((t,ri)=>{const y=ty+th*(ri+1);g.fillStyle=ri%2?'#f3efe9':'#ffffff';g.fillRect(tx,y,tw,th);
+    cols.forEach((c,i)=>{const v=i===0?t.tam:(t.campos[c]||'—');g.fillStyle=i===0?'#111':'#333';g.font=caber(String(v),i===0?'800':'500',i===0?34:24,cw-10);g.fillText(String(v),tx+cw*i+cw/2,y+th/2);});});
+  g.restore();g.strokeStyle='#1f1f1f';g.lineWidth=2;g.beginPath();g.roundRect(tx,ty,tw,th*n,14);g.stroke();
+  const yb=ty+th*n+50;g.fillStyle='#333';g.font=caber('Na dúvida entre dois tamanhos, escolha o maior.','500',21,tw);g.fillText('Na dúvida entre dois tamanhos, escolha o maior.',cx,yb);
+  g.fillStyle='#888';g.font=caber('As medidas podem variar até 2 cm.','400',17,tw);g.fillText(linhas.some(t=>t.ref)?'Medidas de referência (padrão brasileiro) · podem variar até 2 cm.':'As medidas podem variar até 2 cm.',cx,yb+34);
+  return cv.toDataURL('image/jpeg',0.92);
+}
 window.__dirUltimo=null;
 document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   const produto = document.getElementById('dirDescricao').value.trim();
@@ -8313,9 +8367,10 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   const querTexto = dirGerarSel.titulo || dirGerarSel.descricao;
   const soGuia = dirGerarSel.guia && !querFotos && !querTexto;
   if(soGuia){
-    if(!tamanhos.length){showToast('Preencha os tamanhos (ex.: M: veste 38/40).');return;}
+    if(!tamanhos.length){showToast('Preencha os tamanhos que existem (ex.: P, M, G, GG).');return;}
     const errT=tamanhos.find(t=>t.erro);if(errT){lbAvisar('Tamanhos — '+errT.erro);return;}
-    const guia=dirGuiaTamanhos(tamanhos,'');
+    resEl.innerHTML='<div class="empty-state" style="padding:20px">Montando a guia de tamanhos'+(dirImagensB64.length?' com a foto da modelo (uns 20s)':'')+'...</div>';
+    const guia=await dirGuiaIA(tamanhos,dirImagensB64[0]||null,produto||'roupa');
     resEl.innerHTML=`<div class="ia-block" style="padding:12px;max-width:280px"><div class="ia-block-label" style="margin-bottom:8px">Guia de Tamanhos</div><img src="${guia}" style="width:100%;border-radius:8px;margin-bottom:8px"><a href="${guia}" download="guia-tamanhos.jpg" class="btn btn-ghost btn-sm">Baixar</a></div>`;
     return;
   }
@@ -8339,7 +8394,7 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
       data = await resp.json();
       if(!data.ok){resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;btn.disabled=false;btn.textContent='Gerar';return;}
     }
-    const guia = (dirGerarSel.guia||querFotos) && tamanhos.length ? dirGuiaTamanhos(tamanhos,'') : null;
+    const guia = !tamanhos.length ? null : dirGerarSel.guia ? await dirGuiaIA(tamanhos,dirImagensB64[0]||null,produto) : (querFotos ? dirGuiaTamanhos(dirMedidasGuia(tamanhos),'') : null);
     let html = '';
     if(dirGerarSel.titulo && data){
       html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">Título</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.titulo||'')}</div></div>`;
