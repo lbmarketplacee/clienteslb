@@ -10030,7 +10030,8 @@ window.__mig2Criar=async()=>{
         const fotosPorCor={};
         for(const [k,cor] of (u.cores.length?u.cores:['']).entries()){
           const opImg=(tiers[0]?.option_list||[]).find(o=>(tierTam(0)?tamLimpo(o.option):o.option)===cor)?.image?.image_url;
-          const lista=k===0?[...(opImg?[opImg]:[]),...urls]:[opImg||urls[0]].filter(Boolean);
+          // ML pede no mínimo 3 fotos por anúncio (nota de qualidade): cada cor leva a foto dela + as fotos gerais do produto
+          const lista=[...(opImg?[opImg]:[]),...urls].filter(Boolean);
           fotosPorCor[cor]=[];for(const url of [...new Set(lista)].slice(0,10))fotosPorCor[cor].push(await pega(url));}
         const dim=[b.dimension?.package_length,b.dimension?.package_width,b.dimension?.package_height].map(n=>Math.max(1,Math.round(Number(n)||0)));
         const r=await mlCriarProduto(c,{familia,liq,peso:Number(b.weight)||0.5,dim:dim.every(n=>n>1)?dim:[20,15,10],est:models.length?est:(it.estoque||0),u,sku:b.item_sku||'',descricao:String(b.description||'').slice(0,4900),fotosPorCor},linha);
