@@ -1978,7 +1978,7 @@ textarea{resize:vertical;min-height:70px;}
             <button type="button" class="calc-toggle" data-dirgerar="guia">Só a Guia de Tamanhos</button>
           </div>
           <div class="form-row" id="dirQtdFotosWrap">
-            <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="7" min="1" max="7"></div>
+            <div class="field" style="max-width:200px"><label>Quantidade de fotos</label><input type="number" id="dirQtdFotos" value="5" min="1" max="6"></div>
           </div>
           <button class="btn btn-gold" id="dirGerarBtn">Gerar</button>
           <div id="dirResultado" style="margin-top:24px"></div>
@@ -8248,7 +8248,7 @@ window.__cpGerar=async()=>{
   const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+(v1?`\n${v1.nome} disponíveis: ${v1.op.join(', ')}.`:'')+(v2?`\n${v2.nome} disponíveis: ${v2.op.map(o=>{const c=medidas[o.toUpperCase()];return o+(c&&Object.keys(c).length?` (${Object.entries(c).map(([k,v])=>k+' '+v).join(', ')})`:'');}).join('; ')}.`:'');
   btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';
   try{
-    const d=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:7})})).json();
+    const d=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:5})})).json();
     if(!d.ok)throw new Error(d.erro||'a Central Criativa não respondeu');
     const fotos=(d.fotos||[]).filter(f=>f.imagem);
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
