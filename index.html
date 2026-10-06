@@ -10269,12 +10269,15 @@ window.__mig3Criar=async()=>{
         if(variacoes[0]){for(const [k,o] of (tiers[0].option_list||[]).entries()){const url=o.image?.image_url;if(url){linha(`foto da opção ${k+1}`);variacoes[0].opcoes[k].imagemUri=await subir(url,'ATTRIBUTE_IMAGE');}}}
         // SKUs: cheio = original_price da Shopee (sem promoção → venda×1,3); estoque do vendedor
         const cheioDe=(cur,orig)=>orig>cur?orig:dirTerminar99(cur*1.3);
+        // venda = preço do DESCONTO (Discount Promotions); current_price vira o da relâmpago quando tem uma rodando
+        const promo=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_promotion',query:{item_id_list:String(it.id)}}).catch(()=>null))?.response?.success_list?.[0]?.promotion||[];
+        const precoDesc=mid=>Number(promo.find(p=>p.promotion_type==='Discount Promotions'&&String(p.model_id||0)===String(mid||0))?.promotion_price_info?.[0]?.promotion_price)||0;
         let skus,vendas;
         if(models.length){
-          skus=models.map(md=>{const pi=md.price_info?.[0]||{};const cur=Number(pi.current_price)||0;
+          skus=models.map(md=>{const pi=md.price_info?.[0]||{};const cur=precoDesc(md.model_id)||Number(pi.current_price)||0;
             return{opcoes:(md.tier_index||[]).slice(0,variacoes.length).map((ti,k)=>variacoes[k].opcoes[ti]?.nome),preco:cheioDe(cur,Number(pi.original_price)||0),venda:cur,
               estoque:(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0),sku:md.model_sku||''};}).filter(s=>s.opcoes.every(Boolean)&&s.venda>0);
-        }else{const pi=b.price_info?.[0]||{};const cur=Number(pi.current_price)||it.precoMin;skus=[{opcoes:[],preco:cheioDe(cur,Number(pi.original_price)||0),venda:cur,estoque:it.estoque||0,sku:b.item_sku||''}];}
+        }else{const pi=b.price_info?.[0]||{};const cur=precoDesc(0)||Number(pi.current_price)||it.precoMin;skus=[{opcoes:[],preco:cheioDe(cur,Number(pi.original_price)||0),venda:cur,estoque:it.estoque||0,sku:b.item_sku||''}];}
         if(!skus.length)throw new Error('sem variação com preço');
         vendas=[...new Set(skus.map(s=>s.venda))];
         // tabela de medidas: obrigatória em roupa → guia montada pelo sistema (tamanhos da Shopee + régua BR) com a 1ª foto
