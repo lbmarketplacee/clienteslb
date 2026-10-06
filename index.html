@@ -8294,7 +8294,9 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const token=await mlGarantirTokenValido(c);
     const ler=async caminho=>(await dirMl('ler_api',{access_token:token,caminho})).data;
     linhaMl('ML: escolhendo a categoria...');
-    const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));const cat=Array.isArray(dd)?dd[0]:null;
+    const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));let cat=Array.isArray(dd)?dd[0]:null;
+    // o ML pode ter várias categorias com o MESMO nome (ex.: "Pontas de Eixos" de caminhão, de carro...): prefere a que a loja já usa
+    if(Array.isArray(dd)&&dd.length>1){for(const op of dd.slice(0,4)){const q=await ler(`/users/${c.mlUserId}/items/search?category=${op.category_id}&status=active&limit=1`);if((q?.paging?.total||0)>0){cat=op;break;}}}
     if(!cat)throw new Error('o ML não sugeriu categoria pro nome');
     const attrs=await ler(`/categories/${cat.category_id}/attributes`)||[];
     // variação → atributo da categoria (Cor→COLOR, Tamanho→SIZE, Voltagem→VOLTAGE...) ou atributo próprio (UP permite)
