@@ -3619,9 +3619,9 @@ function tfCardHtml(t){
   const criadorHtml=(tarefaView!=='meu'&&t.criadoPor&&t.criadoPor!==t.responsavel)?`<span class="tf-criador">de ${esc(t.criadoPor)}</span>`:((tarefaView==='meu'&&t.criadoPor&&t.criadoPor!==currentUser)?`<span class="tf-criador">de ${esc(t.criadoPor)}</span>`:'');
   const arrastavel=tarefaView==='meu';
   return `<div class="kanban-card tf-card ${prazoSt.cls&&t.coluna!=='feito'?'tf-'+prazoSt.cls:''}" draggable="${arrastavel}" data-id="${t.id}" style="${arrastavel?'':'cursor:pointer'};${tipo?`--c:${tipo.cor}`:''}" onclick="window.__editTarefa('${t.id}')">
-    ${(tipoHtml||mostraResp)?`<div class="tf-card-top">${tipoHtml}<span style="flex:1"></span>${mostraResp?tfAvatarHtml(t.responsavel,24):''}</div>`:''}
+    ${tipoHtml?`<div class="tf-card-top">${tipoHtml}</div>`:''}
     <div class="kanban-card-title">${esc(t.titulo)}</div>
-    ${(prazoHtml||cliHtml||prioHtml||criadorHtml)?`<div class="kanban-card-meta">${prazoHtml}${cliHtml}${prioHtml}${criadorHtml}</div>`:''}
+    ${(prazoHtml||cliHtml||prioHtml||criadorHtml||mostraResp)?`<div class="kanban-card-meta">${prazoHtml}${cliHtml}${prioHtml}${criadorHtml}${mostraResp?`<span style="margin-left:auto">${tfAvatarHtml(t.responsavel,24)}</span>`:''}</div>`:''}
   </div>`;
 }
 let tfFeitoAberto=false;
