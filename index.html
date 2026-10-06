@@ -8259,33 +8259,47 @@ dirAtualizarQtdFotosVisibilidade();
 
 // Tamanhos digitados → [{tam, campos:{Veste:'38/40', Busto:'92'}}]. Linha: "M: veste 38/40; busto 92; comprimento 130"
 function dirLerTamanhos(txt){
+  // aceita "M: veste 38/40; busto 88", "M veste 38/40", "M - busto 88" e "M" sozinho. Linha que começa com medida (sem tamanho)
+  // vira {tam:'',erro} — antes a linha inteira virava o nome do tamanho (guia da Mirela, 07/10/2026)
+  const TAM=/^(PP|P|M|GG|G\d?|XG|EG|EGG|XGG|U|ÚNICO|UNICO|TAMANHO ÚNICO|\d{1,2}(?:\/\d{1,2})?)(?![\p{L}\d])/iu;
   return String(txt||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
-    const [tam,resto='']=l.split(/:(.*)/s);
+    let tam,resto;
+    if(/:/.test(l)&&!/^(veste|busto|cintura|quadril|comprimento|ombro|manga|largura)\b/i.test(l)){[tam,resto='']=l.split(/:(.*)/s);}
+    else{const m=l.match(TAM);if(m){tam=m[1];resto=l.slice(m[0].length).replace(/^\s*[-–=]\s*/,'');}else{tam='';resto=l;}}
     const campos={};
     resto.split(/[;|]/).map(x=>x.trim()).filter(Boolean).forEach(par=>{
       const m=par.match(/^([A-Za-zÀ-ú ]+?)\s*[:=]?\s*(\d.*)$/);
       if(m){const k=m[1].trim();campos[k.charAt(0).toUpperCase()+k.slice(1).toLowerCase()]=m[2].trim();}
     });
-    return{tam:tam.trim(),campos};
-  }).filter(t=>t.tam);
+    tam=String(tam||'').trim();
+    return{tam,campos,erro:!tam||tam.length>16?`linha sem tamanho no começo: "${l.slice(0,40)}" — escreva assim: G: veste 42/44; busto 96`:null};
+  }).filter(t=>t.tam||t.erro);
 }
 // Guia de tamanhos montada pelo SISTEMA (a IA inventava P/M/G/GG e medidas) — só com o que foi digitado. 900×1200 (3:4).
 function dirGuiaTamanhos(lista,subtitulo){
+  lista=(lista||[]).filter(t=>t.tam&&!t.erro);
   if(!lista.length)return null;
   const cols=['Tamanho',...[...new Set(lista.flatMap(t=>Object.keys(t.campos)))].slice(0,4)];
-  const cv=document.createElement('canvas');cv.width=900;cv.height=1200;const g=cv.getContext('2d');
-  g.fillStyle='#fff';g.fillRect(0,0,900,1200);g.textAlign='center';g.fillStyle='#111';g.font='700 64px Arial';g.fillText('GUIA DE TAMANHOS',450,170);
-  if(subtitulo){g.font='400 30px Arial';g.fillStyle='#555';g.fillText(subtitulo.slice(0,48),450,228);}
-  const x0=70,w=760,cw=w/cols.length,h=Math.min(130,560/(lista.length+1)),y0=320;
-  g.fillStyle='#111';g.fillRect(x0,y0,w,h);g.fillStyle='#fff';
-  cols.forEach((c,i)=>{const num=lista.some(t=>/^\d/.test(t.campos[c]||''))&&!/veste/i.test(c);const x=x0+cw*i+cw/2;let fs=34;
-    do{g.font=`700 ${fs}px Arial`;fs-=2;}while(g.measureText(c.toUpperCase()).width>cw-14&&fs>14);
-    g.fillText(c.toUpperCase(),x,y0+h/2+(num?0:12));if(num){g.font='400 22px Arial';g.fillText('(cm)',x,y0+h/2+30);}});
-  lista.forEach((t,r)=>{const y=y0+h*(r+1);g.fillStyle=r%2?'#f2f2f2':'#fafafa';g.fillRect(x0,y,w,h);g.fillStyle='#111';
-    cols.forEach((c,i)=>{g.font=i===0?'700 52px Arial':'400 42px Arial';g.fillText(i===0?t.tam:(t.campos[c]||'—'),x0+cw*i+cw/2,y+h/2+16);});});
-  g.strokeStyle='#111';g.lineWidth=3;g.strokeRect(x0,y0,w,h*(lista.length+1));
-  for(let i=1;i<cols.length;i++){g.beginPath();g.moveTo(x0+cw*i,y0);g.lineTo(x0+cw*i,y0+h*(lista.length+1));g.stroke();}
-  g.font='400 30px Arial';g.fillStyle='#444';g.fillText('Na dúvida entre dois tamanhos, escolha o maior.',450,y0+h*(lista.length+1)+90);
+  const W=900,H=1200,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const caber=(txt,peso,max,larg)=>{let fs=max;do{g.font=`${peso} ${fs}px Arial`;fs-=1;}while(g.measureText(txt).width>larg&&fs>12);return g.font;};
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);g.textAlign='center';g.textBaseline='middle';
+  const x0=60,w=W-120,cw=w/cols.length,linhas=lista.length+1,h=Math.min(120,Math.max(64,640/linhas)),r=18;
+  // bloco (título + tabela + rodapé) centralizado na altura
+  const y0=Math.max(280,Math.round((H-h*linhas)/2)-20);
+  g.fillStyle='#111';g.font=caber('GUIA DE TAMANHOS','800',62,W-120);g.fillText('GUIA DE TAMANHOS',W/2,y0-130);
+  g.fillStyle='#777';g.font='400 26px Arial';g.fillText(subtitulo?subtitulo.slice(0,50):'Medidas do corpo, em centímetros',W/2,y0-75);
+  const ABREV={COMPRIMENTO:'COMPR.',CIRCUNFERÊNCIA:'CIRC.',LARGURA:'LARG.'};
+  // cartão com cantos arredondados
+  g.save();g.beginPath();g.roundRect(x0,y0,w,h*linhas,r);g.clip();
+  g.fillStyle='#1f1f1f';g.fillRect(x0,y0,w,h);
+  cols.forEach((c,i)=>{const x=x0+cw*i+cw/2;let t=c.toUpperCase();g.font='700 30px Arial';if(g.measureText(t).width>cw-24&&ABREV[t])t=ABREV[t];g.fillStyle='#fff';g.font=caber(t,'700',30,cw-24);g.fillText(t,x,y0+h/2);});
+  lista.forEach((t,ri)=>{const y=y0+h*(ri+1);g.fillStyle=ri%2?'#f4f4f4':'#ffffff';g.fillRect(x0,y,w,h);
+    cols.forEach((c,i)=>{const x=x0+cw*i+cw/2;const v=i===0?t.tam:(t.campos[c]||'—');g.fillStyle=i===0?'#111':'#333';g.font=caber(String(v),i===0?'800':'500',i===0?46:38,cw-24);g.fillText(String(v),x,y+h/2);});});
+  g.restore();
+  g.strokeStyle='#d0d0d0';g.lineWidth=2;for(let i=1;i<cols.length;i++){g.beginPath();g.moveTo(x0+cw*i,y0+h);g.lineTo(x0+cw*i,y0+h*linhas);g.stroke();}
+  g.strokeStyle='#1f1f1f';g.lineWidth=3;g.beginPath();g.roundRect(x0,y0,w,h*linhas,r);g.stroke();
+  const yb=y0+h*linhas+70;g.fillStyle='#444';g.font='500 28px Arial';g.fillText('Na dúvida entre dois tamanhos, escolha o maior.',W/2,yb);
+  g.fillStyle='#888';g.font='400 22px Arial';g.fillText('As medidas podem variar até 2 cm.',W/2,yb+44);
   return cv.toDataURL('image/jpeg',0.92);
 }
 window.__dirUltimo=null;
@@ -8300,6 +8314,7 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   const soGuia = dirGerarSel.guia && !querFotos && !querTexto;
   if(soGuia){
     if(!tamanhos.length){showToast('Preencha os tamanhos (ex.: M: veste 38/40).');return;}
+    const errT=tamanhos.find(t=>t.erro);if(errT){lbAvisar('Tamanhos — '+errT.erro);return;}
     const guia=dirGuiaTamanhos(tamanhos,'');
     resEl.innerHTML=`<div class="ia-block" style="padding:12px;max-width:280px"><div class="ia-block-label" style="margin-bottom:8px">Guia de Tamanhos</div><img src="${guia}" style="width:100%;border-radius:8px;margin-bottom:8px"><a href="${guia}" download="guia-tamanhos.jpg" class="btn btn-ghost btn-sm">Baixar</a></div>`;
     return;
