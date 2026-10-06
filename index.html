@@ -8743,6 +8743,92 @@ function dirMedidasMl(t){
   return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:numeros(c.Veste).length?'ABNT':'referência BR pela letra'};
 }
 async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST',headers:{'Content-Type':'application/json',...(login?await authHeaders():{})},body:JSON.stringify({acao,...corpo})});return r.json();}
+// Motor de criação no Mercado Livre (padrão LB): categoria (prefere a que a loja já usa), ficha obrigatória pela IA, tabela de
+// medidas (régua BR / ficha do domínio), preço pela comissão real (ml_preco, 7% de folga), 1 anúncio por cor+tamanho (User
+// Products), marca = nome da loja, já ATIVOS. Usado pelo Criar Produtos e pela migração Shopee → ML.
+// spec: {familia, liq, peso, dim:[c,l,a], est (nº ou {'cor|tam':n}), u:{cores, tamanhos:[{tam,campos}], nome1, nome2, produto, material, medidas}, sku, descricao, fotosPorCor:{cor:[dataURL]}}
+async function mlCriarProduto(c,spec,linhaMl=()=>{}){
+  const {familia,liq,peso,dim,est,u,sku,descricao,fotosPorCor}=spec;const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
+  const token=await mlGarantirTokenValido(c);
+  const ler=async caminho=>(await dirMl('ler_api',{access_token:token,caminho})).data;
+  linhaMl('ML: escolhendo a categoria...');
+  const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));let cat=Array.isArray(dd)?dd[0]:null;
+  // o ML pode ter várias categorias com o MESMO nome (ex.: "Pontas de Eixos" de caminhão, de carro...): prefere a que a loja já usa
+  if(Array.isArray(dd)&&dd.length>1){for(const op of dd.slice(0,4)){const q=await ler(`/users/${c.mlUserId}/items/search?category=${op.category_id}&status=active&limit=1`);if((q?.paging?.total||0)>0){cat=op;break;}}}
+  if(!cat)throw new Error('o ML não sugeriu categoria pro nome');
+  const attrs=await ler(`/categories/${cat.category_id}/attributes`)||[];
+  // variação → atributo da categoria (Cor→COLOR, Tamanho→SIZE, Voltagem→VOLTAGE...) ou atributo próprio (UP permite)
+  const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  const mapVar=nome=>{if(!nome)return null;if(/^cor(es)?$/.test(norm(nome)))return attrs.some(a=>a.id==='COLOR')?'COLOR':(attrs.find(a=>a.tags?.allow_variations&&/COLOR$/.test(a.id))?.id||null); /* luminária: Cor da estrutura */if(/^tamanho/.test(norm(nome)))return attrs.some(a=>a.id==='SIZE')?'SIZE':null;return attrs.find(a=>!a.tags?.read_only&&norm(a.name)===norm(nome))?.id||null;};
+  let id1=mapVar(u.nome1),id2=mapVar(u.nome2);
+  // "Estampa" ocupa o campo Cor quando a categoria exige cor e não há variação de cor (Djan 05/10/2026: "Confira: Cor")
+  const exigeCor=attrs.some(a=>a.id==='COLOR'&&a.tags?.required);
+  if(exigeCor&&id1!=='COLOR'&&id2!=='COLOR'){if(!id1&&/estampa/.test(norm(u.nome1)))id1='COLOR';else if(!id2&&/estampa/.test(norm(u.nome2)))id2='COLOR';}const idsVar=[id1,id2].filter(Boolean);
+  const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
+  const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_|IS_)/.test(id);
+  const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
+  const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:a.name,livre:true});
+  linhaMl('ML: preenchendo a ficha técnica...');
+  let ia=[];if(paraIA.length){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
+  const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
+  // fabricante obrigatório (ex.: caixas de embalagem) e a IA não soube → nome da loja
+  if(paraIA.some(a=>a.id==='MANUFACTURER')&&!extras.some(e=>e.id==='MANUFACTURER'))extras.push({id:'MANUFACTURER',value_name:c.nome});
+  // número de peça obrigatório (autopeças, ex.: Pontas de Eixos — erro visto ao vivo na Rodan 05/10/2026) → SKU do produto
+  const skuMl=String(sku||'').trim();
+  for(const id of ['PART_NUMBER','MPN','SELLER_SKU'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
+  // o que ficou SEM valor depois da IA e dos padrões (o ML pode preencher sozinho — conferir no anúncio)
+  const faltaReq=paraIA.filter(a=>a.id!=='GENDER'&&!extras.some(x=>x.id===a.id)).map(a=>a.nome);
+
+  if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
+  const textoReq=[];
+  // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
+  let gridId=null,linhas={};
+  const opTam=id1==='SIZE'?u.cores.map(o=>({tam:o,campos:u.medidas?.[o.toUpperCase()]||{}})):id2==='SIZE'?u.tamanhos:[];
+  if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&opTam.length){
+    linhaMl('ML: tabela de medidas...');
+    const genVal=attrs.find(a=>a.id==='GENDER')?.values?.find(v=>String(v.id)===String(genero?.value_id));
+    const busca=await dirMl('tabela_medidas_buscar',{access_token:token,domain_id:cat.domain_id,corpo:{domain_id:cat.domain_id.replace(/^MLB-/,''),site_id:'MLB',seller_id:Number(c.mlUserId),attributes:[{id:'GENDER',values:[{name:genVal?.name||'Feminino'}]},{id:'BRAND',values:[{name:c.nome}]}]}});
+    const tams=opTam.map(t=>t.tam.toUpperCase());
+    const temTodos=ch=>tams.every(t=>(ch.rows||[]).some(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t))));
+    const reuso=(busca.data?.charts||[]).find(ch=>/^LB /.test(ch.names?.MLB||'')&&temTodos(ch));
+    if(reuso){gridId=reuso.id;for(const t of opTam){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
+    else{
+      // cada domínio tem a sua ficha (vestido = CHEST_CIRCUMFERENCE; pijama = BUST_ + HIP_ obrigatórios — SS Tendência 07/10/2026).
+      // Lê a ficha, troca CHEST→BUST quando for o caso e manda só medidas DO CORPO que o domínio aceita (GARMENT_* o ML recusa).
+      const ficha=await dirMl('tabela_medidas_ficha',{access_token:token,domain_id:cat.domain_id,corpo:{attributes:[{id:'GENDER',value_id:String(genVal?.id||'339665')},{id:'BRAND',value_name:c.nome}]}},true);
+      const fAt=[];const walk=o=>{if(!o||typeof o!=='object')return;if(Array.isArray(o.attributes))o.attributes.forEach(a=>a?.id&&a.hierarchy==='CHILD_DEPENDENT'&&fAt.push(a));Object.values(o).forEach(walk);};walk(ficha?.data);
+      const aceitos=new Set(fAt.map(a=>a.id).filter(id=>!/^GARMENT_/.test(id)));
+      const obrig=[...new Set(fAt.filter(a=>(a.tags||[]).includes('required')&&!/^GARMENT_/.test(a.id)).map(a=>a.id))];
+      const ajustar=m=>{if(!m||!aceitos.size)return m;const o={};for(const[k,v]of Object.entries(m.medidas)){let id=k;if(!aceitos.has(id)&&/^CHEST_CIRCUMFERENCE/.test(id))id=id.replace('CHEST_','BUST_');if(aceitos.has(id))o[id]=v;}return{...m,medidas:o};};
+      const ls=opTam.map(t=>({tam:t.tam,m:ajustar(dirMedidasMl(t))}));
+      const obrigTab=obrig.length?obrig:['CHEST_CIRCUMFERENCE_FROM'];
+      const sem=ls.filter(x=>!x.m||obrigTab.some(k=>!(Number(x.m.medidas[k])>0))).map(x=>x.tam);
+      if(sem.length){console.log('[ML medidas] tamanhos lidos:',JSON.stringify(opTam));throw new Error(`essa categoria do ML exige tabela de medidas: faltam medidas nos tamanhos ${ls.filter(x=>!x.m).map(x=>`"${x.tam}" (lido: ${JSON.stringify(opTam.find(o=>o.tam===x.tam)?.campos||{})})`).join(', ')} — no passo 1, em "medidas por tamanho", escreva "M: veste 38/40" ou busto/cintura/quadril em cm`);}
+      const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
+      const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
+      if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
+      gridId=r.id;linhas=r.linhas;
+    }
+  }
+  linhaMl('ML: calculando o preço com a comissão real...');
+  const pr=await dirMl('ml_preco',{access_token:token,categoria:cat.category_id,liquido:liq,peso},true);if(!pr.ok)throw new Error('preço: '+pr.erro);
+  // fotos: a 1ª cor leva as fotos escolhidas; as outras cores levam a(s) foto(s) real(is) delas
+  const ids=new Map();const subir=async(img,rot)=>{if(ids.has(img))return ids.get(img);linhaMl(`ML: subindo fotos (${rot})...`);const r=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:img},true);if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.id);return r.id;};
+  const fotosDa={};
+  for(const cor of (u.cores.length?u.cores:[''])){const unicos=[...new Set(fotosPorCor[cor]||fotosPorCor[Object.keys(fotosPorCor)[0]]||[])].slice(0,10);fotosDa[cor]=[];for(const [j,img] of unicos.entries())fotosDa[cor].push(await subir(img,`${cor||'produto'} ${j+1}/${unicos.length}`));if(!fotosDa[cor].length)throw new Error('sem fotos pra '+(cor||'o produto'));}
+  const criados=[],erros=[];
+  for(const cor of (u.cores.length?u.cores:[''])){for(const t of (u.tamanhos.length?u.tamanhos:[{tam:''}])){
+    linhaMl(`ML: criando ${[cor,t.tam].filter(Boolean).join(' ')||'anúncio'}... (${criados.length+erros.length+1}/${nItens})`);
+    const vars=[[u.nome1,id1,cor],[u.nome2,id2,t.tam]].filter(v=>v[2]);
+    const vCor=vars.find(v=>v[1]==='COLOR')?.[2],vTam=vars.find(v=>v[1]==='SIZE')?.[2];
+    const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
+    const estC=typeof est==='object'?Number(est[`${cor}|${t.tam||''}`]??est[cor]??0):est;
+    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:descricao||''};
+    const r=await dirMl('ml_criar_item',{access_token:token,item},true);
+    if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
+  }}
+  return{criados,erros,venda:pr.venda,comissaoPct:pr.comissaoPct,cat,gridId,faltaReq,textoReq,nItens};
+}
 window.__cpCriarMl=async(depoisDaShopee=false)=>{
   const u=window.__dirUltimo;const st=document.getElementById('dirShStatus');const btn=document.getElementById('dirShCriarBtn');
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('dirShLoja').value);
@@ -8757,88 +8843,15 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
   if(!depoisDaShopee)st.innerHTML='';
   if(btn)btn.disabled=true;
   try{
-    const token=await mlGarantirTokenValido(c);
-    const ler=async caminho=>(await dirMl('ler_api',{access_token:token,caminho})).data;
-    linhaMl('ML: escolhendo a categoria...');
-    const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));let cat=Array.isArray(dd)?dd[0]:null;
-    // o ML pode ter várias categorias com o MESMO nome (ex.: "Pontas de Eixos" de caminhão, de carro...): prefere a que a loja já usa
-    if(Array.isArray(dd)&&dd.length>1){for(const op of dd.slice(0,4)){const q=await ler(`/users/${c.mlUserId}/items/search?category=${op.category_id}&status=active&limit=1`);if((q?.paging?.total||0)>0){cat=op;break;}}}
-    if(!cat)throw new Error('o ML não sugeriu categoria pro nome');
-    const attrs=await ler(`/categories/${cat.category_id}/attributes`)||[];
-    // variação → atributo da categoria (Cor→COLOR, Tamanho→SIZE, Voltagem→VOLTAGE...) ou atributo próprio (UP permite)
-    const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-    const mapVar=nome=>{if(!nome)return null;if(/^cor(es)?$/.test(norm(nome)))return attrs.some(a=>a.id==='COLOR')?'COLOR':(attrs.find(a=>a.tags?.allow_variations&&/COLOR$/.test(a.id))?.id||null); /* luminária: Cor da estrutura */if(/^tamanho/.test(norm(nome)))return attrs.some(a=>a.id==='SIZE')?'SIZE':null;return attrs.find(a=>!a.tags?.read_only&&norm(a.name)===norm(nome))?.id||null;};
-    let id1=mapVar(u.nome1),id2=mapVar(u.nome2);
-    // "Estampa" ocupa o campo Cor quando a categoria exige cor e não há variação de cor (Djan 05/10/2026: "Confira: Cor")
-    const exigeCor=attrs.some(a=>a.id==='COLOR'&&a.tags?.required);
-    if(exigeCor&&id1!=='COLOR'&&id2!=='COLOR'){if(!id1&&/estampa/.test(norm(u.nome1)))id1='COLOR';else if(!id2&&/estampa/.test(norm(u.nome2)))id2='COLOR';}const idsVar=[id1,id2].filter(Boolean);
-    const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
-    const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_|IS_)/.test(id);
-    const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
-    const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:a.name,livre:true});
-    linhaMl('ML: preenchendo a ficha técnica...');
-    let ia=[];if(paraIA.length){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
-    const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
-    // fabricante obrigatório (ex.: caixas de embalagem) e a IA não soube → nome da loja
-    if(paraIA.some(a=>a.id==='MANUFACTURER')&&!extras.some(e=>e.id==='MANUFACTURER'))extras.push({id:'MANUFACTURER',value_name:c.nome});
-    // número de peça obrigatório (autopeças, ex.: Pontas de Eixos — erro visto ao vivo na Rodan 05/10/2026) → SKU do produto
-    const skuMl=(document.getElementById('dirShSku')?.value||'').trim();
-    for(const id of ['PART_NUMBER','MPN','SELLER_SKU'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
-    // o que ficou SEM valor depois da IA e dos padrões (o ML pode preencher sozinho — conferir no anúncio)
-    const faltaReq=paraIA.filter(a=>a.id!=='GENDER'&&!extras.some(x=>x.id===a.id)).map(a=>a.nome);
-
-    if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
-    const textoReq=[];
-    // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
-    let gridId=null,linhas={};
-    const opTam=id1==='SIZE'?u.cores.map(o=>({tam:o,campos:u.medidas?.[o.toUpperCase()]||{}})):id2==='SIZE'?u.tamanhos:[];
-    if(attrs.some(a=>a.id==='SIZE_GRID_ID')&&opTam.length){
-      linhaMl('ML: tabela de medidas...');
-      const genVal=attrs.find(a=>a.id==='GENDER')?.values?.find(v=>String(v.id)===String(genero?.value_id));
-      const busca=await dirMl('tabela_medidas_buscar',{access_token:token,domain_id:cat.domain_id,corpo:{domain_id:cat.domain_id.replace(/^MLB-/,''),site_id:'MLB',seller_id:Number(c.mlUserId),attributes:[{id:'GENDER',values:[{name:genVal?.name||'Feminino'}]},{id:'BRAND',values:[{name:c.nome}]}]}});
-      const tams=opTam.map(t=>t.tam.toUpperCase());
-      const temTodos=ch=>tams.every(t=>(ch.rows||[]).some(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t))));
-      const reuso=(busca.data?.charts||[]).find(ch=>/^LB /.test(ch.names?.MLB||'')&&temTodos(ch));
-      if(reuso){gridId=reuso.id;for(const t of opTam){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
-      else{
-        // cada domínio tem a sua ficha (vestido = CHEST_CIRCUMFERENCE; pijama = BUST_ + HIP_ obrigatórios — SS Tendência 07/10/2026).
-        // Lê a ficha, troca CHEST→BUST quando for o caso e manda só medidas DO CORPO que o domínio aceita (GARMENT_* o ML recusa).
-        const ficha=await dirMl('tabela_medidas_ficha',{access_token:token,domain_id:cat.domain_id,corpo:{attributes:[{id:'GENDER',value_id:String(genVal?.id||'339665')},{id:'BRAND',value_name:c.nome}]}},true);
-        const fAt=[];const walk=o=>{if(!o||typeof o!=='object')return;if(Array.isArray(o.attributes))o.attributes.forEach(a=>a?.id&&a.hierarchy==='CHILD_DEPENDENT'&&fAt.push(a));Object.values(o).forEach(walk);};walk(ficha?.data);
-        const aceitos=new Set(fAt.map(a=>a.id).filter(id=>!/^GARMENT_/.test(id)));
-        const obrig=[...new Set(fAt.filter(a=>(a.tags||[]).includes('required')&&!/^GARMENT_/.test(a.id)).map(a=>a.id))];
-        const ajustar=m=>{if(!m||!aceitos.size)return m;const o={};for(const[k,v]of Object.entries(m.medidas)){let id=k;if(!aceitos.has(id)&&/^CHEST_CIRCUMFERENCE/.test(id))id=id.replace('CHEST_','BUST_');if(aceitos.has(id))o[id]=v;}return{...m,medidas:o};};
-        const ls=opTam.map(t=>({tam:t.tam,m:ajustar(dirMedidasMl(t))}));
-        const obrigTab=obrig.length?obrig:['CHEST_CIRCUMFERENCE_FROM'];
-        const sem=ls.filter(x=>!x.m||obrigTab.some(k=>!(Number(x.m.medidas[k])>0))).map(x=>x.tam);
-        if(sem.length){console.log('[ML medidas] tamanhos lidos:',JSON.stringify(opTam));throw new Error(`essa categoria do ML exige tabela de medidas: faltam medidas nos tamanhos ${ls.filter(x=>!x.m).map(x=>`"${x.tam}" (lido: ${JSON.stringify(opTam.find(o=>o.tam===x.tam)?.campos||{})})`).join(', ')} — no passo 1, em "medidas por tamanho", escreva "M: veste 38/40" ou busto/cintura/quadril em cm`);}
-        const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
-        const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
-        if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
-        gridId=r.id;linhas=r.linhas;
-      }
-    }
-    linhaMl('ML: calculando o preço com a comissão real...');
-    const pr=await dirMl('ml_preco',{access_token:token,categoria:cat.category_id,liquido:liq,peso},true);if(!pr.ok)throw new Error('preço: '+pr.erro);
     // fotos: a 1ª cor leva as fotos escolhidas; as outras cores levam a(s) foto(s) real(is) delas
-    const ids=new Map();const subir=async(img,rot)=>{if(ids.has(img))return ids.get(img);linhaMl(`ML: subindo fotos (${rot})...`);const r=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:img},true);if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.id);return r.id;};
     const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
-    const fotosDa={};
+    const fotosPorCor={};
     for(const [i,cor] of (u.cores.length?u.cores:['']).entries()){
       const ia=dirFotoVar(cor);const realOk=fotoCor[cor]&&(sel.some(x=>x.img===fotoCor[cor])||!ia)?fotoCor[cor]:null; // real desmarcada lá em cima + tem foto da IA → só a da IA
-      const lista=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
-      const unicos=[...new Set(lista)].slice(0,10);fotosDa[cor]=[];for(const [j,img] of unicos.entries())fotosDa[cor].push(await subir(img,`${cor||'produto'} ${j+1}/${unicos.length}`));
+      fotosPorCor[cor]=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
     }
-    const criados=[],erros=[];
-    for(const cor of (u.cores.length?u.cores:[''])){for(const t of (u.tamanhos.length?u.tamanhos:[{tam:''}])){
-      linhaMl(`ML: criando ${[cor,t.tam].filter(Boolean).join(' ')||'anúncio'}... (${criados.length+erros.length+1}/${nItens})`);
-      const vars=[[u.nome1,id1,cor],[u.nome2,id2,t.tam]].filter(v=>v[2]);
-      const vCor=vars.find(v=>v[1]==='COLOR')?.[2],vTam=vars.find(v=>v[1]==='SIZE')?.[2];
-      const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
-      const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:est,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:document.getElementById('dirShDesc').value.trim()};
-      const r=await dirMl('ml_criar_item',{access_token:token,item},true);
-      if(r.ok)criados.push(r);else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
-    }}
+    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est,u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor},linhaMl);
+    const pr={venda,comissaoPct};
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
   }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`);}
@@ -9810,12 +9823,15 @@ function migRender(){
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.mlUserId&&c.mlRefreshToken&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.dataset.pronto='1';
   el.innerHTML=`<div class="cm-secao" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:16px">
-    <div class="cm-secao-titulo" style="margin-bottom:6px"><h3 style="font-size:16px">Migrar do Mercado Livre pra Shopee</h3></div>
+    <div class="cm-secao-titulo" style="margin-bottom:6px"><h3 style="font-size:16px">Migrar anúncios entre Mercado Livre e Shopee</h3></div>
     <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Pra cliente que já vende no ML: o sistema lê os anúncios e cria na Shopee no padrão LB — <b>mesmo valor líquido do ML</b> (desconta a tarifa real e o frete grátis), título novo da Shopee, fotos do ML, marca Malaysia Collection. Anúncios do mesmo produto com cor/tamanho viram <b>1 anúncio com variações</b>. Cria <b>oculto</b>; depois "Publicar" coloca no desconto fixo e no Ads ROAS 20.</p>
-    <div class="cat-barra"><select id="migLoja"><option value="">Cliente com ML e Shopee…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select><button class="btn btn-gold btn-sm" onclick="window.__migLer()">Ler anúncios do ML</button></div>
+    <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 12px;line-height:1.55"><b>Shopee → ML:</b> mesmo líquido da Shopee (preço do desconto fixo menos taxa, cupom e relâmpago), recalculado com a comissão real do ML + 7% de folga; 1 anúncio por cor e tamanho, título até 60, Clássico, marca = nome da loja, tabela de medidas pela régua BR, <b>já ativos</b>. Ads do ML continua manual.</p>
+    <div class="cat-barra"><select id="migDir" onchange="window.__migDir()"><option value="ml2sh">Mercado Livre → Shopee</option><option value="sh2ml">Shopee → Mercado Livre</option></select><select id="migLoja"><option value="">Cliente com ML e Shopee…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select><button class="btn btn-gold btn-sm" id="migLerBtn" onclick="window.__migLer()">Ler anúncios do ML</button></div>
     <div id="migStatus" class="saude-vazio"></div><div id="migLista"></div><div id="migAcoes"></div></div>`;
 }
+window.__migDir=()=>{const d=document.getElementById('migDir').value;document.getElementById('migLerBtn').textContent=d==='sh2ml'?'Ler anúncios da Shopee':'Ler anúncios do ML';mig.grupos=[];mig.criados=[];document.getElementById('migLista').innerHTML='';document.getElementById('migAcoes').innerHTML='';document.getElementById('migStatus').textContent='';};
 window.__migLer=async()=>{
+  if(document.getElementById('migDir')?.value==='sh2ml')return window.__mig2Ler();
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('migLoja').value);if(!c){showToast('Escolha o cliente.');return;}
   const st=document.getElementById('migStatus'),passo=t=>st.textContent=t;
   mig.c=c;mig.grupos=[];mig.criados=[];document.getElementById('migLista').innerHTML='';document.getElementById('migAcoes').innerHTML='';
@@ -9922,6 +9938,94 @@ window.__migPublicar=async()=>{
     st.innerHTML=res.map(esc).join('<br>');mig.criados=[];migRenderLista();
   }catch(e){st.textContent='Erro: '+e.message;}
 };
+
+/* ---------- Migrar da Shopee pro Mercado Livre ---------- */
+const mig2={c:null,itens:[]};
+async function migLerShopeeAtivos(c,token,passo){
+  const itens=[];let off=0;
+  for(let pg=0;pg<40;pg++){passo(`Lendo anúncios da Shopee... ${itens.length}`);
+    const r=await (await fetch(`${SHOPEE_API}?${new URLSearchParams({acao:'catalogo_listar',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,offset:String(off),status:'NORMAL'})}`,{headers:await authHeaders()})).json();
+    if(!r.ok)throw new Error(r.erro||'erro ao ler a Shopee');itens.push(...r.itens);if(!r.temMais)break;off=r.proximoOffset;}
+  return itens;
+}
+async function migTitulosMl(c){
+  const ids=[];for(const st of ['active','paused']){for(let off=0;off<1000;off+=50){const s=await migMl(c,`/users/${c.mlUserId}/items/search?status=${st}&limit=50&offset=${off}`);ids.push(...(s?.results||[]));if(!s||off+50>=(s.paging?.total||0))break;}}
+  const nomes=[];for(let i=0;i<ids.length;i+=20){const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(',')+'&attributes=id,title,family_name');nomes.push(...(d||[]).map(x=>x.body).filter(Boolean).flatMap(b=>[b.title,b.family_name].filter(Boolean)));}
+  return nomes;
+}
+window.__mig2Ler=async()=>{
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('migLoja').value);if(!c){showToast('Escolha o cliente.');return;}
+  const st=document.getElementById('migStatus'),passo=t=>st.textContent=t;
+  mig2.c=c;mig2.itens=[];document.getElementById('migLista').innerHTML='';document.getElementById('migAcoes').innerHTML='';
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const itens=await migLerShopeeAtivos(c,token,passo);
+    passo('Conferindo o que já está no ML...');
+    const noMl=new Set((await migTitulosMl(c)).map(migChave));const jaMigrados=new Set(Object.values(c.migracaoMlShopee||{}).map(String));
+    mig2.itens=itens.map((it,i)=>{const existe=jaMigrados.has(String(it.id))||noMl.has(migChave(it.nome));return{i,it,existe,sel:!existe&&(it.estoque||0)>0,estado:''};});
+    passo(`${itens.length} anúncios ativos na Shopee. Os que já estão no ML (ou sem estoque) vêm desmarcados.`);
+    mig2Render();
+  }catch(e){passo('Erro: '+e.message);console.error(e);}
+};
+function mig2Render(){
+  const el=document.getElementById('migLista');if(!el)return;
+  el.innerHTML=`<div class="cat-lista">${mig2.itens.map(x=>{const it=x.it;const venda=it.precoMin;const liq=venda?dirLiquido(venda):null;
+    return `<div class="cat-item"><div class="cat-linha">
+      <input type="checkbox" ${x.sel?'checked':''} ${x.estado.startsWith('ok')?'disabled':''} onclick="window.__mig2Sel(${x.i},this.checked)">
+      ${it.foto?`<img src="${esc(it.foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
+      <div class="cat-nome"><b>${esc(it.nome)}</b><small>${it.temVariacao?`${it.variacoes.length} variações → ${it.variacoes.length} anúncios no ML`:'1 anúncio no ML'} · ${it.estoque||0} em estoque${x.existe?' · <span style="color:var(--amber)">parece que já está no ML</span>':''}</small></div>
+      <div class="cat-num"><small>Shopee</small>${venda?fmtR(venda):'—'}</div>
+      <div class="cat-num"><small>Líquido</small>${liq?fmtR(liq):'—'}</div>
+      <div class="cat-num" style="min-width:150px"><small>Situação</small>${esc(x.estado||'—')}</div>
+    </div></div>`;}).join('')}</div>`;
+  const n=mig2.itens.filter(x=>x.sel&&!x.estado.startsWith('ok')).length;
+  document.getElementById('migAcoes').innerHTML=`<div class="cat-acoes"><span>${n} anúncio(s) marcados</span><button class="btn btn-gold btn-sm" onclick="window.__mig2Criar()">Criar no Mercado Livre (ativos)</button></div>`;
+}
+window.__mig2Sel=(i,on)=>{const x=mig2.itens.find(y=>y.i===i);if(x)x.sel=on;mig2Render();};
+window.__mig2Criar=async()=>{
+  const c=mig2.c;const sel=mig2.itens.filter(x=>x.sel&&!x.estado.startsWith('ok'));if(!c||!sel.length){showToast('Marque ao menos 1 anúncio.');return;}
+  const nAn=sel.reduce((t,x)=>t+Math.max(1,x.it.variacoes.length),0);
+  if(!await lbConfirmar(`Criar ${sel.length} produto(s) no Mercado Livre da ${c.nome}?\nSão ~${nAn} anúncio(s) (1 por cor e tamanho), Clássico, já ATIVOS, com o mesmo líquido da Shopee.`,{okTxt:'Criar no ML'}))return;
+  const st=document.getElementById('migStatus');
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const usados=new Set();
+    for(const x of sel){const it=x.it;const linha=t=>{x.estado=String(t).replace(/<[^>]+>/g,'').slice(0,70);mig2Render();};
+      try{
+        linha('lendo na Shopee...');
+        const b=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:String(it.id)}}))?.response?.item_list?.[0];
+        if(!b)throw new Error('não consegui ler o anúncio na Shopee');
+        let tiers=[],models=[];
+        if(b.has_model){const m=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_model_list',query:{item_id:it.id}});tiers=m?.response?.tier_variation||[];models=(m?.response?.model||[]).filter(md=>!md.model_status||md.model_status==='MODEL_NORMAL');}
+        const op=k=>(tiers[k]?.option_list||[]).map(o=>o.option);
+        const u={cores:op(0),tamanhos:op(1).map(t=>({tam:t,campos:{}})),nome1:tiers[0]?.name||'',nome2:tiers[1]?.name||'',produto:`${b.item_name}\n${String(b.description||'').slice(0,600)}`,material:'',medidas:{}};
+        // estoque por combinação (estoque do vendedor) e preço: maior venda entre as variações (a cliente nunca recebe menos)
+        const est={};let venda=it.precoMin;
+        if(models.length){for(const md of models){const k=`${op(0)[md.tier_index?.[0]]??''}|${op(1)[md.tier_index?.[1]]??''}`;est[k]=(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0);}
+          venda=Math.max(...models.map(md=>Number(md.price_info?.[0]?.current_price)||0));}
+        const liq=dirLiquido(venda);if(!(liq>0))throw new Error('sem preço na Shopee');
+        linha('título do ML...');
+        const tt=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:`${b.item_name}${u.cores.length?`\n(variações: ${[...u.cores,...op(1)].join(', ')} — NÃO coloque cor nem tamanho no título)`:''}`})}).then(r=>r.json()).catch(()=>({}));
+        let familia=String(tt.titulo||'').trim();if(!familia)familia=cortarNaPalavraFront(b.item_name,60);
+        if(usados.has(familia.toLowerCase()))familia=cortarNaPalavraFront(familia+' '+(b.item_sku||it.id),60);usados.add(familia.toLowerCase());
+        linha('fotos...');
+        const urls=b.image?.image_url_list||[];const jpg={};const pega=async url=>jpg[url]||(jpg[url]=await migJpg(url));
+        const fotosPorCor={};
+        for(const [k,cor] of (u.cores.length?u.cores:['']).entries()){
+          const opImg=tiers[0]?.option_list?.[k]?.image?.image_url;
+          const lista=k===0?[...(opImg?[opImg]:[]),...urls]:[opImg||urls[0]].filter(Boolean);
+          fotosPorCor[cor]=[];for(const url of [...new Set(lista)].slice(0,10))fotosPorCor[cor].push(await pega(url));}
+        const dim=[b.dimension?.package_length,b.dimension?.package_width,b.dimension?.package_height].map(n=>Math.max(1,Math.round(Number(n)||0)));
+        const r=await mlCriarProduto(c,{familia,liq,peso:Number(b.weight)||0.5,dim:dim.every(n=>n>1)?dim:[20,15,10],est:models.length?est:(it.estoque||0),u,sku:b.item_sku||'',descricao:String(b.description||'').slice(0,4900),fotosPorCor},linha);
+        if(r.criados.length)await updateDoc(doc(db,'clientes',c.id),Object.fromEntries(r.criados.map(cr=>[`migracaoMlShopee.${cr.item_id}`,it.id]))).catch(()=>{});
+        await log(c.id,c.nome,'migração Shopee → ML',`Shopee ${it.id} → ${r.criados.length} anúncio(s) no ML a ${fmtR(r.venda)} (${r.criados.map(cr=>cr.item_id).join(', ')})${r.erros.length?` · erros: ${r.erros.join(' | ')}`:''}.`);
+        linha(r.erros.length?`parcial: ${r.criados.length}/${r.nItens} · ${r.erros[0]}`:`ok: ${r.criados.length} anúncio(s) a ${fmtR(r.venda)}`);x.sel=false;
+      }catch(e){linha('erro: '+e.message);console.error(e);}
+    }
+    st.textContent='Pronto. Ads do ML: coloque os anúncios novos na campanha "LB ROAS 20" pelo painel do ML.';
+  }catch(e){st.textContent='Erro: '+e.message;}
+};
+function cortarNaPalavraFront(t,max){t=String(t||'').replace(/\s+/g,' ').trim();if(t.length<=max)return t;const c=t.slice(0,max+1);return c.slice(0,c.lastIndexOf(' ')>20?c.lastIndexOf(' '):max).trim();}
 
 /* ---------- Padronizar anúncios da loja (Catálogo) ---------- */
 // fora do padrão = marca diferente de Malaysia Collection ou sem desconto (cópia do UpSeller, anúncio antigo...)
