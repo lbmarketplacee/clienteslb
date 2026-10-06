@@ -8186,7 +8186,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     </div>
     <div style="font-size:13px;margin:4px 0 6px"><b>Fotos do anúncio</b> <span style="color:var(--text-dim)">(até ${maxSel}${u.guia?' + a guia de tamanhos no fim':''}; desmarque as que não ficaram fiéis ao produto)</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">${cands.map((c,i)=>`<label style="cursor:pointer;font-size:10px;color:var(--text-dim);text-align:center"><img src="${c.img}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><br><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''}> ${esc(c.tipo)}</label>`).join('')}</div>
-    ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada opção de ${esc(u.nome1||'Cor')}</b> (variação 1 = ${esc(u.nome1||'Cor')}${u.tamanhos.length?`, variação 2 = ${esc(u.nome2||'Tamanho')}`:''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Produto sem variação.</div>'}
+    ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada opção de ${esc(u.nome1||'Cor')}</b> (variação 1 = ${esc(u.nome1||'Cor')}${u.tamanhos.length?`, variação 2 = ${esc(u.nome2||'Tamanho')}`:''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div><div style="margin:6px 0 4px"><button type="button" class="btn btn-ghost btn-sm" id="dirShVarBtn" onclick="window.__cpGerarVar()">Gerar foto com IA pra cada ${esc(u.nome1||'opção')} (quando a foto da cliente é ruim)</button> <span id="dirShVarSt" style="font-size:12px;color:var(--text-dim)"></span></div><div id="dirShVarFotos" style="display:flex;gap:10px;flex-wrap:wrap"></div>`:'<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Produto sem variação.</div>'}
     ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl?'1. Criar na Shopee (oculto) — o ML entra no passo de publicar':'Criar anúncio (oculto)'}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre</button>`}
     <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
 }
@@ -8347,7 +8347,8 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
     const fotosDa={};
     for(const [i,cor] of (u.cores.length?u.cores:['']).entries()){
-      const lista=i===0?[...(fotoCor[cor]?[fotoCor[cor]]:[]),...sel.map(x=>x.img)]:[fotoCor[cor]].filter(Boolean);
+      const ia=dirFotoVar(cor);
+      const lista=i===0?[...(ia?[ia]:[]),...(fotoCor[cor]?[fotoCor[cor]]:[]),...sel.map(x=>x.img)]:[ia,fotoCor[cor]].filter(Boolean);
       const unicos=[...new Set(lista)].slice(0,10);fotosDa[cor]=[];for(const [j,img] of unicos.entries())fotosDa[cor].push(await subir(img,`${cor||'produto'} ${j+1}/${unicos.length}`));
     }
     const criados=[],erros=[];
@@ -8364,6 +8365,22 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
   }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span>`);}
   if(btn)btn.disabled=false;
+};
+// Foto com IA por opção da variação 1 (cor/estampa): a partir da foto real escolhida pra ela (lb-diretor-criativo capa_variacao)
+function dirFotoVar(op){const u=window.__dirUltimo;const usar=document.querySelector(`.dirShVarUsar[data-op="${CSS.escape(op)}"]`);return u?.fotosVar?.[op]&&(!usar||usar.checked)?u.fotosVar[op]:null;}
+function dirRenderVar(){const u=window.__dirUltimo;const el=document.getElementById('dirShVarFotos');if(!el)return;
+  el.innerHTML=u.cores.filter(op=>u.fotosVar?.[op]).map(op=>`<label style="width:110px;font-size:11px;color:var(--text-dim);text-align:center;cursor:pointer"><img src="${u.fotosVar[op]}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--gold)"><br><input type="checkbox" class="dirShVarUsar" data-op="${esc(op)}" checked> ${esc(op)}</label>`).join('');}
+window.__cpGerarVar=async()=>{
+  const u=window.__dirUltimo;const st=document.getElementById('dirShVarSt');const btn=document.getElementById('dirShVarBtn');
+  if(!u?.cores?.length)return;u.fotosVar=u.fotosVar||{};btn.disabled=true;
+  const sel={};for(const s2 of document.querySelectorAll('.dirShCor'))sel[s2.dataset.cor]=u.reais[Number(s2.value)];
+  let feitos=0,erros=0;
+  for(const op of u.cores){
+    st.textContent=`Gerando ${op}... (${feitos+erros+1}/${u.cores.length}, ~30s cada)`;
+    try{const r=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',opcao:op,imagem:sel[op],produto:u.produto,marketplace:'shopee'})})).json();
+      if(r.ok){u.fotosVar[op]=await dirPara34(r.imagem);feitos++;dirRenderVar();}else erros++;}catch(e){erros++;}
+  }
+  st.textContent=`${feitos} foto(s) geradas${erros?` · ${erros} falharam (essas ficam com a foto real)`:''}. Desmarque a que não ficou fiel à estampa.`;btn.disabled=false;
 };
 window.__dirShPreco=()=>{const u=window.__dirUltimo||{};const plats=u.plataformas||['shopee'];const liq=lbValorBR(document.getElementById('dirShLiq').value);
   const p=plats.includes('shopee')?dirPrecosLB(liq):null;const m=plats.includes('ml')?dirPrecoMlEstimado(liq,lbValorBR(document.getElementById('dirShPeso')?.value)||0.5):null;
@@ -8407,7 +8424,7 @@ window.__dirShCriar=async()=>{
     const subir=async(img,rotulo)=>{if(ids.has(img))return ids.get(img);passo(`Subindo fotos... (${rotulo})`);const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await dirPara34(img),ratio:'3:4'});if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.image_id);return r.image_id;};
     const imagens=[];for(let i=0;i<sel.length;i++)imagens.push(await subir(sel[i].img,`${i+1}/${sel.length}`));
     const guiaId=u.guia?await subir(u.guia,'guia de tamanhos'):null;if(guiaId)imagens.push(guiaId);
-    const fotosCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotosCor[s2.dataset.cor]=await subir(u.reais[Number(s2.value)],'cor '+s2.dataset.cor);
+    const fotosCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotosCor[s2.dataset.cor]=await subir(dirFotoVar(s2.dataset.cor)||u.reais[Number(s2.value)],'cor '+s2.dataset.cor);
     passo('Criando o anúncio (oculto)...');
     const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\n${u.nome1||'Cor'}: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\n${u.nome2||'Tamanho'}: ${u.tamanhos.map(t=>t.tam+(t.campos?.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
       category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
