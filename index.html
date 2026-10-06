@@ -8813,7 +8813,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
         let nomeTab=limpa(`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`).slice(0,60);
         if(nomesUsados.has(nomeTab.toLowerCase()))nomeTab=limpa(`LB ${cat.category_name} ${c.nome} ${opTam.map(t=>t.tam).join(' ')}`).slice(0,60);
         for(let k=2;nomesUsados.has(nomeTab.toLowerCase())&&k<20;k++)nomeTab=limpa(`${nomeTab.slice(0,56)} ${k}`);
-      const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
+      const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas,veste:opTam.find(o=>o.tam===x.tam)?.campos?.Veste||''}))}},true);
       if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
       gridId=r.id;linhas=r.linhas;
     }
