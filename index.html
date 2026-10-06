@@ -7614,10 +7614,11 @@ window.__prodSimular=async(clienteId,itensTxt,perc)=>{
     document.getElementById('prodSimTitulo').textContent=`Simulação — ${ctx.c.nome} (${perc>0?'+':''}${perc}%)`;
     const linhas=[];const nomeDe=(id)=>{const x=cat.itens.find(i=>String(i.id)===String(id));return x?x.nome.slice(0,50):String(id);};
     data.itens.forEach(it=>{
-      if(it.temVariacao)it.modelos.forEach(m=>linhas.push(`<tr><td>${esc(nomeDe(it.itemId))} — ${esc(m.nome||'')}</td><td>${fmtR(m.precoAtual)}</td><td class="prod-preco-novo">${fmtR(m.precoNovo)}</td></tr>`));
-      else linhas.push(`<tr><td>${esc(nomeDe(it.itemId))}</td><td>${fmtR(it.precoAtual)}</td><td class="prod-preco-novo">${fmtR(it.precoNovo)}</td></tr>`);
+      const cd=(v)=>v!=null?`<td style="color:var(--text-dim)">${fmtR(v)}</td>`:'<td>—</td>';
+      if(it.temVariacao)it.modelos.forEach(m=>linhas.push(`<tr><td>${esc(nomeDe(it.itemId))} — ${esc(m.nome||'')}</td><td>${fmtR(m.precoAtual)}</td><td class="prod-preco-novo">${fmtR(m.precoNovo)}</td>${cd(m.precoComDesconto)}</tr>`));
+      else linhas.push(`<tr><td>${esc(nomeDe(it.itemId))}</td><td>${fmtR(it.precoAtual)}</td><td class="prod-preco-novo">${fmtR(it.precoNovo)}</td>${cd(it.precoComDesconto)}</tr>`);
     });
-    document.getElementById('prodSimCorpo').innerHTML=`<table class="prod-sim-tabela"><thead><tr><th>Produto</th><th>Preço atual</th><th>Preço novo</th></tr></thead><tbody>${linhas.join('')}</tbody></table>${data.erros.length?`<p style="font-size:11.5px;color:var(--text-dim);margin-top:8px">${data.erros.length} produto(s) não entraram na simulação (id errado ou sem preço).</p>`:''}`;
+    document.getElementById('prodSimCorpo').innerHTML=`<p style="font-size:12px;color:var(--text-dim);margin:0 0 8px">O reajuste muda o <b>preço cheio</b>. O preço que o cliente paga vem do desconto fixo (coluna da direita) e <b>não muda aqui</b> — ajuste o desconto se precisar.</p><table class="prod-sim-tabela"><thead><tr><th>Produto</th><th>Cheio atual</th><th>Cheio novo</th><th>Com desconto hoje</th></tr></thead><tbody>${linhas.join('')}</tbody></table>${data.erros.length?`<p style="font-size:11.5px;color:var(--text-dim);margin-top:8px">${data.erros.length} produto(s) não entraram na simulação (id errado ou sem preço).</p>`:''}`;
     document.getElementById('prodSimModalOverlay').classList.remove('hidden');
   }catch(e){showToast('Erro ao simular.');console.error(e);}
 };
