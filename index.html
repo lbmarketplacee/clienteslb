@@ -8148,7 +8148,7 @@ let iaConfigCache=null;
 async function iaConfig(){if(iaConfigCache)return iaConfigCache;try{const d=await getDoc(doc(db,'configuracoes','ia'));iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5,...(d.exists()?d.data():{})};}catch(e){iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5};}return iaConfigCache;}
 const iaHoje=()=>lbHojeISO();
 async function iaGasto(){const hoje=iaHoje(),mes=hoje.slice(0,7);const q=await getDocs(query(collection(db,'iaUso'),where('mes','==',mes)));let dia=0,m=0,fotosMes=0;q.docs.forEach(d=>{const x=d.data();m+=x.custoBRL||0;fotosMes+=x.fotos||0;if(x.dia===hoje)dia+=x.custoBRL||0;});return{dia,mes:m,fotosMes};}
-function iaPrevisaoFotos(corpo){if(!corpo)return 0;if(corpo.acao==='capa_variacao'||corpo.acao==='logo'||corpo.acao==='guia_fundo')return 1;if(!corpo.acao&&Array.isArray(corpo.imagens))return Math.min(Number(corpo.quantidadeFotos)||5,6);return 0;}
+function iaPrevisaoFotos(corpo){if(!corpo)return 0;if(corpo.acao==='capa_variacao'||corpo.acao==='logo')return 1;if(!corpo.acao&&Array.isArray(corpo.imagens))return Math.min(Number(corpo.quantidadeFotos)||5,6);return 0;}
 async function iaFetch(url,opts){
   let corpo=null;try{corpo=JSON.parse(opts?.body||'{}');}catch(e){}
   const prev=iaPrevisaoFotos(corpo);const cfg=await iaConfig();
@@ -8322,38 +8322,44 @@ function dirMedidasGuia(lista){
     return{tam:t.tam,campos:o,ref};
   });
 }
-// Guia com ARTE DA IA (modelo com a peça real, lb-diretor-criativo guia_fundo) + tabela desenhada pelo sistema por cima.
-// Sem foto ou se a IA falhar → guia simples (dirGuiaTamanhos).
-async function dirGuiaIA(lista,fotoB64,produto){
+// Guia com a FOTO DA MODELO (Lincoln, 07/10/2026): cartão com a foto à esquerda + tabela do sistema à direita. Montada no
+// navegador (sem custo). Tentamos a IA compor a arte (guia_fundo) e ela cortava a cabeça / não deixava espaço livre.
+// foto = data URL (capa gerada pela IA se houver, senão a foto real). Sem foto → guia simples (dirGuiaTamanhos).
+async function dirGuiaIA(lista,foto,produto){
   const linhas=dirMedidasGuia(lista);if(!linhas.length)return null;
   const simples=()=>dirGuiaTamanhos(linhas,linhas.some(t=>t.ref)?'Medidas do corpo em cm · referência padrão brasileiro':'');
-  if(!fotoB64)return simples();
-  let fundo=null;
-  try{const d=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'guia_fundo',imagem:fotoB64,produto})})).json();fundo=d?.imagem||null;}catch(e){console.warn('[guia IA]',e);}
-  if(!fundo)return simples();
-  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=fundo;}).catch(()=>null);
+  if(!foto)return simples();
+  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=foto;}).catch(()=>null);
   if(!img)return simples();
   const W=900,H=1200,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
-  const esc=Math.max(W/img.width,H/img.height);g.drawImage(img,(W-img.width*esc)/2,(H-img.height*esc)/2,img.width*esc,img.height*esc);
   const caber=(txt,peso,max,larg)=>{let fs=max;do{g.font=`${peso} ${fs}px Arial`;fs-=1;}while(g.measureText(txt).width>larg&&fs>11);return g.font;};
+  g.fillStyle='#f6f1ea';g.fillRect(0,0,W,H);
+  // foto: cartão arredondado à esquerda, recorte centralizado (sem distorcer)
+  const fx=36,fy=36,fw=380,fh=H-72,fr=28;
+  g.save();g.shadowColor='rgba(0,0,0,.18)';g.shadowBlur=24;g.fillStyle='#fff';g.beginPath();g.roundRect(fx,fy,fw,fh,fr);g.fill();g.restore();
+  g.save();g.beginPath();g.roundRect(fx,fy,fw,fh,fr);g.clip();
+  const e=Math.max(fw/img.width,fh/img.height),iw=img.width*e,ih=img.height*e;g.drawImage(img,fx+(fw-iw)/2,fy+Math.min(0,(fh-ih)*0.25),iw,ih);g.restore();
+  // lado direito: título + tabela + rodapé, centralizados na altura
+  const px=440,pw=W-px-36,cx=px+pw/2;
   const cols=['Tam.',...[...new Set(linhas.flatMap(t=>Object.keys(t.campos)))].slice(0,5)];
-  const px=318,pw=W-px-30,py=70,ph=H-140,r=26;
-  g.save();g.shadowColor='rgba(0,0,0,.18)';g.shadowBlur=30;g.fillStyle='rgba(255,255,255,.93)';g.beginPath();g.roundRect(px,py,pw,ph,r);g.fill();g.restore();
-  g.textAlign='center';g.textBaseline='middle';const cx=px+pw/2;
-  g.fillStyle='#1a1a1a';g.font=caber('GUIA DE','300',40,pw-60);g.fillText('GUIA DE',cx,py+80);
-  g.font=caber('TAMANHOS','800',64,pw-60);g.fillText('TAMANHOS',cx,py+138);
-  g.fillStyle='#b08d57';g.fillRect(cx-40,py+180,80,4);
-  g.fillStyle='#666';g.font=caber('Medidas do corpo em centímetros','400',22,pw-60);g.fillText('Medidas do corpo em centímetros',cx,py+215);
-  const tx=px+22,tw=pw-44,cw=tw/cols.length,n=linhas.length+1,th=Math.min(92,Math.max(56,560/n)),ty=py+260;
-  g.save();g.beginPath();g.roundRect(tx,ty,tw,th*n,14);g.clip();
+  const n=linhas.length+1,th=Math.min(84,Math.max(52,560/n)),bloco=230+th*n+90,py=Math.max(60,Math.round((H-bloco)/2));
+  g.textAlign='center';g.textBaseline='middle';
+  g.fillStyle='#1a1a1a';g.font=caber('GUIA DE','300',40,pw);g.fillText('GUIA DE',cx,py+30);
+  g.font=caber('TAMANHOS','800',66,pw);g.fillText('TAMANHOS',cx,py+90);
+  g.fillStyle='#b08d57';g.fillRect(cx-40,py+134,80,4);
+  g.fillStyle='#666';g.font=caber('Medidas do corpo em centímetros','400',22,pw);g.fillText('Medidas do corpo em centímetros',cx,py+170);
+  const tx=px,tw=pw,cw=tw/cols.length,ty=py+215;
+  g.save();g.shadowColor='rgba(0,0,0,.10)';g.shadowBlur=18;g.fillStyle='#fff';g.beginPath();g.roundRect(tx,ty,tw,th*n,16);g.fill();g.restore();
+  g.save();g.beginPath();g.roundRect(tx,ty,tw,th*n,16);g.clip();
   g.fillStyle='#1f1f1f';g.fillRect(tx,ty,tw,th);
-  const AB={COMPRIMENTO:'COMPR.',CINTURA:'CINTURA',QUADRIL:'QUADRIL'};
-  cols.forEach((c,i)=>{let t=c.toUpperCase();g.font='700 20px Arial';if(g.measureText(t).width>cw-10&&AB[t])t=AB[t];g.fillStyle='#fff';g.font=caber(t,'700',20,cw-10);g.fillText(t,tx+cw*i+cw/2,ty+th/2);});
-  linhas.forEach((t,ri)=>{const y=ty+th*(ri+1);g.fillStyle=ri%2?'#f3efe9':'#ffffff';g.fillRect(tx,y,tw,th);
-    cols.forEach((c,i)=>{const v=i===0?t.tam:(t.campos[c]||'—');g.fillStyle=i===0?'#111':'#333';g.font=caber(String(v),i===0?'800':'500',i===0?34:24,cw-10);g.fillText(String(v),tx+cw*i+cw/2,y+th/2);});});
-  g.restore();g.strokeStyle='#1f1f1f';g.lineWidth=2;g.beginPath();g.roundRect(tx,ty,tw,th*n,14);g.stroke();
-  const yb=ty+th*n+50;g.fillStyle='#333';g.font=caber('Na dúvida entre dois tamanhos, escolha o maior.','500',21,tw);g.fillText('Na dúvida entre dois tamanhos, escolha o maior.',cx,yb);
-  g.fillStyle='#888';g.font=caber('As medidas podem variar até 2 cm.','400',17,tw);g.fillText(linhas.some(t=>t.ref)?'Medidas de referência (padrão brasileiro) · podem variar até 2 cm.':'As medidas podem variar até 2 cm.',cx,yb+34);
+  const AB={COMPRIMENTO:'COMPR.'};
+  cols.forEach((c,i)=>{let t=c.toUpperCase();g.font='700 18px Arial';if(g.measureText(t).width>cw-8&&AB[t])t=AB[t];g.fillStyle='#fff';g.font=caber(t,'700',18,cw-8);g.fillText(t,tx+cw*i+cw/2,ty+th/2);});
+  linhas.forEach((t,ri)=>{const y=ty+th*(ri+1);g.fillStyle=ri%2?'#f6f1ea':'#ffffff';g.fillRect(tx,y,tw,th);
+    cols.forEach((c,i)=>{const v=i===0?t.tam:(t.campos[c]||'—');g.fillStyle=i===0?'#111':'#333';g.font=caber(String(v),i===0?'800':'500',i===0?30:22,cw-8);g.fillText(String(v),tx+cw*i+cw/2,y+th/2);});});
+  g.restore();
+  const yb=ty+th*n+46;g.fillStyle='#333';g.font=caber('Na dúvida entre dois tamanhos, escolha o maior.','500',21,pw);g.fillText('Na dúvida entre dois tamanhos, escolha o maior.',cx,yb);
+  const rod=linhas.some(t=>t.ref)?'Medidas de referência (padrão brasileiro) · podem variar até 2 cm.':'As medidas podem variar até 2 cm.';
+  g.fillStyle='#888';g.font=caber(rod,'400',17,pw);g.fillText(rod,cx,yb+34);
   return cv.toDataURL('image/jpeg',0.92);
 }
 window.__dirUltimo=null;
@@ -8369,7 +8375,7 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
   if(soGuia){
     if(!tamanhos.length){showToast('Preencha os tamanhos que existem (ex.: P, M, G, GG).');return;}
     const errT=tamanhos.find(t=>t.erro);if(errT){lbAvisar('Tamanhos — '+errT.erro);return;}
-    resEl.innerHTML='<div class="empty-state" style="padding:20px">Montando a guia de tamanhos'+(dirImagensB64.length?' com a foto da modelo (uns 20s)':'')+'...</div>';
+
     const guia=await dirGuiaIA(tamanhos,dirImagensB64[0]||null,produto||'roupa');
     resEl.innerHTML=`<div class="ia-block" style="padding:12px;max-width:280px"><div class="ia-block-label" style="margin-bottom:8px">Guia de Tamanhos</div><img src="${guia}" style="width:100%;border-radius:8px;margin-bottom:8px"><a href="${guia}" download="guia-tamanhos.jpg" class="btn btn-ghost btn-sm">Baixar</a></div>`;
     return;
@@ -8394,7 +8400,9 @@ document.getElementById('dirGerarBtn')?.addEventListener('click', async ()=>{
       data = await resp.json();
       if(!data.ok){resEl.innerHTML = `<div class="empty-state" style="padding:20px">Erro: ${esc(data.erro||'desconhecido')}</div>`;btn.disabled=false;btn.textContent='Gerar';return;}
     }
-    const guia = !tamanhos.length ? null : dirGerarSel.guia ? await dirGuiaIA(tamanhos,dirImagensB64[0]||null,produto) : (querFotos ? dirGuiaTamanhos(dirMedidasGuia(tamanhos),'') : null);
+    // foto da guia: a capa gerada pela IA (modelo bonita), senão a foto real enviada
+    const fotoGuia=(data?.fotos||[]).find(f=>f.imagem)?.imagem||dirImagensB64[0]||null;
+    const guia = !tamanhos.length ? null : (dirGerarSel.guia||querFotos) ? await dirGuiaIA(tamanhos,fotoGuia,produto) : null;
     let html = '';
     if(dirGerarSel.titulo && data){
       html += `<div class="ia-block"><div class="ia-block-head"><span class="ia-block-label">Título</span><button class="copy-btn" onclick="window.__copy(${JSON.stringify(data.titulo||'').replace(/"/g,'&quot;')})">Copiar</button></div><div class="ia-block-txt">${esc(data.titulo||'')}</div></div>`;
