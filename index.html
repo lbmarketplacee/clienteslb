@@ -10217,6 +10217,12 @@ window.__pxLoja=()=>{
   px.linhas=[];px.criadosShopee=[];['pxLista','pxAcoes','pxStatus'].forEach(i=>document.getElementById(i).innerHTML='');
 };
 const pxChave=t=>migChave(t);
+// mesmo produto com título diferente em cada marketplace (Pantalona da AQUARIOS no ML × Shopee): palavras em comum ≥ 70% do menor título
+const PX_PARADA=new Set(['com','para','sem','das','dos','uma','por','que','tam','tamanho','unico','moda','novo','nova','feminino','feminina','masculino','masculina','kit']);
+const pxPalavras=t=>new Set(tfNorm(t).split(/[^a-z0-9]+/).map(w=>w.replace(/s$/,'')).filter(w=>w.length>2&&!PX_PARADA.has(w)).map(w=>w.slice(0,6)));
+function pxParecido(titulos,lista){let melhor=null,nota=0;const A=titulos.map(pxPalavras);
+  for(const t of lista){const B=pxPalavras(t);if(B.size<2)continue;for(const a of A){if(a.size<2)continue;let i=0;for(const w of a)if(B.has(w))i++;const n=i/Math.min(a.size,B.size);if(n>nota){nota=n;melhor=t;}}}
+  return nota>=0.7?melhor:null;}
 window.__pxLer=async()=>{
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('pxLoja').value);if(!c){showToast('Escolha o cliente.');return;}
   const origem=document.getElementById('pxOrigem').value;const destinos=[...document.querySelectorAll('.pxDest:checked')].map(x=>x.value);
@@ -10228,16 +10234,16 @@ window.__pxLer=async()=>{
     // o que já existe em cada destino: títulos + ligações gravadas pelo sistema
     const chaves={};
     for(const d of destinos){passo(`Conferindo o que já está ${d==='ml'?'no':'na'} ${PX_MP[d]}...`);
-      if(d==='shopee')chaves[d]=new Set((await migNomesShopee(c,await shopeeGarantirTokenValido(c,'erp'))).map(pxChave));
-      if(d==='ml')chaves[d]=new Set((await migTitulosMl(c)).map(pxChave));
-      if(d==='tiktok'){const r=await mig3Api(c,'produtos');chaves[d]=new Set((r.produtos||[]).map(p=>pxChave(p.titulo)));}}
+      if(d==='shopee')chaves[d]=await migNomesShopee(c,await shopeeGarantirTokenValido(c,'erp'));
+      if(d==='ml')chaves[d]=await migTitulosMl(c);
+      if(d==='tiktok'){const r=await mig3Api(c,'produtos');chaves[d]=(r.produtos||[]).map(p=>p.titulo);}}
     const lig=c.produtosLigados||{};const mlSh=c.migracaoMlShopee||{};const shTt=c.migracaoShopeeTiktok||{};
     const ligado=(row,d)=>{if(lig[`${origem}_${row.id}`]?.[d])return true;
       if(origem==='ml'&&d==='shopee')return (row.ids||[]).some(i=>mlSh[i]);
       if(origem==='shopee'&&d==='ml')return Object.values(mlSh).map(String).includes(row.id);
       if(origem==='shopee'&&d==='tiktok')return Object.values(shTt).map(String).includes(row.id);
       if(origem==='tiktok'&&d==='shopee')return !!shTt[row.id];return false;};
-    px.linhas=rows.map((r,i)=>{const existe={},sel={};for(const d of destinos){existe[d]=ligado(r,d)||r.titulos.some(t=>chaves[d].has(pxChave(t)));sel[d]=!existe[d]&&r.estoque>0;}return{...r,i,existe,sel,st:{}};});
+    px.linhas=rows.map((r,i)=>{const existe={},sel={};for(const d of destinos){existe[d]=ligado(r,d)?'ligado pelo sistema':pxParecido(r.titulos,chaves[d]);sel[d]=!existe[d]&&r.estoque>0;}return{...r,i,existe,sel,st:{}};});
     passo(`${rows.length} produto(s) ativos ${origem==='ml'?'no':'na'} ${PX_MP[origem]}. O que já existe no destino (ou está sem estoque) vem desmarcado — clique no marketplace da linha pra marcar/desmarcar.`);
     pxRenderLista();
   }catch(e){passo('Erro: '+e.message);console.error(e);}
@@ -10249,8 +10255,8 @@ function pxRenderLista(){
       <div class="cat-nome"><b>${esc(x.nome)}</b><small>${esc(x.info||'')}${x.info?' · ':''}${x.estoque} em estoque · ${x.preco?fmtR(x.preco):'—'}</small></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;min-width:260px">${px.destinos.map(d=>{const s=x.st[d]||'';const ok=/^ok/.test(s);
         const cor=ok?'var(--green)':/^erro/.test(s)?'var(--red)':x.sel[d]?'var(--gold)':'var(--border-strong)';
-        return `<button class="btn btn-ghost btn-sm" style="border-color:${cor};text-align:left;max-width:280px;white-space:normal;line-height:1.3" ${ok?'disabled':''} onclick="window.__pxSel(${x.i},'${d}')" title="${esc(s)}">
-          <b>${x.sel[d]&&!ok?'☑':ok?'✓':'☐'} ${PX_MP[d]}</b>${x.existe[d]&&!s?' <small style="color:var(--amber)">já tem</small>':''}${s?`<br><small style="color:var(--text-dim)">${esc(s.slice(0,90))}</small>`:''}</button>`;}).join('')}</div>
+        return `<button class="btn btn-ghost btn-sm" style="border-color:${cor};text-align:left;max-width:280px;white-space:normal;line-height:1.3" ${ok?'disabled':''} onclick="window.__pxSel(${x.i},'${d}')" title="${esc(s||(x.existe[d]?'Parecido com: '+x.existe[d]:''))}">
+          <b>${x.sel[d]&&!ok?'☑':ok?'✓':'☐'} ${PX_MP[d]}</b>${x.existe[d]&&!s?' <small style="color:var(--amber)">já tem?</small>':''}${s?`<br><small style="color:var(--text-dim)">${esc(s.slice(0,90))}</small>`:''}</button>`;}).join('')}</div>
     </div></div>`).join('')}</div>`;
   const n=px.linhas.reduce((t,x)=>t+px.destinos.filter(d=>x.sel[d]&&!/^ok/.test(x.st[d]||'')).length,0),cri=px.criadosShopee.length;
   document.getElementById('pxAcoes').innerHTML=`<div class="cat-acoes"><span>${n} cópia(s) marcadas</span><button class="btn btn-gold btn-sm" onclick="window.__pxCopiar()">Copiar marcados</button>
