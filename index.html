@@ -8306,7 +8306,10 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     // variação → atributo da categoria (Cor→COLOR, Tamanho→SIZE, Voltagem→VOLTAGE...) ou atributo próprio (UP permite)
     const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     const mapVar=nome=>{if(!nome)return null;if(/^cor(es)?$/.test(norm(nome)))return attrs.some(a=>a.id==='COLOR')?'COLOR':(attrs.find(a=>a.tags?.allow_variations&&/COLOR$/.test(a.id))?.id||null); /* luminária: Cor da estrutura */if(/^tamanho/.test(norm(nome)))return attrs.some(a=>a.id==='SIZE')?'SIZE':null;return attrs.find(a=>!a.tags?.read_only&&norm(a.name)===norm(nome))?.id||null;};
-    const id1=mapVar(u.nome1),id2=mapVar(u.nome2);const idsVar=[id1,id2].filter(Boolean);
+    let id1=mapVar(u.nome1),id2=mapVar(u.nome2);
+    // "Estampa" ocupa o campo Cor quando a categoria exige cor e não há variação de cor (Djan 05/10/2026: "Confira: Cor")
+    const exigeCor=attrs.some(a=>a.id==='COLOR'&&a.tags?.required);
+    if(exigeCor&&id1!=='COLOR'&&id2!=='COLOR'){if(!id1&&/estampa/.test(norm(u.nome1)))id1='COLOR';else if(!id2&&/estampa/.test(norm(u.nome2)))id2='COLOR';}const idsVar=[id1,id2].filter(Boolean);
     const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
     const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_|IS_)/.test(id);
     const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
