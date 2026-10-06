@@ -9052,7 +9052,7 @@ window.__cpCriarTt=async(depois=false)=>{
     skus:combos.map(op=>({op,liq,est,sku:[skuBase,...op].filter(Boolean).join('-').slice(0,50)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
   if(!depois&&!await lbConfirmar(`Criar no TikTok Shop\nLoja: ${c.nome}\n${combos.length} SKU(s), ${est} un. cada · preço pelas taxas do TikTok (${fmtR(dirPrecosTT(liq)?.venda)})\nVai pra análise da TikTok e entra no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
   if(btn&&!depois)btn.disabled=true;
-  try{const r=await pxCriar.tiktok(c,P,t=>linha('TikTok: '+esc(t)),{});
+  try{const r=await pxCriar.tiktok(c,P,t=>linha('TikTok: '+esc(t)),{simular:!!window.__pxSimular});if(!r.id){linha('TikTok: '+esc(r.msg));if(btn&&!depois)btn.disabled=false;return;}
     await log(c.id,c.nome,'anúncio criado no TikTok Shop',`Produto ${r.id} · ${r.msg}`);
     linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>TikTok Shop ✓</b><span>Produto ${esc(r.id)} · ${esc(r.msg)}. Fica no ar quando a TikTok aprovar (Seller Center → Produtos).</span></div>`);
   }catch(e){linha(`<span style="color:var(--red)">TikTok não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarTt(true)">Tentar de novo só no TikTok</button>`);}
