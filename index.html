@@ -9939,12 +9939,13 @@ window.__padAbrir=async()=>{
     let venda,origem;
     if(ml){venda=dirPrecosLB(ml._liquido)?.venda;origem=`líquido ML ${fmtR(ml._liquido)} (${ml.id})`;}
     else{venda=it.emPromocao?it.precoMin:(it.precoMin);origem='preço atual (sem anúncio no ML)';}
-    return{it,ml,venda,origem,titulo:true,sel:true};
+    return{it,ml,venda,origem,titulo:it.nome.length<70||it.marca!=='Malaysia Collection',sel:true};
   });
   padRender();
 };
 function padRender(){
   const el=document.getElementById('catCorpo');if(!el)return;
+  const ac=document.getElementById('catAcoes');if(ac)ac.innerHTML='';const fl=document.getElementById('catFiltros');if(fl)fl.innerHTML='';
   if(!pad.linhas.length){el.innerHTML='<div class="saude-vazio">Todos os anúncios ativos já estão no padrão (Malaysia Collection e no desconto).</div>';return;}
   el.innerHTML=`<div class="cat-barra" style="align-items:center"><b style="flex:1">Padronizar ${pad.linhas.length} anúncio(s) fora do padrão</b><button class="btn btn-ghost btn-sm" onclick="window.__catCarregar(true)">Voltar ao catálogo</button></div>
     <p style="font-size:12px;color:var(--text-dim);margin:0 0 10px">Venda = o que entra no desconto fixo (mesmo líquido do ML quando o anúncio existe lá). Cheio = venda × 1,3. Marca vira Malaysia Collection, título refeito no padrão Shopee (se marcado), e entra no Shopee Ads ROAS 20. Dá pra ajustar a venda antes de aplicar.</p>
