@@ -8558,7 +8558,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
         if(sem.length){console.log('[ML medidas] tamanhos lidos:',JSON.stringify(opTam));throw new Error(`essa categoria do ML exige tabela de medidas: faltam medidas nos tamanhos ${ls.filter(x=>!x.m).map(x=>`"${x.tam}" (lido: ${JSON.stringify(opTam.find(o=>o.tam===x.tam)?.campos||{})})`).join(', ')} — no passo 1, em "medidas por tamanho", escreva "M: veste 38/40" ou busto/cintura/quadril em cm`);}
         const nomeTab=`LB ${cat.category_name} ${genVal?.name||''} ${c.nome}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
         const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:['CHEST_CIRCUMFERENCE_FROM'],linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas}))}},true);
-        if(!r.ok)throw new Error('tabela de medidas: '+r.erro);
+        if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
         gridId=r.id;linhas=r.linhas;
       }
     }
