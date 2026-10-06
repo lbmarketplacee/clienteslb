@@ -10067,9 +10067,11 @@ const pxLer={
         const s=skuMap[k]||(skuMap[k]={op,liq:0,est:0,sku:migAttr(x,'SELLER_SKU')||''});s.liq=Math.max(s.liq,x._liquido||0);s.est+=x.available_quantity||0;}
       linha('descrição do ML...');
       const descricao=(await migMl(c,`/items/${base.id}/description`))?.plain_text||'';
-      const atr=(base.attributes||[]).filter(a=>a.value_name&&!/SELLER_PACKAGE|ITEM_CONDITION|GTIN|SELLER_SKU|SIZE_GRID|COLOR|SIZE/.test(a.id)).map(a=>`${a.name}: ${a.value_name}`).join('; ');
+      const atr=(base.attributes||[]).filter(a=>a.value_name&&!/SELLER_PACKAGE|ITEM_CONDITION|GTIN|SELLER_SKU|SIZE_GRID|COLOR|SIZE|BRAND|MODEL|FILTRABLE|SALE_FORMAT|UNITS_PER|_RESTRICTION|IS_|HAS_|WITH_|GIFTABLE|RELEASE|ORIGIN|PROMOTION|VERSION|REGALAVEL/i.test(a.id)&&!/^(sim|não|nao|n\/a)$/i.test(a.value_name)).map(a=>`${a.name}: ${a.value_name}`).join('; ');
       const dm=migDim(base)||{c:0,l:0,a:0};
-      return{titulo:base.family_name||base.title,descricao:descricao.length>=40?descricao:`${base.family_name||base.title}.\n\n${atr}`,atributosTxt:atr,fotos:(base.pictures||[]).map(p=>(p.secure_url||p.url||'').replace(/^http:/,'https:')).filter(Boolean).slice(0,9),
+      let desc=descricao;
+      if(desc.length<40){linha('descrição pela IA...');const ia=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`${base.family_name||base.title}. ${atr}`,marketplace:'shopee',imagem:null})}).then(r=>r.json()).catch(()=>({}));desc=ia.descricao||`${base.family_name||base.title}.`;}
+      return{titulo:base.family_name||base.title,descricao:desc,atributosTxt:atr,fotos:(base.pictures||[]).map(p=>(p.secure_url||p.url||'').replace(/^http:/,'https:')).filter(Boolean).slice(0,9),
         vars,skus:Object.values(skuMap).filter(s=>s.liq>0),peso:Math.max(...lista.map(x=>migPesoKg(x)||0))||0.5,dims:dm,sku:migAttr(base,'SELLER_SKU')||migAttr(base,'PART_NUMBER')||''};
     }
   },
@@ -10180,7 +10182,9 @@ const pxCriar={
       const lista=vt?vt.opcoes.map(o=>({tam:o.nome,campos:o.veste?{Veste:o.veste}:{}})):[{tam:'Único',campos:{Veste:'36/42'}}];
       const guia=await dirGuiaIA(lista,await migJpg(P.fotos[0]),P.titulo);if(!guia)throw new Error('não consegui montar a guia de tamanhos');
       const r=await mig3Api(c,'produto_imagem',{base64:guia,uso:'SIZE_CHART_IMAGE'});if(!r.ok)throw new Error('guia: '+r.erro);guiaUri=r.uri;}
-    const spec={titulo:String(P.titulo).slice(0,255),descricao:String(P.descricao).slice(0,9000),categoriaId:cat.categoriaId,imagens,guiaUri,peso:P.peso||0.5,
+    linha('TikTok: título...');
+    const tt=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'tiktok',produto:`${P.titulo}${P.atributosTxt?`. ${P.atributosTxt}`:''}`})}).then(r=>r.json()).catch(()=>({}));
+    const spec={titulo:String(tt.titulo||P.titulo).trim().slice(0,255),descricao:String(P.descricao).slice(0,9000),categoriaId:cat.categoriaId,imagens,guiaUri,peso:P.peso||0.5,
       dims:pxDimsOk(P.dims)?P.dims:{c:25,l:20,a:5},armazem:cat.armazem,variacoes,atributos,skus:skus.map(s=>({opcoes:s.opcoes,preco:s.preco,estoque:s.estoque,sku:s.sku}))};
     linha('TikTok: criando...');
     const r=await mig3Api(c,'produto_criar',{spec,simular:ctx.simular?1:undefined});if(!r.ok)throw new Error(r.erro);
