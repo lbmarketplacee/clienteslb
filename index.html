@@ -8776,15 +8776,15 @@ function dirPara34(dataUrl){return new Promise((ok,erro)=>{const im=new Image();
   ok(cv.toDataURL('image/jpeg',0.88));};im.onerror=()=>erro(new Error('imagem inválida'));im.src=dataUrl;});}
 function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
   const u=window.__dirUltimo;const el=document.getElementById(alvoId);if(!el||!u)return;
-  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.shopeeErpShopId&&c.shopeeErpRefreshToken)||(c.mlUserId&&c.mlRefreshToken))).sort((a,b)=>a.nome.localeCompare(b.nome));
-  const plats=u.plataformas||['shopee'];const temSh=plats.includes('shopee'),temMl=plats.includes('ml');
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.shopeeErpShopId&&c.shopeeErpRefreshToken)||(c.mlUserId&&c.mlRefreshToken)||(c.tiktokShopCipher&&c.tiktokAccessToken))).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const plats=u.plataformas||['shopee'];const temSh=plats.includes('shopee'),temMl=plats.includes('ml'),temTt=plats.includes('tiktok');
   const familiaSug=u.tituloMl||dirNomeFamiliaMl(u.titulo);
   const cands=[...(u.fotos[0]?[{tipo:'IA · '+u.fotos[0].tipo,img:u.fotos[0].imagem}]:[]),...u.reais.map((r,i)=>({tipo:'Foto real '+(i+1),img:r})),...u.fotos.slice(1).map(f=>({tipo:'IA · '+f.tipo,img:f.imagem}))];
   window.__dirCands=cands;
   const maxSel=u.guia?8:9;
   const skuSug=(u.titulo||u.produto).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().split(/\s+/).filter(w=>w.length>2).slice(0,3).join('-').replace(/[^A-Z0-9-]/g,'');
   el.innerHTML=`<div class="cm-secao" style="border:1px solid var(--gold);border-radius:12px;padding:16px">
-    <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">2. Conferir e criar — ${[temSh&&'Shopee',temMl&&'Mercado Livre'].filter(Boolean).join(' + ')}</h3></div>
+    <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">2. Conferir e criar — ${[temSh&&'Shopee',temMl&&'Mercado Livre',temTt&&'TikTok Shop'].filter(Boolean).join(' + ')}</h3></div>
     <div class="form-row">
       <div class="field"><label>Cliente</label><select id="dirShLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}" ${c.id===lojaId?'selected':''}>${esc(c.nome)}</option>`).join('')}</select></div>
       <div class="field"><label>Valor que a cliente quer receber (R$)</label><input type="text" inputmode="decimal" id="dirShLiq" placeholder="60,00" oninput="window.__dirShPreco()"></div>
@@ -8802,7 +8802,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     <div style="font-size:13px;margin:4px 0 6px"><b>Fotos do anúncio</b> <span style="color:var(--text-dim)">(até ${maxSel}${u.guia?' + a guia de tamanhos no fim':''}; desmarque as que não ficaram fiéis ao produto)</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">${cands.map((c,i)=>`<label style="cursor:pointer;font-size:10px;color:var(--text-dim);text-align:center"><img src="${c.img}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><br><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''}> ${esc(c.tipo)}</label>`).join('')}</div>
     ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada opção de ${esc(u.nome1||'Cor')}</b> (variação 1 = ${esc(u.nome1||'Cor')}${u.tamanhos.length?`, variação 2 = ${esc(u.nome2||'Tamanho')}`:''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}">${u.reais.map((r,j)=>`<option value="${j}" ${j===Math.min(i,u.reais.length-1)?'selected':''}>Foto real ${j+1}</option>`).join('')}</select></div>`).join('')}</div><div style="margin:6px 0 4px"><button type="button" class="btn btn-ghost btn-sm" id="dirShVarBtn" onclick="window.__cpGerarVar()">Gerar foto com IA pra cada ${esc(u.nome1||'opção')} (quando a foto da cliente é ruim)</button> <span id="dirShVarSt" style="font-size:12px;color:var(--text-dim)"></span></div><div id="dirShVarFotos" style="display:flex;gap:10px;flex-wrap:wrap"></div>`:'<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Produto sem variação.</div>'}
-    ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl?'1. Criar na Shopee (oculto) — o ML entra no passo de publicar':'Criar anúncio (oculto)'}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre</button>`}
+    ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl||temTt?`1. Criar na Shopee (oculto) — ${[temMl&&'ML',temTt&&'TikTok'].filter(Boolean).join(' e ')} entram no passo de publicar`:'Criar anúncio (oculto)'}</button>`:temMl?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre${temTt?' e no TikTok':''}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarTt()">Criar no TikTok Shop</button>`}
     <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
 }
 window.__dirShopeeRender=dirShopeeRender;
@@ -8811,15 +8811,15 @@ let cpFotos=[];
 function cpRender(){
   const el=document.getElementById('cpPainel');if(!el||el.dataset.pronto)return;
   if(!isLincoln()){el.innerHTML='<div class="empty-state" style="padding:20px">Criar produto pela API é só pro Lincoln.</div>';return;}
-  const temShopee=c=>!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken),temMl=c=>!!(c.mlUserId&&c.mlRefreshToken);
-  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&(temShopee(c)||temMl(c))).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const temShopee=c=>!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken),temMl=c=>!!(c.mlUserId&&c.mlRefreshToken),temTt=c=>!!(c.tiktokShopCipher&&c.tiktokAccessToken);
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&(temShopee(c)||temMl(c)||temTt(c))).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.dataset.pronto='1';
-  el.innerHTML=`<div class="ia-gasto" style="font-size:12.5px;margin:0 0 10px"></div><div class="cm-secao-titulo" style="margin-bottom:6px"><div class="cm-secao-ico" style="background:var(--gold);color:#111"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></div><h3>Criar Produtos</h3></div>
-  <div style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.6"><b>Shopee:</b> preço cheio +30%, desconto fixo pelo preço de venda, marca Malaysia Collection, Shopee Ads ROAS 20. <b>Mercado Livre:</b> Clássico, preço de venda direto (7% de folga p/ promoções), marca = nome da loja, 1 anúncio por cor e tamanho, tabela de medidas (ABNT se não tiver medida). O Ads do ML continua manual (o ML não libera escrita de Ads pro nosso app).</div>
+  el.innerHTML=`<div class="ia-gasto" style="font-size:12.5px;margin:0 0 10px"></div><div class="cm-secao-titulo" style="margin-bottom:6px"><div class="cm-secao-ico" style="background:var(--gold);color:#111"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></div><h3>Criar anúncio</h3></div>
+  <div style="font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.6"><b>Shopee:</b> preço cheio +30%, desconto fixo pelo preço de venda, marca Malaysia Collection, Shopee Ads ROAS 20. <b>Mercado Livre:</b> Clássico, preço de venda direto (7% de folga p/ promoções), marca = nome da loja, 1 anúncio por cor e tamanho, tabela de medidas (ABNT se não tiver medida). O Ads do ML continua manual (o ML não libera escrita de Ads pro nosso app). <b>TikTok:</b> preço pelas taxas do TikTok (mesmo valor a receber + cupom 3% e relâmpago 5%, cheio +30%), entra no desconto fixo do TikTok, guia de tamanhos automática; vai pra análise da TikTok.</div>
   <div class="cm-secao" style="border:1px solid var(--border);border-radius:12px;padding:16px">
     <div class="cm-secao-titulo" style="margin-bottom:10px"><h3 style="font-size:16px">1. Cliente, fotos e informações</h3></div>
-    <div class="cp-plat"><label><input type="checkbox" id="cpPlatShopee" checked> Shopee</label><label><input type="checkbox" id="cpPlatMl" checked> Mercado Livre</label></div>
-    <div class="field"><label>Cliente</label><select id="cpLoja"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${temShopee(c)?' · Shopee':''}${temMl(c)?' · ML':''}</option>`).join('')}</select></div>
+    <div class="field"><label>Cliente</label><select id="cpLoja" onchange="window.__cpLojaPlat()"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${temShopee(c)?' · Shopee':''}${temMl(c)?' · ML':''}${temTt(c)?' · TikTok':''}</option>`).join('')}</select></div>
+    <div class="cp-plat"><label><input type="checkbox" id="cpPlatShopee" checked> Shopee</label><label><input type="checkbox" id="cpPlatMl" checked> Mercado Livre</label><label><input type="checkbox" id="cpPlatTiktok" checked> TikTok Shop</label></div>
     <div class="field"><label>Fotos reais (até 5 — a 1ª é a principal; uma de cada cor, na ordem das cores)</label>
       <div class="dz" id="cpDrop" style="padding:18px;cursor:pointer"><input type="file" id="cpFotoInput" accept="image/*" multiple style="display:none"><div id="cpDropTxt">Clique ou arraste as fotos aqui</div><div id="cpPrev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div></div></div>
     <div class="field"><label>Descrição do produto (o que é, material, medidas, detalhes reais)</label><textarea id="cpDesc" style="min-height:80px" placeholder="Ex.: vestido longo em chiffon... · luminária de mesa articulada, metal, lâmpada E27... · caixa de papelão 16x11x3 onda B..."></textarea></div>
@@ -8836,6 +8836,10 @@ function cpRender(){
   dz.addEventListener('click',e=>{if(e.target===dz||e.target.id==='cpDropTxt')inp.click();});inp.addEventListener('change',e=>carregar(e.target.files));
   dz.addEventListener('dragover',e=>e.preventDefault());dz.addEventListener('drop',e=>{e.preventDefault();carregar(e.dataTransfer.files);});
 }
+// ao escolher o cliente, marca só os marketplaces em que ele está conectado
+window.__cpLojaPlat=()=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('cpLoja').value);if(!c)return;
+  const tem={Shopee:!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken),Ml:!!(c.mlUserId&&c.mlRefreshToken),Tiktok:!!(c.tiktokShopCipher&&c.tiktokAccessToken)};
+  for(const [k,v] of Object.entries(tem)){const cb=document.getElementById('cpPlat'+k);cb.checked=v;cb.disabled=!v;cb.parentElement.style.opacity=v?'':'.45';cb.parentElement.title=v?'':'loja não conectada';}};
 function cpPrev(){
   document.getElementById('cpPrev').innerHTML=cpFotos.map((b,i)=>`<div style="position:relative"><img src="${b}" style="width:70px;height:93px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><span onclick="event.stopPropagation();window.__cpTirar(${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</span><div style="font-size:10px;text-align:center;color:var(--text-dim)">${i+1}</div></div>`).join('');
   document.getElementById('cpDropTxt').textContent=cpFotos.length?`${cpFotos.length} foto(s) — clique pra adicionar mais`:'Clique ou arraste as fotos aqui';
@@ -8855,13 +8859,13 @@ window.__cpGerar=async()=>{
   // guia de tamanhos (Shopee) só se a variação de tamanho tiver medida/"veste" informada
   const varTam=[v1,v2].find(v=>v&&/tamanho/i.test(v.nome));
   const linhasGuia=varTam?varTam.op.map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}})).filter(t=>Object.keys(t.campos).length):[];
-  const plataformas=[document.getElementById('cpPlatShopee').checked&&'shopee',document.getElementById('cpPlatMl').checked&&'ml'].filter(Boolean);
+  const plataformas=[document.getElementById('cpPlatShopee').checked&&'shopee',document.getElementById('cpPlatMl').checked&&'ml',document.getElementById('cpPlatTiktok')?.checked&&'tiktok'].filter(Boolean);
   const material=document.getElementById('cpMaterial').value.trim();
   const falta=[!plataformas.length&&'plataforma',!lojaId&&'cliente',!cpFotos.length&&'fotos',!produto&&'descrição',[1,2].some(n=>document.getElementById('cpVar'+n).value&&!document.getElementById('cpVar'+n+'Opcoes').value.trim())&&'opções da variação escolhida'].filter(Boolean);
   if(falta.length){lbAvisar('Falta preencher\n'+falta.join(', '));return;}
   const cli=(clientesCache||[]).find(c=>c.id===lojaId);
-  const semCon=plataformas.filter(p=>p==='shopee'?!(cli.shopeeErpShopId&&cli.shopeeErpRefreshToken):!(cli.mlUserId&&cli.mlRefreshToken));
-  if(semCon.length){lbAvisar(`${cli.nome} não está conectada em: ${semCon.map(p=>p==='shopee'?'Shopee (ERP)':'Mercado Livre').join(', ')}\nDesmarque essa plataforma ou conecte a loja primeiro.`);return;}
+  const semCon=plataformas.filter(p=>p==='shopee'?!(cli.shopeeErpShopId&&cli.shopeeErpRefreshToken):p==='ml'?!(cli.mlUserId&&cli.mlRefreshToken):!(cli.tiktokShopCipher&&cli.tiktokAccessToken));
+  if(semCon.length){lbAvisar(`${cli.nome} não está conectada em: ${semCon.map(p=>p==='shopee'?'Shopee (ERP)':p==='ml'?'Mercado Livre':'TikTok Shop').join(', ')}\nDesmarque essa plataforma ou conecte a loja primeiro.`);return;}
   if(/cor|estampa/i.test(nome1)&&cores.length>cpFotos.length&&!await lbConfirmar(`Tem ${cores.length} opções de ${nome1} e ${cpFotos.length} foto(s)\nO ideal é 1 foto de cada. Continuar assim?`,{okTxt:'Continuar'}))return;
   const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+(v1?`\n${v1.nome} disponíveis: ${v1.op.join(', ')}.`:'')+(v2?`\n${v2.nome} disponíveis: ${v2.op.map(o=>{const c=medidas[o.toUpperCase()];return o+(c&&Object.keys(c).length?` (${Object.entries(c).map(([k,v])=>k+' '+v).join(', ')})`:'');}).join('; ')}.`:'');
   btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';
@@ -9008,7 +9012,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
   const falta=[!c&&'cliente',!(c?.mlUserId&&c?.mlRefreshToken)&&'conexão do ML da loja',!(liq>0)&&'valor a receber',!familia&&'nome no ML',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
   if(falta.length){lbAvisar('Mercado Livre — falta\n'+falta.join(', '));return;}
   const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
-  if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por combinação de variação), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria`,{okTxt:'Criar no ML'}))return;
+  if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por combinação de variação), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria${(u.plataformas||[]).includes('tiktok')?'\nDepois cria no TikTok Shop (vai pra análise).':''}`,{okTxt:'Criar no ML'}))return;
   if(!depoisDaShopee)st.innerHTML='';
   if(btn)btn.disabled=true;
   try{
@@ -9025,6 +9029,34 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
   }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`);}
   if(btn)btn.disabled=false;
+  if((u.plataformas||[]).includes('tiktok'))await window.__cpCriarTt(true);
+};
+// TikTok no Criar anúncio: monta o produto no formato único (P) com o que está na tela e usa o mesmo escritor da migração
+window.__cpCriarTt=async(depois=false)=>{
+  const u=window.__dirUltimo;const st=document.getElementById('dirShStatus');const btn=document.getElementById('dirShCriarBtn');
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('dirShLoja').value);
+  const liq=lbValorBR(document.getElementById('dirShLiq').value);const peso=lbValorBR(document.getElementById('dirShPeso').value);const dim=(document.getElementById('dirShDim').value.match(/\d+/g)||[]).map(Number);
+  const est=Math.max(0,parseInt(document.getElementById('dirShEst').value)||0);
+  const sel=[...document.querySelectorAll('.dirShFoto:checked')].map(x=>window.__dirCands[Number(x.dataset.i)]);
+  const box=Object.assign(document.createElement('div'),{className:'cpTtStatus'});box.style.marginTop='10px';
+  const linha=t=>{if(!box.isConnected)st.appendChild(box);box.innerHTML=t;};
+  const falta=[!c&&'cliente',!(c?.tiktokShopCipher&&c?.tiktokAccessToken)&&'conexão do TikTok da loja',!(liq>0)&&'valor a receber',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
+  if(falta.length){lbAvisar('TikTok — falta\n'+falta.join(', '));return;}
+  const vars=[];
+  if(u.cores.length){const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
+    vars.push({nome:u.nome1||'Cor',tam:/tamanho/i.test(u.nome1||''),opcoes:u.cores.map(op=>({nome:op,foto:dirFotoVar(op)||fotoCor[op]||null,campos:u.medidas?.[String(op).toUpperCase()]||null}))});}
+  if(u.tamanhos.length)vars.push({nome:u.nome2||'Tamanho',tam:/tamanho/i.test(u.nome2||'Tamanho'),opcoes:u.tamanhos.map(t=>({nome:t.tam,campos:t.campos||null}))});
+  const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
+  const skuBase=document.getElementById('dirShSku')?.value||'';
+  const P={titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
+    skus:combos.map(op=>({op,liq,est,sku:[skuBase,...op].filter(Boolean).join('-').slice(0,50)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
+  if(!depois&&!await lbConfirmar(`Criar no TikTok Shop\nLoja: ${c.nome}\n${combos.length} SKU(s), ${est} un. cada · preço pelas taxas do TikTok (${fmtR(dirPrecosTT(liq)?.venda)})\nVai pra análise da TikTok e entra no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
+  if(btn&&!depois)btn.disabled=true;
+  try{const r=await pxCriar.tiktok(c,P,t=>linha('TikTok: '+esc(t)),{});
+    await log(c.id,c.nome,'anúncio criado no TikTok Shop',`Produto ${r.id} · ${r.msg}`);
+    linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>TikTok Shop ✓</b><span>Produto ${esc(r.id)} · ${esc(r.msg)}. Fica no ar quando a TikTok aprovar (Seller Center → Produtos).</span></div>`);
+  }catch(e){linha(`<span style="color:var(--red)">TikTok não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarTt(true)">Tentar de novo só no TikTok</button>`);}
+  if(btn&&!depois)btn.disabled=false;
 };
 // Foto com IA por opção da variação 1 (cor/estampa): a partir da foto real escolhida pra ela (lb-diretor-criativo capa_variacao)
 function dirFotoVar(op){const u=window.__dirUltimo;const usar=document.querySelector(`.dirShVarUsar[data-op="${CSS.escape(op)}"]`);return u?.fotosVar?.[op]&&(!usar||usar.checked)?u.fotosVar[op]:null;}
@@ -9044,7 +9076,7 @@ window.__cpGerarVar=async()=>{
 };
 window.__dirShPreco=()=>{const u=window.__dirUltimo||{};const plats=u.plataformas||['shopee'];const liq=lbValorBR(document.getElementById('dirShLiq').value);
   const p=plats.includes('shopee')?dirPrecosLB(liq):null;const m=plats.includes('ml')?dirPrecoMlEstimado(liq,lbValorBR(document.getElementById('dirShPeso')?.value)||0.5):null;
-  document.getElementById('dirShPrecoTxt').innerHTML=[p&&`<b>Shopee:</b> venda (desconto fixo) <b>${fmtR(p.venda)}</b> · cheio <b>${fmtR(p.cheio)}</b> · ela recebe ~${fmtR(p.liquido)} (cupom 3% + relâmpago 5%)`,m&&`<b>Mercado Livre:</b> venda <b>~${fmtR(m)}</b> (Clássico 14% + frete + 7% de folga; confirmo com a comissão real da categoria ao criar)`].filter(Boolean).join('<br>');};
+  document.getElementById('dirShPrecoTxt').innerHTML=[p&&`<b>Shopee:</b> venda (desconto fixo) <b>${fmtR(p.venda)}</b> · cheio <b>${fmtR(p.cheio)}</b> · ela recebe ~${fmtR(p.liquido)} (cupom 3% + relâmpago 5%)`,m&&`<b>Mercado Livre:</b> venda <b>~${fmtR(m)}</b> (Clássico 14% + frete + 7% de folga; confirmo com a comissão real da categoria ao criar)`,(()=>{const t=plats.includes('tiktok')?dirPrecosTT(liq):null;return t&&`<b>TikTok:</b> venda (desconto fixo) <b>${fmtR(t.venda)}</b> · cheio <b>${fmtR(t.cheio)}</b> · ela recebe ~${fmtR(t.liquido)} (taxa do TikTok + cupom 3% + relâmpago 5%)`;})()].filter(Boolean).join('<br>');};
 async function dirShApi(acao,c,token,extra={}){
   const r=await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,app:'erp',access_token:token,shop_id:c.shopeeErpShopId,...extra})});
   return r.json();
@@ -9129,6 +9161,7 @@ window.__dirShPublicar=async()=>{
     await log(c.id,c.nome,'anúncio publicado na Shopee',`Item ${it.itemId} publicado e no desconto fixo ${descId} a ${fmtR(it.venda)}${adsTxt.replace(/<[^>]+>/g,'')}.`);
     st.innerHTML=`<div class="cob-box"><b>Shopee no ar ✓</b><span>Item ${it.itemId} publicado e no desconto fixo a ${fmtR(it.venda)}${adsTxt}.</span></div>`;
     if((window.__dirUltimo?.plataformas||[]).includes('ml'))await window.__cpCriarMl(true);
+    else if((window.__dirUltimo?.plataformas||[]).includes('tiktok'))await window.__cpCriarTt(true);
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
 };
 
@@ -10179,7 +10212,7 @@ const pxCriar={
     let guiaUri=null;
     if(cat.regras?.size_chart?.is_required){
       linha('TikTok: guia de tamanhos...');const vt=P.vars.find(v=>v.tam);
-      const lista=vt?vt.opcoes.map(o=>({tam:o.nome,campos:o.veste?{Veste:o.veste}:{}})):[{tam:'Único',campos:{Veste:'36/42'}}];
+      const lista=vt?vt.opcoes.map(o=>({tam:o.nome,campos:o.campos&&Object.keys(o.campos).length?o.campos:(o.veste?{Veste:o.veste}:{})})):[{tam:'Único',campos:{Veste:'36/42'}}];
       const guia=await dirGuiaIA(lista,await migJpg(P.fotos[0]),P.titulo);if(!guia)throw new Error('não consegui montar a guia de tamanhos');
       const r=await mig3Api(c,'produto_imagem',{base64:guia,uso:'SIZE_CHART_IMAGE'});if(!r.ok)throw new Error('guia: '+r.erro);guiaUri=r.uri;}
     linha('TikTok: título...');
