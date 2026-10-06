@@ -8272,7 +8272,11 @@ function dirMedidasMl(t){
   const n=x=>Number(String(x||'').replace(',','.').match(/\d+(\.\d+)?/)?.[0])||0;
   const c=t.campos||{};
   if(n(c.Busto)){const m={CHEST_CIRCUMFERENCE_FROM:n(c.Busto)};if(n(c.Cintura))m.WAIST_CIRCUMFERENCE_FROM=n(c.Cintura);if(n(c.Quadril))m.HIP_CIRCUMFERENCE_FROM=n(c.Quadril);return{medidas:m,fonte:'cliente'};}
-  const ns=(String(c.Veste||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);if(!ns.length)return null;
+  const ns=(String(c.Veste||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
+  // plus size sem medida: só o busto (obrigatório no ML) por tabela de referência brasileira — cintura/quadril não são inventados
+  const PLUS={GG:[104,108],G1:[112,116],G2:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
+  if(!ns.length&&pl)return{medidas:{CHEST_CIRCUMFERENCE_FROM:pl[0],CHEST_CIRCUMFERENCE_TO:pl[1]},fonte:'referência plus size'};
+  if(!ns.length)return null;
   const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
   return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:'ABNT'};
 }
