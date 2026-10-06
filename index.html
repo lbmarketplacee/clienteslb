@@ -8437,7 +8437,10 @@ window.__cpTirar=i=>{cpFotos.splice(i,1);cpPrev();};
 window.__cpGerar=async()=>{
   const st=document.getElementById('cpStatus');const btn=document.getElementById('cpGerarBtn');
   const lojaId=document.getElementById('cpLoja').value;const produto=document.getElementById('cpDesc').value.trim();
-  const lerVar=n=>{let nome=document.getElementById('cpVar'+n).value;if(nome==='Outra')nome=document.getElementById('cpVar'+n+'Outra').value.trim();const op=document.getElementById('cpVar'+n+'Opcoes').value.split(',').map(x=>x.trim()).filter(Boolean);return nome&&op.length?{nome,op}:null;};
+  const lerVar=n=>{let nome=document.getElementById('cpVar'+n).value;if(nome==='Outra')nome=document.getElementById('cpVar'+n+'Outra').value.trim();let op=document.getElementById('cpVar'+n+'Opcoes').value.split(',').map(x=>x.trim()).filter(Boolean);
+    // tamanho sem vírgula ("M G", SS Tendência 07/10/2026) virava 1 opção só → separa quando todos os pedaços são tamanhos
+    if(/tamanho/i.test(nome||''))op=op.flatMap(o=>{const ps=o.split(/\s+/);return ps.length>1&&ps.every(x=>/^(PP|P|M|G|GG|XG|EG|EGG|G\d|\d{2})$/i.test(x))?ps:[o];});
+    return nome&&op.length?{nome,op}:null;};
   let v1=lerVar(1),v2=lerVar(2);if(!v1&&v2){v1=v2;v2=null;}
   const medidas=Object.fromEntries(dirLerTamanhos(document.getElementById('cpTam').value).map(t=>[t.tam.toUpperCase(),t.campos]));
   const cores=v1?v1.op:[];const nome1=v1?.nome||'';const nome2=v2?.nome||'';
