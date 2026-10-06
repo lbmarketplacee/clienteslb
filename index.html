@@ -8748,6 +8748,15 @@ const DIR_FAIXAS_SHOPEE=[{min:0,max:79.99,com:0.20,fix:4},{min:80,max:99.99,com:
 const dirR2=v=>Math.round(v*100+1e-7)/100;
 const dir99=v=>dirR2(Math.ceil(dirR2(v)-0.99-1e-9)+0.99);
 function dirLiquido(p){const f=DIR_FAIXAS_SHOPEE.find(x=>p>=x.min&&p<=x.max)||DIR_FAIXAS_SHOPEE[3];return dirR2(p-(p*f.com+f.fix)-p*0.08);}
+// TikTok Shop (faixas da Calculadora: 10%+R$4 até 49,99; 6%+R$6 acima) + cupom 3% + relâmpago 5% → venda ,99; cheio = ×1,30
+const DIR_FAIXAS_TIKTOK=[{min:0,max:49.99,com:0.10,fix:4},{min:50,max:Infinity,com:0.06,fix:6}];
+function dirLiquidoTT(p){const f=DIR_FAIXAS_TIKTOK.find(x=>p>=x.min&&p<=x.max)||DIR_FAIXAS_TIKTOK[1];return dirR2(p-(p*f.com+f.fix)-p*0.08);}
+function dirPrecosTT(liq){
+  liq=Number(liq);if(!(liq>0))return null;
+  const sol=DIR_FAIXAS_TIKTOK.map(f=>(liq+f.fix)/(1-f.com-0.08)).filter((p,i)=>p>=DIR_FAIXAS_TIKTOK[i].min&&p<=DIR_FAIXAS_TIKTOK[i].max);
+  if(!sol.length)return null;let venda=dir99(Math.min(...sol));if(dirLiquidoTT(venda)<liq-0.005)venda=dir99(venda+0.01);
+  return{venda,cheio:dir99(venda*1.3),liquido:dirLiquidoTT(venda)};
+}
 function dirPrecosLB(liq){ // espelho de lb-shopee-gmv/lib/produto.js (precosLB) — testado lá
   liq=Number(liq);if(!(liq>0))return null;
   const sol=DIR_FAIXAS_SHOPEE.map(f=>(liq+f.fix)/(1-f.com-0.08)).filter((p,i)=>p>=DIR_FAIXAS_SHOPEE[i].min&&p<=DIR_FAIXAS_SHOPEE[i].max);
@@ -9979,7 +9988,7 @@ function migRender(){
     <div class="cm-secao-titulo" style="margin-bottom:6px"><h3 style="font-size:16px">Migrar anúncios entre Mercado Livre, Shopee e TikTok</h3></div>
     <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Pra cliente que já vende no ML: o sistema lê os anúncios e cria na Shopee no padrão LB — <b>mesmo valor líquido do ML</b> (desconta a tarifa real e o frete grátis), título novo da Shopee, fotos do ML, marca Malaysia Collection. Anúncios do mesmo produto com cor/tamanho viram <b>1 anúncio com variações</b>. Cria <b>oculto</b>; depois "Publicar" coloca no desconto fixo e no Ads ROAS 20.</p>
     <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 12px;line-height:1.55"><b>Shopee → ML:</b> mesmo líquido da Shopee (preço do desconto fixo menos taxa, cupom e relâmpago), recalculado com a comissão real do ML + 7% de folga; 1 anúncio por cor e tamanho, título até 60, Clássico, marca = nome da loja, tabela de medidas pela régua BR, <b>já ativos</b>. Ads do ML continua manual.</p>
-    <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 12px;line-height:1.55"><b>Shopee → TikTok:</b> mesmo título, descrição, fotos, variações e estoque da Shopee; preço cheio = cheio da Shopee e o produto entra no <b>desconto fixo do TikTok</b> com o preço de venda da Shopee (a oferta relâmpago sai sozinha pelo robô). Guia de tamanhos montada pelo sistema. Vai pra análise da TikTok e fica ativo quando aprovar.</p>
+    <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 12px;line-height:1.55"><b>Shopee → TikTok:</b> mesmo título, descrição, fotos, variações e estoque da Shopee; preço pelas <b>taxas do TikTok</b> (mesmo líquido da Shopee + cupom 3% e relâmpago 5%, cheio ×1,30) e o produto entra no <b>desconto fixo do TikTok</b> com esse preço de venda (a oferta relâmpago sai sozinha pelo robô). Guia de tamanhos montada pelo sistema. Vai pra análise da TikTok e fica ativo quando aprovar.</p>
     <div class="cat-barra"><select id="migDir" onchange="window.__migDir()"><option value="ml2sh">Mercado Livre → Shopee</option><option value="sh2ml">Shopee → Mercado Livre</option><option value="sh2tt">Shopee → TikTok Shop</option></select><select id="migLoja"><option value="">Cliente…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select><button class="btn btn-gold btn-sm" id="migLerBtn" onclick="window.__migLer()">Ler anúncios do ML</button></div>
     <div id="migStatus" class="saude-vazio"></div><div id="migLista"></div><div id="migAcoes"></div></div>`;
 }
@@ -10243,7 +10252,7 @@ async function mig3PorNoDesconto(c,pid,venda){
 }
 window.__mig3Criar=async()=>{
   const c=mig3.c;const sel=mig3.itens.filter(x=>x.sel&&!x.estado.startsWith('ok'));if(!c||!sel.length){showToast('Marque ao menos 1 anúncio.');return;}
-  if(!window.__mig3Simular&&!await lbConfirmar(`Criar ${sel.length} produto(s) no TikTok Shop da ${c.nome}?\nMesmos dados da Shopee; vão pra análise da TikTok e entram no desconto fixo com o preço de venda da Shopee.`,{okTxt:'Criar no TikTok'}))return;
+  if(!window.__mig3Simular&&!await lbConfirmar(`Criar ${sel.length} produto(s) no TikTok Shop da ${c.nome}?\nMesmos dados da Shopee, preço recalculado pelas taxas do TikTok (mesmo líquido); vão pra análise da TikTok e entram no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
   const st=document.getElementById('migStatus');
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');
@@ -10268,16 +10277,17 @@ window.__mig3Criar=async()=>{
         const variacoes=tiers.map((t,k)=>({nome:String(t.name||(k?'Tamanho':'Cor')).slice(0,30),opcoes:(t.option_list||[]).map(o=>({nome:opNome(k,o.option)}))}));
         if(variacoes[0]){for(const [k,o] of (tiers[0].option_list||[]).entries()){const url=o.image?.image_url;if(url){linha(`foto da opção ${k+1}`);variacoes[0].opcoes[k].imagemUri=await subir(url,'ATTRIBUTE_IMAGE');}}}
         // SKUs: cheio = original_price da Shopee (sem promoção → venda×1,3); estoque do vendedor
-        const cheioDe=(cur,orig)=>orig>cur?orig:dirTerminar99(cur*1.3);
+        // preço pelas regras do TikTok: mesmo LÍQUIDO da venda da Shopee, recalculado com as taxas do TikTok
+        const tt=cur=>dirPrecosTT(dirLiquido(cur));
         // venda = preço do DESCONTO (Discount Promotions); current_price vira o da relâmpago quando tem uma rodando
         const promo=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_promotion',query:{item_id_list:String(it.id)}}).catch(()=>null))?.response?.success_list?.[0]?.promotion||[];
         const precoDesc=mid=>Number(promo.find(p=>p.promotion_type==='Discount Promotions'&&String(p.model_id||0)===String(mid||0))?.promotion_price_info?.[0]?.promotion_price)||0;
         let skus,vendas;
         if(models.length){
           skus=models.map(md=>{const pi=md.price_info?.[0]||{};const cur=precoDesc(md.model_id)||Number(pi.current_price)||0;
-            return{opcoes:(md.tier_index||[]).slice(0,variacoes.length).map((ti,k)=>variacoes[k].opcoes[ti]?.nome),preco:cheioDe(cur,Number(pi.original_price)||0),venda:cur,
+            const p=tt(cur);return{opcoes:(md.tier_index||[]).slice(0,variacoes.length).map((ti,k)=>variacoes[k].opcoes[ti]?.nome),preco:p?.cheio||0,venda:p?.venda||0,vendaShopee:cur,
               estoque:(md.stock_info_v2?.seller_stock||[]).reduce((t,s2)=>t+(Number(s2.stock)||0),0),sku:md.model_sku||''};}).filter(s=>s.opcoes.every(Boolean)&&s.venda>0);
-        }else{const pi=b.price_info?.[0]||{};const cur=precoDesc(0)||Number(pi.current_price)||it.precoMin;skus=[{opcoes:[],preco:cheioDe(cur,Number(pi.original_price)||0),venda:cur,estoque:it.estoque||0,sku:b.item_sku||''}];}
+        }else{const pi=b.price_info?.[0]||{};const cur=precoDesc(0)||Number(pi.current_price)||it.precoMin;const p=tt(cur);skus=[{opcoes:[],preco:p?.cheio||0,venda:p?.venda||0,vendaShopee:cur,estoque:it.estoque||0,sku:b.item_sku||''}];}
         if(!skus.length)throw new Error('sem variação com preço');
         vendas=[...new Set(skus.map(s=>s.venda))];
         // tabela de medidas: obrigatória em roupa → guia montada pelo sistema (tamanhos da Shopee + régua BR) com a 1ª foto
@@ -10294,7 +10304,7 @@ window.__mig3Criar=async()=>{
         linha('criando no TikTok...');
         const r=await mig3Api(c,'produto_criar',{spec,simular:window.__mig3Simular?1:undefined});
         if(!r.ok)throw new Error(r.erro);
-        if(r.simulado){window.__mig3Corpo=r.corpo;linha(`simulado: ${skus.length} SKU(s), categoria ${(cat.cadeia||[]).map(x=>x.name).pop()||cat.categoriaId}`);x.sel=false;continue;}
+        if(r.simulado){window.__mig3Corpo=r.corpo;linha(`simulado: ${skus.length} SKU(s) · Shopee ${fmtR(skus[0].vendaShopee)} → TikTok ${fmtR(skus[0].venda)} (cheio ${fmtR(skus[0].preco)}) · ${(cat.cadeia||[]).map(x=>x.name).pop()||cat.categoriaId}`);x.sel=false;continue;}
         await updateDoc(doc(db,'clientes',c.id),{[`migracaoShopeeTiktok.${r.produtoId}`]:String(it.id)}).catch(()=>{});
         let desc='variações com preços diferentes — sem desconto fixo';
         if(vendas.length===1){desc=await mig3PorNoDesconto(c,r.produtoId,vendas[0]);
