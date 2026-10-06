@@ -5213,7 +5213,7 @@ window.__ttpCarregar=async()=>{
 };
 function ttpRenderLista(){
   const corpo=document.getElementById('ttpCorpo');
-  const mostrar=ttp.lista.filter(a=>a.status==='ONGOING'||a.status==='NOT_START').concat(ttp.lista.filter(a=>a.status!=='ONGOING'&&a.status!=='NOT_START').slice(0,15));
+  const mostrar=ttp.lista.filter(a=>a.status==='ONGOING'||a.status==='NOT_START').concat(ttp.lista.filter(a=>a.status!=='ONGOING'&&a.status!=='NOT_START').sort((x,y)=>(y.fim||0)-(x.fim||0)).slice(0,15)); // encerradas/desativadas: mais recentes primeiro
   corpo.innerHTML=`<div class="cat-lista">${mostrar.map(a=>`<div class="cat-item"><div class="cat-linha">
     <div class="cat-nome"><b>${esc(a.titulo)}</b><small>${esc(a.tipoTexto)} · ${ttpData(a.inicio)} → ${ttpData(a.fim)} · ID ${a.id}</small></div>
     <span class="ml-pill ${TTP_COR[a.status]||'dim'}">${esc(a.statusTexto)}</span>
