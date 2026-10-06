@@ -8347,8 +8347,8 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
     const fotosDa={};
     for(const [i,cor] of (u.cores.length?u.cores:['']).entries()){
-      const ia=dirFotoVar(cor);
-      const lista=i===0?[...(ia?[ia]:[]),...(fotoCor[cor]?[fotoCor[cor]]:[]),...sel.map(x=>x.img)]:[ia,fotoCor[cor]].filter(Boolean);
+      const ia=dirFotoVar(cor);const realOk=fotoCor[cor]&&(sel.some(x=>x.img===fotoCor[cor])||!ia)?fotoCor[cor]:null; // real desmarcada lá em cima + tem foto da IA → só a da IA
+      const lista=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
       const unicos=[...new Set(lista)].slice(0,10);fotosDa[cor]=[];for(const [j,img] of unicos.entries())fotosDa[cor].push(await subir(img,`${cor||'produto'} ${j+1}/${unicos.length}`));
     }
     const criados=[],erros=[];
@@ -8423,6 +8423,8 @@ window.__dirShCriar=async()=>{
     const ids=new Map();
     const subir=async(img,rotulo)=>{if(ids.has(img))return ids.get(img);passo(`Subindo fotos... (${rotulo})`);const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await dirPara34(img),ratio:'3:4'});if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.image_id);return r.image_id;};
     const imagens=[];for(let i=0;i<sel.length;i++)imagens.push(await subir(sel[i].img,`${i+1}/${sel.length}`));
+    // fotos da IA de cada estampa/cor também na galeria (o comprador vê todas as opções), respeitando o limite de 9 com a guia
+    for(const op of (u.cores||[])){const f=dirFotoVar(op);if(!f||imagens.length>=(u.guia?8:9))continue;const id=await subir(f,'opção '+op);if(!imagens.includes(id))imagens.push(id);}
     const guiaId=u.guia?await subir(u.guia,'guia de tamanhos'):null;if(guiaId)imagens.push(guiaId);
     const fotosCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotosCor[s2.dataset.cor]=await subir(dirFotoVar(s2.dataset.cor)||u.reais[Number(s2.value)],'cor '+s2.dataset.cor);
     passo('Criando o anúncio (oculto)...');
