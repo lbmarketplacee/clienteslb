@@ -10608,9 +10608,14 @@ function otQualidade(mp,it){
 }
 const otLer={
   async shopee(c,passo){const token=await shopeeGarantirTokenValido(c,'erp');return (await migLerShopeeAtivos(c,token,passo)).map(it=>({it,q:it.qualidade||{nota:100,problemas:[]}}));},
-  async ml(c,passo){const itens=await migLerMl(c,'active',passo);
-    return itens.map(i=>{const up=!!i.family_name;const it={id:i.id,nome:i.title,foto:(i.pictures?.[0]?.secure_url||i.thumbnail||'').replace(/^http:/,'https:'),vendas:i.sold_quantity||0,nFotos:(i.pictures||[]).length,
-      fotos:(i.pictures||[]).map(p=>p.id),up,tituloTravado:up||(i.sold_quantity||0)>0};return{it,q:otQualidade('ml',it)};});},
+  // ML "User Products": 1 anúncio por cor+tamanho → agrupa por família (1 linha por produto); descrição vai pra todos
+  async ml(c,passo){const itens=await migLerMl(c,'active',passo);const fam={};
+    for(const i of itens){const k=i.family_name?'F:'+tfNorm(i.family_name):'I:'+i.id;(fam[k]=fam[k]||[]).push(i);}
+    return Object.values(fam).map(lista=>{lista.sort((a,b)=>(b.sold_quantity||0)-(a.sold_quantity||0));const i=lista[0];const up=!!i.family_name;
+      const it={id:i.id,nome:i.family_name||i.title,foto:(i.pictures?.[0]?.secure_url||i.thumbnail||'').replace(/^http:/,'https:'),vendas:lista.reduce((t,x)=>t+(x.sold_quantity||0),0),
+        nFotos:(i.pictures||[]).length,fotos:(i.pictures||[]).map(p=>p.id),up,tituloTravado:up||(i.sold_quantity||0)>0,
+        anuncios:lista.map(x=>({id:x.id,fotos:(x.pictures||[]).map(p=>p.id)}))};
+      return{it,q:otQualidade('ml',it)};});},
   async tiktok(c,passo){passo('Lendo produtos do TikTok...');const r=await mig3Api(c,'produtos');if(!r.ok)throw new Error(r.erro);
     return (r.produtos||[]).filter(p=>p.status==='ACTIVATE').map(p=>{const it={id:p.id,nome:p.titulo,foto:null,vendas:null};return{it,q:otQualidade('tiktok',it)};});}
 };
@@ -10632,11 +10637,20 @@ const otAplicarMp={
     if(mud.capa){const up=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await vidJpeg(mud.capa),ratio:x.det.ratio});if(!up.ok||!up.image_id)return{ok:false,erro:'capa: '+up.erro};m.image={image_id_list:[up.image_id,...x.det.fotos.slice(1)],image_ratio:x.det.ratio};}
     if(mud.fotosAntes)m.image={image_id_list:mud.fotosAntes,image_ratio:x.det.ratio};
     const r=await dirShApi('produto_atualizar',c,token,{item_id:x.it.id,mudancas:m});return{ok:r.ok,erro:r.erro,fotos:m.image?.image_id_list};},
-  async ml(c,x,mud){const token=await mlGarantirTokenValido(c);const m={};
-    if(mud.titulo)m.title=mud.titulo.slice(0,60);if(mud.descricao)m.descricao=mud.descricao;
-    if(mud.capa){const up=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:await vidJpeg(mud.capa)},true);if(!up.ok)return{ok:false,erro:'capa: '+up.erro};m.pictures=[up.id,...x.det.fotos.slice(1)];}
-    if(mud.fotosAntes)m.pictures=mud.fotosAntes;
-    const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:x.it.id,mudancas:m},true);return{ok:r.ok,erro:r.erro,fotos:m.pictures};},
+  // família inteira: descrição em todos os anúncios; capa nos que usam a mesma foto de capa (mesma cor); título só no anúncio único
+  async ml(c,x,mud){const token=await mlGarantirTokenValido(c);const anuncios=x.it.anuncios||[{id:x.it.id,fotos:x.det.fotos}];
+    let novaId=null;if(mud.capa){const up=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:await vidJpeg(mud.capa)},true);if(!up.ok)return{ok:false,erro:'capa: '+up.erro};novaId=up.id;}
+    const capa0=x.det.fotos[0];let ok=0;const erros=[];const fotosNovas={};
+    for(const a of anuncios){const m={};
+      if(mud.titulo&&anuncios.length===1)m.title=mud.titulo.slice(0,60);
+      if(mud.descricao)m.descricao=mud.descricao;
+      if(novaId&&a.fotos[0]===capa0){m.pictures=[novaId,...a.fotos.slice(1)];fotosNovas[a.id]=m.pictures;}
+      if(mud.fotosAntes?.[a.id])m.pictures=mud.fotosAntes[a.id];
+      if(!Object.keys(m).length)continue;
+      const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:a.id,mudancas:m},true);if(r.ok)ok++;else erros.push(`${a.id}: ${r.erro}`);}
+    if(novaId)x.det.fotosAntesPorItem=Object.fromEntries(anuncios.filter(a=>fotosNovas[a.id]).map(a=>[a.id,a.fotos]));
+    for(const a of anuncios)if(fotosNovas[a.id])a.fotos=fotosNovas[a.id];
+    return{ok:ok>0&&!erros.length,erro:erros.slice(0,2).join(' | ')||(ok?null:'nada aplicado')};},
   async tiktok(c,x,mud){const m={};if(mud.titulo)m.title=mud.titulo;if(mud.descricao)m.description=mud.descricao;
     if(mud.capa){const up=await mig3Api(c,'produto_imagem',{base64:await vidJpeg(mud.capa),uso:'MAIN_IMAGE'});if(!up.ok)return{ok:false,erro:'capa: '+up.erro};m.main_images=[up.uri,...x.det.fotos.slice(1)];}
     if(mud.fotosAntes)m.main_images=mud.fotosAntes;
@@ -10714,9 +10728,9 @@ window.__otAplicar=async()=>{
   for(const x of fila){st.textContent=`Aplicando ${x.it.nome.slice(0,50)}...`;
     const mud={};if(x.tit&&x.sug.titulo)mud.titulo=x.sug.titulo;if(x.desc&&x.sug.descricao)mud.descricao=x.sug.descricao;if(x.capa&&x.sug.capa)mud.capa=x.sug.capa;
     if(!Object.keys(mud).length){x.st='nada pra aplicar';continue;}
-    const antes={...(mud.titulo?{titulo:x.it.nome}:{}),...(mud.descricao?{descricao:ot.mp==='tiktok'?x.det.descHtml:x.det.desc}:{}),...(mud.capa?{fotosAntes:x.det.fotos}:{})};
-    try{const r=await otAplicarMp[ot.mp](c,x,mud);
-      if(r.ok){ok++;x.st=ot.mp==='tiktok'?'ok: enviado pra análise':'ok: atualizado';x.antes=antes;if(mud.titulo)x.it.nome=mud.titulo;if(r.fotos)x.det.fotos=r.fotos;if(mud.capa)x.det.capaUrl=mud.capa;
+    const antes={...(mud.titulo?{titulo:x.it.nome}:{}),...(mud.descricao?{descricao:ot.mp==='tiktok'?x.det.descHtml:x.det.desc}:{}),...(mud.capa&&ot.mp!=='ml'?{fotosAntes:x.det.fotos}:{})};
+    try{const r=await otAplicarMp[ot.mp](c,x,mud);if(ot.mp==='ml'&&x.det.fotosAntesPorItem)antes.fotosAntes=x.det.fotosAntesPorItem;
+      if(r.ok){ok++;x.st=ot.mp==='tiktok'?'ok: enviado pra análise':ot.mp==='ml'&&(x.it.anuncios||[]).length>1?`ok: ${(x.it.anuncios||[]).length} anúncios da família`:'ok: atualizado';x.antes=antes;if(mud.titulo)x.it.nome=mud.titulo;if(r.fotos)x.det.fotos=r.fotos;if(mud.capa)x.det.capaUrl=mud.capa;
         await addDoc(collection(db,'historicoAnuncios'),{clienteId:c.id,cliente:c.nome,mp:ot.mp,itemId:String(x.it.id),antes:{...antes,descricao:antes.descricao?String(antes.descricao).slice(0,5000):undefined},depois:{titulo:mud.titulo||null,descricao:mud.descricao?mud.descricao.slice(0,5000):null,capa:!!mud.capa},usuario:currentUser||'',em:serverTimestamp()}).catch(()=>{});}
       else x.st='erro: '+String(r.erro||'').slice(0,80);
     }catch(e){x.st='erro: '+e.message.slice(0,80);}
