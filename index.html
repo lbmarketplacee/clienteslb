@@ -10648,8 +10648,10 @@ window.__otGerar=async()=>{
   st.textContent='Confira as sugestões (dá pra editar) e clique em "Aplicar".';
 };
 // capa nova pela IA (capa_variacao) a partir da capa atual, no MESMO formato do anúncio (3:4 ou 1:1)
+// foto de outro site (CDN da Shopee) → baixa como blob antes (Image direto suja o canvas) e mantém a proporção
+async function otJpeg(url){const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);try{return await vidJpeg(u);}finally{URL.revokeObjectURL(u);}}
 async function otGerarCapa(x){
-  const atual=await vidJpeg(x.capaAtual||x.it.foto);
+  const atual=await otJpeg(x.capaAtual||x.it.foto);
   const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',produto:`${x.sug?.titulo||x.it.nome}`,imagem:atual,opcao:'capa do anúncio',marketplace:'shopee',formato:x.ratio})}).then(r=>r.json());
   if(!r.imagem)throw new Error('capa: '+(r.erro||'a IA não gerou'));
   x.sug.capa=r.imagem;
