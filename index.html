@@ -10517,7 +10517,7 @@ function ptRender(){
     </div>
     <p class="prod-nota" style="margin:14px 0 0">Produto ativo <b>fora do desconto fixo</b> não ganha oferta relâmpago (o robô pula). Aqui ele entra no desconto fixo da loja com o <b>preço atual −5%</b> (dá pra mudar na linha). O preço cheio não muda.</p></div>
     <div id="ptStatus" class="saude-vazio" style="margin-top:14px"></div><div id="ptLista" class="prod-lista"></div><div id="ptAcoes"></div>
-    <div class="prod-box" style="margin-top:22px"><div class="prod-box-tit">${mpIco('shopee',22)}<h3>Otimizar anúncios — título e descrição</h3></div>
+    <div class="prod-box" style="margin-top:22px"><div class="prod-box-tit">${mpIco('shopee',22)}<h3>Otimizar anúncios — título, descrição e capa</h3></div>
       <div class="px-rota">
         <div class="px-rota-col"><span>Cliente</span><select id="otLoja"><option value="">Escolha…</option>${(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome)).map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
         <button class="btn btn-gold" onclick="window.__otLer()">Ler anúncios</button>
