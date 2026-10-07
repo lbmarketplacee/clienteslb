@@ -10443,7 +10443,7 @@ window.__pxLer=async()=>{
 function pxRenderLista(){
   const el=document.getElementById('pxLista');if(!el)return;
   el.innerHTML=`<div class="cat-lista">${px.linhas.map(x=>`<div class="cat-item"><div class="cat-linha">
-      ${x.foto?`<img src="${esc(x.foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
+      ${x.foto?`<img src="${esc(x.foto)}" loading="lazy">`:`<span class="cat-semfoto" style="display:flex;align-items:center;justify-content:center;opacity:.7">${mpIco(px.origem,22)}</span>`}
       <div class="cat-nome"><b>${esc(x.nome)}</b><small>${esc(x.info||'')}${x.info?' · ':''}${x.estoque} em estoque · ${x.preco?fmtR(x.preco):'—'}</small></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;min-width:260px">${px.destinos.map(d=>{const s=x.st[d]||'';const ok=/^ok/.test(s),erro=/^erro/.test(s);
         const cls=ok?'ok':erro?'erro':s?'rodando':x.sel[d]?'sel':x.existe[d]?'tem':'';
