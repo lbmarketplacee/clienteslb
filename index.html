@@ -10161,7 +10161,7 @@ async function migMl(c,caminho){const token=await mlGarantirTokenValido(c);retur
 // anúncios do ML (status) com o líquido real de cada um
 async function migLerMl(c,status='active',passo=()=>{}){
   const ids=[];for(let off=0;off<1000;off+=50){const s=await migMl(c,`/users/${c.mlUserId}/items/search?status=${status}&limit=50&offset=${off}`);ids.push(...(s?.results||[]));if(!s||off+50>=(s.paging?.total||0))break;}
-  const itens=[];for(let i=0;i<ids.length;i+=20){passo(`Lendo anúncios do ML... ${Math.min(i+20,ids.length)}/${ids.length}`);const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(','));itens.push(...(d||[]).map(x=>x.body).filter(Boolean));}
+  const itens=[];for(let i=0;i<ids.length;i+=20){passo(`Lendo anúncios do ML... ${Math.min(i+20,ids.length)}/${ids.length}`);const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(',')+'&include_attributes=all');itens.push(...(d||[]).map(x=>x.body).filter(Boolean));}
   const taxa={};
   for(const it of itens){const k=`${it.price}|${it.listing_type_id}|${it.category_id}`;
     if(taxa[k]==null){const lp=await migMl(c,`/sites/MLB/listing_prices?price=${it.price}&listing_type_id=${it.listing_type_id}&category_id=${it.category_id}`);taxa[k]=Number(lp?.sale_fee_amount??lp?.[0]?.sale_fee_amount);if(!(taxa[k]>=0))taxa[k]=migR2(it.price*0.14);}
@@ -10274,9 +10274,28 @@ const pxLer={
       const porFam={};for(const it of itens){const k=it.family_name?('F:'+tfNorm(it.family_name)):('I:'+it.id);(porFam[k]=porFam[k]||[]).push(it);}
       return Object.values(porFam).map(lista=>{lista.sort((a,b)=>(b.sold_quantity||0)-(a.sold_quantity||0));const b=lista[0];
         return{id:b.id,ids:lista.map(x=>x.id),nome:b.family_name||b.title,foto:(b.pictures?.[0]?.secure_url||b.thumbnail||'').replace(/^http:/,'https:'),estoque:lista.reduce((t,x)=>t+(x.available_quantity||0),0),preco:b.price,
-          info:lista.length>1?`${lista.length} anúncios (cor/tamanho)`:b.id,titulos:[...new Set(lista.flatMap(x=>[x.title,x.family_name]).filter(Boolean))],ref:{lista,base:b}};});},
+          info:lista.length>1?`${lista.length} anúncios (cor/tamanho)`:(b.variations||[]).length?`${b.variations.length} variações · SKUs da cliente`:b.id,titulos:[...new Set(lista.flatMap(x=>[x.title,x.family_name]).filter(Boolean))],ref:{lista,base:b}};});},
     async detalhar(c,row,linha){
       const {lista,base}=row.ref;
+      // anúncio ANTIGO do ML com as variações dentro (Aviamentos SP, JSFASHION, Toldos Renascer…): cada variação traz
+      // attribute_combinations (cor/tamanho…), preço, estoque, picture_ids e o SKU em attributes SELLER_SKU (include_attributes=all)
+      if(lista.length===1&&(base.variations||[]).length){
+        const fotoUrl=id=>{const p=(base.pictures||[]).find(x=>x.id===id);return (p?.secure_url||p?.url||'').replace(/^http:/,'https:')||null;};
+        const nomes=[...new Set(base.variations.flatMap(v=>(v.attribute_combinations||[]).map(a=>a.name||a.id)))].slice(0,2);
+        const vars=nomes.map((nome,k)=>{const tam=pxEhTam(nome);const ops=[];
+          for(const v of base.variations){const a=(v.attribute_combinations||[]).find(x=>(x.name||x.id)===nome);const val=a?.value_name;if(val&&!ops.some(o=>o._orig===val))ops.push({nome:String(tam?migTamLimpo(val):val).slice(0,30),veste:tam?migVesteDe(val):'',foto:k===0?fotoUrl(v.picture_ids?.[0]):null,_orig:val});}
+          return{nome:String(nome).slice(0,30),tam,opcoes:ops};});
+        const fator=base.price>0?(base._liquido||0)/base.price:0.8; // líquido proporcional ao preço de cada variação
+        const skus=base.variations.map(v=>({op:nomes.map((nome,k)=>{const val=(v.attribute_combinations||[]).find(x=>(x.name||x.id)===nome)?.value_name;return vars[k].opcoes.find(o=>o._orig===val)?.nome;}),
+          liq:Math.round((Number(v.price)||base.price)*fator*100)/100,est:v.available_quantity||0,
+          sku:(v.attributes||[]).find(a=>a.id==='SELLER_SKU')?.value_name||v.seller_custom_field||''})).filter(s=>s.op.every(Boolean)&&s.liq>0);
+        linha('descrição do ML...');
+        const descricao=(await migMl(c,`/items/${base.id}/description`))?.plain_text||'';
+        const atr=(base.attributes||[]).filter(a=>a.value_name&&!/SELLER_PACKAGE|ITEM_CONDITION|GTIN|SELLER_SKU|SIZE_GRID|COLOR|SIZE|BRAND|MODEL|FILTRABLE|SALE_FORMAT|UNITS_PER|_RESTRICTION|IS_|HAS_|WITH_|GIFTABLE|RELEASE|ORIGIN|PROMOTION|VERSION|REGALAVEL/i.test(a.id)).map(a=>`${a.name}: ${a.value_name}`).join('; ');
+        let desc=descricao;if(desc.length<40){linha('descrição pela IA...');const ia=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`${base.title}. ${atr}`,marketplace:'shopee',imagem:null})}).then(r=>r.json()).catch(()=>({}));desc=ia.descricao||`${base.title}.`;}
+        return{titulo:base.title,descricao:desc,atributosTxt:atr,fotos:(base.pictures||[]).map(p=>(p.secure_url||p.url||'').replace(/^http:/,'https:')).filter(Boolean).slice(0,9),
+          vars,skus,peso:migPesoKg(base)||0.5,dims:migDim(base)||{c:0,l:0,a:0},sku:migAttr(base,'SELLER_SKU')||''};
+      }
       const cores=[...new Set(lista.map(x=>migAttr(x,'COLOR')).filter(Boolean))],tams=[...new Set(lista.map(x=>migAttr(x,'SIZE')).filter(Boolean))];
       const temCor=lista.length>1&&cores.length>0,temTam=lista.length>1&&tams.length>0;
       const vars=[];
@@ -10321,7 +10340,7 @@ const pxDimsOk=d=>d&&d.c>1&&d.l>1&&d.a>1;
 const pxCriar={
   async shopee(c,P,linha,ctx){
     if(P.vars.length>2)throw new Error('a Shopee aceita no máximo 2 variações');
-    if(ctx.simular){const ps=[...new Set(P.skus.map(s=>dirPrecosLB(s.liq)?.venda))];return{id:null,msg:`simulado · ${P.skus.length} SKU · venda ${ps.map(fmtR).join('/')} · ${P.fotos.length} fotos`};}
+    if(ctx.simular){const ps=[...new Set(P.skus.map(s=>dirPrecosLB(s.liq)?.venda))];const cs=P.skus.filter(s=>s.sku);return{id:null,msg:`simulado · ${P.vars.map(v=>`${v.nome}: ${v.opcoes.length}`).join(' × ')||'sem variação'} · ${P.skus.length} SKU (${cs.length} com SKU da cliente${cs.length?`, ex.: ${cs.slice(0,2).map(s=>s.sku).join(', ')}`:''}) · venda ${ps.slice(0,3).map(fmtR).join('/')} · ${P.fotos.length} fotos`};}
     const token=await shopeeGarantirTokenValido(c,'erp');
     if(!ctx.logisticas){const canais=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/logistics/get_channel_list',query:{}});
       ctx.logisticas=(canais?.response?.logistics_channel_list||[]).filter(x=>x.enabled&&!x.mask_channel_id).map(x=>x.logistics_channel_id);
@@ -10350,8 +10369,9 @@ const pxCriar={
     if(v1){
       const fotosCor={};for(const o of v1.opcoes)if(o.foto){linha(`Shopee: foto de ${o.nome}`);fotosCor[o.nome]=await subir(o.foto);}
       const estoque={};for(const s of P.skus)estoque[`${s.op[0]}|${s.op[1]??''}`]=(estoque[`${s.op[0]}|${s.op[1]??''}`]||0)+s.est;
-      Object.assign(dados,{cores:v1.opcoes.map(o=>o.nome),tamanhos:v2?v2.opcoes.map(o=>o.nome):[],nome1:v1.nome,nome2:v2?.nome||'Tamanho',fotosCor,estoque,skuBase:P.sku||'LB',estoqueTotal:P.skus.reduce((t,s)=>t+s.est,0)});
-    }else dados.estoqueTotal=P.skus[0]?.est||0;
+      const skus={};for(const s of P.skus)if(s.sku)skus[`${s.op[0]}|${s.op[1]??''}`]=s.sku; // SKU da cliente em cada variação
+      Object.assign(dados,{cores:v1.opcoes.map(o=>o.nome),tamanhos:v2?v2.opcoes.map(o=>o.nome):[],nome1:v1.nome,nome2:v2?.nome||'Tamanho',fotosCor,estoque,skus,skuBase:P.sku||'LB',estoqueTotal:P.skus.reduce((t,s)=>t+s.est,0)});
+    }else{dados.estoqueTotal=P.skus[0]?.est||0;if(P.skus[0]?.sku)dados.item_sku=P.skus[0].sku;}
     linha('Shopee: criando (oculto)...');
     const r=await dirShApi('produto_criar',c,token,{dados});if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}`.trim());
     const venda=iguais?Object.values(precos)[0].venda:Object.fromEntries(ops1.map(op=>[op,precos[op].venda]));
