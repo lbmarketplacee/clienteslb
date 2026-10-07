@@ -9144,6 +9144,8 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
   if(falta.length){lbAvisar('Mercado Livre — falta\n'+falta.join(', '));return;}
   const eanDig=String(document.getElementById('dirShGtin')?.value||'').replace(/\D/g,'');
   if(eanDig&&!eanValido(eanDig)){lbAvisar(`Código de barras ${eanDig} inválido\nO último dígito não confere (EAN tem 13 dígitos). Confira na caixa ou deixe em branco.`);return;}
+  const inm=String(document.getElementById('dirShInmetro')?.value||'').trim();
+  if(inm&&/[A-Za-z]/.test(inm)){lbAvisar(`Registro Inmetro "${inm}" não serve pro ML\nO ML só aceita números (com ponto, hífen ou barra), até 21 dígitos — é o "Registro" do selo (ex.: 001234/2023), não o código do certificado (CE-EL-…). Corrija ou deixe em branco.`);return;}
   const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
   if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por combinação de variação), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria${(u.plataformas||[]).includes('tiktok')?'\nDepois cria no TikTok Shop (vai pra análise).':''}`,{okTxt:'Criar no ML'}))return;
   if(!depoisDaShopee)st.innerHTML='';
