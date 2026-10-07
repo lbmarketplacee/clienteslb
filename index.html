@@ -10390,7 +10390,7 @@ function pxRender(){
   if(!isLincoln()){el.innerHTML='<div class="saude-vazio">Só Lincoln e Carol.</div>';return;}
   el.dataset.pronto='1';
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&['shopee','ml','tiktok'].filter(m=>pxTem(c,m)).length>=2).sort((a,b)=>a.nome.localeCompare(b.nome));
-  el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>De onde pra onde</h3></div><p class="prod-nota">Escolha o cliente, de onde copiar e pra onde (um ou mais). O preço sai do <b>mesmo líquido</b> da origem, recalculado com as regras de cada marketplace: <b>Shopee</b> cupom 3% + relâmpago 5%, cheio ×1,3, nasce oculto e "Publicar" põe no desconto fixo e no Ads · <b>Mercado Livre</b> comissão real + 7%, 1 anúncio por cor e tamanho, já ativo · <b>TikTok</b> taxas do TikTok + 8%, vai pra análise e entra no desconto fixo.</p>
+  el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>De onde pra onde</h3></div><p class="prod-nota">Escolha o cliente, de onde copiar e pra onde (um ou mais). O preço sai do <b>mesmo valor a receber</b> da origem, com as regras de cada marketplace. Shopee nasce oculta (depois "Publicar"), ML já ativo, TikTok passa por análise.</p>
     <div class="px-rota">
       <div class="px-rota-col"><span>Cliente</span><select id="pxLoja" onchange="window.__pxLoja()"><option value="">Escolha…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
       <div class="px-rota-col"><span>De</span><div class="mp-pick" id="pxOrigens"><span style="font-size:12.5px;color:var(--text-dim);padding:10px 0">escolha o cliente</span></div><input type="hidden" id="pxOrigem"></div>
