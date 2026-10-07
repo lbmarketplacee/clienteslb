@@ -3396,7 +3396,7 @@ window.__conectarDrive=conectarDrive;
    Fotos do funil, capa por variação, logo e vídeos. No Produtos (com cliente) → pasta do cliente/Mídias IA/AAAA-MM-DD;
    na Central Criativa → pasta-mãe/Central Criativa IA/AAAA-MM-DD. Drive desconectado → fica na fila e sobe ao conectar. */
 const midiaFila=[],midiaPastas={};let midiaAvisou=false,midiaEnviando=false;
-function midiaCliente(){const noProdutos=document.querySelector('[data-cmpainel="criarprodutos"].active');const id=noProdutos?(document.getElementById('dirShLoja')?.value||document.getElementById('cpLoja')?.value||''):'';return (clientesCache||[]).find(c=>c.id===id)||null;}
+function midiaCliente(){const noProdutos=document.querySelector('[data-cmpainel="criarprodutos"].active');const id=noProdutos?(document.getElementById('dirShLoja')?.value||document.getElementById('cpLoja')?.value||document.getElementById('otLoja')?.value||''):'';return (clientesCache||[]).find(c=>c.id===id)||null;}
 function midiaGuardar(itens){const c=midiaCliente();for(const it of itens)midiaFila.push({...it,cliId:c?.id||null,cliNome:c?.nome||null,dia:lbHojeISO()});midiaEnviar();}
 async function midiaPasta(cliId,cliNome,dia){const k=`${cliId||'cc'}|${dia}`;if(midiaPastas[k])return midiaPastas[k];
   const base=cliId?await garantirPastaCliente(cliId,cliNome):await garantirPastaMae();const nomeBase=cliId?'Mídias IA':'Central Criativa IA';
@@ -10523,7 +10523,7 @@ function ptRender(){
         <button class="btn btn-gold" onclick="window.__otLer()">Ler anúncios</button>
         <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--text-dim);margin-left:auto"><input type="checkbox" id="otSoRuins" checked onchange="window.__otRender()"> só os com nota abaixo de 80</label>
       </div>
-      <p class="prod-nota" style="margin:14px 0 0">A IA reescreve o título (70–100 caracteres, palavras de busca, sem cor/tamanho) e a descrição (5 destaques + texto) olhando a foto do anúncio. Você confere o <b>antes × depois</b> e aplica. Anúncio que <b>já vende bem</b> vem desmarcado (trocar título pode mexer no ranqueamento). Tudo fica salvo pra <b>desfazer</b>. Custa centavos por anúncio.</p></div>
+      <p class="prod-nota" style="margin:14px 0 0">A IA reescreve o título (70–100 caracteres, palavras de busca, sem cor/tamanho) e a descrição (5 destaques + texto) olhando a foto do anúncio. <b>Capa (opcional):</b> gera uma capa nova a partir da atual, no mesmo formato, e troca só a 1ª foto (~R$ 0,37 cada). Você confere o <b>antes × depois</b> e aplica. Anúncio que <b>já vende bem</b> vem desmarcado (trocar título pode mexer no ranqueamento). Tudo fica salvo pra <b>desfazer</b>. Custa centavos por anúncio.</p></div>
     <div id="otStatus" class="saude-vazio" style="margin-top:14px"></div><div id="otLista" class="prod-lista"></div><div id="otAcoes"></div>`;
 }
 window.__ptIrShopee=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="shopee"]')?.click();setTimeout(()=>window.__shopeeSubTab&&window.__shopeeSubTab('catalogo'),300);};
@@ -10594,7 +10594,7 @@ window.__otLer=async()=>{
   const st=document.getElementById('otStatus'),passo=t=>st.textContent=t;ot.c=c;ot.itens=[];document.getElementById('otLista').innerHTML='';
   try{const token=await shopeeGarantirTokenValido(c,'erp');const itens=await migLerShopeeAtivos(c,token,passo);
     ot.itens=itens.map((it,i)=>{const q=it.qualidade||{nota:100,problemas:[]};const ruimTit=q.problemas.some(p=>/título/.test(p)),ruimDesc=q.problemas.some(p=>/descrição/.test(p));
-      return{i,it,q,tit:!q.vendeBem&&ruimTit,desc:!q.vendeBem&&ruimDesc&&it.descTipo!=='extended',sug:null,st:''};}).sort((a,b)=>a.q.nota-b.q.nota);
+      return{i,it,q,tit:!q.vendeBem&&ruimTit,desc:!q.vendeBem&&ruimDesc&&it.descTipo!=='extended',capa:false,sug:null,st:''};}).sort((a,b)=>a.q.nota-b.q.nota);
     const ruins=ot.itens.filter(x=>x.q.nota<80).length;
     passo(`${ot.itens.length} anúncios ativos · ${ruins} com nota abaixo de 80. Marque título e/ou descrição e clique em "Gerar sugestões".`);window.__otRender();
   }catch(e){passo('Erro: '+e.message);console.error(e);}
@@ -10609,12 +10609,14 @@ window.__otRender=()=>{
       <div class="cat-num" style="min-width:56px"><small>Nota</small><b style="color:${cor(x.q.nota)}">${x.q.nota}</b></div>
       <label style="font-size:12px;display:flex;gap:5px;align-items:center"><input type="checkbox" ${x.tit?'checked':''} onchange="window.__otMarca(${x.i},'tit',this.checked)"> Título</label>
       <label style="font-size:12px;display:flex;gap:5px;align-items:center" ${it.descTipo==='extended'?'title="Descrição com imagens — não dá pra trocar por texto"':''}><input type="checkbox" ${x.desc?'checked':''} ${it.descTipo==='extended'?'disabled':''} onchange="window.__otMarca(${x.i},'desc',this.checked)"> Descrição</label>
+      <label style="font-size:12px;display:flex;gap:5px;align-items:center" title="Capa nova com IA a partir da foto atual (~R$ 0,37). Substitui só a 1ª foto."><input type="checkbox" ${x.capa?'checked':''} onchange="window.__otMarca(${x.i},'capa',this.checked)"> Capa (IA)</label>
       <div class="cat-num" style="min-width:130px"><small>Situação</small>${esc(x.st||'—')}${x.antes?` <a href="#" style="color:var(--gold)" onclick="event.preventDefault();window.__otDesfazer(${x.i})">desfazer</a>`:''}</div>
     </div>${x.sug?`<div style="padding:4px 12px 12px 76px;display:grid;gap:8px">
       ${x.tit?`<div><small style="color:var(--text-dim)">Título — antes: ${esc(it.nome)}</small><input type="text" maxlength="120" value="${esc(x.sug.titulo)}" style="width:100%" onchange="window.__otEdita(${x.i},'titulo',this.value)"><small style="color:var(--text-dim)">${x.sug.titulo.length} caracteres</small></div>`:''}
-      ${x.desc?`<div><small style="color:var(--text-dim)">Descrição nova (antes: ${it.descTam} caracteres)</small><textarea style="width:100%;min-height:130px" onchange="window.__otEdita(${x.i},'descricao',this.value)">${esc(x.sug.descricao)}</textarea></div>`:''}
+      ${x.desc&&x.sug.descricao!=null?`<div><small style="color:var(--text-dim)">Descrição nova (antes: ${it.descTam} caracteres)</small><textarea style="width:100%;min-height:130px" onchange="window.__otEdita(${x.i},'descricao',this.value)">${esc(x.sug.descricao)}</textarea></div>`:''}
+      ${x.capa&&x.sug.capa?`<div style="display:flex;gap:12px;align-items:flex-end"><div><small style="color:var(--text-dim)">Capa atual</small><br><img src="${esc(x.capaAtual||it.foto)}" style="width:120px;border-radius:8px;border:1px solid var(--border)"></div><div><small style="color:var(--gold)">Capa nova (${esc(x.ratio)})</small><br><img src="${x.sug.capa}" style="width:120px;border-radius:8px;border:2px solid var(--gold)"></div><button class="btn btn-ghost btn-sm" onclick="window.__otNovaCapa(${x.i})">Gerar outra</button></div>`:''}
     </div>`:''}</div>`;}).join('')}</div>`;
-  const marc=ot.itens.filter(x=>x.tit||x.desc),comSug=marc.filter(x=>x.sug&&!/^ok/.test(x.st));
+  const marc=ot.itens.filter(x=>x.tit||x.desc||x.capa),comSug=marc.filter(x=>x.sug&&!/^ok/.test(x.st));
   document.getElementById('otAcoes').innerHTML=ot.itens.length?`<div class="cat-acoes prod-acoes"><span><b>${marc.length}</b> anúncio(s) marcados · ${comSug.length} com sugestão pronta</span>
     <button class="btn btn-ghost btn-sm" onclick="window.__otGerar()">Gerar sugestões (IA)</button>
     ${comSug.length?`<button class="btn btn-gold btn-sm" onclick="window.__otAplicar()">Aplicar ${comSug.length} na Shopee</button>`:''}</div>`:'';
@@ -10622,43 +10624,62 @@ window.__otRender=()=>{
 window.__otMarca=(i,k,v)=>{const x=ot.itens.find(y=>y.i===i);if(x){x[k]=v;window.__otRender();}};
 window.__otEdita=(i,k,v)=>{const x=ot.itens.find(y=>y.i===i);if(x?.sug)x.sug[k]=v;};
 window.__otGerar=async()=>{
-  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc)&&!x.sug).slice(0,25);if(!c||!fila.length){showToast('Marque título ou descrição em algum anúncio.');return;}
+  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&!x.sug).slice(0,25);if(!c||!fila.length){showToast('Marque título, descrição ou capa em algum anúncio.');return;}
   const st=document.getElementById('otStatus');const token=await shopeeGarantirTokenValido(c,'erp');
   const usados=new Set(ot.itens.map(x=>String(x.it.nome).toLowerCase()));
   for(const [k,x] of fila.entries()){st.textContent=`Gerando ${k+1}/${fila.length}: ${x.it.nome.slice(0,50)}...`;x.st='gerando...';window.__otRender();
     try{
       const b=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:String(x.it.id)}}))?.response?.item_list?.[0];
       const desc=String(b?.description||'');x.descAntes=desc;
-      const img=x.it.foto?await migJpg(x.it.foto).catch(()=>null):null;
-      const r=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`Título atual: ${x.it.nome}\nDescrição atual: ${desc.slice(0,1500)}`,marketplace:'shopee',imagem:img})}).then(r=>r.json());
-      let titulo=String(r.titulo||'').replace(/\s+/g,' ').trim();
-      if(!titulo||usados.has(titulo.toLowerCase()))titulo=await migTitulo(`${x.it.nome}. ${desc.slice(0,300)}`,usados);else usados.add(titulo.toLowerCase());
-      const descricao=[...(r.bullets||[]),'',String(r.descricao||'').trim()].join('\n').trim().slice(0,4900);
-      if(!titulo&&!descricao)throw new Error('a IA não respondeu');
-      x.sug={titulo:titulo||x.it.nome,descricao:descricao||desc};x.st='sugestão pronta';
+      x.imgIds=b?.image?.image_id_list||[];x.ratio=b?.image?.image_ratio||'1:1';x.capaAtual=b?.image?.image_url_list?.[0]||x.it.foto;
+      x.sug={titulo:x.it.nome,descricao:null,capa:null};
+      if(x.tit||x.desc){
+        const img=x.it.foto?await migJpg(x.it.foto).catch(()=>null):null;
+        const r=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`Título atual: ${x.it.nome}\nDescrição atual: ${desc.slice(0,1500)}`,marketplace:'shopee',imagem:img})}).then(r=>r.json());
+        let titulo=String(r.titulo||'').replace(/\s+/g,' ').trim();
+        if(x.tit){if(!titulo||usados.has(titulo.toLowerCase()))titulo=await migTitulo(`${x.it.nome}. ${desc.slice(0,300)}`,usados);else usados.add(titulo.toLowerCase());if(titulo)x.sug.titulo=titulo;}
+        const descricao=[...(r.bullets||[]),'',String(r.descricao||'').trim()].join('\n').trim().slice(0,4900);
+        if(x.desc)x.sug.descricao=descricao||desc;
+      }
+      if(x.capa)await otGerarCapa(x);
+      x.st='sugestão pronta';
     }catch(e){x.st='erro: '+e.message.slice(0,60);}
     window.__otRender();}
   st.textContent='Confira as sugestões (dá pra editar) e clique em "Aplicar".';
 };
+// capa nova pela IA (capa_variacao) a partir da capa atual, no MESMO formato do anúncio (3:4 ou 1:1)
+async function otGerarCapa(x){
+  const atual=await vidJpeg(x.capaAtual||x.it.foto);
+  const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',produto:`${x.sug?.titulo||x.it.nome}`,imagem:atual,opcao:'capa do anúncio',marketplace:'shopee',formato:x.ratio})}).then(r=>r.json());
+  if(!r.imagem)throw new Error('capa: '+(r.erro||'a IA não gerou'));
+  x.sug.capa=r.imagem;
+}
+window.__otNovaCapa=async i=>{const x=ot.itens.find(y=>y.i===i);if(!x)return;x.st='gerando outra capa...';window.__otRender();try{await otGerarCapa(x);x.st='sugestão pronta';}catch(e){x.st='erro: '+e.message.slice(0,60);}window.__otRender();};
 window.__otAplicar=async()=>{
-  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc)&&x.sug&&!/^ok/.test(x.st));if(!fila.length)return;
+  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&x.sug&&!/^ok/.test(x.st));if(!fila.length)return;
   if(!await lbConfirmar(`Aplicar ${fila.length} anúncio(s) na Shopee da ${c.nome}?\nO texto antigo fica salvo — dá pra desfazer depois.`,{okTxt:'Aplicar'}))return;
   const st=document.getElementById('otStatus');const token=await shopeeGarantirTokenValido(c,'erp');let ok=0;
   for(const x of fila){st.textContent=`Aplicando ${x.it.nome.slice(0,50)}...`;
-    const mud={};if(x.tit)mud.item_name=x.sug.titulo.slice(0,120);if(x.desc)mud.description=x.sug.descricao;
+    const mud={};if(x.tit)mud.item_name=x.sug.titulo.slice(0,120);if(x.desc&&x.sug.descricao)mud.description=x.sug.descricao;
     const antes={item_name:x.it.nome,...(x.desc?{description:x.descAntes||''}:{})};
+    if(x.capa&&x.sug.capa&&x.imgIds?.length){ // sobe a capa nova e troca SÓ a 1ª foto (o resto, inclusive a guia de tamanhos, fica)
+      const up=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await vidJpeg(x.sug.capa),ratio:x.ratio});
+      if(up.ok&&up.image_id){mud.image={image_id_list:[up.image_id,...x.imgIds.slice(1)],image_ratio:x.ratio};antes.image={image_id_list:x.imgIds,image_ratio:x.ratio};}
+      else{x.st='erro na capa: '+String(up.erro||'').slice(0,60);window.__otRender();continue;}
+    }
+    if(Object.keys(mud).length===0){x.st='nada pra aplicar';continue;}
     const r=await dirShApi('produto_atualizar',c,token,{item_id:x.it.id,mudancas:mud});
-    if(r.ok){ok++;x.st='ok: atualizado';x.antes=antes;if(mud.item_name)x.it.nome=mud.item_name;
+    if(r.ok){ok++;x.st='ok: atualizado';x.antes=antes;if(mud.item_name)x.it.nome=mud.item_name;if(mud.image){x.imgIds=mud.image.image_id_list;x.capaAtual=x.sug.capa;}
       await addDoc(collection(db,'historicoAnuncios'),{clienteId:c.id,cliente:c.nome,mp:'shopee',itemId:String(x.it.id),antes,depois:mud,usuario:currentUser||'',em:serverTimestamp()}).catch(()=>{});}
     else x.st='erro: '+String(r.erro||'').slice(0,70);
     window.__otRender();}
-  await log(c.id,c.nome,'otimização de anúncios (Shopee)',`${ok} anúncio(s) com título/descrição novos pela IA.`);
+  await log(c.id,c.nome,'otimização de anúncios (Shopee)',`${ok} anúncio(s) com título/descrição/capa novos pela IA.`);
   st.textContent=`Pronto: ${ok} de ${fila.length} atualizado(s). A Shopee pode levar alguns minutos pra mostrar.`;
 };
 window.__otDesfazer=async i=>{
   const x=ot.itens.find(y=>y.i===i);if(!x?.antes)return;if(!await lbConfirmar('Voltar o título/descrição antigos deste anúncio?',{okTxt:'Desfazer'}))return;
   const token=await shopeeGarantirTokenValido(ot.c,'erp');const r=await dirShApi('produto_atualizar',ot.c,token,{item_id:x.it.id,mudancas:x.antes});
-  if(r.ok){x.it.nome=x.antes.item_name;x.antes=null;x.sug=null;x.st='desfeito';}else x.st='erro ao desfazer: '+String(r.erro||'').slice(0,60);window.__otRender();
+  if(r.ok){x.it.nome=x.antes.item_name;if(x.antes.image)x.imgIds=x.antes.image.image_id_list;x.antes=null;x.sug=null;x.st='desfeito';}else x.st='erro ao desfazer: '+String(r.erro||'').slice(0,60);window.__otRender();
 };
 function cortarNaPalavraFront(t,max){t=String(t||'').replace(/\s+/g,' ').trim();if(t.length<=max)return t;const c=t.slice(0,max+1);return c.slice(0,c.lastIndexOf(' ')>20?c.lastIndexOf(' '):max).trim();}
 
