@@ -10517,13 +10517,14 @@ function ptRender(){
     </div>
     <p class="prod-nota" style="margin:14px 0 0">Produto ativo <b>fora do desconto fixo</b> não ganha oferta relâmpago (o robô pula). Aqui ele entra no desconto fixo da loja com o <b>preço atual −5%</b> (dá pra mudar na linha). O preço cheio não muda.</p></div>
     <div id="ptStatus" class="saude-vazio" style="margin-top:14px"></div><div id="ptLista" class="prod-lista"></div><div id="ptAcoes"></div>
-    <div class="prod-box" style="margin-top:22px"><div class="prod-box-tit">${mpIco('shopee',22)}<h3>Otimizar anúncios — título, descrição e capa</h3></div>
+    <div class="prod-box" style="margin-top:22px"><div class="prod-box-tit"><span style="display:flex;gap:4px">${mpIco('shopee',20)}${mpIco('ml',20)}${mpIco('tiktok',20)}</span><h3>Otimizar anúncios — título, descrição e capa</h3></div>
       <div class="px-rota">
+        <div class="px-rota-col"><span>Marketplace</span><select id="otMp" onchange="window.__otMp()"><option value="shopee">Shopee</option><option value="ml">Mercado Livre</option><option value="tiktok">TikTok Shop</option></select></div>
         <div class="px-rota-col"><span>Cliente</span><select id="otLoja"><option value="">Escolha…</option>${(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId&&c.shopeeErpRefreshToken).sort((a,b)=>a.nome.localeCompare(b.nome)).map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
         <button class="btn btn-gold" onclick="window.__otLer()">Ler anúncios</button>
         <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--text-dim);margin-left:auto"><input type="checkbox" id="otSoRuins" checked onchange="window.__otRender()"> só os com nota abaixo de 80</label>
       </div>
-      <p class="prod-nota" style="margin:14px 0 0">A IA reescreve o título (70–100 caracteres, palavras de busca, sem cor/tamanho) e a descrição (5 destaques + texto) olhando a foto do anúncio. <b>Capa (opcional):</b> gera uma capa nova a partir da atual, no mesmo formato, e troca só a 1ª foto (~R$ 0,37 cada). Você confere o <b>antes × depois</b> e aplica. Anúncio que <b>já vende bem</b> vem desmarcado (trocar título pode mexer no ranqueamento). Tudo fica salvo pra <b>desfazer</b>. Custa centavos por anúncio.</p></div>
+      <p class="prod-nota" style="margin:14px 0 0">A IA reescreve o título e a descrição com as regras de cada marketplace (Shopee 70–100 caracteres sem cor/tamanho · ML até 60 · TikTok 120–140) olhando a foto do anúncio. <b>Mercado Livre:</b> título só muda em anúncio antigo sem venda; descrição e capa em todos. <b>TikTok:</b> vai pra análise e a versão atual segue no ar até aprovar. <b>Capa (opcional):</b> gera uma capa nova a partir da atual, no mesmo formato, e troca só a 1ª foto (~R$ 0,37 cada). Você confere o <b>antes × depois</b> e aplica. Anúncio que <b>já vende bem</b> vem desmarcado (trocar título pode mexer no ranqueamento). Tudo fica salvo pra <b>desfazer</b>. Custa centavos por anúncio.</p></div>
     <div id="otStatus" class="saude-vazio" style="margin-top:14px"></div><div id="otLista" class="prod-lista"></div><div id="otAcoes"></div>`;
 }
 window.__ptIrShopee=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="shopee"]')?.click();setTimeout(()=>window.__shopeeSubTab&&window.__shopeeSubTab('catalogo'),300);};
@@ -10585,103 +10586,148 @@ window.__ptAplicar=async()=>{
     st.textContent=`Pronto: ${ok.length} de ${sel.length} no desconto fixo. O robô de relâmpago passa a incluir esses produtos na próxima rodada.`;
   }catch(e){st.textContent='Erro: '+e.message;}
 };
-/* ---------- Otimizar anúncios em massa — Shopee, título e descrição (07/10/2026) ----------
-   Nota de qualidade vem do backend (lib/otimizar.js no catalogo_listar). Sugestão pelo lbiagerador (título + 5 destaques +
-   descrição, com a foto). Aplica com produto_atualizar; o antes fica em historicoAnuncios pra desfazer. */
-const ot={c:null,itens:[]};
+/* ---------- Otimizar anúncios em massa — Shopee, Mercado Livre e TikTok (título, descrição e capa) — 07/10/2026 ----------
+   Shopee: nota do backend (lib/otimizar.js), aplica com produto_atualizar. ML: ml_atualizar_item (descrição = texto puro;
+   título SÓ em anúncio antigo sem venda — o modelo novo "User Products" e anúncio com venda o ML recusa, visto ao vivo);
+   fotos por id (ml_upload_foto). TikTok: produto_editar = Partial Edit (vai pra análise; a versão atual segue no ar; produto
+   já em análise não aceita edição). Sugestão pelo lbiagerador (regras de cada marketplace), capa por capa_variacao no
+   formato da foto atual. O antes fica em historicoAnuncios → desfazer. */
+const ot={c:null,mp:'shopee',itens:[]};
+const OT_MP={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok'};
+const otTemMp=(c,mp)=>mp==='shopee'?!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken):mp==='ml'?!!(c.mlUserId&&c.mlRefreshToken):!!(c.tiktokShopCipher&&c.tiktokAccessToken);
+window.__otMp=()=>{const mp=document.getElementById('otMp').value;ot.mp=mp;const sel=document.getElementById('otLoja');
+  sel.innerHTML='<option value="">Escolha…</option>'+(clientesCache||[]).filter(c=>c.ativo!==false&&otTemMp(c,mp)).sort((a,b)=>a.nome.localeCompare(b.nome)).map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  ot.itens=[];['otLista','otAcoes','otStatus'].forEach(i=>document.getElementById(i).innerHTML='');};
+// nota de qualidade no front pra ML e TikTok (Shopee vem pronta do backend)
+function otQualidade(mp,it){
+  const p=[];let n=100;const t=String(it.nome||'').trim();const [min,bom]=mp==='ml'?[35,45]:[90,120];
+  if(t.length<min){p.push(`título curto (${t.length})`);n-=30;}else if(t.length<bom){p.push(`título pode crescer (${t.length})`);n-=10;}
+  const L=t.replace(/[^A-Za-zÀ-ú]/g,'');if(L.length>10&&L.replace(/[^A-ZÀ-Ý]/g,'').length/L.length>0.6){p.push('título em CAIXA ALTA');n-=15;}
+  if(it.nFotos!=null){if(it.nFotos<3){p.push(`poucas fotos (${it.nFotos})`);n-=20;}else if(it.nFotos<5){p.push(`${it.nFotos} fotos`);n-=8;}}
+  return{nota:Math.max(0,n),problemas:p,vendeBem:(Number(it.vendas)||0)>=30};
+}
+const otLer={
+  async shopee(c,passo){const token=await shopeeGarantirTokenValido(c,'erp');return (await migLerShopeeAtivos(c,token,passo)).map(it=>({it,q:it.qualidade||{nota:100,problemas:[]}}));},
+  async ml(c,passo){const itens=await migLerMl(c,'active',passo);
+    return itens.map(i=>{const up=!!i.family_name;const it={id:i.id,nome:i.title,foto:(i.pictures?.[0]?.secure_url||i.thumbnail||'').replace(/^http:/,'https:'),vendas:i.sold_quantity||0,nFotos:(i.pictures||[]).length,
+      fotos:(i.pictures||[]).map(p=>p.id),up,tituloTravado:up||(i.sold_quantity||0)>0};return{it,q:otQualidade('ml',it)};});},
+  async tiktok(c,passo){passo('Lendo produtos do TikTok...');const r=await mig3Api(c,'produtos');if(!r.ok)throw new Error(r.erro);
+    return (r.produtos||[]).filter(p=>p.status==='ACTIVATE').map(p=>{const it={id:p.id,nome:p.titulo,foto:null,vendas:null};return{it,q:otQualidade('tiktok',it)};});}
+};
+// detalhe na hora de gerar: descrição atual, fotos atuais (ids/uris + url da capa) e formato
+const otDetalhe={
+  async shopee(c,x){const token=await shopeeGarantirTokenValido(c,'erp');const b=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:String(x.it.id)}}))?.response?.item_list?.[0];
+    return{desc:String(b?.description||''),fotos:b?.image?.image_id_list||[],capaUrl:b?.image?.image_url_list?.[0]||x.it.foto,ratio:b?.image?.image_ratio||'1:1',descBloqueada:b?.description_type==='extended'};},
+  async ml(c,x){const d=await migMl(c,`/items/${x.it.id}/description`);const capaUrl=x.it.foto;
+    const ratio=await otRatioDe(capaUrl);return{desc:String(d?.plain_text||''),fotos:x.it.fotos,capaUrl,ratio};},
+  async tiktok(c,x){const r=await mig3Api(c,'produto_ler',{id:x.it.id});if(!r.ok)throw new Error(r.erro);const p=r.produto;
+    if(p.product_status!=='ACTIVATE'||p.audit?.status==='AUDITING')throw new Error('produto em análise na TikTok — tente depois');
+    const capaUrl=p.main_images?.[0]?.urls?.[0];return{desc:pxTexto(p.description),descHtml:p.description,fotos:(p.main_images||[]).map(m=>m.uri),capaUrl,ratio:await otRatioDe(capaUrl)};}
+};
+async function otRatioDe(url){if(!url)return'1:1';try{const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const im=await createImageBitmap(b);return Math.abs(im.width/im.height-0.75)<0.05?'3:4':'1:1';}catch(e){return'1:1';}}
+// aplica no marketplace; devolve {ok, erro}. mud = {titulo?, descricao?, capa? (dataURL)}; x.det tem as fotos atuais
+const otAplicarMp={
+  async shopee(c,x,mud){const token=await shopeeGarantirTokenValido(c,'erp');const m={};
+    if(mud.titulo)m.item_name=mud.titulo.slice(0,120);if(mud.descricao)m.description=mud.descricao;
+    if(mud.capa){const up=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await vidJpeg(mud.capa),ratio:x.det.ratio});if(!up.ok||!up.image_id)return{ok:false,erro:'capa: '+up.erro};m.image={image_id_list:[up.image_id,...x.det.fotos.slice(1)],image_ratio:x.det.ratio};}
+    if(mud.fotosAntes)m.image={image_id_list:mud.fotosAntes,image_ratio:x.det.ratio};
+    const r=await dirShApi('produto_atualizar',c,token,{item_id:x.it.id,mudancas:m});return{ok:r.ok,erro:r.erro,fotos:m.image?.image_id_list};},
+  async ml(c,x,mud){const token=await mlGarantirTokenValido(c);const m={};
+    if(mud.titulo)m.title=mud.titulo.slice(0,60);if(mud.descricao)m.descricao=mud.descricao;
+    if(mud.capa){const up=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:await vidJpeg(mud.capa)},true);if(!up.ok)return{ok:false,erro:'capa: '+up.erro};m.pictures=[up.id,...x.det.fotos.slice(1)];}
+    if(mud.fotosAntes)m.pictures=mud.fotosAntes;
+    const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:x.it.id,mudancas:m},true);return{ok:r.ok,erro:r.erro,fotos:m.pictures};},
+  async tiktok(c,x,mud){const m={};if(mud.titulo)m.title=mud.titulo;if(mud.descricao)m.description=mud.descricao;
+    if(mud.capa){const up=await mig3Api(c,'produto_imagem',{base64:await vidJpeg(mud.capa),uso:'MAIN_IMAGE'});if(!up.ok)return{ok:false,erro:'capa: '+up.erro};m.main_images=[up.uri,...x.det.fotos.slice(1)];}
+    if(mud.fotosAntes)m.main_images=mud.fotosAntes;
+    const r=await mig3Api(c,'produto_editar',{id:x.it.id,mudancas:m});return{ok:r.ok,erro:r.erro,fotos:m.main_images};}
+};
 window.__otLer=async()=>{
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('otLoja').value);if(!c){showToast('Escolha o cliente.');return;}
-  const st=document.getElementById('otStatus'),passo=t=>st.textContent=t;ot.c=c;ot.itens=[];document.getElementById('otLista').innerHTML='';
-  try{const token=await shopeeGarantirTokenValido(c,'erp');const itens=await migLerShopeeAtivos(c,token,passo);
-    ot.itens=itens.map((it,i)=>{const q=it.qualidade||{nota:100,problemas:[]};const ruimTit=q.problemas.some(p=>/título/.test(p)),ruimDesc=q.problemas.some(p=>/descrição/.test(p));
-      return{i,it,q,tit:!q.vendeBem&&ruimTit,desc:!q.vendeBem&&ruimDesc&&it.descTipo!=='extended',capa:false,sug:null,st:''};}).sort((a,b)=>a.q.nota-b.q.nota);
+  const st=document.getElementById('otStatus'),passo=t=>st.textContent=t;ot.c=c;ot.mp=document.getElementById('otMp').value;ot.itens=[];document.getElementById('otLista').innerHTML='';
+  try{const lista=await otLer[ot.mp](c,passo);
+    ot.itens=lista.map(({it,q},i)=>{const ruimTit=q.problemas.some(p=>/título/.test(p)),ruimDesc=q.problemas.some(p=>/descrição/.test(p));
+      return{i,it,q,tit:!q.vendeBem&&ruimTit&&!it.tituloTravado,desc:!q.vendeBem&&ruimDesc&&it.descTipo!=='extended',capa:false,sug:null,st:''};}).sort((a,b)=>a.q.nota-b.q.nota);
     const ruins=ot.itens.filter(x=>x.q.nota<80).length;
-    passo(`${ot.itens.length} anúncios ativos · ${ruins} com nota abaixo de 80. Marque título e/ou descrição e clique em "Gerar sugestões".`);window.__otRender();
+    passo(`${ot.itens.length} anúncios ativos · ${ruins} com nota abaixo de 80.${ot.mp==='ml'?' No ML o título só muda em anúncio antigo sem venda (o resto vem bloqueado).':ot.mp==='tiktok'?' No TikTok a edição vai pra análise e a versão atual continua no ar até aprovar.':''} Marque o que melhorar e clique em "Gerar sugestões".`);window.__otRender();
   }catch(e){passo('Erro: '+e.message);console.error(e);}
 };
 window.__otRender=()=>{
   const el=document.getElementById('otLista');if(!el)return;const so=document.getElementById('otSoRuins')?.checked;
   const lista=ot.itens.filter(x=>!so||x.q.nota<80||x.sug||x.st);
   const cor=n=>n>=80?'var(--green)':n>=60?'var(--amber)':'var(--red)';
-  el.innerHTML=`<div class="cat-lista">${lista.map(x=>{const it=x.it;return `<div class="cat-item"><div class="cat-linha">
-      ${it.foto?`<img src="${esc(it.foto)}" loading="lazy">`:'<span class="cat-semfoto"></span>'}
-      <div class="cat-nome"><b>${esc(it.nome)}</b><small>${esc(x.q.problemas.join(' · ')||'sem problemas')} · ${it.vendas??0} vendas · ${it.visitas??0} visitas${x.q.vendeBem?' · <span style="color:var(--amber)">vende bem</span>':''}</small></div>
+  el.innerHTML=`<div class="cat-lista">${lista.map(x=>{const it=x.it;const travaTit=it.tituloTravado;return `<div class="cat-item"><div class="cat-linha">
+      ${it.foto?`<img src="${esc(it.foto)}" loading="lazy">`:`<span class="cat-semfoto" style="display:flex;align-items:center;justify-content:center;opacity:.7">${mpIco(ot.mp,22)}</span>`}
+      <div class="cat-nome"><b>${esc(it.nome)}</b><small>${esc(x.q.problemas.join(' · ')||'sem problemas')}${it.vendas!=null?` · ${it.vendas} vendas`:''}${it.visitas!=null?` · ${it.visitas} visitas`:''}${x.q.vendeBem?' · <span style="color:var(--amber)">vende bem</span>':''}</small></div>
       <div class="cat-num" style="min-width:56px"><small>Nota</small><b style="color:${cor(x.q.nota)}">${x.q.nota}</b></div>
-      <label style="font-size:12px;display:flex;gap:5px;align-items:center"><input type="checkbox" ${x.tit?'checked':''} onchange="window.__otMarca(${x.i},'tit',this.checked)"> Título</label>
+      <label style="font-size:12px;display:flex;gap:5px;align-items:center" ${travaTit?`title="${it.up?'Anúncio do modelo novo do ML: o título é montado pelo próprio ML':'Anúncio com venda: o ML não deixa trocar o título'}"`:''}><input type="checkbox" ${x.tit?'checked':''} ${travaTit?'disabled':''} onchange="window.__otMarca(${x.i},'tit',this.checked)"> Título</label>
       <label style="font-size:12px;display:flex;gap:5px;align-items:center" ${it.descTipo==='extended'?'title="Descrição com imagens — não dá pra trocar por texto"':''}><input type="checkbox" ${x.desc?'checked':''} ${it.descTipo==='extended'?'disabled':''} onchange="window.__otMarca(${x.i},'desc',this.checked)"> Descrição</label>
       <label style="font-size:12px;display:flex;gap:5px;align-items:center" title="Capa nova com IA a partir da foto atual (~R$ 0,37). Substitui só a 1ª foto."><input type="checkbox" ${x.capa?'checked':''} onchange="window.__otMarca(${x.i},'capa',this.checked)"> Capa (IA)</label>
       <div class="cat-num" style="min-width:130px"><small>Situação</small>${esc(x.st||'—')}${x.antes?` <a href="#" style="color:var(--gold)" onclick="event.preventDefault();window.__otDesfazer(${x.i})">desfazer</a>`:''}</div>
     </div>${x.sug?`<div style="padding:4px 12px 12px 76px;display:grid;gap:8px">
-      ${x.tit?`<div><small style="color:var(--text-dim)">Título — antes: ${esc(it.nome)}</small><input type="text" maxlength="120" value="${esc(x.sug.titulo)}" style="width:100%" onchange="window.__otEdita(${x.i},'titulo',this.value)"><small style="color:var(--text-dim)">${x.sug.titulo.length} caracteres</small></div>`:''}
-      ${x.desc&&x.sug.descricao!=null?`<div><small style="color:var(--text-dim)">Descrição nova (antes: ${it.descTam} caracteres)</small><textarea style="width:100%;min-height:130px" onchange="window.__otEdita(${x.i},'descricao',this.value)">${esc(x.sug.descricao)}</textarea></div>`:''}
-      ${x.capa&&x.sug.capa?`<div style="display:flex;gap:12px;align-items:flex-end"><div><small style="color:var(--text-dim)">Capa atual</small><br><img src="${esc(x.capaAtual||it.foto)}" style="width:120px;border-radius:8px;border:1px solid var(--border)"></div><div><small style="color:var(--gold)">Capa nova (${esc(x.ratio)})</small><br><img src="${x.sug.capa}" style="width:120px;border-radius:8px;border:2px solid var(--gold)"></div><button class="btn btn-ghost btn-sm" onclick="window.__otNovaCapa(${x.i})">Gerar outra</button></div>`:''}
+      ${x.tit&&x.sug.titulo?`<div><small style="color:var(--text-dim)">Título — antes: ${esc(it.nome)}</small><input type="text" maxlength="${ot.mp==='ml'?60:ot.mp==='tiktok'?255:120}" value="${esc(x.sug.titulo)}" style="width:100%" onchange="window.__otEdita(${x.i},'titulo',this.value)"><small style="color:var(--text-dim)">${x.sug.titulo.length} caracteres</small></div>`:''}
+      ${x.desc&&x.sug.descricao!=null?`<div><small style="color:var(--text-dim)">Descrição nova (antes: ${(x.det?.desc||'').length} caracteres)</small><textarea style="width:100%;min-height:130px" onchange="window.__otEdita(${x.i},'descricao',this.value)">${esc(x.sug.descricao)}</textarea></div>`:''}
+      ${x.capa&&x.sug.capa?`<div style="display:flex;gap:12px;align-items:flex-end"><div><small style="color:var(--text-dim)">Capa atual</small><br><img src="${esc(x.det?.capaUrl||it.foto)}" style="width:120px;border-radius:8px;border:1px solid var(--border)"></div><div><small style="color:var(--gold)">Capa nova (${esc(x.det?.ratio||'')})</small><br><img src="${x.sug.capa}" style="width:120px;border-radius:8px;border:2px solid var(--gold)"></div><button class="btn btn-ghost btn-sm" onclick="window.__otNovaCapa(${x.i})">Gerar outra</button></div>`:''}
     </div>`:''}</div>`;}).join('')}</div>`;
   const marc=ot.itens.filter(x=>x.tit||x.desc||x.capa),comSug=marc.filter(x=>x.sug&&!/^ok/.test(x.st));
   document.getElementById('otAcoes').innerHTML=ot.itens.length?`<div class="cat-acoes prod-acoes"><span><b>${marc.length}</b> anúncio(s) marcados · ${comSug.length} com sugestão pronta</span>
     <button class="btn btn-ghost btn-sm" onclick="window.__otGerar()">Gerar sugestões (IA)</button>
-    ${comSug.length?`<button class="btn btn-gold btn-sm" onclick="window.__otAplicar()">Aplicar ${comSug.length} na Shopee</button>`:''}</div>`:'';
+    ${comSug.length?`<button class="btn btn-gold btn-sm" onclick="window.__otAplicar()">Aplicar ${comSug.length} no ${OT_MP[ot.mp]}</button>`:''}</div>`:'';
 };
 window.__otMarca=(i,k,v)=>{const x=ot.itens.find(y=>y.i===i);if(x){x[k]=v;window.__otRender();}};
 window.__otEdita=(i,k,v)=>{const x=ot.itens.find(y=>y.i===i);if(x?.sug)x.sug[k]=v;};
-window.__otGerar=async()=>{
-  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&!x.sug).slice(0,25);if(!c||!fila.length){showToast('Marque título, descrição ou capa em algum anúncio.');return;}
-  const st=document.getElementById('otStatus');const token=await shopeeGarantirTokenValido(c,'erp');
-  const usados=new Set(ot.itens.map(x=>String(x.it.nome).toLowerCase()));
-  for(const [k,x] of fila.entries()){st.textContent=`Gerando ${k+1}/${fila.length}: ${x.it.nome.slice(0,50)}...`;x.st='gerando...';window.__otRender();
-    try{
-      const b=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:String(x.it.id)}}))?.response?.item_list?.[0];
-      const desc=String(b?.description||'');x.descAntes=desc;
-      x.imgIds=b?.image?.image_id_list||[];x.ratio=b?.image?.image_ratio||'1:1';x.capaAtual=b?.image?.image_url_list?.[0]||x.it.foto;
-      x.sug={titulo:x.it.nome,descricao:null,capa:null};
-      if(x.tit||x.desc){
-        const img=x.it.foto?await migJpg(x.it.foto).catch(()=>null):null;
-        const r=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`Título atual: ${x.it.nome}\nDescrição atual: ${desc.slice(0,1500)}`,marketplace:'shopee',imagem:img})}).then(r=>r.json());
-        let titulo=String(r.titulo||'').replace(/\s+/g,' ').trim();
-        if(x.tit){if(!titulo||usados.has(titulo.toLowerCase()))titulo=await migTitulo(`${x.it.nome}. ${desc.slice(0,300)}`,usados);else usados.add(titulo.toLowerCase());if(titulo)x.sug.titulo=titulo;}
-        const descricao=[...(r.bullets||[]),'',String(r.descricao||'').trim()].join('\n').trim().slice(0,4900);
-        if(x.desc)x.sug.descricao=descricao||desc;
-      }
-      if(x.capa)await otGerarCapa(x);
-      x.st='sugestão pronta';
-    }catch(e){x.st='erro: '+e.message.slice(0,60);}
-    window.__otRender();}
-  st.textContent='Confira as sugestões (dá pra editar) e clique em "Aplicar".';
-};
-// capa nova pela IA (capa_variacao) a partir da capa atual, no MESMO formato do anúncio (3:4 ou 1:1)
-// foto de outro site (CDN da Shopee) → baixa como blob antes (Image direto suja o canvas) e mantém a proporção
-async function otJpeg(url){const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);try{return await vidJpeg(u);}finally{URL.revokeObjectURL(u);}}
 async function otGerarCapa(x){
-  const atual=await otJpeg(x.capaAtual||x.it.foto);
-  const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',produto:`${x.sug?.titulo||x.it.nome}`,imagem:atual,opcao:'capa do anúncio',marketplace:'shopee',formato:x.ratio})}).then(r=>r.json());
+  const atual=await otJpeg(x.det?.capaUrl||x.it.foto);
+  const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',produto:`${x.sug?.titulo||x.it.nome}`,imagem:atual,opcao:'capa do anúncio',marketplace:ot.mp,formato:x.det?.ratio||'1:1'})}).then(r=>r.json());
   if(!r.imagem)throw new Error('capa: '+(r.erro||'a IA não gerou'));
   x.sug.capa=r.imagem;
 }
+// foto de outro site (CDN do marketplace) → baixa como blob antes (Image direto suja o canvas) e mantém a proporção
+async function otJpeg(url){const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);try{return await vidJpeg(u);}finally{URL.revokeObjectURL(u);}}
 window.__otNovaCapa=async i=>{const x=ot.itens.find(y=>y.i===i);if(!x)return;x.st='gerando outra capa...';window.__otRender();try{await otGerarCapa(x);x.st='sugestão pronta';}catch(e){x.st='erro: '+e.message.slice(0,60);}window.__otRender();};
+window.__otGerar=async()=>{
+  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&!x.sug).slice(0,25);if(!c||!fila.length){showToast('Marque título, descrição ou capa em algum anúncio.');return;}
+  const st=document.getElementById('otStatus');const usados=new Set(ot.itens.map(x=>String(x.it.nome).toLowerCase()));
+  for(const [k,x] of fila.entries()){st.textContent=`Gerando ${k+1}/${fila.length}: ${x.it.nome.slice(0,50)}...`;x.st='gerando...';window.__otRender();
+    try{
+      x.det=await otDetalhe[ot.mp](c,x);if(x.det.descBloqueada)x.desc=false;
+      if(!x.it.foto&&x.det.capaUrl)x.it.foto=x.det.capaUrl;
+      x.sug={titulo:null,descricao:null,capa:null};
+      if(x.tit||x.desc){
+        const img=x.det.capaUrl?await migJpg(x.det.capaUrl).catch(()=>null):null;
+        const r=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`Título atual: ${x.it.nome}\nDescrição atual: ${x.det.desc.slice(0,1500)}`,marketplace:ot.mp,imagem:img})}).then(r=>r.json());
+        if(x.tit){let t=String(r.titulo||'').replace(/\s+/g,' ').trim();if(ot.mp==='ml')t=cortarNaPalavraFront(t,60);
+          if(ot.mp==='shopee'&&(!t||usados.has(t.toLowerCase())))t=await migTitulo(`${x.it.nome}. ${x.det.desc.slice(0,300)}`,usados);
+          if(t){usados.add(t.toLowerCase());x.sug.titulo=t;}}
+        if(x.desc){const bul=(r.bullets||[]).map(b=>ot.mp==='ml'?String(b).replace(/^[✓✔•]\s*/,'- '):b);x.sug.descricao=[...bul,'',String(r.descricao||'').trim()].join('\n').trim().slice(0,4900)||x.det.desc;}
+      }
+      if(x.capa)await otGerarCapa(x);
+      x.st='sugestão pronta';
+    }catch(e){x.st='erro: '+e.message.slice(0,70);x.sug=null;}
+    window.__otRender();}
+  st.textContent='Confira as sugestões (dá pra editar) e clique em "Aplicar".';
+};
 window.__otAplicar=async()=>{
   const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&x.sug&&!/^ok/.test(x.st));if(!fila.length)return;
-  if(!await lbConfirmar(`Aplicar ${fila.length} anúncio(s) na Shopee da ${c.nome}?\nO texto antigo fica salvo — dá pra desfazer depois.`,{okTxt:'Aplicar'}))return;
-  const st=document.getElementById('otStatus');const token=await shopeeGarantirTokenValido(c,'erp');let ok=0;
+  if(!await lbConfirmar(`Aplicar ${fila.length} anúncio(s) no ${OT_MP[ot.mp]} da ${c.nome}?\nO que está lá hoje fica salvo — dá pra desfazer depois.${ot.mp==='tiktok'?'\nNo TikTok vai pra análise; a versão atual segue no ar até aprovar.':''}`,{okTxt:'Aplicar'}))return;
+  const st=document.getElementById('otStatus');let ok=0;
   for(const x of fila){st.textContent=`Aplicando ${x.it.nome.slice(0,50)}...`;
-    const mud={};if(x.tit)mud.item_name=x.sug.titulo.slice(0,120);if(x.desc&&x.sug.descricao)mud.description=x.sug.descricao;
-    const antes={item_name:x.it.nome,...(x.desc?{description:x.descAntes||''}:{})};
-    if(x.capa&&x.sug.capa&&x.imgIds?.length){ // sobe a capa nova e troca SÓ a 1ª foto (o resto, inclusive a guia de tamanhos, fica)
-      const up=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await vidJpeg(x.sug.capa),ratio:x.ratio});
-      if(up.ok&&up.image_id){mud.image={image_id_list:[up.image_id,...x.imgIds.slice(1)],image_ratio:x.ratio};antes.image={image_id_list:x.imgIds,image_ratio:x.ratio};}
-      else{x.st='erro na capa: '+String(up.erro||'').slice(0,60);window.__otRender();continue;}
-    }
-    if(Object.keys(mud).length===0){x.st='nada pra aplicar';continue;}
-    const r=await dirShApi('produto_atualizar',c,token,{item_id:x.it.id,mudancas:mud});
-    if(r.ok){ok++;x.st='ok: atualizado';x.antes=antes;if(mud.item_name)x.it.nome=mud.item_name;if(mud.image){x.imgIds=mud.image.image_id_list;x.capaAtual=x.sug.capa;}
-      await addDoc(collection(db,'historicoAnuncios'),{clienteId:c.id,cliente:c.nome,mp:'shopee',itemId:String(x.it.id),antes,depois:mud,usuario:currentUser||'',em:serverTimestamp()}).catch(()=>{});}
-    else x.st='erro: '+String(r.erro||'').slice(0,70);
+    const mud={};if(x.tit&&x.sug.titulo)mud.titulo=x.sug.titulo;if(x.desc&&x.sug.descricao)mud.descricao=x.sug.descricao;if(x.capa&&x.sug.capa)mud.capa=x.sug.capa;
+    if(!Object.keys(mud).length){x.st='nada pra aplicar';continue;}
+    const antes={...(mud.titulo?{titulo:x.it.nome}:{}),...(mud.descricao?{descricao:ot.mp==='tiktok'?x.det.descHtml:x.det.desc}:{}),...(mud.capa?{fotosAntes:x.det.fotos}:{})};
+    try{const r=await otAplicarMp[ot.mp](c,x,mud);
+      if(r.ok){ok++;x.st=ot.mp==='tiktok'?'ok: enviado pra análise':'ok: atualizado';x.antes=antes;if(mud.titulo)x.it.nome=mud.titulo;if(r.fotos)x.det.fotos=r.fotos;if(mud.capa)x.det.capaUrl=mud.capa;
+        await addDoc(collection(db,'historicoAnuncios'),{clienteId:c.id,cliente:c.nome,mp:ot.mp,itemId:String(x.it.id),antes:{...antes,descricao:antes.descricao?String(antes.descricao).slice(0,5000):undefined},depois:{titulo:mud.titulo||null,descricao:mud.descricao?mud.descricao.slice(0,5000):null,capa:!!mud.capa},usuario:currentUser||'',em:serverTimestamp()}).catch(()=>{});}
+      else x.st='erro: '+String(r.erro||'').slice(0,80);
+    }catch(e){x.st='erro: '+e.message.slice(0,80);}
     window.__otRender();}
-  await log(c.id,c.nome,'otimização de anúncios (Shopee)',`${ok} anúncio(s) com título/descrição/capa novos pela IA.`);
-  st.textContent=`Pronto: ${ok} de ${fila.length} atualizado(s). A Shopee pode levar alguns minutos pra mostrar.`;
+  await log(c.id,c.nome,`otimização de anúncios (${OT_MP[ot.mp]})`,`${ok} anúncio(s) com título/descrição/capa novos pela IA.`);
+  st.textContent=`Pronto: ${ok} de ${fila.length} aplicado(s).${ot.mp==='tiktok'?' No TikTok aparecem depois que a análise aprovar.':' Pode levar alguns minutos pra aparecer.'}`;
 };
 window.__otDesfazer=async i=>{
-  const x=ot.itens.find(y=>y.i===i);if(!x?.antes)return;if(!await lbConfirmar('Voltar o título/descrição antigos deste anúncio?',{okTxt:'Desfazer'}))return;
-  const token=await shopeeGarantirTokenValido(ot.c,'erp');const r=await dirShApi('produto_atualizar',ot.c,token,{item_id:x.it.id,mudancas:x.antes});
-  if(r.ok){x.it.nome=x.antes.item_name;if(x.antes.image)x.imgIds=x.antes.image.image_id_list;x.antes=null;x.sug=null;x.st='desfeito';}else x.st='erro ao desfazer: '+String(r.erro||'').slice(0,60);window.__otRender();
+  const x=ot.itens.find(y=>y.i===i);if(!x?.antes)return;if(!await lbConfirmar('Voltar o que estava antes neste anúncio?',{okTxt:'Desfazer'}))return;
+  const r=await otAplicarMp[ot.mp](ot.c,x,x.antes).catch(e=>({ok:false,erro:e.message}));
+  if(r.ok){if(x.antes.titulo)x.it.nome=x.antes.titulo;if(x.antes.fotosAntes)x.det.fotos=x.antes.fotosAntes;x.antes=null;x.sug=null;x.st='desfeito';}else x.st='erro ao desfazer: '+String(r.erro||'').slice(0,60);window.__otRender();
 };
 function cortarNaPalavraFront(t,max){t=String(t||'').replace(/\s+/g,' ').trim();if(t.length<=max)return t;const c=t.slice(0,max+1);return c.slice(0,c.lastIndexOf(' ')>20?c.lastIndexOf(' '):max).trim();}
 
