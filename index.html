@@ -1193,6 +1193,12 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
 .mp-pick label:has(input:checked){border-color:var(--gold);background:var(--gold-soft)}
 .mp-pick label:has(input:disabled){opacity:.4;cursor:not-allowed}
 .mp-pick input{accent-color:var(--gold);width:15px;height:15px;margin:0}
+.field .mp-pick label,.px-rota .mp-pick label{text-transform:none;letter-spacing:normal;font-size:13.5px;color:var(--text);margin:0}
+.prod-regras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}
+.prod-regras>div{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.prod-regras span{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:6px}
+.prod-regras ul{margin:0;padding-left:16px;font-size:12px;color:var(--text-dim);line-height:1.6}
+@media (max-width:860px){.prod-regras{grid-template-columns:1fr}}
 .px-rota{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
 .px-rota-col{display:flex;flex-direction:column;gap:7px}
 .px-rota-col>span{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
@@ -8920,7 +8926,11 @@ function cpRender(){
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&(temShopee(c)||temMl(c)||temTt(c))).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.dataset.pronto='1';
   el.innerHTML=`<div class="prod-steps" id="cpSteps"></div><div class="ia-gasto" style="font-size:12.5px;margin:0 0 10px"></div>
-  <div class="prod-nota"><b>Shopee:</b> preço cheio +30%, desconto fixo pelo preço de venda, marca Malaysia Collection, Shopee Ads ROAS 20. <b>Mercado Livre:</b> Clássico, preço de venda direto (7% de folga p/ promoções), marca = nome da loja, 1 anúncio por cor e tamanho, tabela de medidas (ABNT se não tiver medida). O Ads do ML continua manual (o ML não libera escrita de Ads pro nosso app). <b>TikTok:</b> preço pelas taxas do TikTok (mesmo valor a receber + cupom 3% e relâmpago 5%, cheio +30%), entra no desconto fixo do TikTok, guia de tamanhos automática; vai pra análise da TikTok.</div>
+  <div class="prod-regras">
+    <div><span>${mpIco('shopee',18)} <b>Shopee</b></span><ul><li>Venda no desconto fixo, cheio +30%</li><li>Marca Malaysia Collection</li><li>Shopee Ads ROAS 20</li></ul></div>
+    <div><span>${mpIco('ml',18)} <b>Mercado Livre</b></span><ul><li>Clássico, preço direto (+7% de folga)</li><li>1 anúncio por cor e tamanho</li><li>Tabela de medidas automática · Ads manual</li></ul></div>
+    <div><span>${mpIco('tiktok',18)} <b>TikTok Shop</b></span><ul><li>Taxas do TikTok + cupom e relâmpago</li><li>Desconto fixo, cheio +30%</li><li>Guia de tamanhos · passa por análise</li></ul></div>
+  </div>
   <div class="prod-box">
     <div class="prod-box-tit"><span class="prod-num">1</span><h3>Cliente, fotos e informações</h3></div>
     <div class="field"><label>Cliente</label><select id="cpLoja" onchange="window.__cpLojaPlat()"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${temShopee(c)?' · Shopee':''}${temMl(c)?' · ML':''}${temTt(c)?' · TikTok':''}</option>`).join('')}</select></div>
