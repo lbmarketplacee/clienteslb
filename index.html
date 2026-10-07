@@ -2042,11 +2042,13 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
             <div class="sub-grupo"><span class="sub-grupo-label">Produtos</span><div class="sub-grupo-btns">
               <button class="btn btn-gold btn-sm px-tab-btn active" data-pxtab="criar" onclick="window.__pxTab('criar')">Criar anúncio</button>
               <button class="btn btn-ghost btn-sm px-tab-btn" data-pxtab="migrar" onclick="window.__pxTab('migrar')">Migrar / copiar</button>
+              <button class="btn btn-ghost btn-sm px-tab-btn" data-pxtab="padronizar" onclick="window.__pxTab('padronizar')">Padronizar</button>
               <button class="btn btn-ghost btn-sm" onclick="window.__pxIrDiretor()" title="Abre a Central Criativa IA">Gerar fotos ↗</button>
             </div></div>
           </div>
           <div id="cpPainel"></div>
           <div id="pxPainel" class="hidden"></div>
+          <div id="ptPainel" class="hidden"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -10300,7 +10302,7 @@ function pxRenderLista(){
     ${cri?`<button class="btn btn-gold btn-sm" onclick="window.__pxPublicarShopee()">Publicar ${cri} na Shopee + desconto fixo + Ads</button>`:''}
     ${px.destinos.includes('tiktok')&&Object.keys(px.c?.tiktokDescontoPendente||{}).length?`<button class="btn btn-ghost btn-sm" onclick="window.__pxDescontoTT()">Pôr pendentes no desconto do TikTok</button>`:''}</div>`;
 }
-window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>{const on=b.dataset.pxtab===t;b.classList.toggle('active',on);b.classList.toggle('btn-gold',on);b.classList.toggle('btn-ghost',!on);});document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');if(t==='migrar')pxRender();};
+window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>{const on=b.dataset.pxtab===t;b.classList.toggle('active',on);b.classList.toggle('btn-gold',on);b.classList.toggle('btn-ghost',!on);});document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');if(t==='migrar')pxRender();if(t==='padronizar')ptRender();};
 window.__pxIrDiretor=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="diretor"]')?.click();};
 window.__pxSel=(i,d)=>{const x=px.linhas.find(y=>y.i===i);if(x){x.sel[d]=!x.sel[d];pxRenderLista();}};
 window.__pxCopiar=async()=>{
@@ -10341,6 +10343,87 @@ window.__pxDescontoTT=async()=>{
   for(const [pid,venda] of pend){st.textContent=`Desconto fixo do TikTok: ${pid}...`;const d=await mig3PorNoDesconto(c,pid,venda);res.push(`${pid}: ${d}`);
     if(d==='ok'){await updateDoc(doc(db,'clientes',c.id),{[`tiktokDescontoPendente.${pid}`]:deleteField()}).catch(()=>{});delete c.tiktokDescontoPendente[pid];}}
   st.innerHTML=res.map(esc).join('<br>');pxRenderLista();
+};
+/* ---------- Produtos → Padronizar (07/10/2026) ----------
+   TikTok: produto ativo FORA do desconto fixo não ganha oferta relâmpago (o robô pula). Regra do Lincoln: desconto fixo =
+   preço atual −5% (editável), sem mexer no preço cheio. Loja sem desconto fixo → cria "desconto fixo lb AAAAMMDD" (340 dias,
+   criação de FIXED_PRICE confirmada ao vivo na catolis). Desconto em % (DIRECT_DISCOUNT, do UpSeller) → só manual.
+   Shopee: o padronizar continua no Catálogo da Shopee (botão abaixo leva pra lá). */
+const pt={c:null,desc:null,linhas:[]};
+async function ptApi(c,acao,extra={}){const r=await fetch(TTP_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
+function ptRender(){
+  const el=document.getElementById('ptPainel');if(!el||el.dataset.pronto)return;
+  if(!isLincoln()){el.innerHTML='<div class="saude-vazio">Só Lincoln e Carol.</div>';return;}
+  el.dataset.pronto='1';
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.tiktokShopCipher&&c.tiktokAccessToken).sort((a,b)=>a.nome.localeCompare(b.nome));
+  el.innerHTML=`<div class="cat-barra" style="flex-wrap:wrap;gap:10px;margin-bottom:6px">
+      <b style="font-size:14px">TikTok Shop</b>
+      <select id="ptLoja"><option value="">Cliente…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select>
+      <button class="btn btn-gold btn-sm" onclick="window.__ptLer()">Ler produtos</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" onclick="window.__ptIrShopee()" title="O padronizar da Shopee fica no Catálogo (marca, preço cheio, desconto fixo, Ads)">Shopee: abrir Catálogo ↗</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Produto ativo <b>fora do desconto fixo</b> não ganha oferta relâmpago (o robô pula). Aqui ele entra no desconto fixo da loja com o <b>preço atual −5%</b> (dá pra mudar na linha). O preço cheio não muda.</p>
+    <div id="ptStatus" class="saude-vazio"></div><div id="ptLista"></div><div id="ptAcoes"></div>`;
+}
+window.__ptIrShopee=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="shopee"]')?.click();setTimeout(()=>window.__shopeeSubTab&&window.__shopeeSubTab('catalogo'),300);};
+window.__ptLer=async()=>{
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('ptLoja').value);if(!c){showToast('Escolha o cliente.');return;}
+  const st=document.getElementById('ptStatus'),passo=t=>st.textContent=t;Object.assign(pt,{c,desc:null,linhas:[]});
+  document.getElementById('ptLista').innerHTML='';document.getElementById('ptAcoes').innerHTML='';
+  try{
+    passo('Lendo produtos e promoções do TikTok...');
+    const [pr,ls]=await Promise.all([ptApi(c,'produtos'),ptApi(c,'listar')]);if(!pr.ok)throw new Error(pr.erro);if(!ls.ok)throw new Error(ls.erro);
+    const agora=Date.now()/1000;
+    // desconto da loja: o que vai mais longe entre os ativos/agendados (pelo TIPO, nunca pelo nome)
+    const descs=(ls.atividades||[]).filter(a=>['FIXED_PRICE','DIRECT_DISCOUNT'].includes(a.tipo)&&['ONGOING','NOT_START'].includes(a.status)).sort((a,b)=>(b.fim||0)-(a.fim||0));
+    const noDesc=new Set();for(const d of descs){const r=await ptApi(c,'detalhe',{id:d.id});for(const p of r.produtos||[])noDesc.add(p.id);}
+    pt.desc=descs.find(d=>d.tipo==='FIXED_PRICE')||descs[0]||null;
+    const ativos=(pr.produtos||[]).filter(p=>p.status==='ACTIVATE');
+    pt.linhas=ativos.filter(p=>!noDesc.has(p.id)).map((p,i)=>({i,p,preco:p.preco?Math.round(p.preco*0.95*100)/100:null,sel:(p.estoque||0)>0&&p.preco>0,st:''}));
+    const semEst=ativos.filter(p=>!(p.estoque>0)).length;
+    const d=pt.desc;
+    passo(`${ativos.length} produto(s) ativos · ${ativos.length-pt.linhas.length} no desconto · ${pt.linhas.length} fora${semEst?` · ${semEst} sem estoque`:''}. ${d?`Desconto da loja: "${d.titulo}" (${d.tipoTexto}, até ${new Date(d.fim*1000).toLocaleDateString('pt-BR')}).`:'A loja NÃO tem desconto fixo ativo — "Pôr no desconto" cria um de 340 dias.'}${d?.tipo==='DIRECT_DISCOUNT'?' É desconto em % (UpSeller): coloque os produtos pelo Seller Center ou crie um desconto fixo por preço.':''}`);
+    ptRenderLista();
+  }catch(e){passo('Erro: '+e.message);console.error(e);}
+};
+function ptRenderLista(){
+  const el=document.getElementById('ptLista');if(!el)return;
+  if(!pt.linhas.length){el.innerHTML='<div class="saude-vazio">Todos os produtos ativos já estão no desconto. ✓</div>';document.getElementById('ptAcoes').innerHTML='';return;}
+  el.innerHTML=`<div class="cat-lista">${pt.linhas.map(x=>`<div class="cat-item"><div class="cat-linha">
+      <input type="checkbox" ${x.sel?'checked':''} ${/^ok/.test(x.st)?'disabled':''} onclick="window.__ptSel(${x.i},this.checked)">
+      <div class="cat-nome"><b>${esc(x.p.titulo)}</b><small>${x.p.estoque||0} em estoque${!(x.p.estoque>0)?' · <span style="color:var(--amber)">sem estoque</span>':''}</small></div>
+      <div class="cat-num"><small>Preço atual</small>${x.p.preco?fmtR(x.p.preco):'—'}</div>
+      <div class="cat-num"><small>No desconto</small><input type="text" inputmode="decimal" value="${x.preco!=null?String(x.preco).replace('.',','):''}" style="width:80px" onchange="window.__ptPreco(${x.i},this.value)"></div>
+      <div class="cat-num" style="min-width:150px"><small>Situação</small>${esc(x.st||'—')}</div>
+    </div></div>`).join('')}</div>`;
+  const n=pt.linhas.filter(x=>x.sel&&!/^ok/.test(x.st)).length;const dir=pt.desc?.tipo==='DIRECT_DISCOUNT';
+  document.getElementById('ptAcoes').innerHTML=`<div class="cat-acoes"><span>${n} marcado(s)</span><button class="btn btn-gold btn-sm" ${dir&&pt.desc?'disabled title="Desconto em % só pelo Seller Center"':''} onclick="window.__ptAplicar()">${pt.desc?'Pôr marcados no desconto fixo':'Criar desconto fixo (340 dias) com os marcados'}</button></div>`;
+}
+window.__ptSel=(i,on)=>{const x=pt.linhas.find(y=>y.i===i);if(x)x.sel=on;ptRenderLista();};
+window.__ptPreco=(i,v)=>{const x=pt.linhas.find(y=>y.i===i);if(x)x.preco=lbValorBR(v);};
+window.__ptAplicar=async()=>{
+  const c=pt.c;const sel=pt.linhas.filter(x=>x.sel&&!/^ok/.test(x.st));if(!c||!sel.length){showToast('Marque ao menos 1 produto.');return;}
+  const ruim=sel.filter(x=>!(x.preco>0)||(x.p.preco&&x.preco>=x.p.preco));if(ruim.length){lbAvisar('Preço no desconto inválido (tem que ser menor que o preço atual):\n'+ruim.map(x=>x.p.titulo.slice(0,50)).join('\n'));return;}
+  if(!await lbConfirmar(`${pt.desc?`Colocar ${sel.length} produto(s) no desconto "${pt.desc.titulo}"`:`Criar o desconto fixo da ${c.nome} (340 dias) com ${sel.length} produto(s)`}?\nPreço no desconto = o da coluna "No desconto". O preço cheio não muda.`,{okTxt:'Aplicar'}))return;
+  const st=document.getElementById('ptStatus');const itens=sel.map(x=>({id:x.p.id,preco:x.preco}));
+  try{
+    if(pt.desc){
+      for(let i=0;i<itens.length;i+=20){st.textContent=`Colocando no desconto... ${Math.min(i+20,itens.length)}/${itens.length}`;
+        const lote=itens.slice(i,i+20);const r=await ptApi(c,'precos',{id:pt.desc.id,itens:lote});
+        for(const it of lote){const x=sel.find(y=>y.p.id===it.id);x.st=r.ok?`ok · ${fmtR(it.preco)}`:'erro: '+String(r.erro||'').slice(0,80);if(r.ok)x.sel=false;}ptRenderLista();}
+    }else{
+      st.textContent='Criando o desconto fixo...';const ini=Math.floor(Date.now()/1000)+300,hoje=new Date().toISOString().slice(0,10).replace(/-/g,'');
+      const r=await ptApi(c,'criar',{tipo:'FIXED_PRICE',titulo:`desconto fixo lb ${hoje}`,inicio:ini,fim:ini+340*86400,itens});if(!r.ok)throw new Error(r.erro);
+      const recus=new Set((r.recusados||[]).map(x=>String(x.id||x)));
+      for(const x of sel){x.st=recus.has(x.p.id)?'erro: recusado pela TikTok (preço)':`ok · ${fmtR(x.preco)}`;if(!recus.has(x.p.id))x.sel=false;}
+      await updateDoc(doc(db,'clientes',c.id),{tiktokDescontoFixoId:String(r.id),tiktokDescontoFixoNome:r.titulo,descontoFixoFimTiktok:new Date((ini+340*86400-3*3600)*1000).toISOString().slice(0,16)}).catch(()=>{});
+      pt.desc={id:String(r.id),titulo:r.titulo,tipo:'FIXED_PRICE',tipoTexto:'Desconto fixo (preço)',fim:ini+340*86400};ptRenderLista();
+    }
+    const ok=sel.filter(x=>/^ok/.test(x.st));
+    await log(c.id,c.nome,'TikTok: produtos no desconto fixo',`${ok.length} produto(s) no desconto "${pt.desc.titulo}": ${ok.map(x=>`${x.p.titulo.slice(0,40)} ${fmtR(x.preco)}`).join('; ')}`);
+    st.textContent=`Pronto: ${ok.length} de ${sel.length} no desconto fixo. O robô de relâmpago passa a incluir esses produtos na próxima rodada.`;
+  }catch(e){st.textContent='Erro: '+e.message;}
 };
 function cortarNaPalavraFront(t,max){t=String(t||'').replace(/\s+/g,' ').trim();if(t.length<=max)return t;const c=t.slice(0,max+1);return c.slice(0,c.lastIndexOf(' ')>20?c.lastIndexOf(' '):max).trim();}
 
