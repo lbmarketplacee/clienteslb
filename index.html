@@ -8908,7 +8908,8 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
       <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
       <div class="field"><label>SKU (base)</label><input type="text" id="dirShSku" value="${esc(skuSug)}"></div>
       ${temMl?`<div class="field"><label>Código de barras / EAN (opcional — sem ele o ML recebe "não tem código cadastrado")</label><input type="text" inputmode="numeric" id="dirShGtin" placeholder="7891234567890"></div>
-      <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>`:''}
+      <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>
+      <div class="field"><label>Registro Inmetro (opcional — eletroportáteis, vem no selo da caixa)</label><input type="text" id="dirShInmetro" placeholder="CE-EL-074/23-F05-ACERT"></div>`:''}
       <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
       <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" placeholder="25 x 35 x 5"></div>
     </div>
@@ -9032,6 +9033,8 @@ async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST'
 // medidas (régua BR / ficha do domínio), preço pela comissão real (ml_preco, 7% de folga), 1 anúncio por cor+tamanho (User
 // Products), marca = nome da loja, já ATIVOS. Usado pelo Criar Produtos e pela migração Shopee → ML.
 // spec: {familia, liq, peso, dim:[c,l,a], est (nº ou {'cor|tam':n}), u:{cores, tamanhos:[{tam,campos}], nome1, nome2, produto, material, medidas}, sku, descricao, fotosPorCor:{cor:[dataURL]}}
+// EAN-8/12/13/14: confere o dígito verificador (o ML recusa código errado)
+function eanValido(c){if(!/^\d{8}$|^\d{12,14}$/.test(c))return false;const d=[...c].map(Number);const chk=d.pop();const s=d.reverse().reduce((t,v,i)=>t+v*(i%2===0?3:1),0);return (10-s%10)%10===chk;}
 async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const {familia,liq,peso,dim,est,u,sku,descricao,fotosPorCor}=spec;const nItens=typeof est==='object'?Object.values(est).filter(n=>n>0).length:Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
   const token=await mlGarantirTokenValido(c);
@@ -9066,6 +9069,8 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   // → manda o EAN informado ou, sem ele, o motivo "O produto não tem código cadastrado" (senão o ML recusa)
   const aGtin=attrs.find(a=>a.id==='GTIN'),aMotivo=attrs.find(a=>a.id==='EMPTY_GTIN_REASON');const gtinCod=String(spec.gtin||'').replace(/\D/g,'');
   if(gtinCod.length>=8&&aGtin)extras.push({id:'GTIN',value_name:gtinCod});
+  // registro do Inmetro (eletroportáteis): campo próprio do ML, quando a categoria tem
+  if(String(spec.inmetro||'').trim()&&attrs.some(a=>a.id==='INMETRO_CERTIFICATION_REGISTRATION_NUMBER'))extras.push({id:'INMETRO_CERTIFICATION_REGISTRATION_NUMBER',value_name:String(spec.inmetro).trim().toUpperCase().slice(0,60)});
   else if(aGtin&&(aGtin.tags?.required||aGtin.tags?.conditional_required)&&aMotivo){const v=(aMotivo.values||[]).find(v=>/n[aã]o tem c[oó]digo cadastrado/i.test(v.name))||aMotivo.values?.[0];if(v)extras.push({id:'EMPTY_GTIN_REASON',value_id:String(v.id)});}
   const faltaReq=paraIA.filter(a=>a.id!=='GENDER'&&!extras.some(x=>x.id===a.id)).map(a=>a.nome);
 
@@ -9137,6 +9142,8 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
   const linhaMl=(t)=>{const old=st.querySelector('.cpMlStatus');const box=old||Object.assign(document.createElement('div'),{className:'cpMlStatus'});box.style.marginTop='10px';box.innerHTML=t;if(!old)st.appendChild(box);};
   const falta=[!c&&'cliente',!(c?.mlUserId&&c?.mlRefreshToken)&&'conexão do ML da loja',!(liq>0)&&'valor a receber',!familia&&'nome no ML',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
   if(falta.length){lbAvisar('Mercado Livre — falta\n'+falta.join(', '));return;}
+  const eanDig=String(document.getElementById('dirShGtin')?.value||'').replace(/\D/g,'');
+  if(eanDig&&!eanValido(eanDig)){lbAvisar(`Código de barras ${eanDig} inválido\nO último dígito não confere (EAN tem 13 dígitos). Confira na caixa ou deixe em branco.`);return;}
   const nItens=Math.max(1,u.cores.length)*Math.max(1,u.tamanhos.length);
   if(!depoisDaShopee&&!await lbConfirmar(`Criar no Mercado Livre\nLoja: ${c.nome}\nNome: ${familia}\n${nItens} anúncio(s) Clássico (1 por combinação de variação), ${est} un. cada, já ATIVOS\nMarca: ${c.nome} · preço pela comissão real da categoria${(u.plataformas||[]).includes('tiktok')?'\nDepois cria no TikTok Shop (vai pra análise).':''}`,{okTxt:'Criar no ML'}))return;
   if(!depoisDaShopee)st.innerHTML='';
@@ -9149,7 +9156,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
       const ia=dirFotoVar(cor);const realOk=fotoCor[cor]&&(sel.some(x=>x.img===fotoCor[cor])||!ia)?fotoCor[cor]:null; // real desmarcada lá em cima + tem foto da IA → só a da IA
       fotosPorCor[cor]=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
     }
-    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est,u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||''},linhaMl);
+    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est,u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||'',inmetro:document.getElementById('dirShInmetro')?.value||''},linhaMl);
     const pr={venda,comissaoPct};
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
