@@ -2086,6 +2086,20 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
           <div id="dirResultado" style="margin-top:24px"></div>
 
           <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+            <div class="cm-secao-titulo" style="margin-bottom:8px"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple);width:30px;height:30px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3z"/></svg></div><h3 style="font-size:16px">Vídeo do produto com IA <span class="cm-tool-tag ia" style="margin-left:6px">beta</span></h3></div>
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Escolha a foto (as reais e as geradas acima aparecem aqui), o movimento e a duração. Vídeo vertical 720p pelo Veo 3.1 Lite do Google — <b>~R$ 0,28 por segundo</b> (8 s ≈ R$ 2,20). Leva de 1 a 3 minutos. Se o Google bloquear, não cobra.</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><b style="font-size:13px">Foto de partida</b><button type="button" class="btn btn-ghost btn-sm" onclick="window.__vidFotos()">Atualizar fotos</button></div>
+            <div id="vidFotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-bottom:12px"></div>
+            <div class="form-row">
+              <div class="field"><label>Movimento</label><select id="vidEstilo"><option value="desfile">Desfile (modelo andando)</option><option value="giro">Giro (frente, lado e costas)</option><option value="detalhes">Detalhes do tecido</option><option value="lifestyle">Na rua (lifestyle)</option></select></div>
+              <div class="field" style="max-width:160px"><label>Duração</label><select id="vidDuracao" onchange="window.__vidCusto()"><option value="8">8 segundos</option><option value="6">6 segundos</option><option value="4">4 segundos</option></select></div>
+            </div>
+            <button type="button" class="btn btn-gold" id="vidGerarBtn" onclick="window.__vidGerar()">Gerar vídeo (~R$ 2,20)</button>
+            <div id="vidStatus" style="margin-top:10px;font-size:13px"></div>
+            <div id="vidResultado" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px"></div>
+          </div>
+
+          <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
             <div class="cm-secao-titulo" style="margin-bottom:14px"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple);width:30px;height:30px;font-size:14px">🏷️</div><h3 style="font-size:16px">Gerar Logotipo</h3></div>
             <div class="form-row">
               <div class="field"><label>Nome da loja</label><input type="text" id="logoNomeLoja" placeholder="Ex: Fada Varejista"></div>
@@ -8108,6 +8122,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
   if(alvo==='criarprodutos'){cpRender();pxRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
+  if(alvo==='diretor')window.__vidFotos?.();
 }));
 window.__irParaMarketing=(painel,subtab)=>{
   document.querySelector('[data-page="marketing"]')?.click();
@@ -8465,7 +8480,7 @@ function crmWhatsLink(numero){
    Toda chamada de IA (Central Criativa, Criar Produtos, logo, títulos, ficha técnica) passa por iaFetch:
    confere o limite diário ANTES de gerar foto, conta as fotos que vieram e grava o custo ESTIMADO em iaUso.
    Preço Google (gemini-3.1-flash-image 1K): US$ 0,067/foto; texto ~US$ 0,003/chamada. Config em configuracoes/ia. */
-const IA_US_FOTO=0.067,IA_US_TEXTO=0.003;
+const IA_US_FOTO=0.067,IA_US_TEXTO=0.003,IA_US_VIDEO_SEG=0.05; // vídeo: Veo 3.1 Lite 720p (preço oficial, 07/10/2026)
 let iaConfigCache=null;
 async function iaConfig(){if(iaConfigCache)return iaConfigCache;try{const d=await getDoc(doc(db,'configuracoes','ia'));iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5,...(d.exists()?d.data():{})};}catch(e){iaConfigCache={limiteDiarioBRL:30,modo:'avisar',cotacao:5.5};}return iaConfigCache;}
 const iaHoje=()=>lbHojeISO();
@@ -8474,18 +8489,21 @@ function iaPrevisaoFotos(corpo){if(!corpo)return 0;if(corpo.acao==='capa_variaca
 async function iaFetch(url,opts){
   let corpo=null;try{corpo=JSON.parse(opts?.body||'{}');}catch(e){}
   const prev=iaPrevisaoFotos(corpo);const cfg=await iaConfig();
-  if(prev>0){const g=await iaGasto().catch(()=>({dia:0}));const custoPrev=prev*IA_US_FOTO*cfg.cotacao;
+  const prevUSD=corpo?.acao==='video_iniciar'?(Number(corpo.duracao)||8)*IA_US_VIDEO_SEG:prev*IA_US_FOTO;
+  if(prevUSD>0){const g=await iaGasto().catch(()=>({dia:0}));const custoPrev=prevUSD*cfg.cotacao;
     if(cfg.limiteDiarioBRL>0&&g.dia+custoPrev>cfg.limiteDiarioBRL){
       const msg=`Limite diário de IA\nHoje já foram ~${fmtR(g.dia)} (limite ${fmtR(cfg.limiteDiarioBRL)}).\nEsta geração custa ~${fmtR(custoPrev)}.`;
       if(cfg.modo==='bloquear'){lbAvisar(msg+'\nBloqueado até amanhã.');throw new Error('limite diário de IA atingido');}
       if(!await lbConfirmar(msg+'\nGerar mesmo assim?',{okTxt:'Gerar'}))throw new Error('cancelado (limite diário de IA)');}}
   const r=await fetch(url,opts);
   r.clone().json().then(async d=>{
+    if(/^video_(status|baixar)$/.test(corpo?.acao||''))return; // vídeo é contado uma vez, no início
+    const videos=corpo?.acao==='video_iniciar'&&d?.ok?1:0;
     const fotos=Array.isArray(d?.fotos)?d.fotos.filter(f=>f.imagem).length:(d?.imagem?1:0);
-    const textos=prev===0||(!corpo?.acao&&Array.isArray(corpo?.imagens))?1:0;
-    if(!fotos&&!textos)return;
-    const usd=fotos*IA_US_FOTO+textos*IA_US_TEXTO;const hoje=iaHoje();
-    await addDoc(collection(db,'iaUso'),{dia:hoje,mes:hoje.slice(0,7),quando:serverTimestamp(),tipo:corpo?.acao||(url===IA_ENDPOINT?'texto':'funil'),fotos,textos,custoUSD:Math.round(usd*10000)/10000,custoBRL:Math.round(usd*cfg.cotacao*100)/100,usuario:currentUser||''});
+    const textos=!videos&&(prev===0||(!corpo?.acao&&Array.isArray(corpo?.imagens)))?1:0;
+    if(!fotos&&!textos&&!videos)return;
+    const usd=videos?Number(d.custoUSD)||0:fotos*IA_US_FOTO+textos*IA_US_TEXTO;const hoje=iaHoje();
+    await addDoc(collection(db,'iaUso'),{dia:hoje,mes:hoje.slice(0,7),quando:serverTimestamp(),tipo:corpo?.acao||(url===IA_ENDPOINT?'texto':'funil'),fotos,textos,videos,custoUSD:Math.round(usd*10000)/10000,custoBRL:Math.round(usd*cfg.cotacao*100)/100,usuario:currentUser||''});
     iaAtualizarPainel();
   }).catch(()=>{});
   return r;
@@ -9167,6 +9185,41 @@ window.__dirShPublicar=async()=>{
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
 };
 
+/* ---- Vídeo do produto com IA (Veo 3.1 Lite, 07/10/2026) — backend lb-diretor-criativo video_iniciar/status/baixar (login) ---- */
+const vid={fontes:[],sel:0};
+window.__vidFotos=()=>{
+  const geradas=[...document.querySelectorAll('#dirResultado img')].map(i=>i.src).filter(u=>/^data:image/.test(u));
+  vid.fontes=[...new Set([...(dirImagensB64||[]),...geradas])];if(vid.sel>=vid.fontes.length)vid.sel=0;
+  document.getElementById('vidFotos').innerHTML=vid.fontes.length?vid.fontes.map((u,i)=>`<img src="${u}" onclick="window.__vidSel(${i})" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid ${i===vid.sel?'var(--gold)':'var(--border)'}">`).join(''):'<div style="font-size:12.5px;color:var(--text-dim);grid-column:1/-1">Coloque as fotos lá em cima (ou gere o funil) e clique em "Atualizar fotos".</div>';
+};
+window.__vidSel=i=>{vid.sel=i;window.__vidFotos();};
+window.__vidCusto=()=>{const s=Number(document.getElementById('vidDuracao').value)||8;document.getElementById('vidGerarBtn').textContent=`Gerar vídeo (~${fmtR(s*IA_US_VIDEO_SEG*5.5)})`;};
+async function vidApi(corpo){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});return r;}
+// foto pro Veo: JPEG até 1280 px (a do funil vem em PNG grande)
+async function vidJpeg(u){const im=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});const e=Math.min(1,1280/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*e);cv.height=Math.round(im.height*e);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);return cv.toDataURL('image/jpeg',0.9);}
+window.__vidGerar=async()=>{
+  if(!vid.fontes.length)window.__vidFotos();
+  const foto=vid.fontes[vid.sel];if(!foto){lbAvisar('Escolha a foto de partida.');return;}
+  const st=document.getElementById('vidStatus'),btn=document.getElementById('vidGerarBtn');
+  const estilo=document.getElementById('vidEstilo').value,duracao=Number(document.getElementById('vidDuracao').value)||8;
+  const produto=(document.getElementById('dirDescricao')?.value||'').slice(0,400);
+  btn.disabled=true;const t0=Date.now();const tempo=()=>`${Math.round((Date.now()-t0)/1000)} s`;
+  try{
+    st.textContent='Enviando pro Google...';
+    const r=await (await vidApi({acao:'video_iniciar',imagem:await vidJpeg(foto),estilo,produto,duracao})).json();
+    if(!r.ok)throw new Error(r.erro||'não começou');
+    let s=null;for(let k=0;k<45;k++){st.textContent=`Gerando o vídeo... ${tempo()} (costuma levar 1 a 3 min)`;await new Promise(x=>setTimeout(x,8000));
+      s=await (await vidApi({acao:'video_status',operacao:r.operacao})).json();if(!s.ok)throw new Error(s.erro);if(s.pronto)break;}
+    if(!s?.pronto)throw new Error('o Google demorou demais — tente de novo');
+    if(s.erro)throw new Error(s.erro);
+    st.textContent='Baixando...';
+    const v=await vidApi({acao:'video_baixar',uri:s.uri});if(!v.ok||!/video/.test(v.headers.get('content-type')||''))throw new Error('não consegui baixar o vídeo');
+    const url=URL.createObjectURL(await v.blob());const nome=`lb-video-${estilo}-${Date.now()}.mp4`;
+    document.getElementById('vidResultado').insertAdjacentHTML('afterbegin',`<div style="width:220px"><video src="${url}" controls loop muted playsinline style="width:100%;border-radius:10px;border:1px solid var(--border)"></video><a class="btn btn-gold btn-sm" style="margin-top:6px;display:inline-block" href="${url}" download="${nome}">Baixar vídeo</a><div style="font-size:11px;color:var(--text-dim)">${esc(document.getElementById('vidEstilo').selectedOptions[0].textContent)} · ${duracao} s · ~${fmtR(r.custoUSD*5.5)}</div></div>`);
+    st.textContent=`Pronto em ${tempo()}. O Google guarda o vídeo só por 2 dias — baixe o que for usar.`;
+  }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
+  btn.disabled=false;
+};
 /* ---- Gerador de Logotipo (dentro da Central Criativa IA) ---- */
 document.getElementById('logoGerarBtn')?.addEventListener('click', async ()=>{
   const nomeLoja = document.getElementById('logoNomeLoja').value.trim();
