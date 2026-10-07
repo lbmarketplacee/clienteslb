@@ -1164,7 +1164,7 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
 .prod-hero p{margin:4px 0 0;font-size:13px;color:var(--text-dim)}
 .prod-hero-mps{margin-left:auto;display:flex;gap:6px}
 .prod-hero-mps span{width:30px;height:30px;border-radius:9px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
-.prod-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:22px}
+.prod-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:22px}
 .prod-tab{position:relative;display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;color:var(--text);font-family:inherit;transition:border-color .15s,transform .15s,background .15s;overflow:hidden}
 .prod-tab:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
 .prod-tab.active{border-color:var(--gold);background:linear-gradient(180deg,var(--gold-soft),transparent 70%)}
@@ -2105,12 +2105,14 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
           <div class="prod-tabs">
             <button type="button" class="prod-tab px-tab-btn active" data-pxtab="criar" onclick="window.__pxTab('criar')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span><b>Criar anúncio</b><small>Fotos e textos pela IA, preço no padrão LB e publicação nos 3 marketplaces.</small></span></button>
             <button type="button" class="prod-tab px-tab-btn" data-pxtab="migrar" onclick="window.__pxTab('migrar')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></span><span><b>Migrar / copiar</b><small>Leva produtos de um marketplace pro outro com o mesmo valor a receber.</small></span></button>
+            <button type="button" class="prod-tab px-tab-btn admin-only-vid hidden" data-pxtab="video" onclick="window.__pxTab('video')" style="grid-column:auto"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3z"/></svg></span><span><b>Vídeo IA</b><small>Vídeo do produto do cliente pelo Veo — vai pra pasta dele no Drive.</small></span></button>
             <button type="button" class="prod-tab px-tab-btn" data-pxtab="padronizar" onclick="window.__pxTab('padronizar')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span><b>Padronizar</b><small>Coloca no desconto fixo o que está fora e ajusta anúncios fora do padrão.</small></span></button>
           </div>
           <button type="button" class="prod-link" onclick="window.__pxIrDiretor()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Só gerar fotos ou vídeo? Abrir a Central Criativa IA ↗</button>
           <div id="cpPainel"></div>
           <div id="pxPainel" class="hidden"></div>
           <div id="ptPainel" class="hidden"></div>
+          <div id="pvPainel" class="hidden"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -2150,10 +2152,15 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
           <div id="vidSecao" class="hidden" style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
             <div class="cm-secao-titulo" style="margin-bottom:8px"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple);width:30px;height:30px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3z"/></svg></div><h3 style="font-size:16px">Vídeo do produto com IA <span class="cm-tool-tag ia" style="margin-left:6px">beta</span></h3></div>
             <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Escolha a foto (as reais e as geradas acima aparecem aqui), o movimento e a duração. Vídeo vertical 720p pelo Veo 3.1 Lite do Google — <b>~R$ 0,28 por segundo</b> (8 s ≈ R$ 2,20). Leva de 1 a 3 minutos. Se o Google bloquear, não cobra.</p>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><b style="font-size:13px">Foto de partida</b><button type="button" class="btn btn-ghost btn-sm" onclick="window.__vidFotos()">Atualizar fotos</button></div>
+            <div class="form-row">
+              <div class="field"><label>Cliente (o vídeo vai pra pasta dele no Drive)</label><select id="vidLoja"><option value="">— nenhum (Central Criativa) —</option></select></div>
+              <div class="field"><label>Produto (o que é, pra IA entender)</label><input type="text" id="vidProduto" placeholder="Ex.: Modelador de cachos automático Fogomax · Vestido longo floral"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><b style="font-size:13px">Foto de partida</b><button type="button" class="btn btn-ghost btn-sm" onclick="window.__vidFotos()">Atualizar fotos</button><label class="btn btn-ghost btn-sm" style="cursor:pointer">Enviar foto<input type="file" accept="image/*" style="display:none" onchange="window.__vidEnviar(this.files)"></label></div>
             <div id="vidFotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-bottom:12px"></div>
             <div class="form-row">
-              <div class="field"><label>Movimento</label><select id="vidEstilo"><option value="desfile">Desfile (modelo andando)</option><option value="giro">Giro (frente, lado e costas)</option><option value="detalhes">Detalhes do tecido</option><option value="lifestyle">Na rua (lifestyle)</option></select></div>
+              <div class="field" style="max-width:200px"><label>Tipo</label><select id="vidTipo" onchange="window.__vidTipo()"><option value="">Automático</option><option value="roupa">Roupa / moda</option><option value="produto">Produto (eletro, casa, beleza…)</option></select></div>
+              <div class="field"><label>Movimento</label><select id="vidEstilo"></select></div>
               <div class="field" style="max-width:160px"><label>Duração</label><select id="vidDuracao" onchange="window.__vidCusto()"><option value="8">8 segundos</option><option value="6">6 segundos</option><option value="4">4 segundos</option></select></div>
             </div>
             <button type="button" class="btn btn-gold" id="vidGerarBtn" onclick="window.__vidGerar()">Gerar vídeo (~R$ 2,20)</button>
@@ -3396,7 +3403,7 @@ window.__conectarDrive=conectarDrive;
    Fotos do funil, capa por variação, logo e vídeos. No Produtos (com cliente) → pasta do cliente/Mídias IA/AAAA-MM-DD;
    na Central Criativa → pasta-mãe/Central Criativa IA/AAAA-MM-DD. Drive desconectado → fica na fila e sobe ao conectar. */
 const midiaFila=[],midiaPastas={};let midiaAvisou=false,midiaEnviando=false;
-function midiaCliente(){const noProdutos=document.querySelector('[data-cmpainel="criarprodutos"].active');const id=noProdutos?(document.getElementById('dirShLoja')?.value||document.getElementById('cpLoja')?.value||document.getElementById('otLoja')?.value||''):'';return (clientesCache||[]).find(c=>c.id===id)||null;}
+function midiaCliente(){const vl=document.getElementById('vidLoja')?.value;if(vl&&document.getElementById('vidSecao')?.offsetParent){const cv=(clientesCache||[]).find(c=>c.id===vl);if(cv)return cv;}const noProdutos=document.querySelector('[data-cmpainel="criarprodutos"].active');const id=noProdutos?(document.getElementById('dirShLoja')?.value||document.getElementById('cpLoja')?.value||document.getElementById('otLoja')?.value||''):'';return (clientesCache||[]).find(c=>c.id===id)||null;}
 function midiaGuardar(itens){const c=midiaCliente();for(const it of itens)midiaFila.push({...it,cliId:c?.id||null,cliNome:c?.nome||null,dia:lbHojeISO()});midiaEnviar();}
 async function midiaPasta(cliId,cliNome,dia){const k=`${cliId||'cc'}|${dia}`;if(midiaPastas[k])return midiaPastas[k];
   const base=cliId?await garantirPastaCliente(cliId,cliNome):await garantirPastaMae();const nomeBase=cliId?'Mídias IA':'Central Criativa IA';
@@ -8209,7 +8216,8 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
   if(alvo==='criarprodutos'){const h=document.getElementById('prodHeroMps');if(h&&!h.innerHTML)h.innerHTML=['shopee','ml','tiktok'].map(m=>`<span title="${MP_L[m]}">${mpIco(m,17)}</span>`).join('');cpRender();pxRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
-  if(alvo==='diretor'){document.getElementById('vidSecao')?.classList.toggle('hidden',!isLincoln());if(isLincoln())window.__vidFotos?.();} // vídeo: só Lincoln e Carol
+  if(alvo==='diretor'){const v=document.getElementById('vidSecao');const r=document.getElementById('dirResultado');if(v&&r&&v.parentElement!==r.parentElement){r.after(v);v.style.marginTop='32px';v.style.borderTop='1px solid var(--border)';}v?.classList.toggle('hidden',!isLincoln());if(isLincoln()){vidPrepararCampos();window.__vidFotos?.();}} // vídeo: só Lincoln e Carol
+  if(alvo==='criarprodutos')document.querySelectorAll('.admin-only-vid').forEach(b=>b.classList.toggle('hidden',!isLincoln()));
 }));
 window.__irParaMarketing=(painel,subtab)=>{
   document.querySelector('[data-page="marketing"]')?.click();
@@ -9304,10 +9312,19 @@ window.__dirShPublicar=async()=>{
 const vid={fontes:[],sel:0};
 window.__vidFotos=()=>{
   const geradas=[...document.querySelectorAll('#dirResultado img')].map(i=>i.src).filter(u=>/^data:image/.test(u));
-  vid.fontes=[...new Set([...(dirImagensB64||[]),...geradas])];if(vid.sel>=vid.fontes.length)vid.sel=0;
+  vid.fontes=[...new Set([...(vid.extras||[]),...(dirImagensB64||[]),...geradas])];if(vid.sel>=vid.fontes.length)vid.sel=0;
   document.getElementById('vidFotos').innerHTML=vid.fontes.length?vid.fontes.map((u,i)=>`<img src="${u}" onclick="window.__vidSel(${i})" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid ${i===vid.sel?'var(--gold)':'var(--border)'}">`).join(''):'<div style="font-size:12.5px;color:var(--text-dim);grid-column:1/-1">Coloque as fotos lá em cima (ou gere o funil) e clique em "Atualizar fotos".</div>';
 };
 window.__vidSel=i=>{vid.sel=i;window.__vidFotos();};
+const VID_ESTILOS={roupa:[['desfile','Desfile (modelo andando)'],['giro','Giro (frente, lado e costas)'],['detalhes','Detalhes do tecido'],['lifestyle','Na rua (lifestyle)']],
+  produto:[['uso','Em uso (alguém usando o produto)'],['vitrine','Vitrine (produto girando)'],['detalhes','Detalhes (botões, display, acabamento)'],['lifestyle','No ambiente (casa/uso real)']]};
+const VID_ROUPA=/\b(vestido|blusa|blusinha|cal[cç]a|camis|saia|short|bermuda|conjunto|pijama|macac[aã]o|jaqueta|casaco|colete|body|cropped|biqu[ií]ni|mai[oô]|lingerie|suti[aã]|cueca|calcinha|meia|moletom|regata|jeans|alfaiataria|roupa|look)\w*/i;
+function vidTipoAtual(){const t=document.getElementById('vidTipo')?.value;if(t)return t;return VID_ROUPA.test(vidProdutoTxt())?'roupa':'produto';}
+function vidProdutoTxt(){return (document.getElementById('vidProduto')?.value||document.getElementById('dirDescricao')?.value||'').trim();}
+window.__vidTipo=()=>{const sel=document.getElementById('vidEstilo');if(!sel)return;const atual=sel.value;sel.innerHTML=VID_ESTILOS[vidTipoAtual()].map(([v,n])=>`<option value="${v}">${n}</option>`).join('');if([...sel.options].some(o=>o.value===atual))sel.value=atual;};
+window.__vidEnviar=async files=>{for(const f of Array.from(files||[]).filter(f=>f.type.startsWith('image/')).slice(0,3)){const d=await dirComprimirImagem(f);vid.extras=(vid.extras||[]);vid.extras.unshift(d);}vid.sel=0;window.__vidFotos();};
+function vidPrepararCampos(){const sel=document.getElementById('vidLoja');if(sel&&sel.options.length<=1)sel.innerHTML+= (clientesCache||[]).filter(c=>c.ativo!==false).sort((a,b)=>a.nome.localeCompare(b.nome)).map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+  document.getElementById('vidProduto')?.addEventListener('input',()=>{if(!document.getElementById('vidTipo').value)window.__vidTipo();});window.__vidTipo();}
 window.__vidCusto=()=>{const s=Number(document.getElementById('vidDuracao').value)||8;document.getElementById('vidGerarBtn').textContent=`Gerar vídeo (~${fmtR(s*IA_US_VIDEO_SEG*5.5)})`;};
 async function vidApi(corpo){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});return r;}
 // foto pro Veo: JPEG até 1280 px (a do funil vem em PNG grande)
@@ -9317,11 +9334,11 @@ window.__vidGerar=async()=>{
   const foto=vid.fontes[vid.sel];if(!foto){lbAvisar('Escolha a foto de partida.');return;}
   const st=document.getElementById('vidStatus'),btn=document.getElementById('vidGerarBtn');
   const estilo=document.getElementById('vidEstilo').value,duracao=Number(document.getElementById('vidDuracao').value)||8;
-  const produto=(document.getElementById('dirDescricao')?.value||'').slice(0,400);
+  const produto=vidProdutoTxt().slice(0,400);const tipo=vidTipoAtual();
   btn.disabled=true;const t0=Date.now();const tempo=()=>`${Math.round((Date.now()-t0)/1000)} s`;
   try{
     st.textContent='Enviando pro Google...';
-    const r=await (await vidApi({acao:'video_iniciar',imagem:await vidJpeg(foto),estilo,produto,duracao})).json();
+    const r=await (await vidApi({acao:'video_iniciar',imagem:await vidJpeg(foto),estilo,produto,duracao,tipo})).json();
     if(!r.ok)throw new Error(r.erro||'não começou');
     let s=null;for(let k=0;k<45;k++){st.textContent=`Gerando o vídeo... ${tempo()} (costuma levar 1 a 3 min)`;await new Promise(x=>setTimeout(x,8000));
       s=await (await vidApi({acao:'video_status',operacao:r.operacao})).json();if(!s.ok)throw new Error(s.erro);if(s.pronto)break;}
@@ -10471,7 +10488,8 @@ function pxRenderLista(){
     ${cri?`<button class="btn btn-gold btn-sm" onclick="window.__pxPublicarShopee()">Publicar ${cri} na Shopee + desconto fixo + Ads</button>`:''}
     ${px.destinos.includes('tiktok')&&Object.keys(px.c?.tiktokDescontoPendente||{}).length?`<button class="btn btn-ghost btn-sm" onclick="window.__pxDescontoTT()">Pôr pendentes no desconto do TikTok</button>`:''}</div>`;
 }
-window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.pxtab===t));document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');if(t==='migrar')pxRender();if(t==='padronizar')ptRender();};
+window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.pxtab===t));document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');document.getElementById('pvPainel').classList.toggle('hidden',t!=='video');if(t==='migrar')pxRender();if(t==='padronizar')ptRender();
+  if(t==='video'){const v=document.getElementById('vidSecao');document.getElementById('pvPainel').appendChild(v);v.classList.remove('hidden');v.style.marginTop='0';v.style.borderTop='0';vidPrepararCampos();window.__vidFotos();}};
 window.__pxIrDiretor=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="diretor"]')?.click();};
 window.__pxSel=(i,d)=>{const x=px.linhas.find(y=>y.i===i);if(x){x.sel[d]=!x.sel[d];pxRenderLista();}};
 window.__pxCopiar=async()=>{
