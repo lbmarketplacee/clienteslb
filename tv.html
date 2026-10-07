@@ -23,7 +23,7 @@ html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;color:var(
 .cena{position:absolute;left:56px;right:56px;top:140px;bottom:120px;opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s;pointer-events:none}
 .cena.on{opacity:1;transform:none}
 .rodape{position:absolute;left:0;right:0;bottom:0;height:90px;border-top:1px solid var(--borda);display:flex;align-items:center;overflow:hidden;background:#0d0c0a}
-.rodape b{flex:0 0 auto;padding:0 28px;font-family:Oswald;font-size:24px;color:var(--gold);border-right:1px solid var(--borda);height:100%;display:flex;align-items:center;gap:10px}
+.rodape b{position:relative;z-index:2;background:#0d0c0a;flex:0 0 auto;padding:0 28px;font-family:Oswald;font-size:24px;color:var(--gold);border-right:1px solid var(--borda);height:100%;display:flex;align-items:center;gap:10px}
 .ticker{display:flex;gap:70px;white-space:nowrap;font-size:23px;color:var(--dim);animation:rolar 70s linear infinite;padding-left:40px}
 .ticker span em{font-style:normal;color:var(--txt);font-weight:600}
 @keyframes rolar{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -47,7 +47,7 @@ html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;color:var(
 .fala:after{content:'';position:absolute;left:-18px;bottom:40px;border:16px solid transparent;border-right-color:var(--gold)}
 .fala small{display:block;color:var(--gold);font-size:17px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
 #bancada{position:absolute;left:860px;top:0;width:520px;height:620px}
-.peca{position:absolute;left:40px;top:60px;width:440px;border-radius:26px;background:var(--card2);border:2px solid var(--borda);padding:30px;opacity:0;transform:scale(.6) translateX(-200px) rotate(-8deg)}
+.peca{position:absolute;left:20px;top:40px;width:480px;border-radius:26px;background:var(--card2);border:2px solid var(--borda);padding:30px;opacity:0;transform:scale(.6) translateX(-200px) rotate(-8deg)}
 .peca.montando{animation:monta 1.6s cubic-bezier(.2,.9,.3,1.2) forwards}
 .peca.pronta{opacity:1;transform:none;border-color:var(--gold);box-shadow:0 0 60px rgba(212,169,74,.25)}
 @keyframes monta{0%{opacity:0;transform:scale(.6) translateX(-260px) rotate(-10deg)}60%{opacity:1;transform:scale(1.04) translateX(10px) rotate(2deg)}100%{opacity:1;transform:none}}
@@ -55,7 +55,7 @@ html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;color:var(
 .peca h4{font-family:Oswald;font-size:40px;font-weight:600;line-height:1.1}
 .peca p{font-size:24px;color:var(--dim);margin-top:10px;line-height:1.35}
 .peca .num{font-family:Oswald;font-size:76px;color:var(--gold);margin-top:8px;line-height:1}
-.carimbo{position:absolute;right:26px;bottom:26px;border:4px solid var(--verde);color:var(--verde);font-family:Oswald;font-size:30px;padding:4px 16px;border-radius:10px;transform:rotate(-12deg) scale(2);opacity:0}
+.carimbo{position:absolute;right:24px;top:28px;border:4px solid var(--verde);color:var(--verde);font-family:Oswald;font-size:30px;padding:4px 16px;border-radius:10px;transform:rotate(-12deg) scale(2);opacity:0}
 .peca.pronta .carimbo{animation:carimba .45s .2s forwards}
 @keyframes carimba{to{opacity:1;transform:rotate(-12deg) scale(1)}}
 .barras{display:flex;gap:12px;align-items:flex-end;height:120px;margin-top:16px}.barras i{flex:1;background:linear-gradient(var(--gold2),var(--gold3));border-radius:8px 8px 0 0;height:10%;transition:height 1s}
@@ -204,7 +204,7 @@ function contadores(){
   const tick=eventos.filter(e=>e.ev).slice(0,12).map(e=>`<span>${hora(e.quando)} · <em>${esc(e.ev.fala)}</em></span>`).join('');$('ticker').innerHTML=tick+tick;
 }
 function ouvirRobos(){
-  onSnapshot(query(collection(db,'automacaoLog'),orderBy('quando','desc'),limit(60)),snap=>{
+  onSnapshot(query(collection(db,'automacaoLog'),orderBy('quando','desc'),limit(250)),snap=>{
     const primeira=!vistos.size;
     eventos=snap.docs.map(d=>{const l=d.data();return{id:d.id,quando:ms(l.quando),ev:descreve(l)};});
     for(const e of eventos){if(!vistos.has(e.id)){vistos.add(e.id);if(!primeira&&e.ev&&Date.now()-e.quando<10*60000){fila.push(e);if(atual!==0)mostrar(0);}}}
