@@ -2085,7 +2085,7 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
           <button class="btn btn-gold" id="dirGerarBtn">Gerar</button>
           <div id="dirResultado" style="margin-top:24px"></div>
 
-          <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+          <div id="vidSecao" class="hidden" style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
             <div class="cm-secao-titulo" style="margin-bottom:8px"><div class="cm-secao-ico" style="background:var(--purple-bg);color:var(--purple);width:30px;height:30px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3z"/></svg></div><h3 style="font-size:16px">Vídeo do produto com IA <span class="cm-tool-tag ia" style="margin-left:6px">beta</span></h3></div>
             <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.55">Escolha a foto (as reais e as geradas acima aparecem aqui), o movimento e a duração. Vídeo vertical 720p pelo Veo 3.1 Lite do Google — <b>~R$ 0,28 por segundo</b> (8 s ≈ R$ 2,20). Leva de 1 a 3 minutos. Se o Google bloquear, não cobra.</p>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><b style="font-size:13px">Foto de partida</b><button type="button" class="btn btn-ghost btn-sm" onclick="window.__vidFotos()">Atualizar fotos</button></div>
@@ -8122,7 +8122,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
   if(alvo==='criarprodutos'){cpRender();pxRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
-  if(alvo==='diretor')window.__vidFotos?.();
+  if(alvo==='diretor'){document.getElementById('vidSecao')?.classList.toggle('hidden',!isLincoln());if(isLincoln())window.__vidFotos?.();} // vídeo: só Lincoln e Carol
 }));
 window.__irParaMarketing=(painel,subtab)=>{
   document.querySelector('[data-page="marketing"]')?.click();
