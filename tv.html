@@ -20,8 +20,8 @@ html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;color:var(
 .relogio{margin-left:auto;text-align:right;font-family:Oswald;font-size:48px;font-weight:600}
 .relogio small{display:block;font-family:Inter;font-size:16px;color:var(--dim);font-weight:500}
 .pontos{display:flex;gap:10px;margin-left:30px}.pontos i{width:14px;height:14px;border-radius:50%;background:var(--borda);transition:.3s}.pontos i.on{background:var(--gold);width:40px;border-radius:8px}
-.cena{position:absolute;left:56px;right:56px;top:140px;bottom:120px;opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s;pointer-events:none}
-.cena.on{opacity:1;transform:none}
+.cena{position:absolute;left:56px;right:56px;top:140px;bottom:120px;opacity:0;visibility:hidden;transform:translateY(18px);transition:opacity .7s,transform .7s,visibility 0s .7s;pointer-events:none}
+.cena.on{opacity:1;visibility:visible;transform:none;transition:opacity .7s,transform .7s,visibility 0s 0s}
 .rodape{position:absolute;left:0;right:0;bottom:0;height:90px;border-top:1px solid var(--borda);display:flex;align-items:center;overflow:hidden;background:#0d0c0a}
 .rodape b{position:relative;z-index:2;background:#0d0c0a;flex:0 0 auto;padding:0 28px;font-family:Oswald;font-size:24px;color:var(--gold);border-right:1px solid var(--borda);height:100%;display:flex;align-items:center;gap:10px}
 .ticker{display:flex;gap:70px;white-space:nowrap;font-size:23px;color:var(--dim);animation:rolar 70s linear infinite;padding-left:40px}
