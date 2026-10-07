@@ -8907,6 +8907,8 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     <div class="form-row">
       <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
       <div class="field"><label>SKU (base)</label><input type="text" id="dirShSku" value="${esc(skuSug)}"></div>
+      ${temMl?`<div class="field"><label>Código de barras / EAN (opcional — sem ele o ML recebe "não tem código cadastrado")</label><input type="text" inputmode="numeric" id="dirShGtin" placeholder="7891234567890"></div>
+      <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>`:''}
       <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
       <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" placeholder="25 x 35 x 5"></div>
     </div>
@@ -9060,6 +9062,11 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const skuMl=String(sku||'').trim();
   for(const id of ['PART_NUMBER','MPN','SELLER_SKU'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
   // o que ficou SEM valor depois da IA e dos padrões (o ML pode preencher sozinho — conferir no anúncio)
+  // código de barras: categoria com GTIN obrigatório/condicional (ex.: Modeladores de Cachos MLB44076, visto ao vivo 07/10/2026)
+  // → manda o EAN informado ou, sem ele, o motivo "O produto não tem código cadastrado" (senão o ML recusa)
+  const aGtin=attrs.find(a=>a.id==='GTIN'),aMotivo=attrs.find(a=>a.id==='EMPTY_GTIN_REASON');const gtinCod=String(spec.gtin||'').replace(/\D/g,'');
+  if(gtinCod.length>=8&&aGtin)extras.push({id:'GTIN',value_name:gtinCod});
+  else if(aGtin&&(aGtin.tags?.required||aGtin.tags?.conditional_required)&&aMotivo){const v=(aMotivo.values||[]).find(v=>/n[aã]o tem c[oó]digo cadastrado/i.test(v.name))||aMotivo.values?.[0];if(v)extras.push({id:'EMPTY_GTIN_REASON',value_id:String(v.id)});}
   const faltaReq=paraIA.filter(a=>a.id!=='GENDER'&&!extras.some(x=>x.id===a.id)).map(a=>a.nome);
 
   if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
@@ -9115,7 +9122,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
     const estC=typeof est==='object'?Number(est[`${cor}|${t.tam||''}`]??est[cor]??0):est;
     if(typeof est==='object'&&!(estC>0))continue; // migração: combinação sem estoque (ou fora das 30 com mais estoque) não vira anúncio
-    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:descricao||''};
+    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:String(spec.marca||'').trim()||c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:descricao||''};
     const r=await dirMl('ml_criar_item',{access_token:token,item},true);
     if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
   }}
@@ -9142,7 +9149,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
       const ia=dirFotoVar(cor);const realOk=fotoCor[cor]&&(sel.some(x=>x.img===fotoCor[cor])||!ia)?fotoCor[cor]:null; // real desmarcada lá em cima + tem foto da IA → só a da IA
       fotosPorCor[cor]=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
     }
-    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est,u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor},linhaMl);
+    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est,u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||''},linhaMl);
     const pr={venda,comissaoPct};
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
