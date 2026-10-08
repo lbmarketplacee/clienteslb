@@ -53,6 +53,10 @@ input:focus,textarea:focus,select:focus{border-color:var(--gold-dim);}
 .cob-resumo{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
 .cob-resumo div{flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:11.5px;color:var(--text-dim)}
 .cob-resumo b{display:block;font-family:'Oswald',sans-serif;font-size:20px;font-weight:500;color:var(--text)}
+.cob-acoes{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 4px}.cob-acoes span{font-size:11.5px;color:var(--text-dim)}
+.cob-plano{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;font-size:13px}
+.cob-alerta{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.35);border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cob-sem{margin-top:14px}.cob-sem>b{display:block;font-size:12px;color:var(--gold);margin-bottom:4px}
 .cob-resumo b.ok{color:var(--green)}.cob-resumo b.atr{color:var(--red)}.cob-resumo b.aviso{color:var(--gold)}
 .cob-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--text-dim)}
 .cob-box>b{color:var(--text);font-size:12.5px}
@@ -5916,8 +5920,52 @@ async function renderDashCobrancas(){
   el.innerHTML=`<div class="panel-head"><h3>Cobranças</h3><span class="p-sub">Asaas · atualizado ${new Date(asaasSituacaoEm).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} <a href="#" onclick="event.preventDefault();asaasCarregar(true).then(renderDashCobrancas)" style="color:var(--gold)">atualizar</a></span></div>
     <div class="cob-resumo"><div><b class="ok">${emDia}</b>em dia</div><div><b>${pend}</b>pendentes</div><div><b class="atr">${atr.length}</b>atrasados</div><div><b class="atr">${fmtR(totalAtr)}</b>em atraso</div>${semAssin.length?`<div title="${esc(semAssin.map(c=>c.nome).join(', '))}"><b class="aviso">${semAssin.length}</b>sem cobrança no Asaas</div>`:''}</div>
     ${atr.map(({c,s})=>`<div class="cm-item" style="flex-wrap:wrap;gap:10px"><span class="nome">${esc(c.nome)}<div style="font-size:11px;color:var(--text-dim);font-weight:400">${s.atrasadas.length} cobrança(s) · venc. ${s.atrasadas.map(a=>fmtDataBR(a.vencimento)).join(', ')} · último pagamento ${s.ultimoPagamento?fmtDataBR(s.ultimoPagamento.data):'nenhum na janela'}</div></span><b style="color:var(--red)">${fmtR(s.valorAtrasado)}</b>${s.atrasadas[0]?.link?`<a class="btn btn-ghost btn-sm" href="${esc(s.atrasadas[0].link)}" target="_blank" rel="noopener">Boleto</a>`:''}</div>`).join('')}
-    ${semAssin.length?`<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Sem cobrança no Asaas: ${esc(semAssin.map(c=>`${c.nome} (${fmtR(c.mensalidade)})`).join(' · '))}</div>`:''}`;
+    <div class="cob-acoes"><button type="button" class="btn btn-gold btn-sm" onclick="window.__cobWaSimular()">Avisar pelo WhatsApp da LB</button><span>Lembrete 3 dias antes e no dia; cobrança com 1 e 5 dias de atraso. Mostra antes de enviar.</span></div>
+    <div id="cobWaPlano"></div>
+    ${semAssin.length?`<div class="cob-sem"><b>Sem cobrança no Asaas (${semAssin.length})</b>${semAssin.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}<div style="font-size:11px;color:var(--text-dim);font-weight:400">${fmtR(c.mensalidade)}/mês${c.diaVencimento?` · dia ${c.diaVencimento}`:' · sem dia de vencimento'}</div></span><button type="button" class="btn btn-ghost btn-sm" onclick="window.__asaasCriar('${c.id}')">Criar no Asaas</button></div>`).join('')}</div>`:''}`;
 }
+// ===== Cobrança da mensalidade pelo WhatsApp da LB (08/10/2026) — backend lb-shopee-gmv/api/cobranca-whatsapp.js
+const COBRANCA_WA_API='https://lb-shopee-gmv.vercel.app/api/cobranca-whatsapp';
+const COB_TIPO={vence_em_3:'vence em 3 dias',vence_hoje:'vence hoje',atraso_1:'1 dia de atraso',atraso_5:'5 dias de atraso'};
+async function cobWaChamar(corpo){
+  const r=await fetch(COBRANCA_WA_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});
+  return r.json();
+}
+window.__cobWaSimular=async()=>{
+  const box=document.getElementById('cobWaPlano');if(!box)return;
+  box.innerHTML='<div class="empty-state" style="padding:12px">Conferindo cobranças de hoje...</div>';
+  try{
+    const sit=await asaasCarregar(true);if(!sit)throw new Error('não consegui ler o Asaas');
+    const [d,t]=await Promise.all([cobWaChamar({acao:'simular',situacao:sit}),cobWaChamar({acao:'status_templates'})]);
+    if(!d.ok)throw new Error(d.erro||'erro');
+    const tpl=(t.templates||[]).filter(x=>/^cobranca_lb_/.test(x.name));
+    const aprovados=tpl.length>=2&&tpl.every(x=>x.status==='APPROVED');
+    const vai=d.plano.filter(p=>p.enviar),fora=d.plano.filter(p=>!p.enviar);
+    const tplTxt=!tpl.length?`<div class="cob-alerta">As mensagens de cobrança ainda não foram criadas na Meta. <button type="button" class="btn btn-ghost btn-sm" onclick="window.__cobWaTemplates()">Criar mensagens na Meta</button></div>`
+      :!aprovados?`<div class="cob-alerta">Mensagens na Meta: ${tpl.map(x=>`${esc(x.name)} = ${esc(x.status)}`).join(' · ')}. Só dá pra enviar depois de aprovadas.</div>`:'';
+    box.innerHTML=`<div class="cob-plano">${tplTxt}
+      <b>Hoje: ${vai.length} aviso(s) pra enviar</b>${vai.map(p=>`<div class="cm-item"><span class="nome">${esc(p.cliente)}<div style="font-size:11px;color:var(--text-dim);font-weight:400">${COB_TIPO[p.tipo]} · ${fmtR(p.valor)} · venc. ${fmtDataBR(p.vencimento)} · ${esc(p.telefone)}</div></span></div>`).join('')||'<div style="font-size:12px;color:var(--text-dim);padding:6px 0">Nenhum cliente no dia de aviso hoje.</div>'}
+      ${fora.length?`<details style="margin-top:8px"><summary style="font-size:12px;color:var(--text-dim);cursor:pointer">${fora.length} sem envio (ver motivo)</summary>${fora.map(p=>`<div style="font-size:12px;padding:3px 0">${esc(p.cliente)} — ${COB_TIPO[p.tipo]}: <span style="color:var(--gold)">${esc(p.motivo)}</span></div>`).join('')}</details>`:''}
+      ${vai.length&&aprovados?`<button type="button" class="btn btn-gold btn-sm" style="margin-top:10px" onclick="window.__cobWaEnviar()">Enviar ${vai.length} aviso(s) agora</button>`:''}</div>`;
+  }catch(e){box.innerHTML=`<div class="cob-alerta">Não deu pra conferir: ${esc(e.message)}</div>`;}
+};
+window.__cobWaEnviar=async()=>{
+  if(!await lbConfirmar('Enviar avisos de cobrança\nOs clientes da lista recebem a mensagem pelo WhatsApp da LB agora. Cada aviso vai uma vez só.',{okTxt:'Enviar'}))return;
+  try{
+    const d=await cobWaChamar({acao:'enviar',situacao:await asaasCarregar()});
+    if(!d.ok)throw new Error(d.erro||'erro');
+    const erros=d.resultados.filter(r=>r.enviar&&r.ok===false);
+    lbAvisar(`Avisos de cobrança enviados: ${d.enviados}${erros.length?`\n\nFalharam:\n${erros.map(r=>`${r.cliente}: ${r.erro}`).join('\n')}`:''}`);
+    window.__cobWaSimular();
+  }catch(e){lbAvisar('Não foi possível enviar\n'+e.message);}
+};
+window.__cobWaTemplates=async()=>{
+  if(!await lbConfirmar('Criar as mensagens de cobrança na Meta\nDuas mensagens (lembrete e atraso) vão pra análise da Meta (categoria Utilidade). Depois de aprovadas, o botão de envio libera.',{okTxt:'Criar'}))return;
+  try{const d=await cobWaChamar({acao:'criar_templates'});
+    lbAvisar('Mensagens enviadas pra análise da Meta\n'+(d.templates||[]).map(t=>`${t.nome}: ${t.ok?(t.resposta?.status||'enviado'):(t.resposta?.error?.error_user_msg||t.resposta?.error?.message||'erro')}`).join('\n'));
+    window.__cobWaSimular();
+  }catch(e){lbAvisar('Erro\n'+e.message);}
+};
 window.asaasCarregar=asaasCarregar;window.renderDashCobrancas=renderDashCobrancas;
 async function renderAsaasCliente(c){
   const el=document.getElementById('asaasClienteBox');if(!el)return;
