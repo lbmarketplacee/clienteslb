@@ -10785,7 +10785,9 @@ window.__otAplicar=async()=>{
     const antes={...(mud.titulo?{titulo:x.it.nome}:{}),...(mud.descricao?{descricao:ot.mp==='tiktok'?x.det.descHtml:x.det.desc}:{}),...(mud.capa&&ot.mp!=='ml'?{fotosAntes:x.det.fotos}:{})};
     try{const r=await otAplicarMp[ot.mp](c,x,mud);if(ot.mp==='ml'&&x.det.fotosAntesPorItem)antes.fotosAntes=x.det.fotosAntesPorItem;
       if(r.ok){ok++;x.st=ot.mp==='tiktok'?'ok: enviado pra análise':ot.mp==='ml'&&(x.it.anuncios||[]).length>1?`ok: ${(x.it.anuncios||[]).length} anúncios da família`:'ok: atualizado';x.antes=antes;if(mud.titulo)x.it.nome=mud.titulo;if(r.fotos)x.det.fotos=r.fotos;if(mud.capa)x.det.capaUrl=mud.capa;
-        await addDoc(collection(db,'historicoAnuncios'),{clienteId:c.id,cliente:c.nome,mp:ot.mp,itemId:String(x.it.id),antes:{...antes,descricao:antes.descricao?String(antes.descricao).slice(0,5000):undefined},depois:{titulo:mud.titulo||null,descricao:mud.descricao?mud.descricao.slice(0,5000):null,capa:!!mud.capa},usuario:currentUser||'',em:serverTimestamp()}).catch(()=>{});}
+        // o Firestore recusa campo undefined ("Unsupported field value: undefined") — limpa antes de gravar
+        const antesHist=JSON.parse(JSON.stringify({...antes,descricao:antes.descricao?String(antes.descricao).slice(0,5000):null}));
+        await addDoc(collection(db,'historicoAnuncios'),{clienteId:c.id,cliente:c.nome,mp:ot.mp,itemId:String(x.it.id),antes:antesHist,depois:{titulo:mud.titulo||null,descricao:mud.descricao?mud.descricao.slice(0,5000):null,capa:!!mud.capa},usuario:currentUser||'',em:serverTimestamp()}).catch(e=>console.warn('[histórico do anúncio]',e));}
       else x.st='erro: '+String(r.erro||'').slice(0,80);
     }catch(e){x.st='erro: '+e.message.slice(0,80);}
     window.__otRender();}
