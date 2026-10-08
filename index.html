@@ -1168,6 +1168,14 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
 .prod-hero p{margin:4px 0 0;font-size:13px;color:var(--text-dim)}
 .prod-hero-mps{margin-left:auto;display:flex;gap:6px}
 .prod-hero-mps span{width:30px;height:30px;border-radius:9px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.pp-badge{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.pp-link{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}.pp-link input{flex:1;min-width:240px;font-size:12px}
+.pp-item{border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;background:var(--bg)}
+.pp-item.novo{border-color:var(--gold)}.pp-cab{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.pp-fotos{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.pp-fotos a{position:relative}.pp-fotos img{width:78px;height:104px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.pp-fotos span{position:absolute;left:3px;bottom:3px;font-size:10px;background:rgba(0,0,0,.65);color:#fff;border-radius:4px;padding:1px 4px}
+.pp-dados{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 16px;font-size:12.5px}.pp-dados b{color:var(--text-dim);font-weight:500}
+.pp-st{font-size:11px;border-radius:10px;padding:2px 8px;border:1px solid var(--border)}.pp-st.novo{color:var(--gold);border-color:var(--gold)}.pp-st.andamento{color:#5aa9e6;border-color:#5aa9e6}.pp-st.feito{color:var(--green);border-color:var(--green)}
 .prod-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:22px}
 .prod-tab{position:relative;display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;color:var(--text);font-family:inherit;transition:border-color .15s,transform .15s,background .15s;overflow:hidden}
 .prod-tab:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
@@ -2110,6 +2118,7 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
             <button type="button" class="prod-tab px-tab-btn active" data-pxtab="criar" onclick="window.__pxTab('criar')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span><b>Criar anúncio</b><small>Fotos e textos pela IA, preço no padrão LB e publicação nos 3 marketplaces.</small></span></button>
             <button type="button" class="prod-tab px-tab-btn" data-pxtab="migrar" onclick="window.__pxTab('migrar')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></span><span><b>Migrar / copiar</b><small>Leva produtos de um marketplace pro outro com o mesmo valor a receber.</small></span></button>
             <button type="button" class="prod-tab px-tab-btn admin-only-vid hidden" data-pxtab="video" onclick="window.__pxTab('video')" style="grid-column:auto"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3z"/></svg></span><span><b>Vídeo IA</b><small>Vídeo do produto do cliente pelo Veo — vai pra pasta dele no Drive.</small></span></button>
+            <button type="button" class="prod-tab px-tab-btn" data-pxtab="pedidos" onclick="window.__pxTab('pedidos')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span><b>Pedidos dos clientes <span id="ppBadge" class="pp-badge hidden"></span></b><small>Link pra cliente mandar produto (fotos, preço, estoque) sem usar o grupo.</small></span></button>
             <button type="button" class="prod-tab px-tab-btn" data-pxtab="padronizar" onclick="window.__pxTab('padronizar')"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span><b>Padronizar</b><small>Coloca no desconto fixo o que está fora e ajusta anúncios fora do padrão.</small></span></button>
           </div>
           <button type="button" class="prod-link" onclick="window.__pxIrDiretor()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Só gerar fotos ou vídeo? Abrir a Central Criativa IA ↗</button>
@@ -2117,6 +2126,7 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
           <div id="pxPainel" class="hidden"></div>
           <div id="ptPainel" class="hidden"></div>
           <div id="pvPainel" class="hidden"></div>
+          <div id="ppPainel" class="hidden"></div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="diretor">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -3184,7 +3194,7 @@ function startListeners(){if(unsubC)return;
   if(ehRevisor()){document.body.classList.add('modo-revisor');
     unsubC=onSnapshot(doc(db,"clientes",CLIENTE_DEMO),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();},e=>console.error('[revisor]',e));
     setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('tiktokshop');setTimeout(()=>window.__tiktokSubTab('promocoes'),700);}catch(e){}},900);
-    return;}startTarefasListener();startCadastrosListener();unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
+    return;}startTarefasListener();startCadastrosListener();setTimeout(()=>{try{ppIniciar();}catch(e){}},1500);unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
 /* NAV */
 /* ===== MENU MOBILE (abrir/fechar) ===== */
 function fecharMenuMobile(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
@@ -10599,7 +10609,103 @@ function pxRenderLista(){
     ${cri?`<button class="btn btn-gold btn-sm" onclick="window.__pxPublicarShopee()">Publicar ${cri} na Shopee + desconto fixo + Ads</button>`:''}
     ${px.destinos.includes('tiktok')&&Object.keys(px.c?.tiktokDescontoPendente||{}).length?`<button class="btn btn-ghost btn-sm" onclick="window.__pxDescontoTT()">Pôr pendentes no desconto do TikTok</button>`:''}</div>`;
 }
-window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.pxtab===t));document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');document.getElementById('pvPainel').classList.toggle('hidden',t!=='video');if(t==='migrar')pxRender();if(t==='padronizar')ptRender();
+/* ---------- Produtos → Pedidos dos clientes (08/10/2026) ----------
+   Link por cliente (clientes.linkProdutosToken) → clienteslb/produto.html?t=TOKEN. A cliente manda fotos, descrição, variações,
+   preço (quanto quer receber) e estoque; cai em `pedidosProduto` + tarefa pro responsável (backend lb-shopee-gmv/api/pedido-produto.js).
+   A equipe revisa aqui e abre no Criar anúncio já preenchido. Nada é publicado sem a equipe. */
+let ppCache=[],ppUnsub=null,ppFiltro='abertos';
+const PP_ST={novo:'Novo',andamento:'Em andamento',feito:'Publicado',descartado:'Descartado'};
+function ppIniciar(){
+  if(ppUnsub)return;
+  ppUnsub=onSnapshot(query(collection(db,'pedidosProduto'),orderBy('criadoEm','desc'),limit(150)),snap=>{
+    ppCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const n=ppCache.filter(p=>p.status==='novo').length;const b=document.getElementById('ppBadge');if(b){b.textContent=n;b.classList.toggle('hidden',!n);}
+    if(!document.getElementById('ppPainel')?.classList.contains('hidden'))ppLista();
+  },e=>console.warn('[pedidosProduto]',e));
+}
+const ppUrl=c=>c?.linkProdutosToken?`https://sistema.lbmarketplace.com.br/produto.html?t=${c.linkProdutosToken}`:'';
+function ppRender(){
+  ppIniciar();
+  const el=document.getElementById('ppPainel');
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false).sort((a,b)=>a.nome.localeCompare(b.nome));
+  el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><h3>Link de cadastro de produto da cliente</h3></div>
+    <p class="prod-nota" style="margin:0 0 12px">Cada cliente tem o <b>seu próprio link</b> — o pedido já chega com o nome da loja certa. A cliente manda fotos, descrição, cores/tamanhos, quanto quer receber e estoque. Cai aqui embaixo e vira tarefa pro responsável da loja. Nada vai pro ar sem a equipe.</p>
+    <div class="pp-link"><div class="field" style="margin:0;min-width:220px"><label>Cliente</label><select id="ppLoja" onchange="window.__ppLoja()"><option value="">Escolha…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${c.linkProdutosToken?' · link ativo':''}</option>`).join('')}</select></div>
+      <input type="text" id="ppUrl" readonly placeholder="Escolha a cliente">
+      <button class="btn btn-gold btn-sm" id="ppCopiar" onclick="window.__ppCopiar()" disabled>Copiar link</button>
+      <button class="btn btn-ghost btn-sm" id="ppWpp" onclick="window.__ppWpp()" disabled>Mandar no WhatsApp</button>
+      <button class="btn btn-ghost btn-sm" id="ppNovo" onclick="window.__ppGerar()" disabled>Gerar link</button></div>
+    <div style="font-size:11.5px;color:var(--text-dim);margin-top:8px">"Gerar link" de novo cria outro e o antigo para de funcionar (use se o link vazar).</div></div>
+    <div class="prod-box" style="margin-top:14px"><div class="pp-cab"><h3 style="margin:0">Pedidos recebidos</h3>
+      <div class="chip-toggle-group">${[['abertos','Abertos'],['feito','Publicados'],['todos','Todos']].map(([k,n])=>`<button type="button" class="${ppFiltro===k?'on':''}" onclick="window.__ppFiltro('${k}')">${n}</button>`).join('')}</div></div>
+    <div id="ppLista"></div></div>`;
+  ppLista();
+}
+function ppLista(){
+  const el=document.getElementById('ppLista');if(!el)return;
+  const l=ppCache.filter(p=>ppFiltro==='todos'||(ppFiltro==='feito'?p.status==='feito':['novo','andamento'].includes(p.status)));
+  if(!l.length){el.innerHTML=`<div class="saude-vazio" style="margin-top:12px">${ppFiltro==='abertos'?'Nenhum pedido aberto. Mande o link pra cliente aí em cima.':'Nada aqui.'}</div>`;return;}
+  const mpN={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok',shein:'Shein'};
+  el.innerHTML=l.map(p=>{const x=p.produto||{};const quando=p.criadoEm?.toDate?p.criadoEm.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    const est=x.estoqueUnico!=null?`${x.estoqueUnico} un.`:Object.entries(x.estoque||{}).map(([k,v])=>`${k.split('|').filter(Boolean).join(' ')}: ${v}`).join(' · ');
+    return `<div class="pp-item ${p.status==='novo'?'novo':''}"><div class="pp-cab"><div><b>${esc(x.nome)}</b> <span class="pp-st ${p.status}">${PP_ST[p.status]||p.status}</span><div style="font-size:12px;color:var(--text-dim)">${esc(p.cliente)} · ${quando} · ${(x.marketplaces||[]).map(m=>mpN[m]||m).join(', ')}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${p.status!=='feito'?`<button class="btn btn-gold btn-sm" onclick="window.__ppAbrir('${p.id}')">Abrir no Criar anúncio</button>`:''}
+        ${p.status==='novo'?`<button class="btn btn-ghost btn-sm" onclick="window.__ppStatus('${p.id}','andamento')">Pegar</button>`:''}
+        ${p.status!=='feito'?`<button class="btn btn-ghost btn-sm" onclick="window.__ppStatus('${p.id}','feito')">Marcar publicado</button>`:''}
+        ${p.status!=='descartado'&&p.status!=='feito'?`<button class="btn btn-ghost btn-sm" onclick="window.__ppStatus('${p.id}','descartado')">Descartar</button>`:''}</div></div>
+      <div class="pp-fotos">${(x.fotos||[]).map(f=>`<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" loading="lazy">${f.cor?`<span>${esc(f.cor)}</span>`:''}</a>`).join('')}</div>
+      <div style="font-size:13px;white-space:pre-wrap;margin-bottom:8px">${esc(x.descricao)}</div>
+      <div class="pp-dados">
+        <div><b>Receber por peça:</b> ${fmtR(x.liquido)}${x.precoAtual?` (vende hoje a ${fmtR(x.precoAtual)})`:''}</div>
+        ${x.cores?.length?`<div><b>Cores:</b> ${esc(x.cores.join(', '))}</div>`:''}${x.tamanhos?.length?`<div><b>Tamanhos:</b> ${esc(x.tamanhos.join(', '))}</div>`:''}
+        <div><b>Estoque:</b> ${esc(est)}</div>${x.material?`<div><b>Material:</b> ${esc(x.material)}</div>`:''}${x.sku?`<div><b>SKU:</b> ${esc(x.sku)}</div>`:''}
+        ${x.peso?`<div><b>Peso:</b> ${x.peso} kg</div>`:''}${x.embalagem?`<div><b>Embalagem:</b> ${esc(x.embalagem)}</div>`:''}${x.codigoBarras?`<div><b>EAN:</b> ${esc(x.codigoBarras)}</div>`:''}
+      </div>${x.medidas?`<div style="font-size:12.5px;margin-top:8px;white-space:pre-wrap"><b style="color:var(--text-dim);font-weight:500">Medidas:</b>\n${esc(x.medidas)}</div>`:''}
+      ${x.observacoes?`<div style="font-size:12.5px;margin-top:8px;color:var(--gold)">Obs. da cliente: ${esc(x.observacoes)}</div>`:''}
+      ${p.atualizadoPor?`<div style="font-size:11px;color:var(--text-dim);margin-top:8px">${esc(PP_ST[p.status]||'')} por ${esc(nome(p.atualizadoPor))}</div>`:''}</div>`;}).join('');
+}
+window.__ppFiltro=f=>{ppFiltro=f;ppRender();};
+window.__ppLoja=()=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('ppLoja').value);document.getElementById('ppUrl').value=ppUrl(c);
+  ['ppCopiar','ppWpp'].forEach(i=>document.getElementById(i).disabled=!c?.linkProdutosToken);const g=document.getElementById('ppNovo');g.disabled=!c;g.textContent=c?.linkProdutosToken?'Gerar novo link':'Gerar link';
+  if(c&&!c.linkProdutosToken)window.__ppGerar(true);};
+window.__ppGerar=async(semPerguntar)=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('ppLoja').value);if(!c)return;
+  if(c.linkProdutosToken&&!semPerguntar&&!await lbConfirmar(`Gerar um novo link pra ${c.nome}?\nO link antigo para de funcionar.`,{okTxt:'Gerar'}))return;
+  const t=Array.from(crypto.getRandomValues(new Uint8Array(18)),b=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'[b%64]).join('');
+  await updateDoc(doc(db,'clientes',c.id),{linkProdutosToken:t,linkProdutosCriadoEm:Date.now(),linkProdutosCriadoPor:currentUser});c.linkProdutosToken=t;
+  await log(c.id,c.nome,'link de cadastro de produto',c.linkProdutosToken?'link gerado':'');window.__ppLoja();showToast('Link pronto — copie e mande pra cliente.');};
+window.__ppCopiar=()=>{window.__copy(document.getElementById('ppUrl').value);showToast('Link copiado.');};
+window.__ppWpp=()=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('ppLoja').value);if(!c)return;
+  const tel=String(c.whatsappAvisos||c.whatsappContrato||'').replace(/\D/g,'');
+  const txt=`Oi! Agora, pra cadastrar produto novo, é só usar este link (é exclusivo da sua loja): ${ppUrl(c)}\nManda as fotos, a descrição, cores/tamanhos, quanto quer receber e o estoque. A gente monta o anúncio e te avisa quando estiver no ar. 😊`;
+  window.open(`https://wa.me/${tel?(tel.startsWith('55')?tel:'55'+tel):''}?text=${encodeURIComponent(txt)}`,'_blank');};
+window.__ppStatus=async(id,st)=>{const p=ppCache.find(x=>x.id===id);if(!p)return;
+  if(st==='descartado'&&!await lbConfirmar(`Descartar o pedido "${p.produto?.nome}"?`,{okTxt:'Descartar'}))return;
+  await updateDoc(doc(db,'pedidosProduto',id),{status:st,atualizadoPor:auth.currentUser?.email||currentUser,atualizadoEm:Date.now()});
+  if(st==='feito'||st==='descartado'){const t=(todasTarefasCache||[]).find(x=>x.pedidoProdutoId===id&&x.coluna!=='feito');if(t)await updateDoc(doc(db,'tarefas',t.id),{coluna:'feito',concluidoEm:serverTimestamp(),concluidoPor:currentUser}).catch(()=>{});}
+  showToast(PP_ST[st]);};
+// Abre no Criar anúncio já com cliente, fotos (até 5), descrição, variações e medidas; o resto (preço, estoque, SKU...) fica num quadro de referência
+window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;const x=p.produto||{};
+  if(p.status==='novo')window.__ppStatus(id,'andamento');
+  window.__pxTab('criar');await new Promise(r=>setTimeout(r,200));
+  const sel=document.getElementById('cpLoja');if(sel){sel.value=p.clienteId;window.__cpLojaPlat?.();}
+  for(const [m,idc] of [['shopee','cpPlatShopee'],['ml','cpPlatMl'],['tiktok','cpPlatTiktok']]){const ck=document.getElementById(idc);if(ck&&!ck.disabled)ck.checked=(x.marketplaces||[]).includes(m);}
+  document.getElementById('cpDesc').value=[x.nome,x.descricao,x.material?`Material: ${x.material}`:'',x.observacoes?`Obs.: ${x.observacoes}`:''].filter(Boolean).join('\n');
+  if(document.getElementById('cpMaterial'))document.getElementById('cpMaterial').value=x.material||'';
+  if(x.cores?.length){document.getElementById('cpVar1').value='Cor';document.getElementById('cpVar1Opcoes').value=x.cores.join(', ');}
+  if(x.tamanhos?.length){document.getElementById(x.cores?.length?'cpVar2':'cpVar1').value='Tamanho';document.getElementById(x.cores?.length?'cpVar2Opcoes':'cpVar1Opcoes').value=x.tamanhos.join(', ');}
+  else if(x.cores?.length)document.getElementById('cpVar2').value='';
+  if(x.medidas)document.getElementById('cpTam').value=x.medidas;
+  cpFotos.length=0;showToast('Baixando as fotos da cliente...');
+  const fotos=[...(x.fotos||[]).filter(f=>!f.cor),...(x.fotos||[]).filter(f=>f.cor)].slice(0,5);
+  for(const f of fotos){try{const b=await (await fetch(f.url)).blob();cpFotos.push(await dirComprimirImagem(new File([b],'foto.jpg',{type:b.type||'image/jpeg'})));}catch(e){console.warn('[foto pedido]',e);}}
+  cpPrev();
+  const est=x.estoqueUnico!=null?`${x.estoqueUnico} un.`:Object.entries(x.estoque||{}).map(([k,v])=>`${k.split('|').filter(Boolean).join(' ')}: ${v}`).join(' · ');
+  let box=document.getElementById('cpPedidoRef');if(!box){box=document.createElement('div');box.id='cpPedidoRef';document.getElementById('cpPainel').prepend(box);}
+  box.innerHTML=`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:14px;border-color:var(--gold)"><b>Pedido da cliente: ${esc(p.cliente)} — ${esc(x.nome)}</b>
+    <span style="font-size:12.5px">Receber por peça: <b>${fmtR(x.liquido)}</b> · Estoque: ${esc(est)}${x.sku?` · SKU: ${esc(x.sku)}`:''}${x.peso?` · Peso: ${x.peso} kg`:''}${x.embalagem?` · Embalagem: ${esc(x.embalagem)}`:''}${x.codigoBarras?` · EAN: ${esc(x.codigoBarras)}`:''}</span>
+    <span style="font-size:11.5px;color:var(--text-dim)">Use esses valores no passo 3 (valor a receber, estoque, SKU, peso). Fotos: as 5 primeiras foram carregadas${(x.fotos||[]).length>5?` — as outras ${(x.fotos||[]).length-5} estão no pedido (aba Pedidos dos clientes)`:''}. Depois de publicar, marque o pedido como publicado.</span></div>`;
+  window.scrollTo({top:document.getElementById('cpPainel').getBoundingClientRect().top+scrollY-80,behavior:'smooth'});};
+window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.pxtab===t));document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');document.getElementById('pvPainel').classList.toggle('hidden',t!=='video');document.getElementById('ppPainel').classList.toggle('hidden',t!=='pedidos');if(t==='pedidos')ppRender();if(t==='migrar')pxRender();if(t==='padronizar')ptRender();
   if(t==='video'){const v=document.getElementById('vidSecao');document.getElementById('pvPainel').appendChild(v);v.classList.remove('hidden');v.style.marginTop='0';v.style.borderTop='0';vidPrepararCampos();window.__vidFotos();}};
 window.__pxIrDiretor=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="diretor"]')?.click();};
 window.__pxSel=(i,d)=>{const x=px.linhas.find(y=>y.i===i);if(x){x.sel[d]=!x.sel[d];pxRenderLista();}};

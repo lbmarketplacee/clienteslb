@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadastro de Produto — LB Marketplace</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ec;--card:#fff;--text:#1d1a14;--dim:#6f6858;--line:#e7e1d3;--gold:#b8902f;--gold2:#d9b45a;--ok:#2f8f5b;--err:#c0392b;--chip:#f3ecdc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45}
+.top{background:#13110c;color:#fff;padding:18px 16px}
+.top .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.logo{font-family:Oswald,sans-serif;font-size:26px;color:var(--gold2);letter-spacing:1px}
+.logo small{display:block;font-family:Inter;font-size:9px;letter-spacing:3px;color:#cdb98a}
+.top h1{font-family:Oswald,sans-serif;font-weight:500;font-size:18px;margin:0 0 0 auto;text-align:right}
+.top h1 span{display:block;font-family:Inter;font-size:13px;color:#cdb98a;font-weight:500}
+main{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+.intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.intro b{color:var(--gold)}
+.intro ol{margin:8px 0 0 18px;padding:0;color:var(--dim);font-size:14px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-bottom:14px}
+.sec h2{font-family:Oswald,sans-serif;font-weight:500;font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.sec h2 .n{width:26px;height:26px;border-radius:50%;background:var(--gold);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-family:Inter;font-weight:700;flex:none}
+.sec p.ajuda{margin:0 0 12px;color:var(--dim);font-size:13.5px}
+label{display:block;font-weight:600;font-size:13.5px;margin:12px 0 5px}
+label .op{font-weight:400;color:var(--dim)}
+input[type=text],input[type=number],textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;background:#fffdf8;color:var(--text)}
+input:focus,textarea:focus{outline:2px solid var(--gold2);border-color:var(--gold2)}
+textarea{min-height:90px;resize:vertical}
+.ex{font-size:12.5px;color:var(--dim);margin-top:4px}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:6px}
+.foto{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#faf7f0;aspect-ratio:3/4}
+.foto img{width:100%;height:100%;object-fit:cover;display:block}
+.foto .x{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:15px;cursor:pointer}
+.foto select{position:absolute;left:5px;right:5px;bottom:5px;font-size:12px;border-radius:6px;border:0;padding:4px;background:rgba(255,255,255,.92)}
+.foto .st{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.75);font-size:12px;font-weight:600;color:var(--dim)}
+.add{border:2px dashed var(--gold2);border-radius:10px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--gold);font-weight:600;font-size:13px;cursor:pointer;background:#fffaf0;text-align:center;padding:8px}
+.add svg{width:28px;height:28px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{border:1px solid var(--line);background:var(--chip);border-radius:20px;padding:7px 12px;font-size:13.5px;cursor:pointer;user-select:none}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.chip .rm{margin-left:6px;opacity:.7}
+.linha{display:flex;gap:8px}
+.linha input{flex:1}
+.btn{border:0;border-radius:10px;padding:11px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--chip);color:var(--text)}
+.btn.gold{background:var(--gold);color:#fff}
+.btn.grande{width:100%;padding:15px;font-size:16px}
+.btn:disabled{opacity:.6;cursor:default}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}.top h1{font-size:15px}}
+table.est{width:100%;border-collapse:collapse;margin-top:6px;font-size:13.5px}
+table.est th,table.est td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}
+table.est input{width:80px;padding:7px}
+.est-wrap{overflow-x:auto}
+.mps{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.mp{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;background:#fffdf8;font-weight:600}
+.mp input{width:18px;height:18px;accent-color:var(--gold)}
+.erros{background:#fdecea;border:1px solid #f5c6c0;color:var(--err);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14px}
+.erros ul{margin:4px 0 0 18px;padding:0}
+.ok-tela{text-align:center;padding:40px 18px}
+.ok-tela .ic{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:34px}
+.ok-tela h2{font-family:Oswald,sans-serif;font-weight:500;font-size:24px;margin:14px 0 6px}
+.carregando{text-align:center;color:var(--dim);padding:60px 16px}
+.dica{background:#fff8e6;border:1px solid #f0dfae;border-radius:10px;padding:10px 12px;font-size:13px;color:#6b5a26;margin-top:10px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top"><div class="in"><div class="logo">LB<small>MARKETPLACE</small></div><h1>Cadastro de produto<span id="nomeLoja">&nbsp;</span></h1></div></div>
+<main>
+  <div id="carregando" class="carregando">Carregando...</div>
+  <div id="invalido" class="sec hidden"><h2>Link inválido</h2><p class="ajuda" id="invalidoTxt">Peça um novo link pra equipe LB.</p></div>
+
+  <form id="form" class="hidden" novalidate>
+    <div class="intro">
+      Envie <b>um produto por vez</b> por aqui, sem precisar mandar no grupo. A equipe LB monta o anúncio (título, fotos profissionais com IA, preço no padrão, desconto e anúncios) e publica na sua loja.
+      <ol><li>Fotos do produto</li><li>Sobre o produto</li><li>Cores e tamanhos</li><li>Preço e estoque</li><li>Onde publicar</li></ol>
+    </div>
+
+    <section class="sec">
+      <h2><span class="n">1</span>Fotos do produto</h2>
+      <p class="ajuda">Mínimo 2, até 15. Mande frente, costas, detalhes (tecido, etiqueta) e <b>uma foto de cada cor</b>. Foto com a peça vestida ou no manequim, com boa luz. Pode ser do celular.</p>
+      <div class="fotos" id="fotos">
+        <label class="add" for="arq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Adicionar fotos</label>
+      </div>
+      <input type="file" id="arq" accept="image/*" multiple class="hidden">
+      <div class="ex" id="fotosInfo"></div>
+    </section>
+
+    <section class="sec">
+      <h2><span class="n">2</span>Sobre o produto</h2>
+      <label for="nome">O que é o produto?</label>
+      <input type="text" id="nome" maxlength="120" placeholder="Ex.: Vestido midi de tule manga longa">
+      <label for="descricao">Descreva o produto</label>
+      <textarea id="descricao" maxlength="4000" placeholder="Tecido, forro, caimento, transparência, detalhes, para que ocasião... Quanto mais detalhe, melhor o anúncio."></textarea>
+      <div class="grid2">
+        <div><label for="material">Material / tecido <span class="op">(opcional)</span></label><input type="text" id="material" placeholder="Ex.: tule com forro de helanca"></div>
+        <div><label for="sku">Código do produto (SKU) <span class="op">(opcional)</span></label><input type="text" id="sku" placeholder="Ex.: VEST-TULE-01"></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2><span class="n">3</span>Cores e tamanhos</h2>
+      <p class="ajuda">Se o produto não tem cor ou tamanho, pode pular.</p>
+      <label>Cores <span class="op">(digite e aperte Enter ou "Adicionar")</span></label>
+      <div class="linha"><input type="text" id="corNova" placeholder="Ex.: Preto"><button type="button" class="btn" id="corAdd">Adicionar</button></div>
+      <div class="chips" id="cores"></div>
+      <label>Tamanhos</label>
+      <div class="chips" id="tamPadrao"></div>
+      <div class="linha" style="margin-top:8px"><input type="text" id="tamNovo" placeholder="Outro tamanho (ex.: 38, G1, 110V)"><button type="button" class="btn" id="tamAdd">Adicionar</button></div>
+      <label for="medidas">Medidas de cada tamanho <span class="op">(opcional, mas ajuda muito)</span></label>
+      <textarea id="medidas" placeholder="Ex.:&#10;P: veste 36/38 · busto 86 · cintura 68 · comprimento 110&#10;M: veste 40/42 · busto 92 · cintura 74 · comprimento 112"></textarea>
+    </section>
+
+    <section class="sec">
+      <h2><span class="n">4</span>Preço e estoque</h2>
+      <div class="grid2">
+        <div><label for="liquido">Quanto você quer RECEBER por peça?</label><input type="text" id="liquido" inputmode="decimal" placeholder="R$ 0,00"><div class="ex">Valor limpo no seu bolso. A LB calcula o preço de venda com as taxas de cada marketplace.</div></div>
+        <div><label for="precoAtual">Preço que você vende hoje <span class="op">(opcional)</span></label><input type="text" id="precoAtual" inputmode="decimal" placeholder="R$ 0,00"></div>
+      </div>
+      <label>Estoque</label>
+      <div id="estoqueBox"></div>
+      <div class="dica">Recomendamos <b>pelo menos 20 por variação</b>: as ofertas relâmpago exigem estoque mínimo.</div>
+      <div class="grid2">
+        <div><label for="peso">Peso com embalagem (kg) <span class="op">(opcional)</span></label><input type="text" id="peso" inputmode="decimal" placeholder="Ex.: 0,4"></div>
+        <div><label for="embalagem">Tamanho da embalagem (cm) <span class="op">(opcional)</span></label><input type="text" id="embalagem" placeholder="Ex.: 25 x 20 x 5"></div>
+      </div>
+      <label for="codigoBarras">Código de barras (EAN) <span class="op">(opcional)</span></label>
+      <input type="text" id="codigoBarras" inputmode="numeric" placeholder="Ex.: 7891234567890">
+    </section>
+
+    <section class="sec">
+      <h2><span class="n">5</span>Onde publicar</h2>
+      <div class="mps" id="mps"></div>
+      <label for="observacoes">Algo mais que a gente precisa saber? <span class="op">(opcional)</span></label>
+      <textarea id="observacoes" placeholder="Ex.: é lançamento, chega mais estoque dia 15, não usar a foto 3..."></textarea>
+    </section>
+
+    <div id="erros" class="erros hidden"></div>
+    <button type="submit" class="btn gold grande" id="enviar">Enviar produto pra LB</button>
+  </form>
+
+  <div id="ok" class="sec ok-tela hidden">
+    <div class="ic">✓</div>
+    <h2>Produto recebido!</h2>
+    <p class="ajuda" id="okTxt">A equipe LB já foi avisada e vai montar o anúncio. Você recebe o retorno pelo WhatsApp.</p>
+    <button class="btn gold" id="outro">Cadastrar outro produto</button>
+  </div>
+</main>
+<script>
+const API='https://lb-shopee-gmv.vercel.app/api/pedido-produto';
+const T=new URLSearchParams(location.search).get('t')||'';
+const MP_NOME={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok Shop',shein:'Shein'};
+const TAMS=['PP','P','M','G','GG','G1','G2','G3','Único'];
+const st={fotos:[],cores:[],tams:[],mps:[]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function iniciar(){
+  try{
+    const r=await fetch(`${API}?acao=loja&t=${encodeURIComponent(T)}`);const d=await r.json();
+    $('carregando').classList.add('hidden');
+    if(!d.ok){$('invalido').classList.remove('hidden');$('invalidoTxt').textContent=d.erro||'Peça um novo link pra equipe LB.';return;}
+    $('nomeLoja').textContent=d.loja;st.mps=d.marketplaces;
+    $('mps').innerHTML=d.marketplaces.map(m=>`<label class="mp"><input type="checkbox" class="mpck" value="${m}" checked>${MP_NOME[m]}</label>`).join('');
+    $('form').classList.remove('hidden');renderTams();renderEstoque();
+  }catch(e){$('carregando').textContent='Sem conexão. Recarregue a página.';}
+}
+
+// ---------- fotos: reduz no celular (até 1600 px, JPG) e já envia ----------
+function reduzir(arq){return new Promise((ok,erro)=>{const img=new Image();img.onload=()=>{const m=1600,s=Math.min(1,m/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',0.86));};img.onerror=()=>erro(new Error('não consegui abrir a foto'));img.src=URL.createObjectURL(arq);});}
+$('arq').addEventListener('change',async e=>{
+  const arqs=[...e.target.files].slice(0,15-st.fotos.length);e.target.value='';
+  for(const a of arqs){const f={id:Math.random().toString(36).slice(2),prev:URL.createObjectURL(a),url:null,cor:'',estado:'enviando...'};st.fotos.push(f);renderFotos();
+    try{const b64=await reduzir(a);const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'foto',t:T,base64:b64})});const d=await r.json();
+      if(!d.ok)throw new Error(d.erro);f.url=d.url;f.estado='';}catch(err){f.estado='falhou — toque no X e envie de novo';}
+    renderFotos();}
+});
+function renderFotos(){
+  const add=st.fotos.length<15?`<label class="add" for="arq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Adicionar fotos</label>`:'';
+  $('fotos').innerHTML=st.fotos.map(f=>`<div class="foto"><img src="${f.prev}" alt=""><button type="button" class="x" onclick="tirarFoto('${f.id}')">×</button>
+    ${f.estado?`<div class="st">${esc(f.estado)}</div>`:st.cores.length?`<select onchange="corFoto('${f.id}',this.value)"><option value="">Cor: geral</option>${st.cores.map(c=>`<option ${f.cor===c?'selected':''}>${esc(c)}</option>`).join('')}</select>`:''}</div>`).join('')+add;
+  const okN=st.fotos.filter(f=>f.url).length;$('fotosInfo').textContent=st.fotos.length?`${okN} de ${st.fotos.length} foto(s) enviada(s)${st.cores.length?' · marque a cor de cada foto':''}`:'';
+}
+window.tirarFoto=id=>{st.fotos=st.fotos.filter(f=>f.id!==id);renderFotos();};
+window.corFoto=(id,c)=>{const f=st.fotos.find(x=>x.id===id);if(f)f.cor=c;};
+
+// ---------- cores e tamanhos ----------
+function addCor(){const v=$('corNova').value.trim();if(!v)return;v.split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{if(!st.cores.includes(x))st.cores.push(x);});$('corNova').value='';renderCores();}
+$('corAdd').onclick=addCor;$('corNova').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCor();}});
+function renderCores(){$('cores').innerHTML=st.cores.map((c,i)=>`<span class="chip on" onclick="tirarCor(${i})">${esc(c)}<span class="rm">×</span></span>`).join('');renderFotos();renderEstoque();}
+window.tirarCor=i=>{st.cores.splice(i,1);renderCores();};
+function renderTams(){const extras=st.tams.filter(t=>!TAMS.includes(t));$('tamPadrao').innerHTML=[...TAMS,...extras].map(t=>`<span class="chip ${st.tams.includes(t)?'on':''}" onclick="togTam('${esc(t)}')">${esc(t)}</span>`).join('');renderEstoque();}
+window.togTam=t=>{st.tams=st.tams.includes(t)?st.tams.filter(x=>x!==t):[...st.tams,t];renderTams();};
+function addTam(){const v=$('tamNovo').value.trim();if(!v)return;v.split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{if(!st.tams.includes(x))st.tams.push(x);});$('tamNovo').value='';renderTams();}
+$('tamAdd').onclick=addTam;$('tamNovo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTam();}});
+
+// ---------- estoque ----------
+function combos(){const cs=st.cores.length?st.cores:[''],ts=st.tams.length?st.tams:[''];const out=[];for(const c of cs)for(const t of ts)out.push(`${c}|${t}`);return out;}
+function renderEstoque(){
+  const val={};document.querySelectorAll('.estq').forEach(i=>val[i.dataset.k]=i.value);
+  const lista=combos();
+  if(lista.length===1&&lista[0]==='|'){$('estoqueBox').innerHTML=`<input type="number" min="0" id="estUnico" placeholder="Quantas peças você tem?" value="${esc($('estUnico')?.value||'')}">`;return;}
+  $('estoqueBox').innerHTML=`<div class="ex">Quantas peças de cada? <a href="#" onclick="event.preventDefault();todos()">Mesmo número pra todas</a></div><div class="est-wrap"><table class="est"><tr><th>${st.cores.length?'Cor':''}</th><th>${st.tams.length?'Tamanho':''}</th><th>Estoque</th></tr>
+    ${lista.map(k=>{const [c,t]=k.split('|');return `<tr><td>${esc(c)}</td><td>${esc(t)}</td><td><input type="number" min="0" class="estq" data-k="${esc(k)}" value="${esc(val[k]??'')}"></td></tr>`;}).join('')}</table></div>`;
+}
+window.todos=()=>{const v=prompt('Quantas peças de cada variação?','20');if(v==null)return;document.querySelectorAll('.estq').forEach(i=>i.value=v);};
+
+// ---------- enviar ----------
+$('form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(st.fotos.some(f=>f.estado==='enviando...')){mostrarErros(['Espere as fotos terminarem de enviar.']);return;}
+  const estoque={};document.querySelectorAll('.estq').forEach(i=>{if(i.value!=='')estoque[i.dataset.k]=i.value;});
+  const produto={nome:$('nome').value,descricao:$('descricao').value,material:$('material').value,sku:$('sku').value,cores:st.cores,tamanhos:st.tams,medidas:$('medidas').value,
+    liquido:$('liquido').value,precoAtual:$('precoAtual').value,estoque,estoqueUnico:$('estUnico')?.value??'',peso:$('peso').value,embalagem:$('embalagem').value,codigoBarras:$('codigoBarras').value,
+    marketplaces:[...document.querySelectorAll('.mpck:checked')].map(i=>i.value),observacoes:$('observacoes').value,fotos:st.fotos.filter(f=>f.url).map(f=>({url:f.url,cor:f.cor||null}))};
+  const b=$('enviar');b.disabled=true;b.textContent='Enviando...';
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'enviar',t:T,produto})});const d=await r.json();
+    if(!d.ok){mostrarErros(d.erros||[d.erro||'Não deu certo.']);return;}
+    $('form').classList.add('hidden');$('erros').classList.add('hidden');$('ok').classList.remove('hidden');$('okTxt').textContent=`"${produto.nome.trim()}" chegou pra equipe LB. A gente monta o anúncio e te avisa pelo WhatsApp.`;window.scrollTo(0,0);
+  }catch(err){mostrarErros(['Sem conexão. Tente de novo.']);}
+  finally{b.disabled=false;b.textContent='Enviar produto pra LB';}
+});
+function mostrarErros(l){$('erros').innerHTML=`<b>Falta pouco:</b><ul>${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;$('erros').classList.remove('hidden');$('erros').scrollIntoView({behavior:'smooth',block:'center'});}
+$('outro').onclick=()=>{location.reload();};
+iniciar();
+</script>
+</body>
+</html>
