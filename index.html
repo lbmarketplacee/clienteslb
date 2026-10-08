@@ -10670,7 +10670,7 @@ window.__ppLoja=()=>{const c=(clientesCache||[]).find(x=>x.id===document.getElem
   if(c&&!c.linkProdutosToken)window.__ppGerar(true);};
 window.__ppGerar=async(semPerguntar)=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('ppLoja').value);if(!c)return;
   if(c.linkProdutosToken&&!semPerguntar&&!await lbConfirmar(`Gerar um novo link pra ${c.nome}?\nO link antigo para de funcionar.`,{okTxt:'Gerar'}))return;
-  const t=Array.from(crypto.getRandomValues(new Uint8Array(18)),b=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'[b%64]).join('');
+  const t=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'[b%56]).join(''); // só letras e números (o WhatsApp formata _ e ~)
   await updateDoc(doc(db,'clientes',c.id),{linkProdutosToken:t,linkProdutosCriadoEm:Date.now(),linkProdutosCriadoPor:currentUser});c.linkProdutosToken=t;
   await log(c.id,c.nome,'link de cadastro de produto',c.linkProdutosToken?'link gerado':'');window.__ppLoja();showToast('Link pronto — copie e mande pra cliente.');};
 window.__ppCopiar=()=>{window.__copy(document.getElementById('ppUrl').value);showToast('Link copiado.');};
