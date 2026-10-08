@@ -10404,6 +10404,21 @@ const pxLer={
 
 // ---------- escritores: criam o P no destino com a regra de preço dele ----------
 const pxDimsOk=d=>d&&d.c>1&&d.l>1&&d.a>1;
+// Preço de venda da Shopee a partir do produto P (mesma regra da criação) — usado pra retomar publicação (08/10/2026)
+function pxVendaShopee(P){
+  const v1=P.vars[0];const liqOp=op=>Math.max(...P.skus.filter(s=>!v1||s.op[0]===op).map(s=>s.liq));
+  const ops1=v1?v1.opcoes.map(o=>o.nome):[null];const precos=Object.fromEntries(ops1.map(op=>[op,dirPrecosLB(liqOp(op))]));
+  if(Object.values(precos).some(p=>!p))throw new Error('não consegui calcular o preço');
+  const iguais=new Set(Object.values(precos).map(p=>p.venda)).size===1;
+  return iguais?Object.values(precos)[0].venda:Object.fromEntries(ops1.map(op=>[op,precos[op].venda]));
+}
+// Anúncios OCULTOS (UNLIST) da Shopee da loja → Set de item_id
+async function pxOcultosShopee(c){
+  const token=await shopeeGarantirTokenValido(c,'erp');const ids=new Set();let off=0;
+  for(let pg=0;pg<20;pg++){const r=await (await fetch(`${SHOPEE_API}?${new URLSearchParams({acao:'catalogo_listar',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,offset:String(off),status:'UNLIST'})}`,{headers:await authHeaders()})).json();
+    if(!r.ok)throw new Error(r.erro||'erro ao ler ocultos da Shopee');(r.itens||[]).forEach(i=>ids.add(String(i.item_id??i.id)));if(!r.temMais)break;off=r.proximoOffset;}
+  return ids;
+}
 const pxCriar={
   async shopee(c,P,linha,ctx){
     if(P.vars.length>2)throw new Error('a Shopee aceita no máximo 2 variações');
@@ -10443,6 +10458,7 @@ const pxCriar={
     const r=await dirShApi('produto_criar',c,token,{dados});if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}`.trim());
     const venda=iguais?Object.values(precos)[0].venda:Object.fromEntries(ops1.map(op=>[op,precos[op].venda]));
     px.criadosShopee.push({itemId:r.item_id,venda,titulo});
+    await updateDoc(doc(db,'clientes',c.id),{[`shopeePendentesPublicar.${r.item_id}`]:{venda,titulo,em:Date.now()}}).catch(()=>{}); // sobrevive a recarregar a tela
     return{id:String(r.item_id),msg:`oculto · ${iguais?fmtR(venda):'preço por opção'}`};
   },
   async ml(c,P,linha,ctx){
@@ -10556,6 +10572,14 @@ window.__pxLer=async()=>{
       if(origem==='shopee'&&d==='tiktok')return Object.values(shTt).map(String).includes(row.id);
       if(origem==='tiktok'&&d==='shopee')return !!shTt[row.id];return false;};
     px.linhas=rows.map((r,i)=>{const existe={},sel={};for(const d of destinos){existe[d]=ligado(r,d)?'ligado pelo sistema':pxParecido(r.titulos,chaves[d]);sel[d]=!existe[d]&&r.estoque>0;}return{...r,i,existe,sel,st:{}};});
+    if(destinos.includes('shopee')&&origem!=='shopee'){
+      passo('Conferindo anúncios criados que ficaram ocultos na Shopee...');
+      try{const ocultos=await pxOcultosShopee(c);const ja=new Set();
+        for(const [itemId,v] of Object.entries(c.shopeePendentesPublicar||{}))if(ocultos.has(String(itemId))){px.criadosShopee.push({itemId:Number(itemId),venda:v.venda,titulo:v.titulo});ja.add(String(itemId));}
+        for(const x of px.linhas){const idSh=lig[`${origem}_${x.id}`]?.shopee||(origem==='ml'?(x.ids||[]).map(i=>mlSh[i]).find(Boolean):null);
+          if(idSh&&ocultos.has(String(idSh))){x.st.shopee='ok: oculto — falta publicar';if(!ja.has(String(idSh))){px.criadosShopee.push({itemId:Number(idSh),venda:null,titulo:x.nome,row:x});ja.add(String(idSh));}}}
+      }catch(e){console.warn('[ocultos shopee]',e);}
+    }
     passo(`${rows.length} produto(s) ativos ${origem==='ml'?'no':'na'} ${PX_MP[origem]}. O que já existe no destino (ou está sem estoque) vem desmarcado — clique no marketplace da linha pra marcar/desmarcar.`);
     pxRenderLista();
   }catch(e){passo('Erro: '+e.message);console.error(e);}
@@ -10603,12 +10627,15 @@ window.__pxPublicarShopee=async()=>{
   const st=document.getElementById('pxStatus');
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');const descId=await migDescontoId(c,token);const tAds=await migAdsToken(c);const res=[];
+    const falhou=[];
     for(const it of px.criadosShopee){st.textContent=`Publicando ${it.titulo.slice(0,50)}...`;
+      if(it.venda==null&&it.row){try{it.venda=pxVendaShopee(await pxLer[px.origem].detalhar(c,it.row,()=>{}));}catch(e){res.push(`${it.itemId}: sem preço (${e.message})`);falhou.push(it);continue;}}
       const p=await dirShApi('produto_publicar',c,token,{item_id:it.itemId});
+      if(p.ok)await updateDoc(doc(db,'clientes',c.id),{[`shopeePendentesPublicar.${it.itemId}`]:deleteField()}).catch(()=>{});else falhou.push(it);
       const d=p.ok?await migDesconto(c,token,descId,it.itemId,typeof it.venda==='object'?{precos_por_opcao:it.venda}:{preco:it.venda}):'não publicado';
       const a=p.ok?await migAds(c,tAds,it.itemId):'—';
       res.push(`${it.itemId}: publicar ${p.ok?'ok':p.erro} · desconto ${d} · Ads ${a}`);}
-    st.innerHTML=res.map(esc).join('<br>');px.criadosShopee=[];pxRenderLista();
+    st.innerHTML=res.map(esc).join('<br>')+(falhou.length?`<br><b>${falhou.length} não publicado(s) — continuam na lista pra tentar de novo (ex.: loja ainda não aprovada na Shopee).</b>`:'');px.criadosShopee=falhou;pxRenderLista();
   }catch(e){st.textContent='Erro: '+e.message;}
 };
 window.__pxDescontoTT=async()=>{
