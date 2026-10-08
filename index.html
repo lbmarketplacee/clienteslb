@@ -10697,7 +10697,8 @@ window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;cons
   if(x.medidas)document.getElementById('cpTam').value=x.medidas;
   cpFotos.length=0;showToast('Baixando as fotos da cliente...');
   const fotos=[...(x.fotos||[]).filter(f=>!f.cor),...(x.fotos||[]).filter(f=>f.cor)].slice(0,5);
-  for(const f of fotos){try{const b=await (await fetch(f.url)).blob();cpFotos.push(await dirComprimirImagem(new File([b],'foto.jpg',{type:b.type||'image/jpeg'})));}catch(e){console.warn('[foto pedido]',e);}}
+  for(const f of fotos){try{const d=await (await fetch('https://lb-shopee-gmv.vercel.app/api/pedido-produto',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'foto_ler',url:f.url})})).json();if(!d.ok)throw new Error(d.erro);
+    const b=await (await fetch(d.base64)).blob();cpFotos.push(await dirComprimirImagem(new File([b],'foto.jpg',{type:b.type||'image/jpeg'})));}catch(e){console.warn('[foto pedido]',e);}}
   cpPrev();
   const est=x.estoqueUnico!=null?`${x.estoqueUnico} un.`:Object.entries(x.estoque||{}).map(([k,v])=>`${k.split('|').filter(Boolean).join(' ')}: ${v}`).join(' · ');
   let box=document.getElementById('cpPedidoRef');if(!box){box=document.createElement('div');box.id='cpPedidoRef';document.getElementById('cpPainel').prepend(box);}
