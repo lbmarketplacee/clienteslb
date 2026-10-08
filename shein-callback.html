@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conectando SHEIN — LB Marketplace</title>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<style>
+:root{--bg:#0a0a09;--gold:#d4a94a;--text:#f3f0e8;--text-dim:#a39d8c;--green:#5cb88a;--red:#e0525a;}
+body{background:var(--bg);color:var(--text);font-family:Montserrat,Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:20px;}
+.card{max-width:420px;}
+.spinner{width:36px;height:36px;border:3px solid #2a261c;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+h2{color:var(--gold);}
+a{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="card" id="conteudo">
+  <div class="spinner"></div>
+  <h2>Conectando SHEIN...</h2>
+  <p id="status">Aguarde um instante.</p>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",
+  authDomain: "lb-gestao-clientes.firebaseapp.com",
+  projectId: "lb-gestao-clientes",
+  storageBucket: "lb-gestao-clientes.firebasestorage.app",
+  messagingSenderId: "344033285587",
+  appId: "1:344033285587:web:fbdae7d44eaf5bac760b26"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// Volta da autorização da SHEIN (08/10/2026): ?tempToken=...&state=LB-<clienteId>. O tempToken vale 10 minutos.
+function mostrar(ok, msg){document.getElementById('conteudo').innerHTML=ok
+  ?'<h2 style="color:var(--green)">SHEIN conectada!</h2><p><a href="https://sistema.lbmarketplace.com.br/">Voltar ao sistema</a></p>'
+  :'<h2 style="color:var(--red)">Erro na conexão</h2><p>'+msg+'</p><p><a href="https://sistema.lbmarketplace.com.br/">Voltar ao sistema</a></p>';}
+const p=new URLSearchParams(location.search);const tempToken=p.get('tempToken'),state=p.get('state');
+if(!tempToken||!state)mostrar(false,'A SHEIN não devolveu o código de autorização.');
+else firebase.auth().onAuthStateChanged(async user=>{
+  if(!user){mostrar(false,'Entre no sistema neste navegador e autorize de novo.');return;}
+  try{const r=await fetch('https://lb-shopee-gmv.vercel.app/api/shein',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify({acao:'trocar_token',tempToken,state})});
+    const d=await r.json();mostrar(d.ok,d.erro||'');}catch(e){mostrar(false,'Sem conexão com o servidor. Tente de novo em até 10 minutos.');}
+});
+</script>
+</body>
+</html>
