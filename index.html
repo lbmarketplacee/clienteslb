@@ -1145,6 +1145,13 @@ textarea{resize:vertical;min-height:70px;}
 @media(max-width:800px){.ttp-form{grid-template-columns:1fr}}
 body.modo-revisor .nav-item:not([data-page="marketing"]){display:none!important}
 body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!important}
+/* Portal do cliente (08/10/2026): a cliente entra com login próprio e só vê o card do Mercado Livre da loja dela */
+body.modo-portal .nav-item:not([data-page="marketing"]){display:none!important}
+body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
+body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):not([data-mlsub="qualidade"]){display:none!important}
+body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
+.portal-aviso{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;line-height:1.5}
+.portal-aviso b{color:var(--gold)}
 /* ===== Catálogo ===== */
 .cat-barra{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.cat-barra select,.cat-barra input,.cat-acoes input{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px}
 .cat-barra select{width:auto;flex:0 0 auto}.cat-barra select:first-child{min-width:220px}.cat-barra input{flex:1;min-width:180px;width:auto}
@@ -3061,7 +3068,7 @@ body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!impo
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","revisor@lbmarketplace.com.br":"Revisor TikTok"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","revisor@lbmarketplace.com.br":"Revisor TikTok","roma@lbmarketplace.com.br":"Roma Aviamentos"};
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 // Quem tem acesso total (tudo que era "só Lincoln"): Lincoln + Caroline (pedido do Lincoln, 07/10/2026)
 const ADMIN_EMAILS=[LINCOLN_EMAIL,"caroline@lbmarketplace.com.br"];
@@ -3190,7 +3197,15 @@ let unsubC=null,unsubG=null,unsubCt=null;
 // Usuário de revisão da TikTok (revisor@): vê só a loja de demonstração (catolis = AQUARIOS) e só o card do TikTok.
 const REVISOR_EMAIL='revisor@lbmarketplace.com.br',CLIENTE_DEMO='Cvxb1UTWldoo1yLljP5d';
 const ehRevisor=()=>currentEmail===REVISOR_EMAIL;
+// Portal do cliente: e-mail da cliente → o cadastro dela. Ela só vê o card do Mercado Livre da própria loja
+// (conectar a conta PRINCIPAL e ver as métricas). As regras do Firestore liberam só esse documento pra esse e-mail.
+const PORTAL_CLIENTES={'roma@lbmarketplace.com.br':'X6EXAnrhX3J1MCKvt3Mw'};
+const portalClienteId=()=>PORTAL_CLIENTES[currentEmail]||null;
 function startListeners(){if(unsubC)return;
+  if(portalClienteId()){document.body.classList.add('modo-portal');
+    unsubC=onSnapshot(doc(db,"clientes",portalClienteId()),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();portalAviso();},e=>console.error('[portal]',e));
+    setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('mercadolivre');setTimeout(()=>{window.__mlSubTab('gmv');portalAviso();},700);}catch(e){}},900);
+    return;}
   if(ehRevisor()){document.body.classList.add('modo-revisor');
     unsubC=onSnapshot(doc(db,"clientes",CLIENTE_DEMO),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();},e=>console.error('[revisor]',e));
     setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('tiktokshop');setTimeout(()=>window.__tiktokSubTab('promocoes'),700);}catch(e){}},900);
@@ -6799,6 +6814,12 @@ document.getElementById('mlc360ConvitesBtn')?.addEventListener('click',async()=>
   btn.disabled=false;btn.textContent='⚡ Ver Convites de Oferta Relâmpago';
 });
 
+function portalAviso(){
+  if(!portalClienteId())return;const c=clientesCache[0];const lista=document.getElementById('mlApiLista');if(!lista||!c)return;
+  let box=document.getElementById('portalAviso');if(!box){box=document.createElement('div');box.id='portalAviso';box.className='portal-aviso';lista.parentElement.insertBefore(box,lista);}
+  box.innerHTML=c.mlUserId?`<b>Mercado Livre conectado.</b> Clique no nome da loja abaixo pra ver reputação, promoções e anúncios. Qualquer dúvida, fale com a equipe LB.`
+    :`<b>Olá, ${esc(c.nome)}!</b> Pra LB cuidar do seu Mercado Livre, clique em <b>Conectar</b> abaixo e entre com a <b>conta principal</b> da loja (a do dono, não a de colaborador). Antes, saia de qualquer conta de colaborador no Mercado Livre neste navegador. Depois de autorizar, você volta pra cá e já vê as métricas.`;
+}
 window.__mlConectar=async(clienteId)=>{
   try{
     const resp=await fetch('https://lb-mercadolivre.vercel.app/api/mercadolivre?acao=gerar_link_autorizacao&clienteId='+encodeURIComponent(clienteId));
