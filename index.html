@@ -8688,6 +8688,7 @@ async function iaFetch(url,opts){
       const msg=`Limite diário de IA\nHoje já foram ~${fmtR(g.dia)} (limite ${fmtR(cfg.limiteDiarioBRL)}).\nEsta geração custa ~${fmtR(custoPrev)}.`;
       if(cfg.modo==='bloquear'){lbAvisar(msg+'\nBloqueado até amanhã.');throw new Error('limite diário de IA atingido');}
       if(!await lbConfirmar(msg+'\nGerar mesmo assim?',{okTxt:'Gerar'}))throw new Error('cancelado (limite diário de IA)');}}
+  if(url===DIRETOR_API)opts={...opts,headers:{...(opts?.headers||{}),...await authHeaders()}}; // a Central Criativa exige login da equipe (08/10/2026)
   const r=await fetch(url,opts);
   r.clone().json().then(async d=>{
     // mídias geradas → Drive (fotos do funil, capa por variação, logo)
