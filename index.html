@@ -9319,6 +9319,21 @@ window.__cpGerarVar=async()=>{
 window.__dirShPreco=()=>{const u=window.__dirUltimo||{};const plats=u.plataformas||['shopee'];const liq=lbValorBR(document.getElementById('dirShLiq').value);
   const p=plats.includes('shopee')?dirPrecosLB(liq):null;const m=plats.includes('ml')?dirPrecoMlEstimado(liq,lbValorBR(document.getElementById('dirShPeso')?.value)||0.5):null;
   document.getElementById('dirShPrecoTxt').innerHTML=[p&&`<b>Shopee:</b> venda (desconto fixo) <b>${fmtR(p.venda)}</b> · cheio <b>${fmtR(p.cheio)}</b> · ela recebe ~${fmtR(p.liquido)} (cupom 3% + relâmpago 5%)`,m&&`<b>Mercado Livre:</b> venda <b>~${fmtR(m)}</b> (Clássico 14% + frete + 7% de folga; confirmo com a comissão real da categoria ao criar)`,(()=>{const t=plats.includes('tiktok')?dirPrecosTT(liq):null;return t&&`<b>TikTok:</b> venda (desconto fixo) <b>${fmtR(t.venda)}</b> · cheio <b>${fmtR(t.cheio)}</b> · ela recebe ~${fmtR(t.liquido)} (taxa do TikTok + cupom 3% + relâmpago 5%)`;})()].filter(Boolean).join('<br>');};
+// Acha o item da loja pelo título exato (oculto ou ativo) — usado quando a Shopee recusa por duplicado
+async function dirShAcharPorNome(c,token,titulo){
+  const alvo=String(titulo||'').trim().toLowerCase();
+  for(const status of ['UNLIST','NORMAL']){
+    for(let off=0;off<500;off+=50){
+      const l=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_list',query:JSON.stringify({offset:off,page_size:50,item_status:status})});
+      const ids=(l.response?.item||[]).map(x=>x.item_id);if(!ids.length)break;
+      const b=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:JSON.stringify({item_id_list:ids.join(',')})});
+      const achou=(b.response?.item_list||[]).find(x=>String(x.item_name||'').trim().toLowerCase()===alvo);
+      if(achou)return achou.item_id;
+      if(!l.response?.has_next_page)break;
+    }
+  }
+  return null;
+}
 async function dirShApi(acao,c,token,extra={}){
   const r=await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,app:'erp',access_token:token,shop_id:c.shopeeErpShopId,...extra})});
   return r.json();
@@ -9366,12 +9381,19 @@ window.__dirShCriar=async()=>{
       category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
       item_sku:document.getElementById('dirShSku').value.trim(),guiaTamanhos:guiaId,atributos,
       cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:est,skuBase:document.getElementById('dirShSku').value.trim()};
-    const r=await dirShApi('produto_criar',c,token,{dados});
+    let r=await dirShApi('produto_criar',c,token,{dados});
+    // "This product duplicates another" = já foi criado num clique anterior → segue com o que existe (não cria outro)
+    if(!r.ok&&/duplicates another/i.test(`${r.erro||''}`)){
+      passo('Esse anúncio já existe na loja (clique anterior) — procurando ele pra seguir...');
+      const existente=await dirShAcharPorNome(c,token,u.titulo);
+      if(!existente)throw new Error('a Shopee diz que o anúncio já existe, mas não achei pelo título. Procure no Seller Center e publique por lá.');
+      r={ok:true,item_id:existente,formato:'já existia',modelos:[],reaproveitado:true};
+    }
     if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}${r.aviso?' — '+r.aviso:''}`);
     window.__dirShItem={itemId:r.item_id,clienteId:c.id,venda:precos.venda};
     await log(c.id,c.nome,'anúncio criado na Shopee (oculto)',`Item ${r.item_id}: "${u.titulo}", cheio ${fmtR(precos.cheio)}, venda ${fmtR(precos.venda)}, ${(r.modelos||[]).length} variação(ões), ${atributos.length} especificações.`);
     passo(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:6px"><b>Anúncio criado OCULTO na Shopee ✓</b>
-      <span>Item ${r.item_id} · formato ${esc(r.formato||'')} · ${(r.modelos||[]).length} variações · ${atributos.length} especificações · ${imagens.length} fotos</span>
+      <span>Item ${r.item_id}${r.reaproveitado?' (já existia — nada foi duplicado)':` · formato ${esc(r.formato||'')} · ${(r.modelos||[]).length} variações · ${atributos.length} especificações · ${imagens.length} fotos`}</span>
       <span style="font-size:12px;color:var(--text-dim)">Confira no Seller Center (Meus Produtos → Não listados). Depois:</span>
       <button class="btn btn-gold btn-sm" onclick="window.__dirShPublicar()">Publicar + desconto fixo (${fmtR(precos.venda)}) + Shopee Ads</button></div>`);
   }catch(e){passo(`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`);}
