@@ -1140,11 +1140,9 @@ textarea{resize:vertical;min-height:70px;}
 .fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
 .fin-row:last-child{border-bottom:none}
 
-/* ===== TikTok promoções + modo revisor ===== */
+/* ===== TikTok promoções ===== */
 .ttp-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin:8px 0}.ttp-form .field{margin:0}.ttp-preco,.ttp-novo-preco{padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px}
 @media(max-width:800px){.ttp-form{grid-template-columns:1fr}}
-body.modo-revisor .nav-item:not([data-page="marketing"]){display:none!important}
-body.modo-revisor .cm-tool-card:not([data-cmtab="tiktokshop"]){display:none!important}
 /* Portal do cliente (08/10/2026): a cliente entra com login próprio e só vê o card do Mercado Livre da loja dela */
 body.modo-portal .nav-item:not([data-page="marketing"]){display:none!important}
 body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
@@ -3068,7 +3066,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","revisor@lbmarketplace.com.br":"Revisor TikTok","roma@lbmarketplace.com.br":"Roma Aviamentos"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos"};
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 // Quem tem acesso total (tudo que era "só Lincoln"): Lincoln + Caroline (pedido do Lincoln, 07/10/2026)
 const ADMIN_EMAILS=[LINCOLN_EMAIL,"caroline@lbmarketplace.com.br"];
@@ -3194,9 +3192,6 @@ function abrirPaginaDaUrl(){
   if(btn&&!btn.classList.contains('hidden')&&btn.offsetParent!==null)btn.click();
 }
 let unsubC=null,unsubG=null,unsubCt=null;
-// Usuário de revisão da TikTok (revisor@): vê só a loja de demonstração (catolis = AQUARIOS) e só o card do TikTok.
-const REVISOR_EMAIL='revisor@lbmarketplace.com.br',CLIENTE_DEMO='Cvxb1UTWldoo1yLljP5d';
-const ehRevisor=()=>currentEmail===REVISOR_EMAIL;
 // Portal do cliente: e-mail da cliente → o cadastro dela. Ela só vê o card do Mercado Livre da própria loja
 // (conectar a conta PRINCIPAL e ver as métricas). As regras do Firestore liberam só esse documento pra esse e-mail.
 const PORTAL_CLIENTES={'roma@lbmarketplace.com.br':'X6EXAnrhX3J1MCKvt3Mw'};
@@ -3206,10 +3201,7 @@ function startListeners(){if(unsubC)return;
     unsubC=onSnapshot(doc(db,"clientes",portalClienteId()),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();portalAviso();},e=>console.error('[portal]',e));
     setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('mercadolivre');setTimeout(()=>{window.__mlSubTab('gmv');portalAviso();},700);}catch(e){}},900);
     return;}
-  if(ehRevisor()){document.body.classList.add('modo-revisor');
-    unsubC=onSnapshot(doc(db,"clientes",CLIENTE_DEMO),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();},e=>console.error('[revisor]',e));
-    setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('tiktokshop');setTimeout(()=>window.__tiktokSubTab('promocoes'),700);}catch(e){}},900);
-    return;}startTarefasListener();startCadastrosListener();setTimeout(()=>{try{ppIniciar();}catch(e){}},1500);unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
+startTarefasListener();startCadastrosListener();setTimeout(()=>{try{ppIniciar();}catch(e){}},1500);unsubC=onSnapshot(query(collection(db,"clientes"),orderBy("nome")),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();});unsubG=onSnapshot(query(collection(db,"gmv"),orderBy("mes","desc")),snap=>{gmvCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderSummary();renderDashCharts();renderPerformanceTab();});unsubCt=onSnapshot(query(collection(db,"contratos"),orderBy("timestamp","desc")),snap=>{contratosCache=snap.docs.map(d=>({id:d.id,...d.data()}));renderContratosTab();renderDashCharts();});whatsappIniciar();}
 /* NAV */
 /* ===== MENU MOBILE (abrir/fechar) ===== */
 function fecharMenuMobile(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
