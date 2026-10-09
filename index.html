@@ -9045,7 +9045,7 @@ function cpRender(){
     <div class="prod-box-tit"><span class="prod-num">1</span><h3>Cliente, fotos e informações</h3></div>
     <div class="field"><label>Cliente</label><select id="cpLoja" onchange="window.__cpLojaPlat()"><option value="">— escolha —</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}${temShopee(c)?' · Shopee':''}${temMl(c)?' · ML':''}${temTt(c)?' · TikTok':''}</option>`).join('')}</select></div>
     <div class="field"><label>Onde publicar</label><div class="mp-pick"><label><input type="checkbox" id="cpPlatShopee" checked>${mpIco('shopee')} Shopee</label><label><input type="checkbox" id="cpPlatMl" checked>${mpIco('ml')} Mercado Livre</label><label><input type="checkbox" id="cpPlatTiktok" checked>${mpIco('tiktok')} TikTok Shop</label></div></div>
-    <div class="field"><label>Fotos reais (até 5 — a 1ª é a principal; uma de cada cor, na ordem das cores)</label>
+    <div class="field"><label>Fotos reais (até 10 — a 1ª é a principal; uma de cada cor, na ordem das cores; a IA usa as 5 primeiras de referência)</label>
       <div class="dz" id="cpDrop" style="padding:18px;cursor:pointer"><input type="file" id="cpFotoInput" accept="image/*" multiple style="display:none"><div id="cpDropTxt">Clique ou arraste as fotos aqui</div><div id="cpPrev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div></div></div>
     <div class="field"><label>Descrição do produto (o que é, material, medidas, detalhes reais)</label><textarea id="cpDesc" style="min-height:80px" placeholder="Ex.: vestido longo em chiffon... · luminária de mesa articulada, metal, lâmpada E27... · caixa de papelão 16x11x3 onda B..."></textarea></div>
     <div style="font-size:13px;margin:4px 0 6px"><b>Variações</b> <span style="color:var(--text-dim)">(deixe "Sem variação" se o produto é único; a variação 1 pode ter uma foto por opção, na ordem das fotos)</span></div>
@@ -9057,7 +9057,7 @@ function cpRender(){
   </div>
   <div id="cpPasso2" style="margin-top:18px"></div>`;
   const inp=document.getElementById('cpFotoInput');const dz=document.getElementById('cpDrop');
-  const carregar=async files=>{for(const f of Array.from(files||[]).filter(f=>f.type.startsWith('image/')).slice(0,5-cpFotos.length))cpFotos.push(await dirComprimirImagem(f));cpPrev();};
+  const carregar=async files=>{for(const f of Array.from(files||[]).filter(f=>f.type.startsWith('image/')).slice(0,10-cpFotos.length))cpFotos.push(await dirComprimirImagem(f));cpPrev();};
   dz.addEventListener('click',e=>{if(e.target===dz||e.target.id==='cpDropTxt')inp.click();});inp.addEventListener('change',e=>carregar(e.target.files));
   dz.addEventListener('dragover',e=>e.preventDefault());dz.addEventListener('drop',e=>{e.preventDefault();carregar(e.dataTransfer.files);});
   cpStep(1);
@@ -9099,7 +9099,7 @@ window.__cpGerar=async()=>{
   const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+(v1?`\n${v1.nome} disponíveis: ${v1.op.join(', ')}.`:'')+(v2?`\n${v2.nome} disponíveis: ${v2.op.map(o=>{const c=medidas[o.toUpperCase()];return o+(c&&Object.keys(c).length?` (${Object.entries(c).map(([k,v])=>k+' '+v).join(', ')})`:'');}).join('; ')}.`:'');
   btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';cpStep(2);
   try{
-    const d=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos,quantidadeFotos:5})})).json();
+    const d=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos.slice(0,5),quantidadeFotos:5})})).json();
     if(!d.ok)throw new Error(d.erro||'a Central Criativa não respondeu');
     const fotos=(d.fotos||[]).filter(f=>f.imagem);
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
@@ -10705,7 +10705,7 @@ window.__ppStatus=async(id,st)=>{const p=ppCache.find(x=>x.id===id);if(!p)return
   await updateDoc(doc(db,'pedidosProduto',id),{status:st,atualizadoPor:auth.currentUser?.email||currentUser,atualizadoEm:Date.now()});
   if(st==='feito'||st==='descartado'){const t=(todasTarefasCache||[]).find(x=>x.pedidoProdutoId===id&&x.coluna!=='feito');if(t)await updateDoc(doc(db,'tarefas',t.id),{coluna:'feito',concluidoEm:serverTimestamp(),concluidoPor:currentUser}).catch(()=>{});}
   showToast(PP_ST[st]);};
-// Abre no Criar anúncio já com cliente, fotos (até 5), descrição, variações e medidas; o resto (preço, estoque, SKU...) fica num quadro de referência
+// Abre no Criar anúncio já com cliente, fotos (até 10; a IA usa as 5 primeiras de referência), descrição, variações e medidas; o resto (preço, estoque, SKU...) fica num quadro de referência
 window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;const x=p.produto||{};
   if(p.status==='novo')window.__ppStatus(id,'andamento');
   window.__pxTab('criar');await new Promise(r=>setTimeout(r,200));
@@ -10718,7 +10718,7 @@ window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;cons
   else if(x.cores?.length)document.getElementById('cpVar2').value='';
   if(x.medidas)document.getElementById('cpTam').value=x.medidas;
   cpFotos.length=0;showToast('Baixando as fotos da cliente...');
-  const fotos=[...(x.fotos||[]).filter(f=>!f.cor),...(x.fotos||[]).filter(f=>f.cor)].slice(0,5);
+  const fotos=[...(x.fotos||[]).filter(f=>!f.cor),...(x.fotos||[]).filter(f=>f.cor)].slice(0,10);
   for(const f of fotos){try{const d=await (await fetch('https://lb-shopee-gmv.vercel.app/api/pedido-produto',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'foto_ler',url:f.url})})).json();if(!d.ok)throw new Error(d.erro);
     const b=await (await fetch(d.base64)).blob();cpFotos.push(await dirComprimirImagem(new File([b],'foto.jpg',{type:b.type||'image/jpeg'})));}catch(e){console.warn('[foto pedido]',e);}}
   cpPrev();
@@ -10726,7 +10726,7 @@ window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;cons
   let box=document.getElementById('cpPedidoRef');if(!box){box=document.createElement('div');box.id='cpPedidoRef';document.getElementById('cpPainel').prepend(box);}
   box.innerHTML=`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:14px;border-color:var(--gold)"><b>Pedido da cliente: ${esc(p.cliente)} — ${esc(x.nome)}</b>
     <span style="font-size:12.5px">Receber por peça: <b>${fmtR(x.liquido)}</b> · Estoque: ${esc(est)}${x.sku?` · SKU: ${esc(x.sku)}`:''}${x.peso?` · Peso: ${x.peso} kg`:''}${x.embalagem?` · Embalagem: ${esc(x.embalagem)}`:''}${x.codigoBarras?` · EAN: ${esc(x.codigoBarras)}`:''}</span>
-    <span style="font-size:11.5px;color:var(--text-dim)">Use esses valores no passo 3 (valor a receber, estoque, SKU, peso). Fotos: as 5 primeiras foram carregadas${(x.fotos||[]).length>5?` — as outras ${(x.fotos||[]).length-5} estão no pedido (aba Pedidos dos clientes)`:''}. Depois de publicar, marque o pedido como publicado.</span></div>`;
+    <span style="font-size:11.5px;color:var(--text-dim)">Use esses valores no passo 3 (valor a receber, estoque, SKU, peso). Fotos: ${Math.min((x.fotos||[]).length,10)} carregadas (a IA usa as 5 primeiras de referência; no passo 3 você escolhe até 9 pro anúncio)${(x.fotos||[]).length>10?` — as outras ${(x.fotos||[]).length-10} estão no pedido (aba Pedidos dos clientes)`:''}. Depois de publicar, marque o pedido como publicado.</span></div>`;
   window.scrollTo({top:document.getElementById('cpPainel').getBoundingClientRect().top+scrollY-80,behavior:'smooth'});};
 window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.pxtab===t));document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');document.getElementById('pvPainel').classList.toggle('hidden',t!=='video');document.getElementById('ppPainel').classList.toggle('hidden',t!=='pedidos');if(t==='pedidos')ppRender();if(t==='migrar')pxRender();if(t==='padronizar')ptRender();
   if(t==='video'){const v=document.getElementById('vidSecao');document.getElementById('pvPainel').appendChild(v);v.classList.remove('hidden');v.style.marginTop='0';v.style.borderTop='0';vidPrepararCampos();window.__vidFotos();}};
