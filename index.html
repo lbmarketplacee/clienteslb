@@ -9388,9 +9388,12 @@ window.__dirShPublicar=async()=>{
     let descId=c.shopeeDescontoFixoId;
     if(!descId){const d=await dirShApi('desconto_fixo_criar',c,token);if(!d.ok)throw new Error('desconto fixo: '+d.erro);descId=String(d.discount_id);
       await updateDoc(doc(db,'clientes',c.id),{shopeeDescontoFixoId:descId,shopeeDescontoFixoNome:d.nome,descontoFixoFim:new Date((d.fim-3*3600)*1000).toISOString().slice(0,16)});}
-    st.innerHTML='Colocando no desconto fixo...';
-    const e=await dirShApi('produto_desconto',c,token,{discount_id:descId,item_id:it.itemId,preco:it.venda});
-    if(!e.ok)throw new Error('desconto: '+e.erro);
+    // Recém-publicado: a Shopee responde discount.item_status_invalid por ~1 min → espera e tenta de novo (até ~3 min)
+    let e;for(let t=1;t<=8;t++){st.innerHTML=`Colocando no desconto fixo...${t>1?` (a Shopee ainda está liberando o anúncio — tentativa ${t} de 8)`:''}`;
+      e=await dirShApi('produto_desconto',c,token,{discount_id:descId,item_id:it.itemId,preco:it.venda});
+      if(e.ok||!/item_status_invalid|item status is invalid/i.test(JSON.stringify(e.erro||'')))break;
+      await new Promise(r=>setTimeout(r,25000));}
+    if(!e.ok)throw new Error('desconto: '+(typeof e.erro==='string'?e.erro:JSON.stringify(e.erro)));
     // Shopee Ads no padrão LB: individual, meta de ROAS 20, orçamento e prazo ilimitados (app Ads é separado do ERP)
     let adsTxt='';
     if(c.shopeeAdsShopId){
