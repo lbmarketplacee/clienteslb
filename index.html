@@ -4405,7 +4405,7 @@ function renderClient360(c){
   document.getElementById('c360Roas').textContent=roas?roas.toFixed(1)+'x':'—';
   document.getElementById('c360Meses').textContent=rows.length;
   const mpMap={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok Shop',shein:'Shein'};
-  document.getElementById('c360Marketplaces').innerHTML=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${mpMap[m]||m}</span>`).join('')||'<span class="status-none">Nenhum marketplace cadastrado.</span>';
+  document.getElementById('c360Marketplaces').innerHTML=(c.marketplaces||[]).map(m=>`<span class="mp-badge ${MP_C[m]||''}">${MP_ICON[m]||''}${mpMap[m]||m}</span>`).join('')+((c.marketplaces||[]).includes('shein')?(c.sheinOpenKeyId?`<span class="mp-badge mp-shein" title="API conectada em ${esc(String(c.sheinConectadoEm?.toDate?.().toLocaleDateString('pt-BR')||''))}">API SHEIN conectada ✓</span><button class="btn btn-ghost btn-sm" onclick="window.__sheinConectar('${c.id}')">Reconectar</button>`:`<button class="btn btn-gold btn-sm" onclick="window.__sheinConectar('${c.id}')">Conectar SHEIN</button>`):'')||'<span class="status-none">Nenhum marketplace cadastrado.</span>';
   const info=[['Saldo Ads',fmtR(c.saldoAds||0)],['Desconto fixo',c.descontoFixoFim?fmtDate(c.descontoFixoFim):'—'],['Cupom',c.cupomFim?fmtDate(c.cupomFim):'—'],['Google Drive',c.driveLink?'Conectado':'Não informado']];
   document.getElementById('c360Info').innerHTML=info.map(([l,v])=>`<div class="c360-row"><span>${l}</span><b>${esc(v)}</b></div>`).join('');
   document.getElementById('c360Months').innerHTML=rows.slice(0,6).map(g=>`<div class="c360-month"><span>${esc(fmtMes(g.mes))}</span><span><strong>${fmtR(g.gmv)}</strong> · Ads ${fmtR(g.gastoAds||0)}</span></div>`).join('')||'<div class="c360-empty">Nenhum resultado mensal registrado.</div>';
@@ -5475,6 +5475,15 @@ window.__tiktokSubTab=(nome)=>{
   if(nome==='promocoes')ttpRender();
 };
 
+// SHEIN (10/10/2026): gera o link de autorização (lb-shopee-gmv/api/shein.js, login) e abre. A loja autoriza no painel
+// da SHEIN e volta pro shein-callback.html (tempToken vale 10 min) → grava sheinOpenKeyId/sheinSecretKey no cliente.
+window.__sheinConectar=async clienteId=>{
+  try{const r=await fetch('https://lb-shopee-gmv.vercel.app/api/shein',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'link',clienteId})});
+    const d=await r.json();if(!d.ok||!d.url){showToast('SHEIN: '+(d.erro||'não deu pra gerar o link'));return;}
+    // o retorno grava com o login da EQUIPE → tem que autorizar neste navegador (com a conta da loja na SHEIN)
+    if(await lbConfirmar('Conectar a SHEIN\nA página da SHEIN vai abrir NESTE navegador: entre com a conta da LOJA da cliente no SHEIN Seller e autorize o app "LB Marketplace".\nDepois de autorizar, volta sozinho pro sistema (o código vale 10 minutos).',{okTxt:'Abrir SHEIN'}))window.open(d.url,'_blank');
+  }catch(e){showToast('Erro ao conectar SHEIN.');console.error(e);}
+};
 window.__tiktokConectar=async(clienteId,clienteNome)=>{
   try{
     const resp=await fetch(`${TIKTOK_API}?acao=gerar_link_autorizacao&clienteId=${clienteId}`);
