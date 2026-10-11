@@ -10646,16 +10646,19 @@ const pxCriar={
     const produtoTxt=`${P.titulo}\n${String(P.descricao||'').slice(0,500)}`;
     // cor (SKC): pelo nome; o que não bater a IA escolhe na lista da SHEIN
     const cores=vC?vC.opcoes.map(o=>({nome:o.nome,foto:o.foto})):[{nome:'(cor do produto)',foto:null}];
-    const semCor=[];cores.forEach((x,i)=>{x.valueId=vC?sheinAcharValor(aCor.valores,x.nome):null;if(!x.valueId)semCor.push(i);});
+    const podeProprio=id=>(prep.personalizaveis||[]).includes(Number(id));
+    // nome igual ao da SHEIN → valor dela; diferente → cor PRÓPRIA com o nome da cliente (se a categoria deixar); senão a IA escolhe
+    const semCor=[];cores.forEach((x,i)=>{x.valueId=vC?sheinAcharValor(aCor.valores,x.nome):null;if(!x.valueId&&vC&&podeProprio(aCor.id))x.custom=String(x.nome).slice(0,50);if(!x.valueId&&!x.custom)semCor.push(i);});
     if(semCor.length){linha('SHEIN: escolhendo as cores...');const r=await sheinIA(semCor.map(i=>({nome:vC?`Cor da SHEIN equivalente a "${cores[i].nome}"`:'Cor principal do produto',valores:aCor.valores})),produtoTxt);
       semCor.forEach((i,k)=>{if(r[k]?.id)cores[i].valueId=r[k].id;});}
-    const repet=cores.map(x=>x.valueId).filter((v,i,a)=>v&&a.indexOf(v)!==i);
+    const repet=cores.map(x=>x.valueId||('c:'+sheinSem(x.custom))).filter((v,i,a)=>v&&a.indexOf(v)!==i);
     if(repet.length&&!prep.padrao?.corRepetida)throw new Error('duas cores caíram no mesmo valor da SHEIN (a SHEIN não aceita) — renomeie as cores na origem');
     // tamanho (SKU)
     let tams=[];
     if(vT){if(!aTam)throw new Error(`categoria "${prep.categoria.nome}" não tem tamanho`);
-      tams=vT.opcoes.map(o=>{const n=migTamLimpo(o.nome);const id=sheinAcharValor(aTam.valores,n)||(/^(u|unico|tamanho unico)$/i.test(sheinSem(n))?(aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)))||{}).id:null);return{nome:o.nome,valueId:id,campos:o.campos||{},veste:o.veste};});
-      const sem=tams.filter(t=>!t.valueId).map(t=>t.nome);if(sem.length)throw new Error(`tamanho sem equivalente na SHEIN: ${sem.join(', ')}`);}
+      tams=vT.opcoes.map(o=>{const n=migTamLimpo(o.nome);const id=sheinAcharValor(aTam.valores,n)||(/^(u|unico|tamanho unico)$/i.test(sheinSem(n))?(aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)))||{}).id:null);
+        return{nome:o.nome,valueId:id,custom:!id&&podeProprio(aTam.id)?n.slice(0,50):null,campos:o.campos||{},veste:o.veste};});
+      const sem=tams.filter(t=>!t.valueId&&!t.custom).map(t=>t.nome);if(sem.length)throw new Error(`tamanho sem equivalente na SHEIN: ${sem.join(', ')}`);}
     else if(aTam?.obrigatorio){const u=aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)));if(!u)throw new Error('a categoria exige tamanho e o produto não tem');tams=[{nome:'Único',valueId:u.id,campos:{},veste:'36/42'}];}
     // tabela de medidas: o que a origem tiver + quadro "Medidas pra SHEIN" + régua BR (busto/cintura/quadril pelo veste)
     const extra={};for(const t of dirLerTamanhos(ctx.sheinMedidas||''))if(t.tam)extra[String(t.tam).toUpperCase()]=t.campos;
@@ -10678,7 +10681,7 @@ const pxCriar={
     const vendas=[...new Set(skus.map(s=>s.preco))];
     const spec={categoryId:prep.categoria.id,productTypeId:prep.categoria.pt,titulo:String(P.titulo).slice(0,prep.padrao?.tituloMax||190),tituloMax:prep.padrao?.tituloMax||190,descricao:String(P.descricao||'').slice(0,5000),
       supplierCode:base,idioma:prep.padrao?.idioma||'pt-br',site:prep.site,armazem:prep.armazens?.[0]?.id||null,corAttr:aCor.id,tamAttr:tams.length?aTam.id:null,
-      cores:cores.map(x=>({nome:x.nome,valueId:x.valueId,imagens:{}})),tamanhos:tams.map(t=>({nome:t.nome,valueId:t.valueId,medidas:t.medidas})),skus,atributos,
+      cores:cores.map(x=>({nome:x.nome,valueId:x.valueId,custom:x.custom||null,imagens:{}})),tamanhos:tams.map(t=>({nome:t.nome,valueId:t.valueId,custom:t.custom||null,medidas:t.medidas})),skus,atributos,
       pesoG:Math.round((P.peso||0.5)*1000),dims:pxDimsOk(P.dims)?P.dims:{c:25,l:20,a:5}};
     if(ctx.simular){spec.cores.forEach(x=>x.imagens={principal:'https://simulado/1.jpg',detalhes:[],quadrada:'https://simulado/1.jpg',cor:cores.length>1?'https://simulado/c.jpg':null});
       const r=await sheinApi(c,'publicar',{spec,simular:1});if(!r.ok)throw new Error(r.erro);window.__pxCorpoShein=r.corpo;
