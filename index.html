@@ -9118,7 +9118,8 @@ function cpRender(){
     ${[1,2].map(n=>`<div class="form-row"><div class="field" style="max-width:200px"><label>Variação ${n}</label><select id="cpVar${n}" onchange="document.getElementById('cpVar${n}Outra').style.display=this.value==='Outra'?'':'none'">${['','Cor','Tamanho','Voltagem','Modelo','Quantidade','Medida','Sabor','Estampa','Outra'].map(o=>`<option value="${o}" ${(n===1&&o==='Cor')||(n===2&&o==='Tamanho')?'selected':''}>${o||'Sem variação'}</option>`).join('')}</select><input type="text" id="cpVar${n}Outra" placeholder="Nome da variação" style="display:none;margin-top:6px"></div><div class="field"><label>Opções da variação ${n} (separadas por vírgula)</label><input type="text" id="cpVar${n}Opcoes" placeholder="${n===1?'Preto, Verde Musgo · 110V, 220V · 100 un, 500 un':'M, G · 30x40, 40x60'}"></div></div>`).join('')}
     <div class="field"><label>Só pra ROUPA — medidas por tamanho (opcional; gera a guia de tamanhos e a tabela do ML)</label><textarea id="cpTam" style="min-height:52px" placeholder="M: veste 38/40&#10;G: veste 42/44; busto 96; cintura 78; quadril 104"></textarea></div>
     <div class="field"><label>Material (opcional; algumas categorias do ML exigem)</label><input type="text" id="cpMaterial" placeholder="Chiffon · Metal · Papelão"></div>
-    <button class="btn btn-gold" id="cpGerarBtn" onclick="window.__cpGerar()">Gerar fotos, título e descrição</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-gold" id="cpGerarBtn" onclick="window.__cpGerar()">Gerar fotos com IA + título e descrição</button>
+      <button class="btn btn-ghost" id="cpSemFotosBtn" onclick="window.__cpGerar(true)" title="Não gera fotos: o anúncio usa as fotos que você enviou. A IA escreve só o título e a descrição (centavos).">Usar só as fotos enviadas (só título e descrição)</button></div>
     <div id="cpStatus" style="margin-top:10px;font-size:13px"></div>
   </div>
   <div id="cpPasso2" style="margin-top:18px"></div>`;
@@ -9140,7 +9141,7 @@ function cpPrev(){
   document.getElementById('cpDropTxt').textContent=cpFotos.length?`${cpFotos.length} foto(s) — clique pra adicionar mais`:'Clique ou arraste as fotos aqui';
 }
 window.__cpTirar=i=>{cpFotos.splice(i,1);cpPrev();};
-window.__cpGerar=async()=>{
+window.__cpGerar=async(semFotos)=>{ // semFotos=true: usa só as fotos enviadas, IA faz só título e descrição (Lincoln 11/10/2026)
   const st=document.getElementById('cpStatus');const btn=document.getElementById('cpGerarBtn');
   const lojaId=document.getElementById('cpLoja').value;const produto=document.getElementById('cpDesc').value.trim();
   const lerVar=n=>{let nome=document.getElementById('cpVar'+n).value;if(nome==='Outra')nome=document.getElementById('cpVar'+n+'Outra').value.trim();let op=document.getElementById('cpVar'+n+'Opcoes').value.split(',').map(x=>x.trim()).filter(Boolean);
@@ -9163,19 +9164,23 @@ window.__cpGerar=async()=>{
   if(semCon.length){lbAvisar(`${cli.nome} não está conectada em: ${semCon.map(p=>p==='shopee'?'Shopee (ERP)':p==='ml'?'Mercado Livre':'TikTok Shop').join(', ')}\nDesmarque essa plataforma ou conecte a loja primeiro.`);return;}
   if(/cor|estampa/i.test(nome1)&&cores.length>cpFotos.length&&!await lbConfirmar(`Tem ${cores.length} opções de ${nome1} e ${cpFotos.length} foto(s)\nO ideal é 1 foto de cada. Continuar assim?`,{okTxt:'Continuar'}))return;
   const produtoIA=produto+(material?`\nMaterial: ${material}.`:'')+(v1?`\n${v1.nome} disponíveis: ${v1.op.join(', ')}.`:'')+(v2?`\n${v2.nome} disponíveis: ${v2.op.map(o=>{const c=medidas[o.toUpperCase()];return o+(c&&Object.keys(c).length?` (${Object.entries(c).map(([k,v])=>k+' '+v).join(', ')})`:'');}).join('; ')}.`:'');
-  btn.disabled=true;st.textContent='Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';cpStep(2);
+  const btn2=document.getElementById('cpSemFotosBtn');if(btn2)btn2.disabled=true;
+  btn.disabled=true;st.textContent=semFotos?'Escrevendo título e descrição (sem gerar fotos)...':'Gerando com a Central Criativa... (1 a 2 minutos)';document.getElementById('cpPasso2').innerHTML='';cpStep(2);
   try{
-    const d=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos.slice(0,5),quantidadeFotos:5})})).json();
+    const d=semFotos
+      ?await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'texto_anuncio',produto:produtoIA,marketplace:'shopee',imagem:cpFotos[0]||null})})).json()
+      :await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos.slice(0,5),quantidadeFotos:5})})).json();
     if(!d.ok)throw new Error(d.erro||'a Central Criativa não respondeu');
     const fotos=(d.fotos||[]).filter(f=>f.imagem);
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
     let tituloMl='';
     if(plataformas.includes('ml')){st.textContent='Gerando o título do Mercado Livre...';try{const t=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:produtoIA})})).json();tituloMl=t.ok?t.titulo:'';}catch(e){}}
     window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:linhasGuia.length?dirGuiaTamanhos(linhasGuia,''):null,reais:cpFotos.slice(),cores,tamanhos,nome1,nome2,medidas,plataformas,material,lojaId};
-    st.textContent=`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
+    st.textContent=semFotos?`✓ Título e descrição prontos — o anúncio usa as ${cpFotos.length} foto(s) enviadas${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo (a foto por cor com IA continua opcional).`
+      :`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
     dirShopeeRender('cpPasso2',lojaId);cpStep(3);
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;cpStep(1);}
-  btn.disabled=false;
+  btn.disabled=false;if(btn2)btn2.disabled=false;
 };
 /* ---- Mercado Livre no Criar Produtos (backend: lb-mercadolivre ml_* — testado ao vivo na Killachay 05/10/2026) ---- */
 const ML_API='https://lb-mercadolivre.vercel.app/api/mercadolivre';
