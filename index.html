@@ -10639,8 +10639,11 @@ const pxCriar={
     if(P.vars.length>2)throw new Error('a SHEIN aceita no máximo 2 variações (cor e tamanho)');
     const vT=P.vars.find(v=>v.tam||pxEhTam(v.nome)),vC=P.vars.find(v=>v!==vT);
     linha('SHEIN: categoria e regras...');
-    const prep=await sheinApi(c,'preparar',{titulo:P.titulo});
-    if(!prep.ok)throw new Error(prep.erro||'não deu pra ler a SHEIN');if(!prep.categoria)throw new Error(prep.aviso||'a SHEIN não sugeriu categoria');
+    let prep=await sheinApi(c,'preparar',{titulo:P.titulo});
+    if(!prep.ok)throw new Error(prep.erro||'não deu pra ler a SHEIN');
+    if(!prep.categoria){const reserva=(String(ctx.sheinCategoria||'').match(/#(\d+)\s*$/)||[])[1];
+      if(!reserva)throw new Error('a SHEIN não sugeriu categoria — escolha a "Categoria de reserva" no quadro da SHEIN');
+      prep=await sheinApi(c,'preparar',{categoryId:reserva});if(!prep.ok||!prep.categoria)throw new Error(prep.erro||'categoria de reserva inválida');}
     const A=prep.atributos||[];const aCor=A.find(a=>a.tipo===1&&a.principal),aTam=A.find(a=>a.tipo===1&&!a.principal);
     if(!aCor)throw new Error(`categoria "${prep.categoria.nome}" sem atributo principal`);
     const produtoTxt=`${P.titulo}\n${String(P.descricao||'').slice(0,500)}`;
@@ -10720,7 +10723,10 @@ window.__pxSheinBox=()=>{const box=document.getElementById('pxSheinBox');if(!box
   if(!on){box.innerHTML='';return;}if(box.innerHTML)return;
   box.innerHTML=`<div class="prod-box" style="margin-top:12px"><div class="prod-box-tit"><span class="prod-num">${mpIco('shein',18)}</span><h3>Medidas pra SHEIN</h3></div>
     <p class="prod-nota">A SHEIN pede tabela de medidas em cm (na camiseta: <b>busto</b> e <b>comprimento</b>). O busto sai sozinho pela régua (P, M, G…); o que faltar, escreva aqui um tamanho por linha — vale pra todos os produtos desta cópia. Ex.: <code>M: comprimento 60</code></p>
-    <textarea id="pxSheinMedidas" rows="4" placeholder="P: comprimento 58\nM: comprimento 60\nG: comprimento 62"></textarea></div>`;};
+    <textarea id="pxSheinMedidas" rows="4" placeholder="P: comprimento 58\nM: comprimento 60\nG: comprimento 62"></textarea>
+    <div class="field" style="margin-top:10px"><label>Categoria de reserva (opcional — usada só quando a SHEIN não sugerir uma)</label><input id="pxSheinCat" list="pxSheinCats" placeholder="digite pra buscar: camiseta, vestido, bolsa…"><datalist id="pxSheinCats"></datalist></div></div>`;
+  const c=(clientesCache||[]).find(x=>x.id===document.getElementById('pxLoja')?.value);
+  if(c)sheinApi(c,'preparar',{folhas:1,categoryId:'0'}).then(r=>{const dl=document.getElementById('pxSheinCats');if(dl&&r.folhas)dl.innerHTML=r.folhas.map(f=>`<option value="${esc(f.nome)} #${f.id}">`).join('');}).catch(()=>{});};
 window.__pxLoja=()=>{
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('pxLoja').value);const so=document.getElementById('pxOrigem'),sd=document.getElementById('pxDestinos'),sob=document.getElementById('pxOrigens');
   if(!c){so.value='';sob.innerHTML='';sd.innerHTML='';return;}
@@ -10891,7 +10897,7 @@ window.__pxCopiar=async()=>{
   const c=px.c;const fila=px.linhas.filter(x=>px.destinos.some(d=>x.sel[d]&&!/^ok/.test(x.st[d]||'')));if(!c||!fila.length){showToast('Marque ao menos 1 cópia.');return;}
   const resumo=px.destinos.map(d=>`${PX_MP[d]}: ${fila.filter(x=>x.sel[d]).length}`).join(' · ');
   if(!window.__pxSimular&&!await lbConfirmar(`Copiar da ${PX_MP[px.origem]} da ${c.nome}?\n${resumo}\nShopee nasce oculta; ML já ativo; TikTok e SHEIN vão pra análise.`,{okTxt:'Copiar'}))return;
-  const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('pxSheinMedidas')?.value||''};
+  const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('pxSheinMedidas')?.value||'',sheinCategoria:document.getElementById('pxSheinCat')?.value||''};
   for(const x of fila){
     let P;try{P=await pxLer[px.origem].detalhar(c,x,t=>{st.textContent=`${x.nome.slice(0,50)}: ${t}`;});if(!P.skus.length)throw new Error('sem variação com preço');}
     catch(e){for(const d of px.destinos)if(x.sel[d])x.st[d]='erro: '+e.message;pxRenderLista();console.error(e);continue;}
