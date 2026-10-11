@@ -10532,7 +10532,8 @@ async function sheinIA(perguntas,produto){
 // medida pedida pela SHEIN (ex.: "Busto (cm)") ← campos do tamanho ("Busto": "84-88")
 const SHEIN_MEDIDA={busto:['busto','peito'],comprimento:['comprimento'],quadril:['quadril'],ombro:['ombro'],'comprimento da manga':['manga'],cintura:['cintura'],'tamanho do quadril':['quadril']};
 function sheinMedida(attrNome,campos){
-  const alvo=sheinSem(String(attrNome).replace(/\(.*?\)/g,''));const chaves=SHEIN_MEDIDA[alvo]||[alvo];
+  // "Tamanho da Cintura (cm)" / "Tamanho do quadril (cm)" → cintura / quadril
+  const alvo=sheinSem(String(attrNome).replace(/\(.*?\)/g,'')).replace(/^tamanho d[aoe]s? /,'');const chaves=SHEIN_MEDIDA[alvo]||[alvo];
   for(const [k,v] of Object.entries(campos||{})){const kk=sheinSem(k);if(chaves.some(c=>kk===c||(alvo!=='comprimento'&&kk.includes(c))||(alvo==='comprimento'&&kk==='comprimento'))){const n=(String(v).match(/\d+(?:[.,]\d+)?/)||[])[0];if(n)return Math.round(Number(n.replace(',','.')));}}
   return null;
 }
