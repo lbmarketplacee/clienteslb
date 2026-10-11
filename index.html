@@ -10639,7 +10639,8 @@ const pxCriar={
     if(P.vars.length>2)throw new Error('a SHEIN aceita no máximo 2 variações (cor e tamanho)');
     const vT=P.vars.find(v=>v.tam||pxEhTam(v.nome)),vC=P.vars.find(v=>v!==vT);
     linha('SHEIN: categoria e regras...');
-    let prep=await sheinApi(c,'preparar',{titulo:P.titulo});
+    // texto + 1ª foto (só texto às vezes volta vazio — corretor postural da MAVE, 11/10/2026)
+    let prep=await sheinApi(c,'preparar',{titulo:P.titulo,imagem:P.fotos[0]?String(P.fotos[0]).replace(/^http:/,'https:'):undefined});
     if(!prep.ok)throw new Error(prep.erro||'não deu pra ler a SHEIN');
     if(!prep.categoria){const reserva=(String(ctx.sheinCategoria||'').match(/#(\d+)\s*$/)||[])[1];
       if(!reserva)throw new Error('a SHEIN não sugeriu categoria — escolha a "Categoria de reserva" no quadro da SHEIN');
