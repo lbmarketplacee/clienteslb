@@ -2431,9 +2431,17 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
           <div class="cm-secao-titulo"><div class="cm-secao-ico marca marca-shein"><svg viewBox="0 0 64 24" width="32" height="13"><text x="32" y="18.5" text-anchor="middle" fill="#fff" font-family="Futura,'Century Gothic','Trebuchet MS',Arial,sans-serif" font-weight="700" font-size="19" letter-spacing="1.5">SHEIN</text></svg></div><h3>SHEIN</h3></div>
           <div class="sub-cab" style="--acc-bg:#ffffff0d;--acc-bd:#ffffff26"><span class="sub-cab-ico" style="color:#fff"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><div><b>Conexão das lojas</b><div style="font-size:12.5px;color:var(--text-dim);margin-top:2px">Clique em <b>Conectar SHEIN</b>: abre o login do SHEIN Seller <b>neste navegador</b> (pode vir em chinês — troque o idioma no canto). Entre com a conta da loja da cliente e autorize o app <b>LB Marketplace</b>. Volta sozinho pro sistema; o código vale 10 minutos.</div></div></div>
-          <div id="sheinResumo" style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0"></div>
-          <div id="sheinLista"></div>
-          <div style="font-size:12px;color:var(--text-dim);margin-top:14px;line-height:1.6">Depois da 1ª loja conectada entram aqui: produtos e estoque, pedidos, campanhas (promoções) e financeiro — a API já está liberada pra tudo isso.</div>
+          <div class="sub-bar">
+            <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm" data-shtab="con" onclick="window.__sheinTab('con')">Lojas</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm" data-shtab="prod" onclick="window.__sheinTab('prod')">Produtos</button><button class="btn btn-ghost btn-sm" data-shtab="ped" onclick="window.__sheinTab('ped')">Pedidos</button></div></div>
+          </div>
+          <div id="sheinAbaCon">
+            <div id="sheinResumo" style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0"></div>
+            <div id="sheinLista"></div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:14px;line-height:1.6">Pra levar produtos pra SHEIN: <b>Produtos → Migrar / copiar</b> (destino SHEIN). Cada consulta à SHEIN conta no plano da Fixie (IP fixo): <span id="sheinUsoTxt">—</span></div>
+          </div>
+          <div id="sheinAbaProd" class="hidden"><div class="form-row" style="align-items:flex-end"><div class="field"><label>Loja</label><select id="sheinProdLoja"></select></div><div class="field" style="max-width:160px"><label>Status</label><select id="sheinProdSt"><option value="">Todos</option><option value="1">À venda</option><option value="0">Fora de venda</option></select></div><button class="btn btn-gold" onclick="window.__sheinProdutos(1)">Ver produtos</button></div><div id="sheinProdOut" style="margin-top:12px"></div></div>
+          <div id="sheinAbaPed" class="hidden"><div class="form-row" style="align-items:flex-end"><div class="field"><label>Loja</label><select id="sheinPedLoja"></select></div><button class="btn btn-gold" onclick="window.__sheinPedidos()">Pedidos das últimas 48h</button></div><p style="font-size:12px;color:var(--text-dim);margin:6px 0 0">A SHEIN só deixa consultar 48 horas por vez.</p><div id="sheinPedOut" style="margin-top:12px"></div></div>
         </div>
 
         <div class="cm-secao cm-painel" data-cmpainel="tiktokshop">
@@ -5492,6 +5500,7 @@ function cmRenderShein(){
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.marketplaces||[]).includes('shein')||c.sheinOpenKeyId)).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
   const con=lista.filter(c=>c.sheinOpenKeyId);
   document.getElementById('sheinResumo').innerHTML=`<span class="cadastro-doc-pill ok">${con.length} conectada(s)</span><span class="cadastro-doc-pill">${lista.length-con.length} sem conexão</span>`;
+  getDoc(doc(db,'configuracoes','sheinUso')).then(d=>{const n=d.exists()?(d.data()[new Date().toISOString().slice(0,7)]||0):0;const el=document.getElementById('sheinUsoTxt');if(el)el.textContent=`${n} de 500 chamadas usadas este mês (plano grátis).`;}).catch(()=>{});
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:16px">Nenhum cliente com SHEIN ainda. Marque "Shein" nos marketplaces do cliente (ficha do cliente → editar).</div>';return;}
   const data=c=>{const d=c.sheinConectadoEm?.toDate?c.sheinConectadoEm.toDate():(c.sheinConectadoEm?new Date(c.sheinConectadoEm):null);return d&&!isNaN(d)?d.toLocaleDateString('pt-BR'):'';};
   const linha=c=>`<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center">
@@ -5500,6 +5509,36 @@ function cmRenderShein(){
     </div>`;
   el.innerHTML=cmGrupoHtml('sh-on','Lojas conectadas',con.map(linha),false)+cmGrupoHtml('sh-off','Sem conexão',lista.filter(c=>!c.sheinOpenKeyId).map(linha),false);
 }
+// ---- SHEIN: abas Produtos e Pedidos (11/10/2026) ----
+const SHEIN_PED_ST={1:'Pendente',2:'A enviar',3:'Aguardando envio SHEIN',4:'Enviado',5:'Entregue',6:'Reembolsado',7:'Aguardando coleta',8:'Avariado',9:'Recusado'};
+window.__sheinTab=t=>{document.querySelectorAll('[data-shtab]').forEach(b=>{b.classList.toggle('btn-gold',b.dataset.shtab===t);b.classList.toggle('btn-ghost',b.dataset.shtab!==t);});
+  [['con','sheinAbaCon'],['prod','sheinAbaProd'],['ped','sheinAbaPed']].forEach(([k,id])=>document.getElementById(id)?.classList.toggle('hidden',k!==t));
+  const lojas=(clientesCache||[]).filter(c=>c.sheinOpenKeyId).sort((a,b)=>a.nome.localeCompare(b.nome));
+  for(const id of ['sheinProdLoja','sheinPedLoja']){const el=document.getElementById(id);if(el&&!el.options.length)el.innerHTML=lojas.length?lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join(''):'<option value="">Nenhuma loja conectada</option>';}};
+window.__sheinProdutos=async pg=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('sheinProdLoja').value);const out=document.getElementById('sheinProdOut');if(!c)return;
+  out.innerHTML='<div class="saude-vazio">Lendo a SHEIN...</div>';
+  const r=await sheinApi(c,'produtos',{pagina:pg,status:document.getElementById('sheinProdSt').value}).catch(e=>({ok:false,erro:e.message}));
+  if(!r.ok){out.innerHTML=`<div class="saude-vazio" style="color:var(--red)">${esc(r.erro||'erro')}</div>`;return;}
+  if(!r.produtos.length){out.innerHTML='<div class="saude-vazio">Nenhum produto.</div>';return;}
+  const pags=Math.ceil((r.total||0)/10);
+  out.innerHTML=`<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:8px">${r.total} produto(s) · página ${pg} de ${pags}</div>`+r.produtos.map(p=>{const k=p.skcList||[];const k0=k[0]||{};const sku0=(k0.skuList||[])[0]||{};const preco=(sku0.priceList||[])[0];
+      const est=k.reduce((t,x)=>t+(x.skuList||[]).reduce((u,s)=>u+(s.inventoryList||[]).reduce((v,i)=>v+(Number(i.inventoryNum)||0),0),0),0);
+      return `<div class="cm-item" style="gap:12px;align-items:center">${k0.skcMainPicUrl?`<img src="${esc(k0.skcMainPicUrl)}" style="width:46px;height:61px;object-fit:cover;border-radius:6px">`:''}
+        <span class="nome" style="flex:1;min-width:180px">${esc((k0.skcTitle||[])[0]?.title||p.spuName)}<div style="font-size:11px;color:var(--text-dim)">${p.spuName} · ${k.length} cor(es): ${esc(k.map(x=>(x.skcSalesAttribute||[]).map(a=>a.attributeValueName).join('/')).join(', ').slice(0,90))}</div></span>
+        <span style="font-size:12.5px;white-space:nowrap">${preco?fmtR(preco.specialPrice||preco.basePrice):'—'}</span><span style="font-size:12.5px;white-space:nowrap">${est} un.</span>
+        <span class="cadastro-doc-pill ${p.spuShelfStatus===1?'ok':''}">${p.spuShelfStatus===1?'À venda':'Fora de venda'}</span></div>`;}).join('')
+    +(pags>1?`<div style="display:flex;gap:8px;margin-top:10px">${pg>1?`<button class="btn btn-ghost btn-sm" onclick="window.__sheinProdutos(${pg-1})">‹ Anterior</button>`:''}${pg<pags?`<button class="btn btn-ghost btn-sm" onclick="window.__sheinProdutos(${pg+1})">Próxima ›</button>`:''}</div>`:'');};
+window.__sheinPedidos=async()=>{const c=(clientesCache||[]).find(x=>x.id===document.getElementById('sheinPedLoja').value);const out=document.getElementById('sheinPedOut');if(!c)return;
+  out.innerHTML='<div class="saude-vazio">Lendo a SHEIN...</div>';
+  const r=await sheinApi(c,'pedidos',{horas:48}).catch(e=>({ok:false,erro:e.message}));
+  if(!r.ok){out.innerHTML=`<div class="saude-vazio" style="color:var(--red)">${esc(r.erro||'erro')}</div>`;return;}
+  if(!r.pedidos.length){out.innerHTML='<div class="saude-vazio">Nenhum pedido nas últimas 48h.</div>';return;}
+  const tot=r.pedidos.reduce((t,p)=>t+p.itens.reduce((u,i)=>u+(Number(i.recebe)||0),0),0);
+  out.innerHTML=`<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:8px">${r.total} pedido(s) · previsão de receber ${fmtR(tot)}</div>`+r.pedidos.map(p=>{const urg=[1,2,7].includes(p.status);const prazo=p.itens.map(i=>i.prazo).filter(Boolean).sort()[0];
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:10px;align-items:center${urg?';border-left:3px solid var(--gold)':''}"><span class="nome" style="flex:1;min-width:200px">${esc(p.numero)} · ${esc(p.criado||'')} (horário da China)
+        <div style="font-size:11.5px;color:var(--text-dim)">${p.itens.map(i=>`${esc((i.titulo||'').slice(0,60))} · ${esc(i.sku||'')} · ${i.preco!=null?fmtR(i.preco):''}`).join('<br>')}</div></span>
+        <span class="cadastro-doc-pill ${p.status===5?'ok':''}">${SHEIN_PED_ST[p.status]||p.status}</span>${prazo&&urg?`<span style="font-size:11.5px;color:var(--gold)">prazo ${esc(String(prazo).slice(0,16).replace('T',' '))}</span>`:''}
+        <span style="font-size:12.5px">recebe ${fmtR(p.itens.reduce((u,i)=>u+(Number(i.recebe)||0),0))}</span>${p.problema?.length?'<span style="font-size:11.5px;color:var(--red)">pendência na SHEIN</span>':''}</div>`;}).join('');};
 // SHEIN (10/10/2026): gera o link de autorização (lb-shopee-gmv/api/shein.js, login) e abre. A loja autoriza no painel
 // da SHEIN e volta pro shein-callback.html (tempToken vale 10 min) → grava sheinOpenKeyId/sheinSecretKey no cliente.
 window.__sheinConectar=async clienteId=>{
