@@ -10389,9 +10389,9 @@ async function mig3PorNoDesconto(c,pid,venda){
    LÍQUIDO: Shopee dirPrecosLB (cupom+relâmpago, cheio ×1,3, nasce oculto → Publicar = desconto fixo + Ads) · ML mlCriarProduto
    (comissão real +7%, 1 anúncio por cor+tamanho, ativos) · TikTok dirPrecosTT (desconto fixo do TikTok).
    P = {titulo, descricao, fotos:[url], vars:[{nome, tam, opcoes:[{nome, foto, veste}]}], skus:[{op:[...], liq, est, sku}], peso, dims:{c,l,a}, sku} */
-const PX_MP={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok'};
+const PX_MP={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok',shein:'SHEIN'};
 const px={c:null,origem:'',destinos:[],linhas:[],criadosShopee:[],ttDesc:null};
-const pxTem=(c,mp)=>mp==='shopee'?!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken):mp==='ml'?!!(c.mlUserId&&c.mlRefreshToken):!!(c.tiktokShopCipher&&c.tiktokAccessToken);
+const pxTem=(c,mp)=>mp==='shopee'?!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken):mp==='ml'?!!(c.mlUserId&&c.mlRefreshToken):mp==='shein'?!!c.sheinOpenKeyId:!!(c.tiktokShopCipher&&c.tiktokAccessToken);
 const pxTexto=h=>String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|li|div|h\d)>/gi,'\n').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim();
 const pxEhTam=n=>/tamanho|size/i.test(String(n||''));
 
@@ -10503,6 +10503,39 @@ async function pxOcultosShopee(c){
     if(!r.ok)throw new Error(r.erro||'erro ao ler ocultos da Shopee');(r.itens||[]).forEach(i=>ids.add(String(i.item_id??i.id)));if(!r.temMais)break;off=r.proximoOffset;}
   return ids;
 }
+// ---------- SHEIN (11/10/2026): API lb-shopee-gmv/api/shein.js (preparar/imagem/publicar). Regras em lib/shein-produto.js ----------
+const SHEIN_API='https://lb-shopee-gmv.vercel.app/api/shein';
+async function sheinApi(c,acao,extra={}){const r=await fetch(SHEIN_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
+// mesmo cálculo de lib/shein-produto.js: comissão 20% + 7% de folga descontados do preço, termina em ,99
+const sheinPreco=liq=>{const b=Number(liq)/(1-0.20-0.07);if(!(b>0))return null;return Math.floor(b)+0.99>=b?Math.floor(b)+0.99:Math.floor(b)+1.99;};
+const sheinSem=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9/ ]+/g,' ').replace(/\s+/g,' ').trim();
+function sheinAcharValor(valores,nome){const a=sheinSem(nome);if(!a)return null;const l=(valores||[]).map(v=>({id:v.id,n:sheinSem(v.nome)}));
+  return (l.find(v=>v.n===a)||l.find(v=>v.n.replace(/ /g,'')===a.replace(/ /g,''))||{}).id||null;}
+// foto pra SHEIN: quadrada 1200×1200 fundo branco (vale pra principal, detalhe e quadrada: 1:1 de 900 a 2200 px) ou 80×80 recortada (miniatura de cor)
+async function sheinJpg(url,lado=1200){
+  const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
+  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
+  const cv=document.createElement('canvas');cv.width=cv.height=lado;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,lado,lado);
+  if(lado<200){const m=Math.min(img.width,img.height)*0.5;g.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,lado,lado);} // miolo da peça = cor
+  else{const e=Math.min(lado/img.width,lado/img.height);g.drawImage(img,(lado-img.width*e)/2,(lado-img.height*e)/2,img.width*e,img.height*e);}
+  URL.revokeObjectURL(u);return cv.toDataURL('image/jpeg',0.9);
+}
+// IA escolhe o valor da SHEIN quando o nome não bate (cor "Off white" → "Branco"; atributos obrigatórios: Material, Elasticidade...)
+async function sheinIA(perguntas,produto){
+  if(!perguntas.length)return{};
+  const arvore=perguntas.map((p,i)=>({id:'S'+i,nome:p.nome,livre:!p.valores.length,valores:p.valores.map((v,k)=>({id:String(k+1),nome:v.nome}))}));
+  const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto,arvore})}).then(r=>r.json()).catch(()=>({}));
+  const out={};for(const x of r.atributos||[]){const i=Number(String(x.id).replace(/^S/,''));const p=perguntas[i];if(!p)continue;
+    if(x.value_name&&!p.valores.length)out[i]={extra:String(x.value_name)};else{const v=p.valores[Number(x.value_id)-1];if(v)out[i]={id:v.id};}}
+  return out;
+}
+// medida pedida pela SHEIN (ex.: "Busto (cm)") ← campos do tamanho ("Busto": "84-88")
+const SHEIN_MEDIDA={busto:['busto','peito'],comprimento:['comprimento'],quadril:['quadril'],ombro:['ombro'],'comprimento da manga':['manga'],cintura:['cintura'],'tamanho do quadril':['quadril']};
+function sheinMedida(attrNome,campos){
+  const alvo=sheinSem(String(attrNome).replace(/\(.*?\)/g,''));const chaves=SHEIN_MEDIDA[alvo]||[alvo];
+  for(const [k,v] of Object.entries(campos||{})){const kk=sheinSem(k);if(chaves.some(c=>kk===c||(alvo!=='comprimento'&&kk.includes(c))||(alvo==='comprimento'&&kk==='comprimento'))){const n=(String(v).match(/\d+(?:[.,]\d+)?/)||[])[0];if(n)return Math.round(Number(n.replace(',','.')));}}
+  return null;
+}
 const pxCriar={
   async shopee(c,P,linha,ctx){
     if(P.vars.length>2)throw new Error('a Shopee aceita no máximo 2 variações');
@@ -10601,6 +10634,64 @@ const pxCriar={
     if(vendas.length===1){desc=await mig3PorNoDesconto(c,r.produtoId,vendas[0]);
       if(desc!=='ok'){await updateDoc(doc(db,'clientes',c.id),{[`tiktokDescontoPendente.${r.produtoId}`]:vendas[0]}).catch(()=>{});c.tiktokDescontoPendente={...(c.tiktokDescontoPendente||{}),[r.produtoId]:vendas[0]};desc='pendente';}}
     return{id:String(r.produtoId),msg:`em análise · ${vendas.map(fmtR).join('/')} · desconto ${desc}`};
+  },
+  async shein(c,P,linha,ctx){
+    if(P.vars.length>2)throw new Error('a SHEIN aceita no máximo 2 variações (cor e tamanho)');
+    const vT=P.vars.find(v=>v.tam||pxEhTam(v.nome)),vC=P.vars.find(v=>v!==vT);
+    linha('SHEIN: categoria e regras...');
+    const prep=await sheinApi(c,'preparar',{titulo:P.titulo});
+    if(!prep.ok)throw new Error(prep.erro||'não deu pra ler a SHEIN');if(!prep.categoria)throw new Error(prep.aviso||'a SHEIN não sugeriu categoria');
+    const A=prep.atributos||[];const aCor=A.find(a=>a.tipo===1&&a.principal),aTam=A.find(a=>a.tipo===1&&!a.principal);
+    if(!aCor)throw new Error(`categoria "${prep.categoria.nome}" sem atributo principal`);
+    const produtoTxt=`${P.titulo}\n${String(P.descricao||'').slice(0,500)}`;
+    // cor (SKC): pelo nome; o que não bater a IA escolhe na lista da SHEIN
+    const cores=vC?vC.opcoes.map(o=>({nome:o.nome,foto:o.foto})):[{nome:'(cor do produto)',foto:null}];
+    const semCor=[];cores.forEach((x,i)=>{x.valueId=vC?sheinAcharValor(aCor.valores,x.nome):null;if(!x.valueId)semCor.push(i);});
+    if(semCor.length){linha('SHEIN: escolhendo as cores...');const r=await sheinIA(semCor.map(i=>({nome:vC?`Cor da SHEIN equivalente a "${cores[i].nome}"`:'Cor principal do produto',valores:aCor.valores})),produtoTxt);
+      semCor.forEach((i,k)=>{if(r[k]?.id)cores[i].valueId=r[k].id;});}
+    const repet=cores.map(x=>x.valueId).filter((v,i,a)=>v&&a.indexOf(v)!==i);
+    if(repet.length&&!prep.padrao?.corRepetida)throw new Error('duas cores caíram no mesmo valor da SHEIN (a SHEIN não aceita) — renomeie as cores na origem');
+    // tamanho (SKU)
+    let tams=[];
+    if(vT){if(!aTam)throw new Error(`categoria "${prep.categoria.nome}" não tem tamanho`);
+      tams=vT.opcoes.map(o=>{const n=migTamLimpo(o.nome);const id=sheinAcharValor(aTam.valores,n)||(/^(u|unico|tamanho unico)$/i.test(sheinSem(n))?(aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)))||{}).id:null);return{nome:o.nome,valueId:id,campos:o.campos||{},veste:o.veste};});
+      const sem=tams.filter(t=>!t.valueId).map(t=>t.nome);if(sem.length)throw new Error(`tamanho sem equivalente na SHEIN: ${sem.join(', ')}`);}
+    else if(aTam?.obrigatorio){const u=aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)));if(!u)throw new Error('a categoria exige tamanho e o produto não tem');tams=[{nome:'Único',valueId:u.id,campos:{},veste:'36/42'}];}
+    // tabela de medidas: o que a origem tiver + quadro "Medidas pra SHEIN" + régua BR (busto/cintura/quadril pelo veste)
+    const extra={};for(const t of dirLerTamanhos(ctx.sheinMedidas||''))if(t.tam)extra[String(t.tam).toUpperCase()]=t.campos;
+    const regua=Object.fromEntries(dirMedidasGuia(tams.map(t=>({tam:migTamLimpo(t.nome),campos:{...(t.veste?{Veste:t.veste}:{}),...t.campos}}))).map(x=>[String(x.tam).toUpperCase(),x.campos]));
+    const medAttrs=A.filter(a=>a.tipo===2);const falta=[];
+    for(const t of tams){const k=migTamLimpo(t.nome).toUpperCase();const campos={...(regua[k]||{}),...t.campos,...(extra[k]||{})};t.medidas={};
+      for(const a of medAttrs){const v=sheinMedida(a.nome,campos);if(v)t.medidas[a.id]=v;else if(a.obrigatorio)falta.push(`${a.nome.replace(/\s*\(cm\)/,'')} (${t.nome})`);}}
+    if(falta.length)throw new Error(`faltam medidas pra SHEIN: ${falta.join(', ')} — preencha o quadro "Medidas pra SHEIN" (ex.: M: comprimento 60)`);
+    // atributos obrigatórios do produto (Material, Elasticidade...) pela IA
+    const obrig=A.filter(a=>(a.tipo===3||a.tipo===4)&&a.obrigatorio);const atributos=[];
+    if(obrig.length){linha('SHEIN: preenchendo a ficha...');const r=await sheinIA(obrig.map(a=>({nome:a.nome,valores:a.valores})),produtoTxt);
+      obrig.forEach((a,i)=>{if(r[i]?.id)atributos.push({attribute_id:a.id,attribute_value_id:r[i].id});else if(r[i]?.extra)atributos.push({attribute_id:a.id,attribute_extra_value:r[i].extra});});
+      const sem=obrig.filter(a=>!atributos.some(x=>x.attribute_id===a.id)).map(a=>a.nome);if(sem.length)throw new Error(`a IA não preencheu: ${sem.join(', ')}`);}
+    // preço e SKUs
+    const base=String(P.sku||sheinSem(P.titulo).split(' ').slice(0,3).join('-').toUpperCase()||'LB').slice(0,60);const usados=new Set();
+    const skus=P.skus.map(s=>{const cor=vC?s.op[P.vars.indexOf(vC)]:cores[0].nome,tam=vT?s.op[P.vars.indexOf(vT)]:(tams[0]?.nome||null);
+      let sku=String(s.sku||[base,cor,tam].filter(x=>x&&x!=='(cor do produto)').join('-')).replace(/\s+/g,'').toUpperCase().slice(0,190);while(usados.has(sku))sku+='X';usados.add(sku);
+      return{cor,tam,preco:sheinPreco(s.liq),estoque:s.est,sku};});
+    if(skus.some(s=>!s.preco))throw new Error('não consegui calcular o preço');
+    const vendas=[...new Set(skus.map(s=>s.preco))];
+    const spec={categoryId:prep.categoria.id,productTypeId:prep.categoria.pt,titulo:String(P.titulo).slice(0,prep.padrao?.tituloMax||190),tituloMax:prep.padrao?.tituloMax||190,descricao:String(P.descricao||'').slice(0,5000),
+      supplierCode:base,idioma:prep.padrao?.idioma||'pt-br',site:prep.site,armazem:prep.armazens?.[0]?.id||null,corAttr:aCor.id,tamAttr:tams.length?aTam.id:null,
+      cores:cores.map(x=>({nome:x.nome,valueId:x.valueId,imagens:{}})),tamanhos:tams.map(t=>({nome:t.nome,valueId:t.valueId,medidas:t.medidas})),skus,atributos,
+      pesoG:Math.round((P.peso||0.5)*1000),dims:pxDimsOk(P.dims)?P.dims:{c:25,l:20,a:5}};
+    if(ctx.simular){spec.cores.forEach(x=>x.imagens={principal:'https://simulado/1.jpg',detalhes:[],quadrada:'https://simulado/1.jpg',cor:cores.length>1?'https://simulado/c.jpg':null});
+      const r=await sheinApi(c,'publicar',{spec,simular:1});if(!r.ok)throw new Error(r.erro);window.__pxCorpoShein=r.corpo;
+      return{id:null,msg:`simulado · ${prep.categoria.nome.split(' > ').pop()} · ${cores.length} cor(es) × ${Math.max(1,tams.length)} tam. · ${vendas.map(fmtR).join('/')}`};}
+    // fotos → URL da SHEIN (cada envio conta no plano da Fixie): detalhe = até 4 fotos gerais, 1 principal por cor (vale como quadrada), miniatura 80×80 se >1 cor
+    const subir=async(url,tipo)=>{const r=await sheinApi(c,'imagem',{tipo,base64:await sheinJpg(url,tipo===6?80:1200)});if(!r.ok)throw new Error('foto: '+r.erro);return r.url;};
+    const fotosCor=new Set(cores.map(x=>x.foto).filter(Boolean));const gerais=P.fotos.filter(u=>!fotosCor.has(u)).slice(0,4);const detalhes=[];
+    for(const u of gerais){linha(`SHEIN: fotos ${detalhes.length+1}/${gerais.length}`);detalhes.push(await subir(u,2));}
+    for(const [i,x] of cores.entries()){const foto=x.foto||P.fotos[0];if(!foto)throw new Error('produto sem foto');linha(`SHEIN: foto da cor ${i+1}/${cores.length}`);
+      const principal=await subir(foto,1);spec.cores[i].imagens={principal,detalhes,quadrada:principal,cor:cores.length>1?await subir(foto,6):null};}
+    linha('SHEIN: publicando...');
+    const r=await sheinApi(c,'publicar',{spec});if(!r.ok)throw new Error(r.erro);
+    return{id:String(r.spu),msg:`enviado pra análise da SHEIN · ${r.spu} · ${vendas.map(fmtR).join('/')}${r.avisos?.length?` · aviso: ${r.avisos[0]}`:''}`};
   }
 };
 
@@ -10609,8 +10700,8 @@ function pxRender(){
   const el=document.getElementById('pxPainel');if(!el||el.dataset.pronto)return;
   if(!isLincoln()){el.innerHTML='<div class="saude-vazio">Só Lincoln e Carol.</div>';return;}
   el.dataset.pronto='1';
-  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&['shopee','ml','tiktok'].filter(m=>pxTem(c,m)).length>=2).sort((a,b)=>a.nome.localeCompare(b.nome));
-  el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>De onde pra onde</h3></div><p class="prod-nota">Escolha o cliente, de onde copiar e pra onde (um ou mais). O preço sai do <b>mesmo valor a receber</b> da origem, com as regras de cada marketplace. Shopee nasce oculta (depois "Publicar"), ML já ativo, TikTok passa por análise.</p>
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&['shopee','ml','tiktok'].some(m=>pxTem(c,m))&&['shopee','ml','tiktok','shein'].filter(m=>pxTem(c,m)).length>=2).sort((a,b)=>a.nome.localeCompare(b.nome));
+  el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>De onde pra onde</h3></div><p class="prod-nota">Escolha o cliente, de onde copiar e pra onde (um ou mais). O preço sai do <b>mesmo valor a receber</b> da origem, com as regras de cada marketplace. Shopee nasce oculta (depois "Publicar"), ML já ativo, TikTok e SHEIN passam por análise.</p>
     <div class="px-rota">
       <div class="px-rota-col"><span>Cliente</span><select id="pxLoja" onchange="window.__pxLoja()"><option value="">Escolha…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
       <div class="px-rota-col"><span>De</span><div class="mp-pick" id="pxOrigens"><span style="font-size:12.5px;color:var(--text-dim);padding:10px 0">escolha o cliente</span></div><input type="hidden" id="pxOrigem"></div>
@@ -10618,14 +10709,22 @@ function pxRender(){
       <div class="px-rota-col"><span>Para</span><div class="mp-pick" id="pxDestinos"></div></div>
       <button class="btn btn-gold" style="margin-left:auto" onclick="window.__pxLer()">Ler produtos</button>
     </div></div>
+    <div id="pxSheinBox"></div>
     <div id="pxStatus" class="saude-vazio" style="margin-top:14px"></div><div id="pxLista" class="prod-lista"></div><div id="pxAcoes"></div>`;
 }
+// SHEIN exige tabela de medidas (ex.: Camiseta = Busto e Comprimento). Busto sai da régua pelo "veste"; o resto vem daqui.
+window.__pxSheinBox=()=>{const box=document.getElementById('pxSheinBox');if(!box)return;const on=!!document.querySelector('.pxDest[value="shein"]:checked');
+  if(!on){box.innerHTML='';return;}if(box.innerHTML)return;
+  box.innerHTML=`<div class="prod-box" style="margin-top:12px"><div class="prod-box-tit"><span class="prod-num">${mpIco('shein',18)}</span><h3>Medidas pra SHEIN</h3></div>
+    <p class="prod-nota">A SHEIN pede tabela de medidas em cm (na camiseta: <b>busto</b> e <b>comprimento</b>). O busto sai sozinho pela régua (P, M, G…); o que faltar, escreva aqui um tamanho por linha — vale pra todos os produtos desta cópia. Ex.: <code>M: comprimento 60</code></p>
+    <textarea id="pxSheinMedidas" rows="4" placeholder="P: comprimento 58\nM: comprimento 60\nG: comprimento 62"></textarea></div>`;};
 window.__pxLoja=()=>{
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('pxLoja').value);const so=document.getElementById('pxOrigem'),sd=document.getElementById('pxDestinos'),sob=document.getElementById('pxOrigens');
   if(!c){so.value='';sob.innerHTML='';sd.innerHTML='';return;}
   const tem=['shopee','ml','tiktok'].filter(m=>pxTem(c,m));const atual=tem.includes(so.value)?so.value:tem[0];so.value=atual;
   sob.innerHTML=tem.map(m=>`<label><input type="radio" name="pxOrigemR" value="${m}" ${m===atual?'checked':''} onchange="document.getElementById('pxOrigem').value=this.value;window.__pxLoja()">${mpIco(m)} ${PX_MP[m]}</label>`).join('');
-  sd.innerHTML=tem.filter(m=>m!==atual).map(m=>`<label><input type="checkbox" class="pxDest" value="${m}" checked>${mpIco(m)} ${PX_MP[m]}</label>`).join('');
+  sd.innerHTML=[...tem,...(pxTem(c,'shein')?['shein']:[])].filter(m=>m!==atual).map(m=>`<label><input type="checkbox" class="pxDest" value="${m}" ${m==='shein'?'':'checked'} onchange="window.__pxSheinBox()">${mpIco(m)} ${PX_MP[m]}</label>`).join('');
+  window.__pxSheinBox();
   px.linhas=[];px.criadosShopee=[];['pxLista','pxAcoes','pxStatus'].forEach(i=>document.getElementById(i).innerHTML='');
 };
 const pxChave=t=>migChave(t);
@@ -10648,7 +10747,8 @@ window.__pxLer=async()=>{
     for(const d of destinos){passo(`Conferindo o que já está ${d==='ml'?'no':'na'} ${PX_MP[d]}...`);
       if(d==='shopee')chaves[d]=await migNomesShopee(c,await shopeeGarantirTokenValido(c,'erp'));
       if(d==='ml')chaves[d]=await migTitulosMl(c);
-      if(d==='tiktok'){const r=await mig3Api(c,'produtos');chaves[d]=(r.produtos||[]).map(p=>p.titulo);}}
+      if(d==='tiktok'){const r=await mig3Api(c,'produtos');chaves[d]=(r.produtos||[]).map(p=>p.titulo);}
+      if(d==='shein'){const t=[];for(let pg=1;pg<=5;pg++){const r=await sheinApi(c,'produtos',{pagina:pg});if(!r.ok)break;for(const p of r.produtos||[])for(const k of p.skcList||[])for(const x of k.skcTitle||[])t.push(x.title);if(pg*10>=(r.total||0))break;}chaves[d]=t;}}
     const lig=c.produtosLigados||{};const mlSh=c.migracaoMlShopee||{};const shTt=c.migracaoShopeeTiktok||{};
     const ligado=(row,d)=>{if(lig[`${origem}_${row.id}`]?.[d])return true;
       if(origem==='ml'&&d==='shopee')return (row.ids||[]).some(i=>mlSh[i]);
@@ -10787,8 +10887,8 @@ window.__pxSel=(i,d)=>{const x=px.linhas.find(y=>y.i===i);if(x){x.sel[d]=!x.sel[
 window.__pxCopiar=async()=>{
   const c=px.c;const fila=px.linhas.filter(x=>px.destinos.some(d=>x.sel[d]&&!/^ok/.test(x.st[d]||'')));if(!c||!fila.length){showToast('Marque ao menos 1 cópia.');return;}
   const resumo=px.destinos.map(d=>`${PX_MP[d]}: ${fila.filter(x=>x.sel[d]).length}`).join(' · ');
-  if(!window.__pxSimular&&!await lbConfirmar(`Copiar da ${PX_MP[px.origem]} da ${c.nome}?\n${resumo}\nShopee nasce oculta; ML já ativo; TikTok vai pra análise.`,{okTxt:'Copiar'}))return;
-  const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular};
+  if(!window.__pxSimular&&!await lbConfirmar(`Copiar da ${PX_MP[px.origem]} da ${c.nome}?\n${resumo}\nShopee nasce oculta; ML já ativo; TikTok e SHEIN vão pra análise.`,{okTxt:'Copiar'}))return;
+  const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('pxSheinMedidas')?.value||''};
   for(const x of fila){
     let P;try{P=await pxLer[px.origem].detalhar(c,x,t=>{st.textContent=`${x.nome.slice(0,50)}: ${t}`;});if(!P.skus.length)throw new Error('sem variação com preço');}
     catch(e){for(const d of px.destinos)if(x.sel[d])x.st[d]='erro: '+e.message;pxRenderLista();console.error(e);continue;}
