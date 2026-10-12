@@ -1397,7 +1397,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       
       <button class="nav-item sidebar-item locked" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
       <button class="nav-item sidebar-item locked hidden" data-page="rh" id="navRhBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Financeiro RH 🔒</button>
-      <button class="nav-item sidebar-item locked hidden" data-page="dre" id="navDreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> DRE 🔒</button>
+      <button class="nav-item sidebar-item locked hidden" data-page="dre" id="navDreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> Financeiro LB 🔒</button>
       
       </nav>
     <div class="drive-status drive-off status-pill" id="driveStatus" style="cursor:pointer" title="Conectar Google Drive">
@@ -2048,16 +2048,17 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <div class="page" id="page-dre">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">DRE <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Demonstrativo de Resultado — dados reais puxados direto do Asaas.</p></div>
+          <div class="page-head-text"><h2 class="page-title">Financeiro LB <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Quanto entra, quanto sai e quanto sobra no mês — cuidado pelo Otto (IA). Detalhes do Asaas mais abaixo.</p></div>
           <div style="display:flex;gap:8px;margin-left:auto">
             <input type="month" id="dreMesInput" style="max-width:160px">
             <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">Atualizar</button>
           </div>
         </div>
+        <div id="finLB" style="margin:0 0 22px"></div>
         <div class="panel hidden" id="dashCobrancas" style="margin:0 0 20px"></div>
         <div class="sgmv-summary">
-          <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Receita<br>(Clientes)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
-          <div class="summary-card metric-card glow-coral"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Despesas<br>(Colaboradoras)</div></div></div><div class="sc-value metric-value" id="dreDespesas">R$ 0</div></div>
+          <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Recebido<br>(no Asaas)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
+          <div class="summary-card metric-card glow-coral"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saídas por PIX<br>(no Asaas)</div></div></div><div class="sc-value metric-value" id="dreDespesas">R$ 0</div></div>
           <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Resultado<br>Líquido</div></div></div><div class="sc-value metric-value" id="dreResultado">R$ 0</div></div>
           <div class="summary-card metric-card glow-purple"><div class="sc-top"><div class="sc-icon purple metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><div><div class="sc-label">MRR<br>(Recorrência Ativa)</div></div></div><div class="sc-value metric-value" id="dreMrr">R$ 0</div><div class="sc-foot" id="dreMrrFoot">&nbsp;</div></div>
         </div>
@@ -4438,6 +4439,40 @@ window.__dreAtualizar=async()=>{
   }catch(e){showToast('Erro de conexão ao buscar o DRE.');console.error(e);}
 };
 
+// ---------- Financeiro LB (Otto) — lb-shopee-gmv/api/agentes?acao=financeiro_lb (12/10/2026) ----------
+let finCustos=[];
+async function finRender(){
+  const el=document.getElementById('finLB');if(!el)return;
+  const mesIn=document.getElementById('dreMesInput');if(mesIn&&!mesIn.value)mesIn.value=new Date(Date.now()-3*3600000).toISOString().slice(0,7);
+  el.innerHTML='<div class="empty-state" style="padding:16px">O Otto está fazendo as contas…</div>';
+  try{
+    const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'financeiro_lb',mes:mesIn?.value})})).json();
+    if(!r.ok)throw new Error(r.erro);
+    finCustos=r.custos.itens.filter(i=>!i.automatico).map(i=>({...i}));
+    const cor=r.resultado>=0?'#10b981':'#ef4444';
+    const card=(rot,val,sub,c)=>`<div class="cv-card" style="border-color:${c||'var(--border)'}"><div class="cv-sub">${rot}</div><div class="cv-letra" style="font-size:24px;color:${c||'inherit'}">${val}</div><div class="cv-sub">${sub||''}</div></div>`;
+    el.innerHTML=`<div class="cv-cards">${card('Entra (mensalidades)',fmtR(r.receitaPrevista),`${r.clientesPagantes} clientes pagantes · ticket ${fmtR(r.ticketMedio)}${r.clientesGratuitos?` · ${r.clientesGratuitos} gratuitos`:''}`,'#10b981')}${card('Sai (custos do mês)',fmtR(r.custos.total),`fixos ${fmtR(r.custos.fixos)} · tráfego ${fmtR(r.custos.trafego)} · UpSeller ${fmtR(r.custos.upseller)}`,'#ef4444')}${card('Sobra',fmtR(r.resultado),r.margem!=null?`margem ${String(r.margem).replace('.',',')}%`:'',cor)}${card('Ponto de equilíbrio',`${r.pontoDeEquilibrio??'—'} clientes`,`pra pagar os custos (custo por cliente ${fmtR(r.custoPorCliente)})`)}</div>
+      <p style="font-size:11.5px;color:var(--text-dim);margin:-4px 0 12px">Entra = mensalidade cadastrada de cada cliente ativo (o recebido de verdade está no Asaas, abaixo). Tráfego do Meta e UpSeller entram sozinhos.${r.trafegoErro?' (Tráfego: '+esc(r.trafegoErro)+')':''}</p>
+      <div class="cm-secao"><h3 style="margin-bottom:10px">Custos do mês</h3><div id="finCustosLista"></div>
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="window.__finAdd()">+ Adicionar custo</button><button class="btn btn-gold btn-sm" onclick="window.__finSalvar()">Salvar custos</button></div>
+        ${r.custos.itens.filter(i=>i.automatico).map(i=>`<div class="cm-item" style="opacity:.85"><span class="nome">${esc(i.nome)} <span style="font-size:11px;color:var(--text-dim)">(automático)</span></span><b style="color:var(--red)">-${fmtR(i.valor)}</b></div>`).join('')}</div>`;
+    finDesenharCustos();
+  }catch(e){el.innerHTML=`<div class="empty-state" style="padding:16px">Não consegui calcular: ${esc(e.message)}</div>`;}
+}
+function finDesenharCustos(){
+  const l=document.getElementById('finCustosLista');if(!l)return;
+  l.innerHTML=finCustos.map((c,i)=>`<div class="cm-item" style="gap:8px"><input value="${esc(c.nome)}" oninput="window.__finEd(${i},'nome',this.value)" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:inherit"><input value="${lbFmtValorBR(c.valor)}" inputmode="decimal" oninput="window.__finEd(${i},'valor',this.value)" style="width:120px;text-align:right;background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:inherit"><button class="btn btn-ghost btn-sm" onclick="window.__finDel(${i})" title="Remover">✕</button></div>`).join('')||'<div class="empty-state">Nenhum custo fixo.</div>';
+}
+window.__finEd=(i,k,v)=>{finCustos[i][k]=k==='valor'?lbValorBR(v):v;};
+window.__finAdd=()=>{finCustos.push({nome:'',valor:0,categoria:''});finDesenharCustos();};
+window.__finDel=i=>{finCustos.splice(i,1);finDesenharCustos();};
+window.__finSalvar=async()=>{
+  const lista=finCustos.filter(c=>c.nome.trim()&&Number(c.valor)>0).map(c=>({nome:c.nome.trim(),valor:Number(c.valor),categoria:c.categoria||''}));
+  try{await setDoc(doc(db,'configuracoes','financeiroLB'),{custosFixos:lista,atualizadoEm:serverTimestamp(),atualizadoPor:currentUser||''},{merge:true});showToast('Custos salvos.');finRender();}
+  catch(e){showToast('Erro ao salvar: '+e.message);}
+};
+document.querySelector('.nav-item[data-page="dre"]')?.addEventListener('click',()=>setTimeout(()=>{finRender();const m=document.getElementById('dreMesInput');if(m?.value)window.__dreAtualizar?.();},150));
+document.getElementById('dreMesInput')?.addEventListener('change',()=>finRender());
 /* ================= V2 — CLIENTE 360 ================= */
 let c360Atual=null;
 function renderClient360(c){
