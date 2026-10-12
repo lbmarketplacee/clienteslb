@@ -17,8 +17,8 @@ header{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:
 .logo{font-family:Oswald;font-size:24px;font-weight:700;color:var(--gold)}.logo small{font-family:Inter;font-size:10px;color:var(--dim);letter-spacing:.3em;display:block;margin-top:-3px}
 .selo{font-size:11px;border:1px solid var(--gold);color:var(--gold2);padding:3px 10px;border-radius:99px;letter-spacing:.06em}
 .hdr-num{margin-left:auto;display:flex;gap:22px}.hdr-num div{text-align:right}.hdr-num b{font-family:Oswald;font-size:22px;display:block}.hdr-num span{font-size:11px;color:var(--dim)}
-main{flex:1;display:grid;grid-template-columns:1fr 360px;min-height:0}
-#sala{position:relative;overflow:hidden;background:var(--bg)}
+main{flex:1;display:grid;grid-template-columns:1fr 360px;height:calc(100vh - 66px)}
+#sala{position:relative;overflow:hidden;background:var(--bg);height:100%}
 #palco{position:absolute;left:0;top:0;width:1400px;height:860px;transform-origin:0 0}
 /* parede do fundo */
 .parede{position:absolute;left:0;right:0;top:0;height:230px;background:linear-gradient(#1a1712,#13110d);border-bottom:6px solid #2b2620}
@@ -71,7 +71,7 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 .breve input{width:100%;margin-top:8px;background:#0f0e0b;border:1px solid var(--borda);border-radius:99px;padding:9px 14px;color:var(--dim);font:inherit}
 #login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9}
 #login button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:12px 26px;font-weight:700;font-size:15px;cursor:pointer}
-@media(max-width:900px){main{grid-template-columns:1fr}#sala{height:62vw;min-height:300px}aside{border-left:0;border-top:1px solid var(--borda);max-height:none}.hdr-num{display:none}}
+@media(max-width:900px){main{grid-template-columns:1fr;height:auto}#sala{height:62vw;min-height:300px}aside{border-left:0;border-top:1px solid var(--borda);max-height:none}.hdr-num{display:none}}
 </style>
 </head>
 <body>
@@ -226,7 +226,7 @@ function painel(){
   if(a.id==='leo'){const c=extra.crm;extraHtml=`<div class="nums"><div><b>${c.novos||0}</b><span>leads na semana</span></div><div><b>${c.agendados||0}</b><span>agendados</span></div><div><b>${c.total||0}</b><span>no CRM</span></div></div>`;}
   if(a.id==='max'){const t=extra.tarefas;extraHtml=`<div class="lista">${Object.entries(t.porPessoa||{}).map(([p,n])=>`<div>${esc(p)}<em>${n} tarefa(s) abertas criadas pela IA</em></div>`).join('')||'<div>Nenhuma tarefa aberta</div>'}</div>`;}
   $('painel').innerHTML=`<div class="perfil">${avatarSVG(a,74).replace('class="avatar"','')}<div><h2>${a.nome}</h2><p>${a.cargo}</p><div class="chefe">Supervisão: <b>${a.chefe}</b></div></div></div>
-    <div class="bloco"><div class="nums"><div><b>${s.hoje}</b><span>hoje</span></div><div><b>${a.tipos.length?semana:'—'}</b><span>7 dias</span></div><div><b style="color:${s.prob?'var(--verm)':'inherit'}">${s.prob}</b><span>problemas</span></div></div></div>
+    <div class="bloco"><div class="nums"><div><b>${s.hoje}</b><span>hoje</span></div><div><b>${a.tipos.length?semana:'—'}</b><span>7 dias</span></div><div><b style="color:${s.prob?'var(--verm)':'inherit'}">${s.prob}</b><span>${a.gerente?'atrasadas':'problemas'}</span></div></div></div>
     <div class="bloco"><h3>O que eu faço</h3><ul class="faz">${a.faz.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>
     ${extraHtml?`<div class="bloco"><h3>${a.id==='davi'?'Lojas que precisam de atenção':a.id==='leo'?'Comercial':'Tarefas pra equipe humana'}</h3>${extraHtml}</div>`:''}
     ${meus.length?`<div class="bloco"><h3>Últimos trabalhos</h3><div class="lista">${meus.map(l=>`<div class="${l.resultado==='falhou'||l.resultado==='erro'?'ruim':''}">${esc(fala(l))}<em>${hora(l._t)}</em></div>`).join('')}</div></div>`:''}
