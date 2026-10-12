@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sua equipe LB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+/* "Sua equipe LB" (12/10/2026): página pública pro CLIENTE ver o que os funcionários de IA da LB fizeram na loja dele no mês.
+   Dados: lb-shopee-gmv/api/agentes?acao=equipe_publica&t=TOKEN (só o que deu certo; nada de falha interna nem dado financeiro da LB). */
+:root{--bg:#0d0c0a;--card:#16140f;--borda:#2c2922;--gold:#d4a94a;--gold2:#f0d791;--txt:#f4efe3;--dim:#a8a191}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(900px 500px at 50% -10%,#2a2215 0%,var(--bg) 60%);background-color:var(--bg);color:var(--txt);font-family:Inter,sans-serif;min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:32px 16px 60px}
+.topo{text-align:center}
+.lb{font-family:'Playfair Display',Georgia,serif;font-size:58px;line-height:1;background:linear-gradient(180deg,#f3d99a,#c49a4c 60%,#8e6a2c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lb small{display:block;font-family:Inter;font-size:12px;letter-spacing:.35em;color:#d9b77a;-webkit-text-fill-color:#d9b77a;margin-top:4px}
+h1{font-family:Oswald;font-size:34px;margin-top:22px;letter-spacing:.01em}h1 span{color:var(--gold)}
+.sub{color:var(--dim);font-size:14px;margin-top:6px;line-height:1.5}
+.destaque{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:24px 0 8px}
+.destaque div{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:12px 18px;min-width:150px;text-align:center}
+.destaque b{display:block;font-family:Oswald;font-size:30px;color:var(--gold2)}.destaque span{font-size:12px;color:var(--dim)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:22px}
+.ag{background:var(--card);border:1px solid var(--borda);border-radius:18px;padding:16px;position:relative;overflow:hidden}
+.ag:before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:var(--cor)}
+.ag-top{display:flex;gap:12px;align-items:center}.ag-top svg{width:62px;height:62px;flex:0 0 auto}
+.ag-top b{font-family:Oswald;font-size:22px;display:block}.ag-top span{font-size:12.5px;color:var(--dim)}
+.num{margin-left:auto;text-align:right}.num b{font-family:Oswald;font-size:28px;color:var(--cor)}.num span{display:block;font-size:11px;color:var(--dim)}
+.ag ul{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:6px}.ag li{font-size:13px;display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--borda);padding-top:6px}.ag li em{font-style:normal;color:var(--gold2);font-weight:700;white-space:nowrap}
+.ag p{font-size:13px;color:var(--dim);margin-top:10px;line-height:1.5}
+.rodape{text-align:center;color:var(--dim);font-size:12px;margin-top:34px;line-height:1.6}
+.erro{text-align:center;margin-top:80px;color:var(--dim)}
+@media(max-width:600px){.lb{font-size:46px}h1{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="erro">Carregando…</div></div>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const AGENTES={
+  lia:{nome:'Lia',cargo:'Promoções',cor:'#e0a352',acess:'estrela',faz:'Cria as ofertas relâmpago, coloca seus produtos nas campanhas e mantém desconto e cupom sempre ativos.'},
+  teo:{nome:'Téo',cargo:'Tráfego pago',cor:'#4d8ef0',acess:'fone',faz:'Coloca cada produto novo no Ads, impulsiona os que mais vendem e corta anúncio que gasta sem vender.'},
+  nina:{nome:'Nina',cargo:'Catálogo e anúncios',cor:'#a46bf0',acess:'lapis',faz:'Recebe os produtos que você manda pelo link e prepara os anúncios em cada marketplace.'},
+  davi:{nome:'Davi',cargo:'Saúde da loja',cor:'#4dd6a0',acess:'cruz',faz:'Confere a saúde da sua loja 4 vezes por dia e avisa a equipe antes de qualquer penalidade.'},
+  iris:{nome:'Íris',cargo:'Relatórios',cor:'#f06bb0',acess:'oculos',faz:'Acompanha suas vendas todos os dias e prepara o seu relatório do mês.'},
+};
+function avatarSVG(a,tam=96){
+  const c=a.cor;
+  const acc={
+    estrela:`<path d="M48 4l3 7 7 .6-5.4 4.6 1.7 7L48 19.6 41.7 23.2l1.7-7L38 11.6l7-.6z" fill="${c}"/>`,
+    fone:`<path d="M22 46a26 26 0 0 1 52 0" fill="none" stroke="#1d1a14" stroke-width="5"/><rect x="16" y="42" width="10" height="16" rx="4" fill="${c}"/><rect x="70" y="42" width="10" height="16" rx="4" fill="${c}"/><path d="M75 58q0 12-14 13" fill="none" stroke="#1d1a14" stroke-width="3"/>`,
+    lapis:`<rect x="70" y="6" width="7" height="26" rx="2" transform="rotate(25 73 19)" fill="${c}"/>`,
+    cruz:`<rect x="44" y="6" width="8" height="20" rx="2" fill="${c}"/><rect x="38" y="12" width="20" height="8" rx="2" fill="${c}"/>`,
+    oculos:`<circle cx="38" cy="50" r="9" fill="none" stroke="#1d1a14" stroke-width="3"/><circle cx="58" cy="50" r="9" fill="none" stroke="#1d1a14" stroke-width="3"/><path d="M47 50h2" stroke="#1d1a14" stroke-width="3"/>`,
+    gravata:`<path d="M48 84l-6 8 6 4 6-4z" fill="${c}"/>`,
+  }[a.acess]||'';
+  return `<svg class="avatar" viewBox="0 0 96 96" width="${tam}" height="${tam}">
+    <ellipse cx="48" cy="92" rx="24" ry="4" fill="#0006"/>
+    <path d="M24 96c0-14 10-22 24-22s24 8 24 22z" fill="${c}"/><path d="M38 76h20v6H38z" fill="#0003"/>
+    <line x1="48" y1="20" x2="48" y2="28" stroke="#cfc8b6" stroke-width="3"/><circle cx="48" cy="18" r="4" fill="${c}"/>
+    <rect x="22" y="28" width="52" height="44" rx="16" fill="#efe9da"/><rect x="28" y="36" width="40" height="28" rx="11" fill="#1d1a14"/>
+    <circle cx="39" cy="50" r="4.5" fill="${c}"><animate attributeName="r" values="4.5;4.5;.6;4.5" keyTimes="0;.92;.96;1" dur="${3+Math.random()*2}s" repeatCount="indefinite"/></circle>
+    <circle cx="57" cy="50" r="4.5" fill="${c}"><animate attributeName="r" values="4.5;4.5;.6;4.5" keyTimes="0;.92;.96;1" dur="${3+Math.random()*2}s" repeatCount="indefinite"/></circle>
+    <path d="M42 58q6 4 12 0" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>
+    ${acc}</svg>`;
+}
+
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+(async()=>{
+  const t=new URLSearchParams(location.search).get('t');const app=document.getElementById('app');
+  try{
+    const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes?acao=equipe_publica&t='+encodeURIComponent(t||''))).json();
+    if(!r.ok)throw new Error(r.erro||'Link inválido.');
+    const [a,m]=r.mes.split('-').map(Number);const total=Object.values(r.agentes).reduce((s,x)=>s+x.total,0);
+    const cards=['lia','teo','nina'].filter(id=>r.agentes[id]).map(id=>{const A=AGENTES[id],x=r.agentes[id];
+      return `<div class="ag" style="--cor:${A.cor}"><div class="ag-top">${avatarSVG(A,62).replace('class="avatar"','')}<div><b>${A.nome}</b><span>${A.cargo}</span></div><div class="num"><b>${x.total}</b><span>trabalhos no mês</span></div></div>
+        <ul>${Object.entries(x.porTipo).sort((p,q)=>q[1]-p[1]).slice(0,5).map(([k,n])=>`<li>${esc(k)}<em>${n}x</em></li>`).join('')}</ul><p>${A.faz}</p></div>`;});
+    cards.push(`<div class="ag" style="--cor:${AGENTES.davi.cor}"><div class="ag-top">${avatarSVG(AGENTES.davi,62).replace('class="avatar"','')}<div><b>Davi</b><span>Saúde da loja</span></div><div class="num"><b>${r.extras.saudeLida?'4x':'—'}</b><span>por dia</span></div></div><p>${AGENTES.davi.faz}</p></div>`);
+    cards.push(`<div class="ag" style="--cor:${AGENTES.iris.cor}"><div class="ag-top">${avatarSVG(AGENTES.iris,62).replace('class="avatar"','')}<div><b>Íris</b><span>Relatórios</span></div><div class="num"><b>6x</b><span>por dia</span></div></div><p>${AGENTES.iris.faz}</p></div>`);
+    app.innerHTML=`<div class="topo"><div class="lb">LB<small>MARKETPLACE</small></div>
+      <h1>Sua equipe LB · <span>${esc(r.loja)}</span></h1>
+      <p class="sub">Além do seu gestor, a LB tem uma equipe de inteligência artificial trabalhando na sua loja 24 horas por dia.<br>Isso é o que ela fez em ${MESES[m-1]} de ${a}.</p></div>
+      <div class="destaque"><div><b>${total}</b><span>trabalhos da equipe de IA no mês</span></div>${r.extras.vendasDoMes?`<div><b>R$ ${r.extras.vendasDoMes.toLocaleString('pt-BR')}</b><span>vendidos no mês até agora</span></div>`:''}${r.extras.promoGiroAtiva?`<div><b>${r.extras.promoGiroAtiva}</b><span>produtos parados em promoção agora</span></div>`:''}</div>
+      <div class="grid">${cards.join('')}</div>
+      <div class="rodape">LB Marketplace Assessoria · atualizado em ${new Date(r.em).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}<br>Dúvidas? Fale com o seu gestor na LB.</div>`;
+  }catch(e){app.innerHTML=`<div class="erro"><div class="lb" style="font-size:44px">LB</div><p style="margin-top:14px">${esc(e.message)}</p></div>`;}
+})();
+</script>
+</body>
+</html>

@@ -102,6 +102,9 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 .aprov-top{display:flex;gap:8px;align-items:center}.aprov-top svg{width:34px;height:34px;flex:0 0 auto}.aprov-top b{display:block;font-size:13px}.aprov-top em,.aprov em{font-style:normal;color:var(--dim);font-size:11px;display:block}
 .aprov p{margin:6px 0;color:var(--dim)}.aprov-corpo{margin:4px 0}.aprov-corpo .faz li{margin:2px 0 2px 16px}
 .aprov-bts{display:flex;gap:6px;margin-top:8px}.aprov-bts button{flex:1;border-radius:99px;padding:7px 10px;font:600 12px Inter;cursor:pointer;background:transparent;color:var(--txt);border:1px solid var(--borda)}.aprov-bts .ok{background:var(--gold);color:#16130d;border-color:var(--gold)}.aprov-bts button:disabled{opacity:.5}
+.chat{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;margin-bottom:8px}
+.msg{font-size:12.5px;line-height:1.45;padding:8px 11px;border-radius:12px;max-width:92%}.msg.eu{align-self:flex-end;background:#d4a94a26;border:1px solid #d4a94a55}.msg.agente{align-self:flex-start;background:#0f0e0b;border:1px solid var(--borda)}
+.chat-form{display:flex;gap:6px}.chat-form input{flex:1;background:#0f0e0b;border:1px solid var(--borda);border-radius:99px;padding:9px 14px;color:var(--txt);font:inherit;font-size:12.5px}.chat-form button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:0 14px;font-weight:700;cursor:pointer}
 #login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9}
 #login button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:12px 26px;font-weight:700;font-size:15px;cursor:pointer}
 body.tv main{grid-template-columns:1fr}body.tv aside{display:none}body.tv .balao{font-size:13px;width:240px}
@@ -111,7 +114,7 @@ body.tv main{grid-template-columns:1fr}body.tv aside{display:none}body.tv .balao
 <body>
 <header>
   <div class="logo">LB<small>MARKETPLACE</small></div>
-  <div><b style="font-family:Oswald;font-size:20px">Escritório LB</b> <span class="selo">AGÊNCIA DE IA</span> <a href="?tv=1" style="font-size:11px;color:var(--dim);margin-left:8px">modo TV</a></div>
+  <div><b style="font-family:Oswald;font-size:20px">Escritório LB</b> <span class="selo">AGÊNCIA DE IA</span> <a href="?tv=1" style="font-size:11px;color:var(--dim);margin-left:8px">modo TV</a> <a href="#" onclick="event.preventDefault();window.__escLinkCliente()" style="font-size:11px;color:var(--gold2);margin-left:8px">link pro cliente</a></div>
   <div class="hdr-num"><div><b id="hTrab">—</b><span>trabalhos hoje</span></div><div><b id="hSemana">—</b><span>nos últimos 7 dias</span></div><div><b id="hProb" style="color:var(--verm)">—</b><span>problemas hoje</span></div><div style="cursor:pointer" onclick="window.__escAprov()"><b id="hAprov" style="color:var(--amb)">—</b><span>esperando aprovação</span></div></div>
 </header>
 <main>
@@ -147,7 +150,7 @@ body.tv main{grid-template-columns:1fr}body.tv aside{display:none}body.tv .balao
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import{getFirestore,collection,query,orderBy,limit,where,onSnapshot,getDocs}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import{getFirestore,collection,query,orderBy,limit,where,onSnapshot,getDocs,addDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
@@ -186,7 +189,7 @@ const AGENTES=[
    tipos:[/^financeiro:/],
    faz:['Lê o caixa da Shopee de cada loja','Alerta queda forte de receita do cliente','Avisa mensalidade vencendo pelo WhatsApp da LB']},
   {id:'max',nome:'Max',cargo:'Gerente da equipe',cor:'#f0d791',acess:'gravata',chefe:'Lincoln',x:1235,y:650,gerente:true,tipos:[],
-   faz:['Acompanha o trabalho de todo mundo','Transforma problema em tarefa pra equipe humana','(fase 3) Briefing da manhã e distribuição do dia']},
+   faz:['Acompanha o trabalho de todo mundo','Transforma problema em tarefa pra equipe humana','Briefing da manhã: o dia de cada pessoa da equipe']},
 ];
 
 // ===== desenho do funcionário (robô LB com cor e acessório próprios) =====
@@ -215,7 +218,7 @@ const MESA=`<svg viewBox="0 0 210 74" preserveAspectRatio="none"><rect x="128" y
   <rect x="40" y="38" width="46" height="7" rx="2" fill="#2a2620"/><rect x="96" y="36" width="14" height="9" rx="2" fill="#e8e1d0"/></svg>`;
 
 // ===== estado =====
-let pend=[],logs=[],sel=null,extra={saude:{},crm:{},ia:{},tarefas:{},resumo:null};
+let chats={},pend=[],logs=[],sel=null,extra={saude:{},crm:{},ia:{},tarefas:{},resumo:null};
 const agenteDe=l=>{const k=`${l.marketplace||''}:${l.tipo||l.acao||''}`;return AGENTES.find(a=>a.tipos.some(r=>r.test(k)));};
 function fala(l){
   const n=l.cliente||'';const d=l.detalhes||{};const k=`${l.marketplace}:${l.tipo||l.acao}`;
@@ -268,7 +271,9 @@ function desenhar(){
 // balões aparecem um de cada vez, como se estivessem falando
 let falaI=0;setInterval(()=>{const ps=[...document.querySelectorAll('.posto')];ps.forEach(p=>p.classList.remove('fala'));if(ps.length){ps[falaI%ps.length].classList.add('fala');falaI++;}},3500);
 
-function painel(){
+// mantém o que está sendo digitado no chat quando os dados ao vivo redesenham o painel
+function painel(){const i=document.getElementById('chatInput');const v=i?.value||'',f=document.activeElement===i,ag=sel;painelRender();const j=document.getElementById('chatInput');if(j&&ag===sel){j.value=v;if(f)j.focus();}}
+function painelRender(){
   const a=AGENTES.find(x=>x.id===sel)||AGENTES.find(x=>x.gerente);
   const s=statusDe(a);const meus=logs.filter(l=>l._ag===a).slice(0,12);
   const semana=logs.filter(l=>l._ag===a).length;
@@ -278,11 +283,14 @@ function painel(){
   if(a.id==='max'){const t=extra.tarefas;extraHtml=`<div class="lista">${Object.entries(t.porPessoa||{}).map(([p,n])=>`<div>${esc(p)}<em>${n} tarefa(s) abertas criadas pela IA</em></div>`).join('')||'<div>Nenhuma tarefa aberta</div>'}</div>`;}
   $('painel').innerHTML=`<div class="perfil">${avatarSVG(a,74).replace('class="avatar"','')}<div><h2>${a.nome}</h2><p>${a.cargo}</p><div class="chefe">Supervisão: <b>${a.chefe}</b></div></div></div>
     <div class="bloco"><div class="nums"><div><b>${s.hoje}</b><span>hoje</span></div><div><b>${a.tipos.length?semana:'—'}</b><span>7 dias</span></div><div><b style="color:${s.prob?'var(--verm)':'inherit'}">${s.prob}</b><span>${a.gerente?'atrasadas':'problemas'}</span></div></div></div>
+    ${a.gerente&&extra.briefing?`<div class="bloco"><h3>Briefing de hoje</h3><div class="aprov" style="border-color:#d4a94a55;white-space:pre-wrap">${esc(extra.briefing.texto)}</div></div>`:''}
     ${(a.gerente?pend:pend.filter(p=>p.agente===a.id)).length?`<div class="bloco"><h3>Esperando sua aprovação${a.gerente?' (de toda a equipe)':''}</h3>${cartoes(a.gerente?pend:pend.filter(p=>p.agente===a.id))}</div>`:''}
     <div class="bloco"><h3>O que eu faço</h3><ul class="faz">${a.faz.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>
     ${extraHtml?`<div class="bloco"><h3>${a.id==='davi'?'Lojas que precisam de atenção':a.id==='leo'?'Comercial':'Tarefas pra equipe humana'}</h3>${extraHtml}</div>`:''}
     ${meus.length?`<div class="bloco"><h3>Últimos trabalhos</h3><div class="lista">${meus.map(l=>`<div class="${l.resultado==='falhou'||l.resultado==='erro'?'ruim':''}">${esc(fala(l))}<em>${hora(l._t)}</em></div>`).join('')}</div></div>`:''}
-    <div class="bloco"><h3>Conversar com ${a.nome}</h3><div class="breve">Fase 3: chat com ${a.nome}, que responde lendo os dados reais das lojas.<input disabled placeholder="Ex.: ${a.nome}, como foi a Primor no 10.10?"></div></div>`;
+    <div class="bloco"><h3>Conversar com ${a.nome}</h3><div class="chat" id="chatLista">${(chats[a.id]||[]).map(m=>`<div class="msg ${m.de}">${esc(m.texto).replace(/\n/g,'<br>')}</div>`).join('')||`<div class="breve">Pergunte qualquer coisa sobre as lojas — ${a.nome} responde lendo os dados reais. Ex.: "como foi a Primor no 10.10?"</div>`}</div>
+      <form class="chat-form" onsubmit="event.preventDefault();window.__escPerguntar('${a.id}')"><input id="chatInput" autocomplete="off" placeholder="Ex.: ${a.nome}, como está a Primor?"><button>Enviar</button></form></div>`;
+  const cl=document.getElementById('chatLista');if(cl)cl.scrollTop=cl.scrollHeight;
 }
 
 // ===== caixa de aprovações (fase 2) =====
@@ -323,6 +331,33 @@ function ouvirAprovacoes(){
     pend=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>ms(b.atualizadoEm)-ms(a.atualizadoEm));desenhar();painel();
   },e=>console.warn('[aprovacoes]',e));
 }
+// ===== chat com o agente (fase 3) =====
+const SHOPEE_GMV='https://lb-shopee-gmv.vercel.app/api/agentes',DIRETOR='https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
+async function idToken(){return auth.currentUser.getIdToken();}
+window.__escPerguntar=async(id)=>{
+  const inp=document.getElementById('chatInput');const pergunta=(inp?.value||'').trim();if(!pergunta)return;inp.value='';
+  const a=AGENTES.find(x=>x.id===id);const hist=chats[id]||(chats[id]=[]);
+  hist.push({de:'eu',texto:pergunta});hist.push({de:'agente',texto:`${a.nome} está olhando os dados…`,carregando:true});painel();
+  try{
+    const tk=await idToken();
+    const ctx=await (await fetch(SHOPEE_GMV,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tk},body:JSON.stringify({acao:'contexto',agente:id,pergunta})})).json();
+    if(!ctx.ok)throw new Error(ctx.erro||'sem contexto');
+    const r=await (await fetch(DIRETOR,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tk},body:JSON.stringify({acao:'agente_chat',agente:{nome:a.nome,cargo:a.cargo,faz:a.faz},contexto:ctx.contexto,historico:hist.filter(m=>!m.carregando).slice(0,-1),pergunta})})).json();
+    hist.pop();hist.push({de:'agente',texto:r.resposta||('Não consegui responder: '+(r.erro||'erro'))});
+    try{const hoje=new Date(Date.now()-3*3600000).toISOString().slice(0,10);await addDoc(collection(db,'iaUso'),{dia:hoje,mes:hoje.slice(0,7),quando:serverTimestamp(),tipo:'agente_chat',fotos:0,textos:1,videos:0,custoUSD:0.003,custoBRL:0.02,usuario:auth.currentUser?.email||''});}catch(e){}
+  }catch(e){hist.pop();hist.push({de:'agente',texto:'Deu erro: '+e.message});}
+  painel();
+};
+// ===== link "Sua equipe LB" pro cliente (fase 4) =====
+window.__escLinkCliente=async()=>{
+  const nomes=extra.clientes||[];const n=prompt('Link "Sua equipe LB" — digite o nome da loja:\n\n'+nomes.slice(0,60).map(c=>c.nome).join(' · '));if(!n)return;
+  const alvo=nomes.find(c=>c.nome.toLowerCase()===n.trim().toLowerCase())||nomes.find(c=>c.nome.toLowerCase().includes(n.trim().toLowerCase()));
+  if(!alvo)return alert('Loja não encontrada.');
+  const r=await (await fetch(SHOPEE_GMV,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await idToken()},body:JSON.stringify({acao:'equipe_link',clienteId:alvo.id})})).json();
+  if(!r.ok)return alert(r.erro);
+  try{await navigator.clipboard.writeText(r.url);}catch(e){}
+  if(confirm(`Link da ${r.loja} copiado:\n${r.url}\n\nAbrir pra ver?`))window.open(r.url,'_blank');
+};
 // ===== dados =====
 function ouvir(){
   onSnapshot(query(collection(db,'automacaoLog'),where('quando','>=',new Date(Date.now()-7*86400000)),orderBy('quando','desc'),limit(1500)),snap=>{
@@ -341,6 +376,8 @@ async function carregarExtras(){
   const leads=ls.docs.map(d=>d.data());const semana=new Date(Date.now()-7*86400000-3*3600000).toISOString().slice(0,10);
   extra.crm={total:leads.length,novos:leads.filter(l=>(l.createdDate||'')>=semana).length,agendados:leads.filter(l=>l.stage==='agendado').length};
   extra.ia={fotos:0,videos:0,textos:0};ia.docs.forEach(d=>{const x=d.data();extra.ia.fotos+=x.fotos||0;extra.ia.videos+=x.videos||0;extra.ia.textos+=x.textos||0;});
+  extra.clientes=cs.docs.map(d=>({id:d.id,nome:d.data().nome})).filter(c=>c.nome).sort((a,b)=>a.nome.localeCompare(b.nome));
+  try{const b=await getDocs(query(collection(db,'briefings'),orderBy('criadoEm','desc'),limit(1)));const x=b.docs[0]?.data();extra.briefing=x&&x.dia===hoje?x:null;}catch(e){}
   const r=rs.docs[0]?.data();extra.resumo=r&&new Date(ms(r.criadoEm)-3*3600000).toISOString().slice(0,10)===hoje?r:null;
   desenhar();painel();
 }
