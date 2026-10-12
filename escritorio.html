@@ -98,6 +98,10 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 .faz{font-size:12.5px;line-height:1.5;color:var(--txt)}.faz li{margin-left:16px}
 .breve{border:1px dashed var(--borda);border-radius:12px;padding:12px;font-size:12px;color:var(--dim)}
 .breve input{width:100%;margin-top:8px;background:#0f0e0b;border:1px solid var(--borda);border-radius:99px;padding:9px 14px;color:var(--dim);font:inherit}
+.aprov{background:#0f0e0b;border:1px solid #e0a35255;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;line-height:1.4}
+.aprov-top{display:flex;gap:8px;align-items:center}.aprov-top svg{width:34px;height:34px;flex:0 0 auto}.aprov-top b{display:block;font-size:13px}.aprov-top em,.aprov em{font-style:normal;color:var(--dim);font-size:11px;display:block}
+.aprov p{margin:6px 0;color:var(--dim)}.aprov-corpo{margin:4px 0}.aprov-corpo .faz li{margin:2px 0 2px 16px}
+.aprov-bts{display:flex;gap:6px;margin-top:8px}.aprov-bts button{flex:1;border-radius:99px;padding:7px 10px;font:600 12px Inter;cursor:pointer;background:transparent;color:var(--txt);border:1px solid var(--borda)}.aprov-bts .ok{background:var(--gold);color:#16130d;border-color:var(--gold)}.aprov-bts button:disabled{opacity:.5}
 #login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9}
 #login button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:12px 26px;font-weight:700;font-size:15px;cursor:pointer}
 @media(max-width:900px){main{grid-template-columns:1fr;height:auto}#sala{height:62vw;min-height:300px}aside{border-left:0;border-top:1px solid var(--borda);max-height:none}.hdr-num{display:none}}
@@ -107,7 +111,7 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 <header>
   <div class="logo">LB<small>MARKETPLACE</small></div>
   <div><b style="font-family:Oswald;font-size:20px">Escritório LB</b> <span class="selo">PRÉVIA · AGÊNCIA DE IA</span></div>
-  <div class="hdr-num"><div><b id="hTrab">—</b><span>trabalhos hoje</span></div><div><b id="hSemana">—</b><span>nos últimos 7 dias</span></div><div><b id="hProb" style="color:var(--verm)">—</b><span>problemas hoje</span></div></div>
+  <div class="hdr-num"><div><b id="hTrab">—</b><span>trabalhos hoje</span></div><div><b id="hSemana">—</b><span>nos últimos 7 dias</span></div><div><b id="hProb" style="color:var(--verm)">—</b><span>problemas hoje</span></div><div style="cursor:pointer" onclick="window.__escAprov()"><b id="hAprov" style="color:var(--amb)">—</b><span>esperando aprovação</span></div></div>
 </header>
 <main>
   <div id="sala"><div id="palco">
@@ -210,7 +214,7 @@ const MESA=`<svg viewBox="0 0 210 74" preserveAspectRatio="none"><rect x="128" y
   <rect x="40" y="38" width="46" height="7" rx="2" fill="#2a2620"/><rect x="96" y="36" width="14" height="9" rx="2" fill="#e8e1d0"/></svg>`;
 
 // ===== estado =====
-let logs=[],sel=null,extra={saude:{},crm:{},ia:{},tarefas:{},resumo:null};
+let pend=[],logs=[],sel=null,extra={saude:{},crm:{},ia:{},tarefas:{},resumo:null};
 const agenteDe=l=>{const k=`${l.marketplace||''}:${l.tipo||l.acao||''}`;return AGENTES.find(a=>a.tipos.some(r=>r.test(k)));};
 function fala(l){
   const n=l.cliente||'';const d=l.detalhes||{};const k=`${l.marketplace}:${l.tipo||l.acao}`;
@@ -230,6 +234,11 @@ function fala(l){
   return `${l.acao||l.tipo} · ${n}`;
 }
 function statusDe(a){
+  const minhas=pend.filter(p=>p.agente===a.id);
+  if(minhas.length){const b=statusBase(a);return{...b,cls:'esp',txt:`Tenho ${minhas.length} proposta(s) esperando você: ${minhas[0].titulo}`,trab:true};}
+  return statusBase(a);
+}
+function statusBase(a){
   const meus=logs.filter(l=>l._ag===a);const hoje=meus.filter(l=>l._t>=inicioHoje());
   const prob=hoje.filter(l=>l.resultado==='falhou'||l.resultado==='erro').length;
   const recente=meus[0]&&Date.now()-meus[0]._t<45*60000;
@@ -244,7 +253,7 @@ function desenhar(){
   let total=0,probs=0;
   $('postos').innerHTML=AGENTES.map(a=>{
     const s=statusDe(a);if(!['davi','mel','iris','max'].includes(a.id)){total+=s.hoje;probs+=s.prob;}
-    const st=s.cls==='prob'?'Precisa de atenção':s.cls==='esp'?'Esperando a equipe':s.trab?'Trabalhando':s.cls==='ok'?'Em dia':'Parado';
+    const st=s.cls==='prob'?'Precisa de atenção':s.cls==='esp'?(pend.some(p=>p.agente===a.id)?'Esperando sua aprovação':'Esperando a equipe'):s.trab?'Trabalhando':s.cls==='ok'?'Em dia':'Parado';
     return `<div class="posto ${s.trab?'trabalhando':''} ${sel===a.id?'sel':''}" data-id="${a.id}" style="left:${a.x}px;top:${a.y}px">
       <div class="balao">${esc(s.txt)}</div>
       ${s.hoje?`<div class="contador">${s.hoje}</div>`:''}
@@ -252,7 +261,7 @@ function desenhar(){
       <div class="etiq"><b>${a.nome}</b><span>${a.cargo}</span><div class="st ${s.cls}"><i></i>${st}</div></div></div>`;
   }).join('');
   const semana=logs.filter(l=>l._ag).length;
-  $('hTrab').textContent=total;$('hSemana').textContent=semana;$('hProb').textContent=probs;
+  $('hTrab').textContent=total;$('hAprov').textContent=pend.length;$('hSemana').textContent=semana;$('hProb').textContent=probs;
   $('tvNum').textContent=total;$('tvTxt').textContent=logs[0]?`último: ${hora(logs[0]._t)}`:'';
 }
 // balões aparecem um de cada vez, como se estivessem falando
@@ -271,10 +280,46 @@ function painel(){
     <div class="bloco"><h3>O que eu faço</h3><ul class="faz">${a.faz.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>
     ${extraHtml?`<div class="bloco"><h3>${a.id==='davi'?'Lojas que precisam de atenção':a.id==='leo'?'Comercial':'Tarefas pra equipe humana'}</h3>${extraHtml}</div>`:''}
     ${meus.length?`<div class="bloco"><h3>Últimos trabalhos</h3><div class="lista">${meus.map(l=>`<div class="${l.resultado==='falhou'||l.resultado==='erro'?'ruim':''}">${esc(fala(l))}<em>${hora(l._t)}</em></div>`).join('')}</div></div>`:''}
-    <div class="bloco"><h3>Esperando sua aprovação</h3><div class="breve">Fase 2: aqui ${a.nome} vai mostrar o que quer fazer (ex.: "colocar 6 produtos parados da SS Tendência com −15%") e você aprova com um clique.</div></div>
+    <div class="bloco"><h3>Esperando sua aprovação${a.gerente?' (de toda a equipe)':''}</h3>${cartoes(a.gerente?pend:pend.filter(p=>p.agente===a.id))}</div>
     <div class="bloco"><h3>Conversar com ${a.nome}</h3><div class="breve">Fase 3: chat com ${a.nome}, que responde lendo os dados reais das lojas.<input disabled placeholder="Ex.: ${a.nome}, como foi a Primor no 10.10?"></div></div>`;
 }
 
+// ===== caixa de aprovações (fase 2) =====
+const ADMINS=['lincoln@lbmarketplace.com.br','caroline@lbmarketplace.com.br'];
+const ehAdmin=()=>ADMINS.includes((auth.currentUser?.email||'').toLowerCase());
+const R$=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const faixaR=f=>f?.[0]===f?.[1]?R$(f[0]):`${R$(f?.[0])}–${R$(f?.[1])}`;
+function cartoes(lista){
+  if(!lista.length)return '<div class="breve">Nada esperando agora.</div>';
+  return lista.map(p=>{
+    const ag=AGENTES.find(a=>a.id===p.agente);const pv=p.previa||{};let corpo='',btOk='Aprovar',btNo='Recusar',trava='';
+    if(p.tipo==='promo_giro'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,60))}: ${faixaR(x.antes)} → <b>${faixaR(x.depois)}</b></li>`).join('')}</ul>${(p.dados?.itens||[]).length>8?`<em>… e mais ${p.dados.itens.length-8}</em>`:''}`;btOk='Aprovar e aplicar';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança de preço.';}
+    if(p.tipo==='diagnostico_relampago'){corpo=`<ul class="faz">${(pv.causas||[]).map(c=>`<li><b>${esc(c.titulo)}</b> (${c.vezes}x) — ${esc(c.sugestao)}</li>`).join('')}</ul>${pv.causas?.[0]?.exemplo?`<em>Ex.: ${esc(pv.causas[0].exemplo)}</em>`:''}`;btOk='Virar tarefa';btNo='Dispensar';}
+    if(p.tipo==='rascunho_produto'){corpo=`${pv.titulo?`<div>Título: <b>${esc(pv.titulo)}</b></div>`:`<div style="color:var(--amb)">Texto não saiu (${esc(pv.erroTexto||'')}) — gera no Criar anúncio.</div>`}${pv.precos?.shopee?`<div>Shopee: venda ${R$(pv.precos.shopee.venda)} · cheio ${R$(pv.precos.shopee.cheio)}${pv.precos.tiktok?` · TikTok ${R$(pv.precos.tiktok.venda)}`:''}</div>`:''}<div>${pv.fotos||0} fotos · ${(pv.marketplaces||[]).join(', ')}</div>${(pv.falta||[]).length?`<div style="color:var(--amb)">Falta: ${pv.falta.map(esc).join(' ')}</div>`:''}`;btOk='Abrir no Criar anúncio';btNo='Dispensar';}
+    return `<div class="aprov"><div class="aprov-top">${ag?avatarSVG(ag,34).replace('class="avatar"',''):''}<div><b>${esc(p.titulo)}</b><em>${esc(ag?.nome||p.agente)} · ${hora(ms(p.atualizadoEm||p.criadoEm))}</em></div></div>
+      ${p.descricao?`<p>${esc(p.descricao)}</p>`:''}<div class="aprov-corpo">${corpo}</div>
+      ${trava?`<div class="breve" style="margin-top:6px">${trava}</div>`:''}
+      <div class="aprov-bts">${trava?'':`<button class="ok" onclick="window.__escDecidir('${p._id}','aprovar')">${btOk}</button>`}<button onclick="window.__escDecidir('${p._id}','recusar')">${btNo}</button></div></div>`;
+  }).join('');
+}
+window.__escAprov=()=>{const p=pend[0];sel=p?(AGENTES.find(a=>a.id===p.agente)?.id||'max'):'max';desenhar();painel();};
+window.__escDecidir=async(id,decisao)=>{
+  const p=pend.find(x=>x._id===id);if(!p)return;
+  if(decisao==='aprovar'&&p.tipo==='promo_giro'&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
+  const bts=document.querySelectorAll(`[onclick*="${id}"]`);bts.forEach(b=>b.disabled=true);
+  try{
+    const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao})})).json();
+    if(!r.ok&&decisao==='aprovar')alert('Não deu certo: '+(r.erro||JSON.stringify(r.resultado||{})));
+    else if(p.tipo==='promo_giro'&&decisao==='aprovar')alert(`${r.resultado?.aplicados||0} produto(s) com −15% até ${r.resultado?.fim?new Date(r.resultado.fim).toLocaleDateString('pt-BR'):''}.`);
+    else if(p.tipo==='diagnostico_relampago'&&decisao==='aprovar')alert(`Tarefa criada pra ${r.resultado?.responsavel||'a equipe'}.`);
+    if(p.tipo==='rascunho_produto'&&decisao==='aprovar')window.open(`/?pedido=${p.dados?.pedidoId}`,'_blank');
+  }catch(e){alert('Erro: '+e.message);bts.forEach(b=>b.disabled=false);}
+};
+function ouvirAprovacoes(){
+  onSnapshot(query(collection(db,'aprovacoes'),where('status','==','pendente')),snap=>{
+    pend=snap.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>ms(b.atualizadoEm)-ms(a.atualizadoEm));desenhar();painel();
+  },e=>console.warn('[aprovacoes]',e));
+}
 // ===== dados =====
 function ouvir(){
   onSnapshot(query(collection(db,'automacaoLog'),where('quando','>=',new Date(Date.now()-7*86400000)),orderBy('quando','desc'),limit(1500)),snap=>{
@@ -304,7 +349,7 @@ $('postos').addEventListener('pointerup',e=>{const p=e.target.closest('.posto');
 
 onAuthStateChanged(auth,u=>{
   if(!u){$('login').style.display='flex';return;}
-  $('login').style.display='none';escala();desenhar();painel();ouvir();carregarExtras().catch(console.error);setInterval(()=>carregarExtras().catch(console.error),5*60000);
+  $('login').style.display='none';escala();desenhar();painel();ouvir();ouvirAprovacoes();carregarExtras().catch(console.error);setInterval(()=>carregarExtras().catch(console.error),5*60000);
 });
 $('btnLogin').onclick=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>alert(e.message));
 </script>
