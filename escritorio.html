@@ -178,7 +178,7 @@ function fala(l){
   if(/cupom_fixo/.test(k))return ruim?`Cupom da ${n} não renovou${l.motivo?': '+l.motivo:''}`:`Renovei o cupom da ${n}`;
   if(/promo_giro/.test(k))return `Promo de giro na ${n}`;
   if(/impulsionar/.test(k))return `Impulsionei ${(d.itens||[]).length||''} produto(s) da ${n}`;
-  if(/^shopee:ads/.test(k))return `${d.criados||''} produto(s) novos da ${n} no Ads`;
+  if(/^shopee:ads/.test(k)){const q=Array.isArray(d.criados)?d.criados.length:d.criados;return `${q||''} produto(s) novos da ${n} no Ads`;}
   if(/alerta_ads/.test(k))return `Avisei a ${n}: saldo do Ads zerado`;
   if(/pedido_produto/.test(k))return `${n} mandou produto novo pelo link`;
   if(/shein:produto/.test(k))return ruim?`Produto da ${n} não subiu na SHEIN`:`Subi produto da ${n} na SHEIN`;
