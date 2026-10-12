@@ -104,13 +104,14 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 .aprov-bts{display:flex;gap:6px;margin-top:8px}.aprov-bts button{flex:1;border-radius:99px;padding:7px 10px;font:600 12px Inter;cursor:pointer;background:transparent;color:var(--txt);border:1px solid var(--borda)}.aprov-bts .ok{background:var(--gold);color:#16130d;border-color:var(--gold)}.aprov-bts button:disabled{opacity:.5}
 #login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9}
 #login button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:12px 26px;font-weight:700;font-size:15px;cursor:pointer}
+body.tv main{grid-template-columns:1fr}body.tv aside{display:none}body.tv .balao{font-size:13px;width:240px}
 @media(max-width:900px){main{grid-template-columns:1fr;height:auto}#sala{height:62vw;min-height:300px}aside{border-left:0;border-top:1px solid var(--borda);max-height:none}.hdr-num{display:none}}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">LB<small>MARKETPLACE</small></div>
-  <div><b style="font-family:Oswald;font-size:20px">Escritório LB</b> <span class="selo">PRÉVIA · AGÊNCIA DE IA</span></div>
+  <div><b style="font-family:Oswald;font-size:20px">Escritório LB</b> <span class="selo">AGÊNCIA DE IA</span> <a href="?tv=1" style="font-size:11px;color:var(--dim);margin-left:8px">modo TV</a></div>
   <div class="hdr-num"><div><b id="hTrab">—</b><span>trabalhos hoje</span></div><div><b id="hSemana">—</b><span>nos últimos 7 dias</span></div><div><b id="hProb" style="color:var(--verm)">—</b><span>problemas hoje</span></div><div style="cursor:pointer" onclick="window.__escAprov()"><b id="hAprov" style="color:var(--amb)">—</b><span>esperando aprovação</span></div></div>
 </header>
 <main>
@@ -347,6 +348,8 @@ function escala(){const s=$('sala');const k=Math.min(s.clientWidth/1400,(s.clien
 addEventListener('resize',escala);
 $('postos').addEventListener('pointerup',e=>{const p=e.target.closest('.posto');if(!p)return;sel=p.dataset.id;desenhar();painel();});new ResizeObserver(escala).observe($('sala'));
 
+// Modo TV (?tv=1): sem painel lateral, os balões passam sozinhos
+if(new URLSearchParams(location.search).get('tv'))document.body.classList.add('tv');
 onAuthStateChanged(auth,u=>{
   if(!u){$('login').style.display='flex';return;}
   $('login').style.display='none';escala();desenhar();painel();ouvir();ouvirAprovacoes();carregarExtras().catch(console.error);setInterval(()=>carregarExtras().catch(console.error),5*60000);
