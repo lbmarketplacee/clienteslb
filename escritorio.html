@@ -258,7 +258,7 @@ async function carregarExtras(){
 
 // escala o escritório pra caber na área
 function escala(){const s=$('sala');const k=Math.min(s.clientWidth/1400,(s.clientHeight||860)/860);const p=$('palco');p.style.transform=`scale(${k})`;p.style.left=((s.clientWidth-1400*k)/2)+'px';p.style.top=Math.max(0,((s.clientHeight||860)-860*k)/2)+'px';}
-addEventListener('resize',escala);
+addEventListener('resize',escala);new ResizeObserver(escala).observe($('sala'));
 
 onAuthStateChanged(auth,u=>{
   if(!u){$('login').style.display='flex';return;}
