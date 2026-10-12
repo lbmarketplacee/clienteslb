@@ -1,0 +1,41 @@
+rules_version = '2';
+// Regras do Firestore (lb-gestao-clientes) — cópia de referência. Quem publica é o Lincoln no console.
+// 12/10/2026: financeiro da LB, RH (salários) e gastos pessoais deixam de ser legíveis pela equipe toda.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function equipe() {
+      return request.auth != null && request.auth.token.email in [
+        'lincoln@lbmarketplace.com.br',
+        'guilherme@lbmarketplace.com.br',
+        'caroline@lbmarketplace.com.br',
+        'mirela@lbmarketplace.com.br',
+        'felipesoares@potencialmidia.com'
+      ];
+    }
+    function diretoria() {
+      return request.auth != null && request.auth.token.email in ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br'];
+    }
+    function soLincoln() {
+      return request.auth != null && request.auth.token.email == 'lincoln@lbmarketplace.com.br';
+    }
+
+    // Tudo do sistema: equipe — MENOS financeiro, RH e gastos pessoais
+    match /{colecao}/{resto=**} {
+      allow read, write: if equipe() && !(colecao in ['financeiroLB', 'colaboradoras', 'gastosFixos', 'gastosHistorico']);
+    }
+    // Financeiro da LB e RH: só Lincoln e Carol
+    match /financeiroLB/{resto=**} { allow read, write: if diretoria(); }
+    match /colaboradoras/{resto=**} { allow read, write: if diretoria(); }
+    // Gastos pessoais do Lincoln: só ele
+    match /gastosFixos/{resto=**} { allow read, write: if soLincoln(); }
+    match /gastosHistorico/{resto=**} { allow read, write: if soLincoln(); }
+
+    // Portal do cliente: Roma Aviamentos lê só o próprio cadastro e só grava a conexão do Mercado Livre
+    match /clientes/X6EXAnrhX3J1MCKvt3Mw {
+      allow read: if request.auth != null && request.auth.token.email == 'roma@lbmarketplace.com.br';
+      allow update: if request.auth != null && request.auth.token.email == 'roma@lbmarketplace.com.br'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mlAccessToken','mlRefreshToken','mlUserId','mlTokenExpiraEm','mlConectadoEm','gmvMlAutomatico','gmvMlAtualizadoEm']);
+    }
+    // (removido 12/10/2026: acesso do revisor da TikTok — o app já foi aprovado)
+  }
+}
