@@ -295,6 +295,7 @@ function cartoes(lista){
   return lista.map(p=>{
     const ag=AGENTES.find(a=>a.id===p.agente);const pv=p.previa||{};let corpo='',btOk='Aprovar',btNo='Recusar',trava='';
     if(p.tipo==='promo_giro'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,60))}: ${faixaR(x.antes)} → <b>${faixaR(x.depois)}</b></li>`).join('')}</ul>${(p.dados?.itens||[]).length>8?`<em>… e mais ${p.dados.itens.length-8}</em>`:''}`;btOk='Aprovar e aplicar';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança de preço.';}
+    if(p.tipo==='ads_fracas'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,55))}: ${esc(x.motivo)}</li>`).join('')}</ul>${(p.dados?.campanhas||[]).length>8?`<em>… e mais ${p.dados.campanhas.length-8}</em>`:''}`;btOk='Pausar esses anúncios';btNo='Deixar como está';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança no Ads.';}
     if(p.tipo==='diagnostico_relampago'){corpo=`<ul class="faz">${(pv.causas||[]).map(c=>`<li><b>${esc(c.titulo)}</b> (${c.vezes}x) — ${esc(c.sugestao)}</li>`).join('')}</ul>${pv.causas?.[0]?.exemplo?`<em>Ex.: ${esc(pv.causas[0].exemplo)}</em>`:''}`;btOk='Virar tarefa';btNo='Dispensar';}
     if(p.tipo==='rascunho_produto'){corpo=`${pv.titulo?`<div>Título: <b>${esc(pv.titulo)}</b></div>`:`<div style="color:var(--amb)">Texto não saiu (${esc(pv.erroTexto||'')}) — gera no Criar anúncio.</div>`}${pv.precos?.shopee?`<div>Shopee: venda ${R$(pv.precos.shopee.venda)} · cheio ${R$(pv.precos.shopee.cheio)}${pv.precos.tiktok?` · TikTok ${R$(pv.precos.tiktok.venda)}`:''}</div>`:''}<div>${pv.fotos||0} fotos · ${(pv.marketplaces||[]).join(', ')}</div>${(pv.falta||[]).length?`<div style="color:var(--amb)">Falta: ${pv.falta.map(esc).join(' ')}</div>`:''}`;btOk='Abrir no Criar anúncio';btNo='Dispensar';}
     return `<div class="aprov"><div class="aprov-top">${ag?avatarSVG(ag,34).replace('class="avatar"',''):''}<div><b>${esc(p.titulo)}</b><em>${esc(ag?.nome||p.agente)} · ${hora(ms(p.atualizadoEm||p.criadoEm))}</em></div></div>
@@ -306,12 +307,13 @@ function cartoes(lista){
 window.__escAprov=()=>{const p=pend[0];sel=p?(AGENTES.find(a=>a.id===p.agente)?.id||'max'):'max';desenhar();painel();};
 window.__escDecidir=async(id,decisao)=>{
   const p=pend.find(x=>x._id===id);if(!p)return;
-  if(decisao==='aprovar'&&p.tipo==='promo_giro'&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
+  if(decisao==='aprovar'&&['promo_giro','ads_fracas'].includes(p.tipo)&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
   const bts=document.querySelectorAll(`[onclick*="${id}"]`);bts.forEach(b=>b.disabled=true);
   try{
     const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao})})).json();
     if(!r.ok&&decisao==='aprovar')alert('Não deu certo: '+(r.erro||JSON.stringify(r.resultado||{})));
     else if(p.tipo==='promo_giro'&&decisao==='aprovar')alert(`${r.resultado?.aplicados||0} produto(s) com −15% até ${r.resultado?.fim?new Date(r.resultado.fim).toLocaleDateString('pt-BR'):''}.`);
+    else if(p.tipo==='ads_fracas'&&decisao==='aprovar')alert(`${r.resultado?.pausadas||0} anúncio(s) pausado(s).`);
     else if(p.tipo==='diagnostico_relampago'&&decisao==='aprovar')alert(`Tarefa criada pra ${r.resultado?.responsavel||'a equipe'}.`);
     if(p.tipo==='rascunho_produto'&&decisao==='aprovar')window.open(`/?pedido=${p.dados?.pedidoId}`,'_blank');
   }catch(e){alert('Erro: '+e.message);bts.forEach(b=>b.disabled=false);}
