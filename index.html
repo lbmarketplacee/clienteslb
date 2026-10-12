@@ -1151,6 +1151,12 @@ body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .portal-aviso{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;line-height:1.5}
 .portal-aviso b{color:var(--gold)}
+.dt-secao{margin-top:34px;padding-top:22px;border-top:1px solid var(--border)}.dt-titulo{font-family:Oswald,sans-serif;font-size:18px;margin:0 0 6px}
+.dt-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;margin-top:12px}
+.dt-num{font-family:Oswald,sans-serif;font-size:30px;font-weight:600}.dt-sub{font-size:12.5px;color:var(--text-dim)}.dt-vezes{font-family:Oswald,sans-serif;font-size:40px;font-weight:700}
+.dt-loja summary{list-style:none;cursor:pointer}.dt-loja summary::-webkit-details-marker{display:none}
+.dt-badge{font-family:Oswald,sans-serif;font-weight:600;font-size:15px;border:1px solid;border-radius:8px;padding:2px 8px;min-width:52px;text-align:center}
+.dt-det{font-size:12.5px;padding:8px 12px 12px;display:flex;flex-direction:column;gap:6px}.dt-det ul{margin:4px 0 0 18px;padding:0}
 .cv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
 .cv-card{border:1px solid;border-radius:12px;padding:12px 14px;cursor:pointer}
 .cv-letra{font-family:Oswald,sans-serif;font-size:22px;font-weight:600}.cv-num{font-weight:600;font-size:14px}.cv-sub{font-size:12px;color:var(--text-dim);margin-top:2px}
@@ -2124,6 +2130,12 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           </div>
           <button class="btn btn-gold btn-sm" id="relClienteBtn" style="margin-bottom:20px">Gerar relatório do cliente</button>
           <div id="relResultado"></div>
+          <div class="dt-secao">
+            <h3 class="dt-titulo">Datas comemorativas</h3>
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Quanto todas as lojas venderam no dia da data (10.10, 11.11, Black Friday…) comparado com a média dos 7 dias anteriores. Por marketplace e por loja, com Ads do dia, produtos campeões e o que os robôs fizeram. Sai sozinho na manhã seguinte de cada data.</p>
+            <div class="cat-barra"><select id="dtData"></select><button class="btn btn-gold btn-sm" id="dtGerarBtn" onclick="window.__dtGerar(false)">Ver / gerar</button><button class="btn btn-ghost btn-sm" onclick="window.__dtGerar(true)" title="Lê tudo de novo nas APIs">Refazer</button><span id="dtProg" style="font-size:12px;color:var(--text-dim)"></span></div>
+            <div id="dtResultado"></div>
+          </div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="criarprodutos">
           <button class="chk-back-btn" onclick="window.__cmVoltar()">← Voltar</button>
@@ -8087,6 +8099,60 @@ document.getElementById('logRastreioFecharBtn')?.addEventListener('click',()=>do
 
 /* ============== 🏷️ GESTÃO DE CATÁLOGO (Produto) ============== */
 let prodSimClienteId=null,prodSimCache=null;
+// ---------- Datas comemorativas (11/10/2026) — backend lb-shopee-gmv/lib/datas-api.js via api/relatorio ----------
+const dt={carregado:false,rodando:false};
+async function dtApi(corpo){const r=await fetch(RELATORIO_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});return r.json();}
+async function dtRender(){
+  if(dt.carregado)return;dt.carregado=true;
+  const sel=document.getElementById('dtData');if(!sel)return;
+  sel.innerHTML='<option>Carregando…</option>';
+  try{
+    const r=await dtApi({acao:'data_lista'});if(!r.ok)throw new Error(r.erro);
+    const hoje=new Date(Date.now()-3*3600000).toISOString().slice(0,10);
+    const feitas=Object.fromEntries((r.feitas||[]).map(f=>[f.data,f]));
+    const passadas=r.calendario.filter(d=>d.data<hoje&&d.data>=new Date(Date.now()-400*86400000).toISOString().slice(0,10)).reverse();
+    const br=d=>d.split('-').reverse().join('/');
+    sel.innerHTML=passadas.map(d=>{const f=feitas[d.data];return `<option value="${d.data}">${esc(d.nome)} — ${br(d.data)}${f?(f.faltam?' (incompleto)':f.vezes!=null?` · ${String(f.vezes).replace('.',',')}x`:''):''}</option>`;}).join('');
+    const prox=r.calendario.find(d=>d.data>=hoje);
+    document.getElementById('dtProg').textContent=prox?`Próxima: ${prox.nome} (${br(prox.data)})`:'';
+    if(feitas[sel.value])window.__dtGerar(false,true);
+  }catch(e){sel.innerHTML='';dt.carregado=false;document.getElementById('dtProg').textContent='Erro: '+e.message;}
+}
+window.__dtGerar=async(refazer,soVer)=>{
+  if(dt.rodando)return;const data=document.getElementById('dtData').value;if(!data)return;
+  const prog=document.getElementById('dtProg'),btn=document.getElementById('dtGerarBtn');
+  dt.rodando=true;btn.disabled=true;
+  try{
+    let v=await dtApi({acao:'data_ver',data});if(!v.ok)throw new Error(v.erro);
+    if(!soVer&&(refazer||!v.geral||v.faltam)){
+      for(let i=0;i<12;i++){
+        prog.textContent=`Lendo as lojas nas APIs… ${v.lojasTotal?`${v.lojasTotal-(v.faltam??v.lojasTotal)} de ${v.lojasTotal}`:''}`;
+        const r=await dtApi({acao:'data_rodar',data,refazer:i===0&&refazer?1:0});if(!r.ok)throw new Error(r.erro);
+        v={...v,...r};if(!r.faltam)break;
+      }
+      v=await dtApi({acao:'data_ver',data});
+    }
+    prog.textContent=v.faltam?`Faltam ${v.faltam} lojas — clique de novo pra continuar`:`Atualizado ${new Date(v.atualizadoEm?._seconds?v.atualizadoEm._seconds*1000:v.atualizadoEm||Date.now()).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}`;
+    dtDesenhar(v);
+  }catch(e){prog.textContent='Erro: '+e.message;}
+  dt.rodando=false;btn.disabled=false;
+};
+function dtVezes(v){return v==null?'—':String(v).replace('.',',')+'x';}
+function dtCor(v){return v==null?'var(--text-dim)':v>=2?'#10b981':v>=1.2?'#f59e0b':'#ef4444';}
+function dtDesenhar(v){
+  const el=document.getElementById('dtResultado');const g=v.geral;
+  if(!g){el.innerHTML='<div class="empty-state" style="padding:20px">Ainda não gerado.</div>';return;}
+  const mps=Object.entries(g.marketplaces||{});
+  const lojas=(v.lojas||[]).slice().sort((a,b)=>(b.total?.vezes??-1)-(a.total?.vezes??-1));
+  const ROB={'shopee:oferta_relampago':'relâmpagos Shopee','tiktok:oferta_relampago':'relâmpagos TikTok','ml:oferta_relampago':'promoções ML','shopee:ads':'Ads Shopee'};
+  el.innerHTML=`<div class="dt-hero"><div><div class="dt-num">${fmtR(g.dia)}</div><div class="dt-sub">vendido no ${esc(v.nome)} por ${g.lojas} lojas · média de um dia normal ${fmtR(g.mediaBase)}</div></div><div class="dt-vezes" style="color:${dtCor(g.vezes)}">${dtVezes(g.vezes)}</div></div>
+    <div class="cv-cards">${mps.map(([mp,x])=>`<div class="cv-card" style="border-color:${dtCor(x.vezes)}55"><div class="cv-num">${esc(mp)}</div><div class="cv-letra" style="color:${dtCor(x.vezes)}">${dtVezes(x.vezes)}</div><div class="cv-sub">${fmtR(x.dia)} no dia · normal ${fmtR(x.mediaBase)}${x.pedidosDia?` · ${x.pedidosDia} pedidos`:''}</div></div>`).join('')}${g.adsDia?`<div class="cv-card" style="border-color:#3b82f655"><div class="cv-num">Ads no dia</div><div class="cv-letra" style="color:#3b82f6">${fmtR(g.adsDia)}</div><div class="cv-sub">ROAS ${g.roasDia??'—'}</div></div>`:''}</div>
+    <div class="cv-tabela">${lojas.map(l=>{const t=l.total||{};const top=Object.values(l.marketplaces||{}).flatMap(m=>m.top||[]).sort((a,b)=>b.valor-a.valor).slice(0,3);const ads=Object.entries(l.ads||{});const rob=Object.entries(l.robos||{}).map(([k,n])=>`${n} ${ROB[k]||k.replace(':',' ')}`).join(' · ');const err=Object.entries(l.erros||{}).filter(([k])=>k!=='robos');
+      return `<details class="dt-loja"><summary class="cv-linha"><div class="cv-nome"><b>${esc(l.cliente)}</b><span>${Object.entries(l.marketplaces||{}).map(([mp,x])=>`${mp} ${dtVezes(x.vezes)}`).join(' · ')}${err.length?' · <span style="color:#ef4444">faltou '+err.map(([k])=>k).join(', ')+'</span>':''}</span></div><div class="cv-val"><b>${fmtR(t.dia)}</b><span>normal ${fmtR(t.mediaBase)}</span></div><div class="dt-badge" style="color:${dtCor(t.vezes)};border-color:${dtCor(t.vezes)}55">${dtVezes(t.vezes)}</div></summary>
+      <div class="dt-det">${top.length?`<b>Mais vendidos no dia:</b><ul>${top.map(p=>`<li>${esc(p.nome)} — ${p.qtd} un. · ${fmtR(p.valor)} <span style="color:var(--text-dim)">(normal ${String(p.mediaQtdBase).replace('.',',')}/dia)</span></li>`).join('')}</ul>`:''}
+      ${ads.length?`<div><b>Ads:</b> ${ads.map(([n,a])=>`${n} ${fmtR(a.investidoDia)} no dia (normal ${fmtR(a.mediaInvestidoBase)}) · ROAS ${a.roasDia??'—'}`).join(' | ')}</div>`:''}
+      <div><b>Robôs (véspera + dia):</b> ${rob||'nada registrado'}</div>${err.length?`<div style="color:#ef4444">${err.map(([k,m])=>`${esc(k)}: ${esc(m)}`).join('<br>')}</div>`:''}</div></details>`;}).join('')}</div>`;
+}
 // ---------- Curva ABC + promo de giro (Shopee, 11/10/2026) — backend lb-shopee-gmv/api/curva.js ----------
 const CURVA_API='https://lb-shopee-gmv.vercel.app/api/relatorio'; // a curva mora no relatorio.js (limite de 12 funções da Vercel)
 const cv={clienteId:'',dados:null,filtro:'parados',sel:new Set(),carregando:false};
@@ -8471,6 +8537,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='shopee')window.__shopeeSubTab('apis');
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
   if(alvo==='shein')cmRenderShein();
+  if(alvo==='relatorio')dtRender();
   if(alvo==='criarprodutos'){const h=document.getElementById('prodHeroMps');if(h&&!h.innerHTML)h.innerHTML=['shopee','ml','tiktok'].map(m=>`<span title="${MP_L[m]}">${mpIco(m,17)}</span>`).join('');cpRender();pxRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
   if(alvo==='diretor'){const v=document.getElementById('vidSecao');const r=document.getElementById('dirResultado');if(v&&r&&v.parentElement!==r.parentElement){r.after(v);v.style.marginTop='32px';v.style.borderTop='1px solid var(--border)';}v?.classList.toggle('hidden',!isLincoln());if(isLincoln()){vidPrepararCampos();window.__vidFotos?.();}} // vídeo: só Lincoln e Carol
