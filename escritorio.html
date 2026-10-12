@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Escritório LB</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&family=Playfair+Display:wght@700&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
 /* Escritório LB — prévia (12/10/2026). Agência de IA: cada robô do sistema vira um funcionário com nome, mesa e status,
    alimentado AO VIVO pelo automacaoLog e pelos dados dos clientes. Fase 1 = visual (sem custo de IA). */
@@ -20,43 +20,72 @@ header{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:
 main{flex:1;display:grid;grid-template-columns:1fr 360px;height:calc(100vh - 66px)}
 #sala{position:relative;overflow:hidden;background:var(--bg);height:100%}
 #palco{position:absolute;left:0;top:0;width:1400px;height:860px;transform-origin:0 0}
-/* parede do fundo */
-.parede{position:absolute;left:0;right:0;top:0;height:230px;background:linear-gradient(#1a1712,#13110d);border-bottom:6px solid #2b2620}
-.parede .marca{position:absolute;left:50%;top:44px;transform:translateX(-50%);text-align:center}
-.parede .marca h1{font-family:Oswald;font-size:44px;white-space:nowrap;letter-spacing:.06em;color:var(--gold);text-shadow:0 0 30px #d4a94a55}
-.parede .marca p{font-size:13px;letter-spacing:.5em;color:var(--dim)}
-.janela{position:absolute;top:36px;width:190px;height:130px;border:6px solid #2e2922;border-radius:6px;background:linear-gradient(160deg,#27364a,#141c27 60%,#0f141b);overflow:hidden}
-.janela:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,#2e2922 48%,#2e2922 52%,transparent 52%)}
-.janela i{position:absolute;bottom:0;width:22px;background:#0b0f15;border-top:2px solid #1d2632}
-.tv{position:absolute;right:70px;top:40px;width:230px;height:130px;background:#050505;border:5px solid #26221c;border-radius:8px;padding:12px 14px;box-shadow:0 0 40px #d4a94a22}
-.tv small{font-size:10px;color:var(--dim);letter-spacing:.2em}.tv b{display:block;font-family:Oswald;font-size:38px;color:var(--gold2);line-height:1.1}.tv span{font-size:11px;color:var(--verde)}
-.tv:before{content:'AO VIVO';position:absolute;right:10px;top:10px;font-size:9px;color:var(--verm);letter-spacing:.15em}
-/* piso */
-.piso{position:absolute;left:0;right:0;top:236px;bottom:0;background:repeating-linear-gradient(90deg,var(--piso1) 0 140px,var(--piso2) 140px 280px)}
-.piso:after{content:'';position:absolute;inset:0;background:radial-gradient(800px 380px at 50% 0%,#d4a94a14,transparent 70%)}
-.planta{position:absolute;width:56px}
-/* mesa de cada funcionário */
-.posto{position:absolute;width:210px;cursor:pointer;transition:transform .2s;transform-origin:50% 100%}
-.posto:hover{transform:scale(1.04)}
-.posto.sel .placa{border-color:var(--gold);box-shadow:0 0 0 2px #d4a94a55}
-.balao{position:absolute;left:50%;bottom:calc(100% - 22px);transform:translateX(-50%);width:200px;background:#f6f1e3;color:#1b1914;font-size:11.5px;line-height:1.3;padding:7px 10px;border-radius:12px;box-shadow:0 6px 18px #0008;opacity:0;transition:opacity .4s;pointer-events:none}
-.balao:after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#f6f1e3}
-.posto.fala .balao{opacity:1}
-.avatar{display:block;margin:0 auto -10px;width:96px;height:96px;position:relative;z-index:1}
+/* ===== cena: réplica do escritório real da LB (fotos do Lincoln, 12/10/2026) ===== */
+.forro{position:absolute;left:0;right:0;top:0;height:58px;background:repeating-linear-gradient(180deg,#e9e7e1 0 9px,#cfccc4 9px 10px);border-bottom:3px solid #fff}
+.forro i{position:absolute;top:22px;width:26px;height:12px;border-radius:50%;background:#fffbe8;box-shadow:0 0 22px 8px #fff6d0}
+.parede{position:absolute;left:0;right:0;top:61px;height:380px;background:linear-gradient(180deg,#151515,#101010);overflow:hidden}
+.parede:before{content:'';position:absolute;left:-120px;top:120px;width:520px;height:360px;background:radial-gradient(closest-side,#7b3fb855,#3f8a3a22 60%,transparent);filter:blur(10px)}
+.logo-lb{position:absolute;left:90px;top:120px;text-align:center;color:#d8b46a}
+.logo-lb b{display:block;font-family:'Playfair Display',Georgia,serif;font-size:104px;line-height:.9;font-weight:700;background:linear-gradient(180deg,#f3d99a,#c49a4c 60%,#8e6a2c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 4px 0 #3a2a10) drop-shadow(0 0 14px #d4a94a33)}
+.logo-lb span{display:block;font-family:Inter;font-weight:800;font-size:26px;letter-spacing:.02em;color:#d9b77a;margin-top:4px}
+.logo-lb em{display:flex;align-items:center;gap:8px;justify-content:center;font-style:normal;font-family:Inter;font-weight:800;font-size:17px;letter-spacing:.05em;color:#d9b77a}.logo-lb em:before,.logo-lb em:after{content:'';width:34px;height:2px;background:#d9b77a}
+.cert{position:absolute;width:62px;height:44px;background:#f4f2ec;border:3px solid #2b2b2b;box-shadow:0 2px 6px #0008}
+.cert:before{content:'';position:absolute;left:6px;right:6px;top:7px;height:4px;background:#e06a3a}.cert:after{content:'';position:absolute;left:8px;right:8px;top:17px;height:14px;background:repeating-linear-gradient(180deg,#bbb 0 2px,transparent 2px 5px)}
+.jardim{position:absolute;left:520px;top:20px;width:180px;height:362px;border-radius:70px 70px 0 0;border:3px solid #ffd770;box-shadow:0 0 18px 2px #ffcc5599,inset 0 0 18px #0006;
+  background-color:#24521b;background-image:radial-gradient(circle,#fff 0 1.4px,transparent 2px),radial-gradient(circle at 30% 30%,#4f9636 0 6px,transparent 7px),radial-gradient(circle at 70% 60%,#2f6e24 0 7px,transparent 8px),radial-gradient(circle at 45% 85%,#6aa845 0 5px,transparent 6px),radial-gradient(circle at 85% 15%,#3d7f2b 0 6px,transparent 7px);
+  background-size:57px 61px,22px 22px,27px 25px,19px 21px,31px 29px}
+.estante{position:absolute;left:548px;top:262px;width:124px;height:120px;border-left:3px solid #1d1d1d;border-right:3px solid #1d1d1d}
+.estante i{position:absolute;left:0;right:0;height:5px;background:#b48a5c}
+.cubo{position:absolute;top:-24px;width:22px;height:22px;border-radius:3px;font:800 13px Inter;display:flex;align-items:center;justify-content:center}
+.garrafa{position:absolute;width:10px;height:30px;background:#151515;border-radius:3px 3px 2px 2px;top:12px;border:1px solid #333}
+.placa-dep{position:absolute;right:6px;top:4px;width:34px;height:36px;background:#f1efe8;border:2px solid #222;font:800 5px Inter;color:#222;padding:3px;line-height:1.15;text-align:center}
+.frigobar{position:absolute;left:720px;top:322px;width:72px;height:96px;background:#0c0c0c;border:2px solid #222;border-radius:3px}
+.frigobar:before{content:'';position:absolute;left:6px;right:6px;top:8px;bottom:8px;background:repeating-linear-gradient(180deg,#b9d6e6 0 3px,#3a5866 3px 12px,#dfe8e8 12px 15px,#4a6a72 15px 24px);opacity:.75;border-radius:2px;box-shadow:0 0 10px #9fd3ff55}
+.tigela{position:absolute;top:-16px;width:22px;height:14px;border-radius:0 0 11px 11px;background:#e6e1d6aa;border:1px solid #fff5}
+.whisky{position:absolute;top:-30px;left:2px;width:9px;height:28px;background:linear-gradient(#222 0 30%,#c47a24 30%);border-radius:3px 3px 1px 1px}
+.quadro{position:absolute;width:118px;height:160px;border:4px solid #1c1c1c;box-shadow:0 0 0 1px #444,0 6px 14px #000a;background:linear-gradient(160deg,#4a3d2e,#1b1712);overflow:hidden;font-family:'Permanent Marker',Oswald,sans-serif}
+.quadro .lb{position:absolute;right:10px;top:10px;color:#e8a73a;font-size:30px;line-height:.8;text-align:right}.quadro .lb small{display:block;font-size:8px;letter-spacing:.05em;font-family:Inter;font-weight:800}
+.quadro .boss{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:#e8a73a;font-size:36px;transform:rotate(-6deg);text-shadow:0 2px 0 #0008}
+.quadro .silh{position:absolute;left:12px;bottom:0;width:70px;height:96px;background:radial-gradient(circle at 50% 22%,#8a8073 0 13px,transparent 14px),radial-gradient(ellipse at 50% 85%,#6f665b 0 34px,transparent 35px);opacity:.8}
+.quadro .frase{position:absolute;right:8px;top:48px;color:#d9c6a2;font:700 8px Inter;text-align:right;line-height:1.3;opacity:.8}
+.tv{position:absolute;right:46px;top:96px;width:190px;height:112px;background:#050505;border:5px solid #262626;border-radius:6px;padding:11px 13px;box-shadow:0 0 30px #d4a94a22}
+.tv small{font-size:9px;color:var(--dim);letter-spacing:.2em}.tv b{display:block;font-family:Oswald;font-size:36px;color:var(--gold2);line-height:1.1}.tv span{font-size:10.5px;color:var(--verde)}
+.tv:before{content:'AO VIVO';position:absolute;right:9px;top:9px;font-size:8px;color:var(--verm);letter-spacing:.15em}
+.rodape{position:absolute;left:0;right:0;top:438px;height:5px;background:#0a0a0a}
+.piso{position:absolute;left:0;right:0;top:443px;bottom:0;background:linear-gradient(180deg,#00000055,transparent 30%),repeating-linear-gradient(180deg,transparent 0 37px,#00000026 37px 38px),repeating-linear-gradient(90deg,#9a6a40 0 230px,#8f6039 230px 460px,#a37347 460px 690px,#94643c 690px 920px);background-color:#956540}
+.piso:after{content:'';position:absolute;inset:0;background:radial-gradient(900px 300px at 50% 0%,#fff2d022,transparent 70%)}
+.poltrona{position:absolute;width:118px;height:120px;z-index:5}
+.poltrona:before{content:'';position:absolute;left:0;right:0;top:0;height:70px;background:linear-gradient(#262626,#111);border-radius:16px 16px 6px 6px;box-shadow:inset 0 2px 0 #3a3a3a}
+.poltrona:after{content:'';position:absolute;left:-6px;right:-6px;top:52px;height:62px;background:linear-gradient(#1d1d1d,#0b0b0b);border-radius:14px;box-shadow:0 10px 14px #0007,inset 0 2px 0 #333}
+/* bancadas (estação de trabalho única: tampo de madeira, pé de ferro preto) */
+.bancada{position:absolute;z-index:3;height:110px}
+.bancada .tampo{position:absolute;left:0;right:0;top:0;height:14px;background:linear-gradient(#c28a55,#a5703f);border-radius:2px;box-shadow:0 2px 0 #6e4524}
+.bancada .pe{position:absolute;top:14px;width:9px;bottom:0;background:#111;border-radius:1px}
+.bancada .trava{position:absolute;top:14px;height:6px;left:0;right:0;background:#151515}
+.mesa-max{position:absolute;z-index:3;height:110px}
+.mesa-max .tampo{position:absolute;left:0;right:0;top:0;height:16px;background:linear-gradient(#4a3a30,#2f251f);border-radius:2px}
+.mesa-max .gaveta{position:absolute;top:16px;bottom:0;width:90px;background:linear-gradient(90deg,#2c231e,#3b2f28);border:1px solid #1e1814}
+/* funcionário */
+.posto{position:absolute;width:150px;margin-left:-75px;cursor:pointer}
+.posto:hover .avatar{filter:brightness(1.15)}
+.cadeira{position:absolute;left:50%;margin-left:-38px;top:-6px;width:76px;height:100px;border-radius:22px 22px 10px 10px;background:repeating-linear-gradient(90deg,#1b1b1b 0 3px,#262626 3px 5px);border:2px solid #111;z-index:1}
+.cadeira.alta:before{content:'';position:absolute;left:14px;right:14px;top:-26px;height:26px;border-radius:12px 12px 4px 4px;background:#1b1b1b;border:2px solid #111}
+.avatar{display:block;margin:0 auto;width:96px;height:96px;position:relative;z-index:2}
 .posto.trabalhando .avatar{animation:digita 1.1s ease-in-out infinite}
 @keyframes digita{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-.mesa{position:relative;height:74px}
-.mesa svg{width:100%;height:100%}
-.tela{transition:fill .4s}
-.posto.trabalhando .tela{fill:#3c5d8a;animation:pisca 1.6s infinite}
-@keyframes pisca{50%{fill:#5a86c4}}
-.placa{margin:6px auto 0;width:180px;text-align:center;background:#0f0e0bd9;border:1px solid var(--borda);border-radius:12px;padding:6px 8px}
-.placa b{font-family:Oswald;font-size:17px;letter-spacing:.02em}.placa span{display:block;font-size:11px;color:var(--dim)}
-.st{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;margin-top:3px;color:var(--dim)}.st i{width:7px;height:7px;border-radius:50%;background:var(--dim2)}
+.note{position:absolute;left:50%;margin-left:-30px;top:58px;width:60px;height:38px;z-index:4;border-radius:4px 4px 1px 1px;background:linear-gradient(#cfd2d6,#a9adb2);box-shadow:0 2px 0 #777}
+.note:after{content:'LB';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 11px Oswald;color:#fff9;transition:.3s}
+.posto.trabalhando .note:after{color:#fff;text-shadow:0 0 8px #9fd3ff,0 0 16px #6fb6ff}
+.etiq{position:relative;z-index:5;margin:22px auto 0;width:128px;text-align:center;background:#0f0e0be6;border:1px solid var(--borda);border-radius:10px;padding:4px 6px}
+.etiq b{font-family:Oswald;font-size:15px;letter-spacing:.02em}.etiq span{display:block;font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.posto.sel .etiq{border-color:var(--gold);box-shadow:0 0 0 2px #d4a94a66}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;margin-top:2px;color:var(--dim)}.st i{width:7px;height:7px;border-radius:50%;background:var(--dim2)}
 .st.ok i{background:var(--verde);box-shadow:0 0 8px var(--verde)}.st.esp i{background:var(--amb)}.st.prob i{background:var(--verm);box-shadow:0 0 8px var(--verm)}
-.contador{position:absolute;right:14px;top:96px;z-index:2;background:var(--gold);color:#16130d;font-family:Oswald;font-weight:700;font-size:13px;min-width:26px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;padding:0 7px;box-shadow:0 3px 10px #0007}
-/* mesa de reunião (gerente) */
-.reuniao{position:absolute;left:520px;top:640px;width:360px;height:110px;border-radius:55px;background:linear-gradient(#3a3024,#2a231a);border:2px solid #4a3d2d;box-shadow:0 18px 40px #0009}
+.contador{position:absolute;left:50%;margin-left:26px;top:4px;z-index:6;background:var(--gold);color:#16130d;font-family:Oswald;font-weight:700;font-size:13px;min-width:26px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;padding:0 7px;box-shadow:0 3px 10px #0007}
+.balao{position:absolute;z-index:8;left:50%;bottom:calc(100% - 4px);transform:translateX(-50%);width:200px;background:#f6f1e3;color:#1b1914;font-size:11.5px;line-height:1.3;padding:7px 10px;border-radius:12px;box-shadow:0 6px 18px #0008;opacity:0;transition:opacity .4s;pointer-events:none}
+.balao:after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#f6f1e3}
+.posto.fala .balao{opacity:1}
+.braco{position:absolute;z-index:4}.anel{position:absolute;z-index:4;width:26px;height:26px;border-radius:50%;border:4px solid #ffb547;box-shadow:0 0 14px #ffb547}
 /* painel lateral */
 aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;overflow:auto;max-height:calc(100vh - 66px)}
 .perfil{display:flex;gap:12px;align-items:center}.perfil svg{width:74px;height:74px;flex:0 0 auto}
@@ -82,14 +111,28 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 </header>
 <main>
   <div id="sala"><div id="palco">
+    <div class="forro"><i style="left:300px"></i><i style="left:1050px"></i></div>
     <div class="parede">
-      <div class="janela" style="left:70px"><i style="left:20px;height:50px"></i><i style="left:60px;height:80px"></i><i style="left:110px;height:40px"></i><i style="left:150px;height:65px"></i></div>
-      <div class="marca"><h1>LB MARKETPLACE</h1><p>AGÊNCIA DE IA</p></div>
+      <div class="logo-lb"><b>LB</b><span>MARKETPLACE</span><em>ASSESSORIA</em></div>
+      <div class="cert" style="left:385px;top:150px"></div><div class="cert" style="left:385px;top:212px"></div>
+      <div class="jardim"></div>
+      <div class="estante"><i style="top:0"></i><i style="top:52px"></i><i style="top:115px"></i>
+        <div class="cubo" style="left:24px;background:#ee4d2d;color:#fff">S</div><div class="cubo" style="left:51px;background:#111;color:#fff;border:1px solid #444">S</div><div class="cubo" style="left:78px;background:#ffe600;color:#2d3277">&#129309;</div>
+        <div class="garrafa" style="left:12px"></div><div class="garrafa" style="left:28px"></div><div class="garrafa" style="left:44px"></div>
+        <div class="placa-dep">DEPOSITE AQUI PARA QUE SEUS SONHOS SE TORNEM REAIS</div></div>
+      <div class="frigobar"><div class="whisky"></div><div class="tigela" style="left:18px"></div><div class="tigela" style="left:44px"></div></div>
+      <div class="quadro" style="left:890px;top:95px"><div class="silh"></div><div class="lb">LB<small>MARKETPLACE</small></div><div class="frase">FOCO<br>DISCIPLINA<br>EXECUÇÃO</div></div>
+      <div class="quadro" style="left:1035px;top:95px"><div class="lb">LB<small>MARKETPLACE</small></div><div class="frase" style="top:12px;left:10px;right:auto;text-align:left">DISCIPLINA<br>FOCO<br>EXECUÇÃO</div><div class="boss">BOSS</div></div>
       <div class="tv"><small>TRABALHOS HOJE</small><b id="tvNum">—</b><span id="tvTxt">carregando…</span></div>
-      <div class="janela" style="right:310px"><i style="left:30px;height:70px"></i><i style="left:80px;height:45px"></i><i style="left:130px;height:85px"></i></div>
     </div>
+    <div class="rodape"></div>
     <div class="piso"></div>
-    <div class="reuniao"></div>
+    <div class="bancada" style="left:120px;top:560px;width:960px"><div class="tampo"></div><div class="trava"></div><div class="pe" style="left:8px"></div><div class="pe" style="left:318px"></div><div class="pe" style="left:634px"></div><div class="pe" style="right:8px"></div></div>
+    <div class="bancada" style="left:290px;top:760px;width:640px"><div class="tampo"></div><div class="trava"></div><div class="pe" style="left:8px"></div><div class="pe" style="right:8px"></div></div>
+    <div class="mesa-max" style="left:1110px;top:740px;width:250px"><div class="tampo"></div><div class="gaveta" style="left:6px"></div><div class="gaveta" style="right:6px"></div></div>
+    <svg class="braco" style="left:1300px;top:640px" width="60" height="104"><path d="M30 104V70l-18-20" stroke="#222" stroke-width="5" fill="none"/><rect x="0" y="6" width="54" height="40" rx="3" fill="#0b0b0b" stroke="#333" stroke-width="2"/><rect x="4" y="10" width="46" height="32" fill="#1b2433" class="tela"/></svg>
+    <div class="anel" style="left:1140px;top:705px"></div>
+    <div class="poltrona" style="left:18px;top:700px"></div>
     <div id="postos"></div>
   </div></div>
   <aside id="painel"></aside>
@@ -113,31 +156,31 @@ const MP={shopee:'Shopee',tiktok:'TikTok',ml:'Mercado Livre',shein:'SHEIN',comer
 // ===== A equipe de IA (nomes sugeridos — o Lincoln pode trocar) =====
 // tipos = combinações marketplace:tipo do automacaoLog que são trabalho desse funcionário
 const AGENTES=[
-  {id:'lia',nome:'Lia',cargo:'Promoções',cor:'#e0a352',acess:'estrela',chefe:'Carol',x:110,y:290,
+  {id:'lia',nome:'Lia',cargo:'Promoções',cor:'#e0a352',acess:'estrela',chefe:'Carol',x:220,y:470,
    tipos:[/oferta_relampago/,/campanha_ml/,/desconto_fixo/,/cupom_fixo/,/promo_giro/],
    faz:['Ofertas relâmpago na Shopee, TikTok e Mercado Livre','Entra nas campanhas do ML (10.10, 11.11…)','Renova desconto fixo e cupom antes de vencer','Promo de giro nos produtos parados']},
-  {id:'teo',nome:'Téo',cargo:'Tráfego pago',cor:'#4d8ef0',acess:'fone',chefe:'Carol',x:440,y:290,
+  {id:'teo',nome:'Téo',cargo:'Tráfego pago',cor:'#4d8ef0',acess:'fone',chefe:'Carol',x:410,y:470,
    tipos:[/^shopee:ads$/,/impulsionar/,/alerta_ads/],
    faz:['Coloca todo produto novo no Ads (ROAS 20)','Impulsiona os mais vendidos a cada 4h','Avisa o cliente quando o saldo do Ads zera']},
-  {id:'nina',nome:'Nina',cargo:'Catálogo e anúncios',cor:'#a46bf0',acess:'lapis',chefe:'Nova pessoa',x:770,y:290,
+  {id:'nina',nome:'Nina',cargo:'Catálogo e anúncios',cor:'#a46bf0',acess:'lapis',chefe:'Nova pessoa',x:600,y:470,
    tipos:[/pedido_produto/,/^shein:produto/,/produto/],
    faz:['Recebe os produtos que a cliente manda pelo link','Cria e copia anúncios entre Shopee, ML, TikTok e SHEIN','Padroniza títulos, marca, preço e fotos']},
-  {id:'davi',nome:'Davi',cargo:'Saúde das lojas',cor:'#4dd6a0',acess:'cruz',chefe:'Carol',x:1100,y:290,
+  {id:'davi',nome:'Davi',cargo:'Saúde das lojas',cor:'#4dd6a0',acess:'cruz',chefe:'Carol',x:790,y:470,
    tipos:[/saude/],
    faz:['Lê a saúde de cada loja 4x por dia','Acha pedido atrasado antes da penalidade','Abre tarefa quando a conexão de uma loja cai']},
-  {id:'iris',nome:'Íris',cargo:'Relatórios e BI',cor:'#f06bb0',acess:'oculos',chefe:'Lincoln',x:60,y:520,
+  {id:'iris',nome:'Íris',cargo:'Relatórios e BI',cor:'#f06bb0',acess:'oculos',chefe:'Lincoln',x:980,y:470,
    tipos:[/relatorio/,/resumo/],
    faz:['Resumo diário no WhatsApp às 8h','Relatório mensal de cada cliente','Relatório das datas comemorativas (10.10, Black Friday…)','Curva ABC dos produtos']},
-  {id:'leo',nome:'Léo',cargo:'Comercial (SDR)',cor:'#25d366',acess:'fone',chefe:'Guilherme',x:330,y:520,
+  {id:'leo',nome:'Léo',cargo:'Comercial (SDR)',cor:'#25d366',acess:'fone',chefe:'Guilherme',x:400,y:670,
    tipos:[/^comercial:/],
    faz:['Responde o lead que entra no CRM','Manda o link da agenda','Lembra o lead até ele marcar a reunião']},
-  {id:'mel',nome:'Mel',cargo:'Marketing e criativos',cor:'#ff7a59',acess:'estrela',chefe:'Mirela',x:870,y:520,
+  {id:'mel',nome:'Mel',cargo:'Marketing e criativos',cor:'#ff7a59',acess:'estrela',chefe:'Mirela',x:610,y:670,
    tipos:[/criativo/,/marketing/],
    faz:['Fotos de produto com IA (Central Criativa)','Vídeos de produto com IA','Títulos e descrições que vendem']},
-  {id:'otto',nome:'Otto',cargo:'Financeiro',cor:'#d4a94a',acess:'oculos',chefe:'Lincoln',x:1140,y:520,
+  {id:'otto',nome:'Otto',cargo:'Financeiro',cor:'#d4a94a',acess:'oculos',chefe:'Lincoln',x:820,y:670,
    tipos:[/^financeiro:/],
    faz:['Lê o caixa da Shopee de cada loja','Alerta queda forte de receita do cliente','Avisa mensalidade vencendo pelo WhatsApp da LB']},
-  {id:'max',nome:'Max',cargo:'Gerente da equipe',cor:'#f0d791',acess:'gravata',chefe:'Lincoln',x:595,y:560,gerente:true,tipos:[],
+  {id:'max',nome:'Max',cargo:'Gerente da equipe',cor:'#f0d791',acess:'gravata',chefe:'Lincoln',x:1235,y:650,gerente:true,tipos:[],
    faz:['Acompanha o trabalho de todo mundo','Transforma problema em tarefa pra equipe humana','(fase 3) Briefing da manhã e distribuição do dia']},
 ];
 
@@ -202,12 +245,11 @@ function desenhar(){
   $('postos').innerHTML=AGENTES.map(a=>{
     const s=statusDe(a);if(!['davi','mel','iris','max'].includes(a.id)){total+=s.hoje;probs+=s.prob;}
     const st=s.cls==='prob'?'Precisa de atenção':s.cls==='esp'?'Esperando a equipe':s.trab?'Trabalhando':s.cls==='ok'?'Em dia':'Parado';
-    const esc2=a.gerente?0.92:a.y>400?1.04:0.94;
-    return `<div class="posto ${s.trab?'trabalhando':''} ${sel===a.id?'sel':''}" data-id="${a.id}" style="left:${a.x}px;top:${a.y}px;transform:scale(${esc2})">
+    return `<div class="posto ${s.trab?'trabalhando':''} ${sel===a.id?'sel':''}" data-id="${a.id}" style="left:${a.x}px;top:${a.y}px">
       <div class="balao">${esc(s.txt)}</div>
       ${s.hoje?`<div class="contador">${s.hoje}</div>`:''}
-      ${avatarSVG(a)}${a.gerente?'':`<div class="mesa">${MESA}</div>`}
-      <div class="placa"><b>${a.nome}</b><span>${a.cargo}</span><div class="st ${s.cls}"><i></i>${st}</div></div></div>`;
+      <div class="cadeira ${a.gerente?'alta':''}"></div>${avatarSVG(a)}${a.gerente?'':'<div class="note"></div>'}
+      <div class="etiq"><b>${a.nome}</b><span>${a.cargo}</span><div class="st ${s.cls}"><i></i>${st}</div></div></div>`;
   }).join('');
   const semana=logs.filter(l=>l._ag).length;
   $('hTrab').textContent=total;$('hSemana').textContent=semana;$('hProb').textContent=probs;
