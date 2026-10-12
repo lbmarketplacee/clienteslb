@@ -105,6 +105,7 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 .chat{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;margin-bottom:8px}
 .msg{font-size:12.5px;line-height:1.45;padding:8px 11px;border-radius:12px;max-width:92%}.msg.eu{align-self:flex-end;background:#d4a94a26;border:1px solid #d4a94a55}.msg.agente{align-self:flex-start;background:#0f0e0b;border:1px solid var(--borda)}
 .chat-form{display:flex;gap:6px}.chat-form input{flex:1;background:#0f0e0b;border:1px solid var(--borda);border-radius:99px;padding:9px 14px;color:var(--txt);font:inherit;font-size:12.5px}.chat-form button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:0 14px;font-weight:700;cursor:pointer}
+.diag{border-top:1px solid var(--borda);padding-top:6px;margin-top:6px}.diag b{display:block;font-size:12.5px}.diag em{font-style:normal;color:var(--dim);font-size:11px;display:block}.acao{font-size:12px;color:var(--gold2);margin:2px 0}
 #login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9}
 #login button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:12px 26px;font-weight:700;font-size:15px;cursor:pointer}
 body.tv main{grid-template-columns:1fr}body.tv aside{display:none}body.tv .balao{font-size:13px;width:240px}
@@ -169,7 +170,7 @@ const AGENTES=[
    faz:['Ofertas relâmpago na Shopee, TikTok e Mercado Livre','Entra nas campanhas do ML (10.10, 11.11…)','Renova desconto fixo e cupom antes de vencer','Promo de giro nos produtos parados']},
   {id:'teo',nome:'Téo',cargo:'Tráfego pago',cor:'#4d8ef0',acess:'fone',chefe:'Carol',x:410,y:470,
    tipos:[/^shopee:ads$/,/impulsionar/,/alerta_ads/],
-   faz:['Coloca todo produto novo no Ads (ROAS 20)','Impulsiona os mais vendidos a cada 4h','Avisa o cliente quando o saldo do Ads zera']},
+   faz:['Coloca todo produto novo no Ads (ROAS 20)','Diagnostica anúncio que gasta sem retorno e propõe a melhoria','Impulsiona os mais vendidos a cada 4h','Avisa o cliente quando o saldo do Ads zera']},
   {id:'nina',nome:'Nina',cargo:'Catálogo e anúncios',cor:'#a46bf0',acess:'lapis',chefe:'Nova pessoa',x:600,y:470,
    tipos:[/pedido_produto/,/^shein:produto/,/produto/],
    faz:['Recebe os produtos que a cliente manda pelo link','Cria e copia anúncios entre Shopee, ML, TikTok e SHEIN','Padroniza títulos, marca, preço e fotos']},
@@ -303,6 +304,9 @@ function cartoes(lista){
   return lista.map(p=>{
     const ag=AGENTES.find(a=>a.id===p.agente);const pv=p.previa||{};let corpo='',btOk='Aprovar',btNo='Recusar',trava='';
     if(p.tipo==='promo_giro'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,60))}: ${faixaR(x.antes)} → <b>${faixaR(x.depois)}</b></li>`).join('')}</ul>${(p.dados?.itens||[]).length>8?`<em>… e mais ${p.dados.itens.length-8}</em>`:''}`;btOk='Aprovar e aplicar';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança de preço.';}
+    if(p.tipo==='ads_diagnostico'){const ET={vitrine:'Vitrine fraca (pouca gente clica)',pagina:'Página fraca (clica e não compra)',custo:'Custo alto por venda',estoque:'Sem estoque'};
+      corpo=(pv||[]).slice(0,6).map(x=>`<div class="diag"><b>${esc(x.nome.slice(0,60))}</b><em>${ET[x.etapa]||x.etapa} · gastou ${R$(x.gasto)} → vendeu ${R$(x.vendas)} · CTR ${String(x.ctr).replace('.',',')}% · conversão ${String(x.conversao).replace('.',',')}%${x.meta?` · meta ROAS ${x.meta}`:''}</em><ul class="faz">${(x.causas||[]).map(c=>`<li>${esc(c)}</li>`).join('')}</ul>${(x.acoes||[]).filter(a=>a.tipo==='meta').map(a=>`<div class="acao">→ Subir meta de ROAS ${a.de} → <b>${a.para}</b></div>`).join('')}${(x.acoes||[]).some(a=>a.tipo==='anuncio'||a.tipo==='estoque')?'<div class="acao">→ Vira tarefa de melhoria do anúncio</div>':''}</div>`).join('')+((pv||[]).length>6?`<em>… e mais ${pv.length-6}</em>`:'');
+      btOk='Aplicar melhorias';btNo='Deixar como está';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança no Ads.';}
     if(p.tipo==='ads_fracas'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,55))}: ${esc(x.motivo)}</li>`).join('')}</ul>${(p.dados?.campanhas||[]).length>8?`<em>… e mais ${p.dados.campanhas.length-8}</em>`:''}`;btOk='Pausar esses anúncios';btNo='Deixar como está';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança no Ads.';}
     if(p.tipo==='diagnostico_relampago'){corpo=`<ul class="faz">${(pv.causas||[]).map(c=>`<li><b>${esc(c.titulo)}</b> (${c.vezes}x) — ${esc(c.sugestao)}</li>`).join('')}</ul>${pv.causas?.[0]?.exemplo?`<em>Ex.: ${esc(pv.causas[0].exemplo)}</em>`:''}`;btOk='Virar tarefa';btNo='Dispensar';}
     if(p.tipo==='rascunho_produto'){corpo=`${pv.titulo?`<div>Título: <b>${esc(pv.titulo)}</b></div>`:`<div style="color:var(--amb)">Texto não saiu (${esc(pv.erroTexto||'')}) — gera no Criar anúncio.</div>`}${pv.precos?.shopee?`<div>Shopee: venda ${R$(pv.precos.shopee.venda)} · cheio ${R$(pv.precos.shopee.cheio)}${pv.precos.tiktok?` · TikTok ${R$(pv.precos.tiktok.venda)}`:''}</div>`:''}<div>${pv.fotos||0} fotos · ${(pv.marketplaces||[]).join(', ')}</div>${(pv.falta||[]).length?`<div style="color:var(--amb)">Falta: ${pv.falta.map(esc).join(' ')}</div>`:''}`;btOk='Abrir no Criar anúncio';btNo='Dispensar';}
@@ -315,12 +319,13 @@ function cartoes(lista){
 window.__escAprov=()=>{const p=pend[0];sel=p?(AGENTES.find(a=>a.id===p.agente)?.id||'max'):'max';desenhar();painel();};
 window.__escDecidir=async(id,decisao)=>{
   const p=pend.find(x=>x._id===id);if(!p)return;
-  if(decisao==='aprovar'&&['promo_giro','ads_fracas'].includes(p.tipo)&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
+  if(decisao==='aprovar'&&['promo_giro','ads_fracas','ads_diagnostico'].includes(p.tipo)&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
   const bts=document.querySelectorAll(`[onclick*="${id}"]`);bts.forEach(b=>b.disabled=true);
   try{
     const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao})})).json();
     if(!r.ok&&decisao==='aprovar')alert('Não deu certo: '+(r.erro||JSON.stringify(r.resultado||{})));
     else if(p.tipo==='promo_giro'&&decisao==='aprovar')alert(`${r.resultado?.aplicados||0} produto(s) com −15% até ${r.resultado?.fim?new Date(r.resultado.fim).toLocaleDateString('pt-BR'):''}.`);
+    else if(p.tipo==='ads_diagnostico'&&decisao==='aprovar')alert(`${r.resultado?.metas||0} meta(s) de ROAS ajustada(s)${r.resultado?.tarefaId?' e tarefa de melhoria criada':''}.${Object.keys(r.resultado?.falhas||{}).length?'\nFalhas: '+JSON.stringify(r.resultado.falhas):''}`);
     else if(p.tipo==='ads_fracas'&&decisao==='aprovar')alert(`${r.resultado?.pausadas||0} anúncio(s) pausado(s).`);
     else if(p.tipo==='diagnostico_relampago'&&decisao==='aprovar')alert(`Tarefa criada pra ${r.resultado?.responsavel||'a equipe'}.`);
     if(p.tipo==='rascunho_produto'&&decisao==='aprovar')window.open(`/?pedido=${p.dados?.pedidoId}`,'_blank');
