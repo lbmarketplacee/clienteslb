@@ -1151,6 +1151,17 @@ body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .portal-aviso{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;line-height:1.5}
 .portal-aviso b{color:var(--gold)}
+.cv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.cv-card{border:1px solid;border-radius:12px;padding:12px 14px;cursor:pointer}
+.cv-letra{font-family:Oswald,sans-serif;font-size:22px;font-weight:600}.cv-num{font-weight:600;font-size:14px}.cv-sub{font-size:12px;color:var(--text-dim);margin-top:2px}
+.cv-tabela{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.cv-linha{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card,transparent)}
+.cv-linha img,.cv-sem-foto{width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--border)}
+.cv-nome{flex:1;min-width:0;display:flex;flex-direction:column}.cv-nome b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cv-nome span,.cv-val span{font-size:11.5px;color:var(--text-dim)}
+.cv-val{display:flex;flex-direction:column;align-items:flex-end;min-width:96px;font-size:13px}
+.cv-badge{font-family:Oswald,sans-serif;font-weight:600;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.cv-A{background:#10b98122;color:#10b981}.cv-B{background:#f59e0b22;color:#f59e0b}.cv-C{background:#ef444422;color:#ef4444}
+@media(max-width:640px){.cv-val{min-width:70px}}
 /* ===== Catálogo ===== */
 .cat-barra{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.cat-barra select,.cat-barra input,.cat-acoes input{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px}
 .cat-barra select{width:auto;flex:0 0 auto}.cat-barra select:first-child{min-width:220px}.cat-barra input{flex:1;min-width:180px;width:auto}
@@ -2205,7 +2216,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 
           <div class="sub-bar">
             <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm shopee-subtab-btn active" data-shopeesub="apis" onclick="window.__shopeeSubTab('apis')">APIs</button></div></div>
-            <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">GMV</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="caixaloja" onclick="window.__shopeeSubTab('caixaloja')">Caixa da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="envios" onclick="window.__shopeeSubTab('envios')">Envios</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="catalogo" onclick="window.__shopeeSubTab('catalogo')">Catálogo</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">Saúde da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">Ads — Saldo</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Operação</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="gmv" onclick="window.__shopeeSubTab('gmv')">GMV</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="caixaloja" onclick="window.__shopeeSubTab('caixaloja')">Caixa da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="envios" onclick="window.__shopeeSubTab('envios')">Envios</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="catalogo" onclick="window.__shopeeSubTab('catalogo')">Catálogo</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="curva" onclick="window.__shopeeSubTab('curva')">Curva ABC</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="saude" onclick="window.__shopeeSubTab('saude')">Saúde da Loja</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="ads" onclick="window.__shopeeSubTab('ads')">Ads — Saldo</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="oferta" onclick="window.__shopeeSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="descontos" onclick="window.__shopeeSubTab('descontos')">Descontos</button><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="cupons" onclick="window.__shopeeSubTab('cupons')">Cupons</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Alertas</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm shopee-subtab-btn" data-shopeesub="erros" onclick="window.__shopeeSubTab('erros')">Erros <span id="shopeeErrosContador" style="display:none"></span></button></div></div>
           </div>
@@ -2290,6 +2301,11 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           <div class="shopee-subpanel" data-shopeesubpanel="catalogo" style="display:none">
           <div class="sub-cab" style="--acc-bg:#a855f712;--acc-bd:#a855f740"><span class="sub-cab-ico" style="color:#a855f7">🗂️</span><div><b>Gestão de Catálogo</b><div class="sub-cab-desc">Escolha a loja e veja todos os produtos com preço, estoque por variação e vendas. Filtre quem está sem estoque, marque e reajuste preço (sempre com simulação antes), ajuste estoque ou pause. Requer o app <b>ERP</b> ou <b>Produto</b>.</div></div></div>
           <div id="prodLista"></div>
+          </div>
+
+          <div class="shopee-subpanel" data-shopeesubpanel="curva" style="display:none">
+          <div class="sub-cab" style="--acc-bg:#10b98112;--acc-bd:#10b98140"><span class="sub-cab-ico" style="color:#10b981">📊</span><div><b>Curva ABC e produtos parados</b><div class="sub-cab-desc">Vendas dos últimos 30 dias por produto. <b>A</b> = os que fazem 80% do faturamento, <b>B</b> = até 95%, <b>C</b> = o resto (inclui quem não vendeu). <b>Parados</b> = ativos há 30+ dias, com estoque, no desconto fixo e com até 1 venda → dá pra colocar na <b>promo de giro</b>: desconto fixo 15% mais barato por 15 dias, que volta sozinho ao preço antigo.</div></div></div>
+          <div id="curvaLista"></div>
           </div>
 
           <div class="shopee-subpanel" data-shopeesubpanel="erros" style="display:none">
@@ -6332,6 +6348,7 @@ window.__shopeeSubTab=(nome)=>{
   // só carrega quando o usuário realmente abre essa aba, nunca automático.
   if(nome==='saude')saudeLojaRenderizar();
   if(nome==='erros')shopeeErrosRenderizar();
+  if(nome==='curva')cvRender();
 };
 function mlAdsPopularSelect(){
   const sel=document.getElementById('mlAdsClienteSelect');
@@ -7937,7 +7954,7 @@ function cmRenderDevolucao(){
   if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:20px">Nenhum cliente cadastrado.</div>';return;}
   el.innerHTML=lista.map(c=>`<div class="cm-item"><span class="nome">${esc(c.nome)}</span>${renderDevolucaoFlag(c)}</div>`).join('');
 }
-function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();cmRenderTiktokRobo();saudeLojaRenderizar();}
+function cmRenderTudo(){cmRenderApisShopee();cmRenderOfertaShopee();cmRenderDescontosTodos();cmRenderCupons();cmRenderDevolucao();cmRenderFinanceiro();cmRenderEnvios();cmRenderCatalogo();cvRender();cmRenderTiktokRobo();saudeLojaRenderizar();}
 
 /* ============== 💰 CAIXA DA LOJA (Financeiro) ============== */
 // Caixa da Loja: dados gravados pelo robô financeiro (clientes.financeiroResumo, 3x/dia) — vendas LIBERADAS pela Shopee
@@ -8070,6 +8087,82 @@ document.getElementById('logRastreioFecharBtn')?.addEventListener('click',()=>do
 
 /* ============== 🏷️ GESTÃO DE CATÁLOGO (Produto) ============== */
 let prodSimClienteId=null,prodSimCache=null;
+// ---------- Curva ABC + promo de giro (Shopee, 11/10/2026) — backend lb-shopee-gmv/api/curva.js ----------
+const CURVA_API='https://lb-shopee-gmv.vercel.app/api/relatorio'; // a curva mora no relatorio.js (limite de 12 funções da Vercel)
+const cv={clienteId:'',dados:null,filtro:'parados',sel:new Set(),carregando:false};
+async function cvApi(corpo){const r=await fetch(CURVA_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});return r.json();}
+function cvRender(){
+  const el=document.getElementById('curvaLista');if(!el)return;
+  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.shopeeErpShopId);
+  if(!document.getElementById('cvLoja')){
+    el.innerHTML=`<div class="cat-barra"><select id="cvLoja" onchange="window.__cvAbrir(this.value)"><option value="">Escolha a loja…</option></select>
+      <button class="btn btn-gold btn-sm" id="cvAnalisarBtn" onclick="window.__cvAnalisar()">Analisar últimos 30 dias</button><span id="cvInfo" style="font-size:12px;color:var(--text-dim)"></span></div>
+      <div id="cvCorpo"><div class="empty-state" style="padding:20px">Escolha uma loja.</div></div>`;
+  }
+  const sel=document.getElementById('cvLoja'),atual=sel.value;
+  sel.innerHTML='<option value="">Escolha a loja…</option>'+lojas.map(c=>`<option value="${c.id}"${c.id===atual?' selected':''}>${esc(c.nome)}</option>`).join('');
+}
+window.__cvAbrir=async(id)=>{
+  cv.clienteId=id;cv.dados=null;cv.sel=new Set();
+  const corpo=document.getElementById('cvCorpo');
+  if(!id){corpo.innerHTML='<div class="empty-state" style="padding:20px">Escolha uma loja.</div>';return;}
+  corpo.innerHTML='<div class="empty-state" style="padding:20px">Carregando a última análise…</div>';
+  try{const d=await getDoc(doc(db,'curvaAbc',id));cv.dados=d.exists()?d.data():null;}catch(e){cv.dados=null;}
+  cvDesenhar();
+};
+window.__cvAnalisar=async()=>{
+  if(!cv.clienteId)return lbAvisar('Escolha a loja.');
+  const b=document.getElementById('cvAnalisarBtn');b.disabled=true;b.textContent='Lendo pedidos e produtos… (até 1 min)';
+  try{const r=await cvApi({acao:'curva_analisar',clienteId:cv.clienteId,dias:30});if(!r.ok)throw new Error(r.erro||'falhou');await window.__cvAbrir(cv.clienteId);}
+  catch(e){lbAvisar('Não consegui analisar: '+e.message);}
+  b.disabled=false;b.textContent='Analisar últimos 30 dias';
+};
+function cvDesenhar(){
+  const corpo=document.getElementById('cvCorpo'),info=document.getElementById('cvInfo');if(!corpo)return;
+  const d=cv.dados;
+  if(!d){info.textContent='';corpo.innerHTML='<div class="empty-state" style="padding:20px">Essa loja ainda não foi analisada. Clique em <b>Analisar últimos 30 dias</b>.</div>';return;}
+  const q=d.quando?.toDate?d.quando.toDate():new Date(d.quando);
+  info.textContent=`Análise de ${q.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})} · ${d.pedidosLidos} pedidos${d.incompleto?` (de ${d.pedidos} — leitura parcial, loja grande)`:''}${d.desconto?` · desconto fixo: ${d.desconto.nome||d.desconto.id}`:' · sem desconto fixo'}`;
+  const r=d.resumo||{};const parados=new Set(d.parados||[]);
+  const card=(k,cor,txt)=>`<div class="cv-card" style="border-color:${cor}55;background:${cor}10" onclick="window.__cvFiltro('${k}')"><div class="cv-letra" style="color:${cor}">${k==='parados'?'Parados':k}</div><div class="cv-num">${k==='parados'?parados.size:(r[k]?.produtos||0)} produtos</div><div class="cv-sub">${txt}</div></div>`;
+  const pct=(k)=>r.total>0?Math.round((r[k]?.faturamento||0)/r.total*100):0;
+  const linhas=(d.linhas||[]).filter(l=>cv.filtro==='parados'?parados.has(l.id):cv.filtro==='giro'?l.emGiro:l.classe===cv.filtro);
+  const emGiro=(d.linhas||[]).filter(l=>l.emGiro).length;
+  const podeSel=cv.filtro==='parados';
+  corpo.innerHTML=`<div class="cv-cards">${card('A','#10b981',`${fmtR(r.A?.faturamento)} · ${pct('A')}% do faturamento`)}${card('B','#f59e0b',`${fmtR(r.B?.faturamento)} · ${pct('B')}%`)}${card('C','#ef4444',`${fmtR(r.C?.faturamento)} · ${pct('C')}% · ${r.semVenda||0} sem venda`)}${card('parados','#a855f7','até 1 venda em 30 dias, com estoque, no desconto fixo')}</div>
+    <div class="cat-filtros">${[['parados','Parados'],['A','Curva A'],['B','Curva B'],['C','Curva C'],['giro',`Em promo de giro (${emGiro})`]].map(([k,t])=>`<button class="btn btn-sm ${cv.filtro===k?'btn-gold':'btn-ghost'}" onclick="window.__cvFiltro('${k}')">${t}</button>`).join('')}
+      <span style="margin-left:auto;font-size:12px;color:var(--text-dim)">Faturamento total 30 dias: <b>${fmtR(r.total)}</b></span></div>
+    ${podeSel&&linhas.length?`<div class="cat-barra"><label style="font-size:12.5px"><input type="checkbox" onchange="window.__cvTodos(this.checked)"> marcar todos (${linhas.length})</label><span id="cvSelTxt" style="font-size:12.5px;color:var(--text-dim)">${cv.sel.size} marcados</span>
+      <button class="btn btn-ghost btn-sm" onclick="window.__cvGiro(false)">Simular promo −15% (15 dias)</button>${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__cvGiro(true)">Aplicar promo de giro</button>`:''}</div>`:''}
+    <div class="cv-tabela">${linhas.length?linhas.slice(0,400).map(l=>`<div class="cv-linha">
+      ${podeSel?`<input type="checkbox" ${cv.sel.has(l.id)?'checked':''} onchange="window.__cvSel('${l.id}',this.checked)">`:''}
+      ${l.foto?`<img src="${esc(l.foto)}" loading="lazy">`:'<span class="cv-sem-foto"></span>'}
+      <div class="cv-nome"><b>${esc(l.nome)}</b><span>ID ${l.id}${l.estoque!=null?` · estoque ${l.estoque}`:''}${l.noDesconto?'':' · fora do desconto fixo'}${l.emGiro?` · promo de giro até ${new Date(l.emGiro).toLocaleDateString('pt-BR')}`:''}</span></div>
+      <span class="cv-badge cv-${l.classe}">${l.classe}</span>
+      <div class="cv-val"><b>${l.qtd} vendas</b><span>${fmtR(l.faturamento)} · ${l.pct}%</span></div>
+      <div class="cv-val"><b>${l.precoDesconto?fmtR(l.precoDesconto):'—'}</b><span>${podeSel&&l.precoDesconto?'→ '+fmtR(Math.round(l.precoDesconto*85)/100):'no desconto'}</span></div>
+    </div>`).join(''):'<div class="empty-state" style="padding:20px">Nenhum produto aqui.</div>'}${linhas.length>400?`<div style="padding:10px;font-size:12px;color:var(--text-dim)">Mostrando 400 de ${linhas.length}.</div>`:''}</div>`;
+}
+window.__cvFiltro=(k)=>{cv.filtro=k;cv.sel=new Set();cvDesenhar();};
+window.__cvSel=(id,on)=>{on?cv.sel.add(id):cv.sel.delete(id);const t=document.getElementById('cvSelTxt');if(t)t.textContent=cv.sel.size+' marcados';};
+window.__cvTodos=(on)=>{cv.sel=new Set(on?(cv.dados?.parados||[]):[]);cvDesenhar();};
+window.__cvGiro=async(executar)=>{
+  if(!cv.sel.size)return lbAvisar('Marque os produtos parados.');
+  const itens=[...cv.sel].join(',');
+  try{
+    const s=await cvApi({acao:'curva_giro',clienteId:cv.clienteId,itens});
+    if(!s.ok)throw new Error(s.erro);
+    const fmtP=(o)=>{const v=Object.values(o||{});const mi=Math.min(...v),ma=Math.max(...v);return mi===ma?fmtR(mi):`${fmtR(mi)}–${fmtR(ma)}`;};
+    const txt=`${s.previa.length} produto(s) no desconto fixo "${s.desconto.nome||s.desconto.id}" ficam 15% mais baratos por 15 dias e depois voltam sozinhos:\n\n`+s.previa.slice(0,15).map(p=>`• ${p.nome.slice(0,50)}: ${fmtP(p.antes)} → ${fmtP(p.depois)}`).join('\n')+(s.previa.length>15?`\n… e mais ${s.previa.length-15}`:'')+(s.pulados.length?`\n\nPulados: ${s.pulados.map(p=>p.motivo).join(', ')}`:'');
+    if(!executar)return lbAvisar(txt);
+    if(!await lbConfirmar(txt+'\n\nAplicar agora na Shopee?'))return;
+    const r=await cvApi({acao:'curva_giro',clienteId:cv.clienteId,itens,executar:1});
+    if(!r.ok)throw new Error(r.erro);
+    const f=Object.entries(r.falhas||{});
+    lbAvisar(`${r.aplicados} produto(s) na promo de giro até ${new Date(r.fim).toLocaleDateString('pt-BR')}.`+(f.length?`\n\nRecusados pela Shopee:\n`+f.slice(0,10).map(([id,m])=>`• ${id}: ${m}`).join('\n'):''));
+    await window.__cvAnalisar();
+  }catch(e){lbAvisar('Erro: '+e.message);}
+};
 // Catálogo: escolhe a loja e lista os produtos de verdade (preço, estoque do VENDEDOR, variações, vendas) — sem digitar ID.
 const cat={clienteId:'',status:'NORMAL',itens:[],temMais:false,offset:0,total:null,carregando:false,filtro:'todos',busca:'',sel:new Set(),aberto:null};
 function catSituacao(it){if((it.estoque??0)<=0)return 'sem_estoque';if(it.variacoesZeradas>0)return 'variacao_zerada';if(it.estoque<10)return 'estoque_baixo';return 'ok';}
