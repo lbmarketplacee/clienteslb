@@ -137,7 +137,7 @@ body.tv main{grid-template-columns:1fr}body.tv aside{display:none}body.tv .balao
     <div class="rodape"></div>
     <div class="piso"></div>
     <div class="bancada" style="left:120px;top:560px;width:960px"><div class="tampo"></div><div class="trava"></div><div class="pe" style="left:8px"></div><div class="pe" style="left:318px"></div><div class="pe" style="left:634px"></div><div class="pe" style="right:8px"></div></div>
-    <div class="bancada" style="left:290px;top:760px;width:640px"><div class="tampo"></div><div class="trava"></div><div class="pe" style="left:8px"></div><div class="pe" style="right:8px"></div></div>
+    <div class="bancada" style="left:285px;top:760px;width:745px"><div class="tampo"></div><div class="trava"></div><div class="pe" style="left:8px"></div><div class="pe" style="left:368px"></div><div class="pe" style="right:8px"></div></div>
     <div class="mesa-max" style="left:1110px;top:740px;width:250px"><div class="tampo"></div><div class="gaveta" style="left:6px"></div><div class="gaveta" style="right:6px"></div></div>
     <svg class="braco" style="left:1300px;top:640px" width="60" height="104"><path d="M30 104V70l-18-20" stroke="#222" stroke-width="5" fill="none"/><rect x="0" y="6" width="54" height="40" rx="3" fill="#0b0b0b" stroke="#333" stroke-width="2"/><rect x="4" y="10" width="46" height="32" fill="#1b2433" class="tela"/></svg>
     <div class="anel" style="left:1140px;top:705px"></div>
@@ -180,13 +180,16 @@ const AGENTES=[
   {id:'iris',nome:'Íris',cargo:'Relatórios e BI',cor:'#f06bb0',acess:'oculos',chefe:'Lincoln',x:980,y:470,
    tipos:[/relatorio/,/resumo/],
    faz:['Resumo diário no WhatsApp às 8h','Relatório mensal de cada cliente','Relatório das datas comemorativas (10.10, Black Friday…)','Curva ABC dos produtos']},
-  {id:'leo',nome:'Léo',cargo:'Comercial (SDR)',cor:'#25d366',acess:'fone',chefe:'Guilherme',x:400,y:670,
+  {id:'leo',nome:'Léo',cargo:'Comercial (SDR)',cor:'#25d366',acess:'fone',chefe:'Guilherme',x:565,y:670,
    tipos:[/^comercial:/],
    faz:['Responde o lead que entra no CRM','Manda o link da agenda','Lembra o lead até ele marcar a reunião']},
-  {id:'mel',nome:'Mel',cargo:'Marketing e criativos',cor:'#ff7a59',acess:'estrela',chefe:'Mirela',x:610,y:670,
+  {id:'rafa',nome:'Rafa',cargo:'Tráfego pago da LB',cor:'#0866ff',acess:'oculos',chefe:'Lincoln',x:380,y:670,
+   tipos:[/^meta:/],
+   faz:['Lê os anúncios da LB no Meta todo dia','Propõe subir a verba do que traz cliente (+20%)','Propõe pausar anúncio que gasta sem lead','Avisa quando o criativo cansa e pede um novo pra Mirela']},
+  {id:'mel',nome:'Mel',cargo:'Marketing e criativos',cor:'#ff7a59',acess:'estrela',chefe:'Mirela',x:750,y:670,
    tipos:[/criativo/,/marketing/],
    faz:['Acompanha os anúncios da LB no Meta (gasto, leads, custo por cliente)','Fotos de produto com IA (Central Criativa)','Vídeos de produto com IA','Títulos e descrições que vendem']},
-  {id:'otto',nome:'Otto',cargo:'Financeiro',cor:'#d4a94a',acess:'oculos',chefe:'Lincoln',x:820,y:670,
+  {id:'otto',nome:'Otto',cargo:'Financeiro',cor:'#d4a94a',acess:'oculos',chefe:'Lincoln',x:935,y:670,
    tipos:[/^financeiro:/],
    faz:['Lê o caixa da Shopee de cada loja','Alerta queda forte de receita do cliente','Avisa mensalidade vencendo pelo WhatsApp da LB']},
   {id:'max',nome:'Max',cargo:'Gerente da equipe',cor:'#f0d791',acess:'gravata',chefe:'Lincoln',x:1235,y:650,gerente:true,tipos:[],
@@ -234,6 +237,8 @@ function fala(l){
   if(/alerta_ads/.test(k))return `Avisei a ${n}: saldo do Ads zerado`;
   if(/pedido_produto/.test(k))return `${n} mandou produto novo pelo link`;
   if(/shein:produto/.test(k))return ruim?`Produto da ${n} não subiu na SHEIN`:`Subi produto da ${n} na SHEIN`;
+  if(/^meta:analise_trafego/.test(k)){const d=l.detalhes||{};return `Anúncios da LB: ${R$(d.gasto7)} em 7 dias, ${d.leads7||0} leads (${d.cpl7?R$(d.cpl7)+' cada':'—'})`;}
+  if(/^meta:aprovacao_meta/.test(k))return 'Ajustei os anúncios da LB no Meta';
   if(/^comercial:/.test(k))return `Lembrei ${n||'um lead'} de marcar a reunião`;
   if(/^financeiro:/.test(k))return `Aviso de mensalidade pra ${n}`;
   return `${l.acao||l.tipo} · ${n}`;
@@ -304,6 +309,7 @@ function cartoes(lista){
   return lista.map(p=>{
     const ag=AGENTES.find(a=>a.id===p.agente);const pv=p.previa||{};let corpo='',btOk='Aprovar',btNo='Recusar',trava='';
     if(p.tipo==='promo_giro'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,60))}: ${faixaR(x.antes)} → <b>${faixaR(x.depois)}</b></li>`).join('')}</ul>${(p.dados?.itens||[]).length>8?`<em>… e mais ${p.dados.itens.length-8}</em>`:''}`;btOk='Aprovar e aplicar';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança de preço.';}
+    if(/^meta_/.test(p.tipo)){const d=p.previa||{};corpo=`<div class="acao">${p.tipo==='meta_escalar'?`→ Orçamento ${d.nivel==='campanha'?'da campanha':'do conjunto'} "${esc(d.conjunto||'')}": ${R$(d.de)} → <b>${R$(d.para)}</b>/dia`:p.tipo==='meta_pausar'?'→ Pausar o anúncio (dá pra reativar no Gerenciador)':'→ Vira tarefa pra Mirela fazer criativo novo'}</div><em>CPL médio da conta (30 dias): ${d.cplMedio30?R$(d.cplMedio30):'—'}</em>`;btOk=p.tipo==='meta_escalar'?'Aumentar verba':p.tipo==='meta_pausar'?'Pausar anúncio':'Criar tarefa';btNo='Agora não';if(p.tipo!=='meta_criativo'&&!ehAdmin())trava='Só Lincoln e Carol mexem nos anúncios da LB.';}
     if(p.tipo==='ads_diagnostico'){const ET={vitrine:'Vitrine fraca (pouca gente clica)',pagina:'Página fraca (clica e não compra)',custo:'Custo alto por venda',estoque:'Sem estoque'};
       corpo=(pv||[]).slice(0,6).map(x=>`<div class="diag"><b>${esc(x.nome.slice(0,60))}</b><em>${ET[x.etapa]||x.etapa} · gastou ${R$(x.gasto)} → vendeu ${R$(x.vendas)} · CTR ${String(x.ctr).replace('.',',')}% · conversão ${String(x.conversao).replace('.',',')}%${x.meta?` · meta ROAS ${x.meta}`:''}</em><ul class="faz">${(x.causas||[]).map(c=>`<li>${esc(c)}</li>`).join('')}</ul>${(x.acoes||[]).filter(a=>a.tipo==='meta').map(a=>`<div class="acao">→ Subir meta de ROAS ${a.de} → <b>${a.para}</b></div>`).join('')}${(x.acoes||[]).some(a=>a.tipo==='anuncio'||a.tipo==='estoque')?'<div class="acao">→ Vira tarefa de melhoria do anúncio</div>':''}</div>`).join('')+((pv||[]).length>6?`<em>… e mais ${pv.length-6}</em>`:'');
       btOk='Aplicar melhorias';btNo='Deixar como está';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança no Ads.';}
@@ -319,12 +325,13 @@ function cartoes(lista){
 window.__escAprov=()=>{const p=pend[0];sel=p?(AGENTES.find(a=>a.id===p.agente)?.id||'max'):'max';desenhar();painel();};
 window.__escDecidir=async(id,decisao)=>{
   const p=pend.find(x=>x._id===id);if(!p)return;
-  if(decisao==='aprovar'&&['promo_giro','ads_fracas','ads_diagnostico'].includes(p.tipo)&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
+  if(decisao==='aprovar'&&(['promo_giro','ads_fracas','ads_diagnostico','meta_escalar','meta_pausar'].includes(p.tipo))&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
   const bts=document.querySelectorAll(`[onclick*="${id}"]`);bts.forEach(b=>b.disabled=true);
   try{
     const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao})})).json();
     if(!r.ok&&decisao==='aprovar')alert('Não deu certo: '+(r.erro||JSON.stringify(r.resultado||{})));
     else if(p.tipo==='promo_giro'&&decisao==='aprovar')alert(`${r.resultado?.aplicados||0} produto(s) com −15% até ${r.resultado?.fim?new Date(r.resultado.fim).toLocaleDateString('pt-BR'):''}.`);
+    else if(/^meta_/.test(p.tipo)&&decisao==='aprovar')alert(r.ok?(p.tipo==='meta_escalar'?`Verba ajustada: ${R$(r.resultado?.orcamentoDe)} → ${R$(r.resultado?.orcamentoPara)}/dia.`:p.tipo==='meta_pausar'?'Anúncio pausado.':'Tarefa criada pra Mirela.'):('Não deu: '+(r.erro||'')));
     else if(p.tipo==='ads_diagnostico'&&decisao==='aprovar')alert(`${r.resultado?.metas||0} meta(s) de ROAS ajustada(s)${r.resultado?.tarefaId?' e tarefa de melhoria criada':''}.${Object.keys(r.resultado?.falhas||{}).length?'\nFalhas: '+JSON.stringify(r.resultado.falhas):''}`);
     else if(p.tipo==='ads_fracas'&&decisao==='aprovar')alert(`${r.resultado?.pausadas||0} anúncio(s) pausado(s).`);
     else if(p.tipo==='diagnostico_relampago'&&decisao==='aprovar')alert(`Tarefa criada pra ${r.resultado?.responsavel||'a equipe'}.`);
