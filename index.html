@@ -4554,7 +4554,7 @@ function lbmkClientes(el){
     <div class="form-row"><div class="field"><label>Plano</label><select id="lbmkF_plano">${lbmk.planos.map(p=>`<option value="${p.id}" ${e.plano===p.id?'selected':''}>${esc(p.nome)} — ${fmtR(p.valor)}</option>`).join('')}</select></div>
       <div class="field"><label>Valor mensal (R$)</label><input id="lbmkF_valor" inputmode="decimal" value="${e.valor?lbFmtValorBR(e.valor):''}" placeholder="vazio = valor do plano"></div>
       <div class="field"><label>Situação</label><select id="lbmkF_status">${Object.entries(LBMK_ST).map(([k,v])=>`<option value="${k}" ${(e.status||'lead')===k?'selected':''}>${v}</option>`).join('')}</select></div></div>
-    <div class="form-row">${[['publico','Público (quem compra)'],['tom','Tom de voz (ex.: descontraído, técnico)'],['objetivo','Objetivo (ex.: mais pedidos no delivery)']].map(([k,l])=>`<div class="field"><label>${l}</label><input id="lbmkF_${k}" value="${esc(e[k]||'')}"></div>`).join('')}</div>
+    <div class="form-row">${[['postsMes','Posts por mês (vazio = do plano)'],['publico','Público (quem compra)'],['tom','Tom de voz (ex.: descontraído, técnico)'],['objetivo','Objetivo (ex.: mais pedidos no delivery)']].map(([k,l])=>`<div class="field"><label>${l}</label><input id="lbmkF_${k}" value="${esc(e[k]||'')}"></div>`).join('')}</div>
     <div class="field"><label>Produtos/serviços e diferenciais (a IA usa isso — sem inventar preço)</label><textarea id="lbmkF_produtos" rows="2">${esc(e.produtos||'')}</textarea></div>
     <div class="field"><label>Observações</label><textarea id="lbmkF_obs" rows="2">${esc(e.obs||'')}</textarea></div>
     <div style="display:flex;gap:8px"><button class="btn btn-gold btn-sm" onclick="window.__lbmkSalvar()">Salvar</button><button class="btn btn-ghost btn-sm" onclick="window.__lbmkCancelar()">Cancelar</button></div></div>`:'';
@@ -4566,7 +4566,7 @@ window.__lbmkEditar=id=>{lbmk.editando={...lbmk.clientes.find(c=>c.id===id)};lbm
 window.__lbmkCancelar=()=>{lbmk.editando=null;lbmkRender();};
 window.__lbmkSalvar=async()=>{
   const g=k=>document.getElementById('lbmkF_'+k)?.value?.trim()||'';
-  const dados={nome:g('nome'),segmento:g('segmento'),cidade:g('cidade'),contato:g('contato'),whatsapp:g('whatsapp'),instagram:g('instagram'),plano:g('plano'),valor:lbValorBR(g('valor'))||0,status:g('status'),publico:g('publico'),tom:g('tom'),objetivo:g('objetivo'),produtos:g('produtos'),obs:g('obs'),atualizadoEm:serverTimestamp(),atualizadoPor:currentUser||''};
+  const dados={nome:g('nome'),segmento:g('segmento'),cidade:g('cidade'),contato:g('contato'),whatsapp:g('whatsapp'),instagram:g('instagram'),plano:g('plano'),valor:lbValorBR(g('valor'))||0,status:g('status'),publico:g('publico'),tom:g('tom'),objetivo:g('objetivo'),produtos:g('produtos'),obs:g('obs'),postsMes:Number(g('postsMes'))||null,atualizadoEm:serverTimestamp(),atualizadoPor:currentUser||''};
   if(!dados.nome)return showToast('Escreva o nome do negócio.');
   try{if(lbmk.editando?.id)await updateDoc(doc(db,'lbMarketing','dados','clientes',lbmk.editando.id),dados);else await addDoc(collection(db,'lbMarketing','dados','clientes'),{...dados,criadoEm:serverTimestamp()});lbmk.editando=null;showToast('Cliente salvo.');lbmkRender();}
   catch(e){showToast('Erro ao salvar: '+(e.code||e.message));}
@@ -4577,7 +4577,7 @@ function lbmkConteudo(el){
   const posts=lbmk.conteudos.filter(p=>p.clienteId===lbmk.clienteSel&&(p.data||'').startsWith(lbmk.mes)).sort((a,b)=>a.data.localeCompare(b.data));
   el.innerHTML=`<div class="cat-barra"><select onchange="lbmk.clienteSel=this.value;lbmkRender()">${lbmk.clientes.map(x=>`<option value="${x.id}" ${x.id===lbmk.clienteSel?'selected':''}>${esc(x.nome)}</option>`).join('')||'<option>Cadastre um cliente primeiro</option>'}</select>
       <input type="month" value="${lbmk.mes}" onchange="lbmk.mes=this.value;lbmkRender()" style="max-width:170px">
-      <button class="btn btn-gold btn-sm" id="lbmkGerarBtn" ${c?'':'disabled'} onclick="window.__lbmkGerar()">Bia (IA): gerar calendário do mês${pl?` (${pl.posts} posts)`:''}</button>
+      <button class="btn btn-gold btn-sm" id="lbmkGerarBtn" ${c?'':'disabled'} onclick="window.__lbmkGerar()">Bia (IA): gerar calendário do mês${(c?.postsMes||pl?.posts)?` (${c?.postsMes||pl.posts} posts)`:''}</button>
       <span style="font-size:12px;color:var(--text-dim)">${posts.length} post(s) neste mês</span></div>
     <div class="cv-tabela">${posts.map(p=>`<div class="cm-secao" style="padding:12px 14px;margin:0 0 8px">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>${p.data.split('-').reverse().slice(0,2).join('/')}</b><span class="cm-tool-tag rel">${esc(p.formato||'post')}</span><span style="font-size:12px;color:var(--text-dim)">${esc(p.objetivo||'')}</span><b style="flex:1">${esc(p.tema||'')}</b>
@@ -4590,7 +4590,7 @@ window.__lbmkGerar=async()=>{
   const c=lbmk.clientes.find(x=>x.id===lbmk.clienteSel);if(!c)return;const pl=lbmk.planos.find(p=>p.id===c.plano);
   const btn=document.getElementById('lbmkGerarBtn');btn.disabled=true;btn.textContent='A Bia está montando o calendário…';
   try{
-    const r=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'calendario_conteudo',cliente:c,mes:lbmk.mes,quantidade:pl?.posts||12,redes:['instagram']})})).json();
+    const r=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'calendario_conteudo',cliente:c,mes:lbmk.mes,quantidade:c.postsMes||pl?.posts||12,redes:['instagram']})})).json();
     if(!r.ok)throw new Error(r.erro||'falhou');
     for(const p of r.posts)await addDoc(collection(db,'lbMarketing','dados','conteudos'),{...p,clienteId:c.id,status:'ideia',criadoPor:'Bia (IA)',criadoEm:serverTimestamp()});
     showToast(`${r.posts.length} posts criados como "Ideia" — revise e aprove.`);
