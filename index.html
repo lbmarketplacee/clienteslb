@@ -1386,6 +1386,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <button class="nav-item sidebar-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</button>
 
       <button class="nav-item sidebar-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minhas Tarefas</button>
+      <button class="nav-item sidebar-item" data-page="jornada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="19" cy="15" r="3"/></svg> Jornada do cliente</button>
       <button class="nav-item sidebar-item" data-page="marketing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing</button>
       <button class="nav-item sidebar-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item sidebar-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
@@ -2572,6 +2573,34 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           <div class="cm-lista-simples" id="cmDevolucaoLista"></div>
         </div>
       </div>
+<div class="page" id="page-jornada">
+  <style>
+  .jr-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .jr-board{display:grid;grid-template-columns:repeat(6,minmax(170px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+  .jr-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px;min-height:120px}
+  .jr-col h4{font:600 13px Oswald,sans-serif;letter-spacing:.5px;color:var(--gold);margin-bottom:2px}
+  .jr-col .jr-dono{font-size:11px;color:var(--text-dim2);margin-bottom:8px}
+  .jr-card{background:var(--bg-card2);border:1px solid var(--border-soft);border-radius:10px;padding:9px 10px;margin-bottom:8px;cursor:pointer}
+  .jr-card:hover{border-color:var(--gold-dim)}
+  .jr-card.sel{border-color:var(--gold)}
+  .jr-card b{font-size:13px;display:block}
+  .jr-bar{height:4px;border-radius:3px;background:var(--border);margin:6px 0 5px;overflow:hidden}.jr-bar i{display:block;height:100%;background:var(--gold)}
+  .jr-prox{font-size:11.5px;color:var(--text-dim)}
+  .jr-pill{display:inline-block;font-size:11px;border-radius:999px;padding:1px 8px;border:1px solid var(--border-strong);color:var(--text-dim);white-space:nowrap}
+  .jr-pill.Guilherme{color:#7fb3f0;border-color:#7fb3f055}.jr-pill.Caroline{color:#b9a7f5;border-color:#b9a7f555}.jr-pill.Mirela{color:#f09ac0;border-color:#f09ac055}.jr-pill.Isa{color:#6fd3b3;border-color:#6fd3b355}.jr-pill.Lincoln{color:var(--gold);border-color:var(--gold-soft)}
+  .jr-det{margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .jr-etapa{margin-top:14px}.jr-etapa h4{font:600 14px Oswald,sans-serif;color:var(--gold);margin-bottom:6px}
+  .jr-it{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:7px 4px;border-top:1px solid var(--border-soft);font-size:13px}
+  .jr-it.ok span.t{color:var(--text-dim2);text-decoration:line-through}.jr-it.na span.t{color:var(--text-dim2);font-style:italic}
+  .jr-chk{width:22px;height:22px;border-radius:6px;border:1px solid var(--border-strong);background:transparent;color:var(--green);cursor:pointer;font-size:13px}
+  .jr-it.ok .jr-chk{background:var(--green-bg);border-color:var(--green)}
+  .jr-meta{font-size:11px;color:var(--text-dim2)}
+  .jr-minha{outline:1px solid var(--gold-soft);border-radius:8px}
+  </style>
+  <div class="jr-top" id="jrTop"></div>
+  <div id="jrCorpo"><div class="empty-state" style="padding:20px">Carregando…</div></div>
+  <div id="jrDet"></div>
+</div>
 <div class="page" id="page-tarefas">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
@@ -3277,7 +3306,7 @@ function atualizarTopbar(pg){
   ver('openMigBtn',pg==='clientes'&&isLincoln());
   ver('importInitialBtn',pg==='clientes'&&isLincoln());
 }
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='whatsapp')whatsappIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='whatsapp')whatsappIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
@@ -4501,6 +4530,68 @@ window.__finSalvar=async()=>{
 };
 document.querySelector('.nav-item[data-page="dre"]')?.addEventListener('click',()=>setTimeout(()=>{finRender();const m=document.getElementById('dreMesInput');if(m?.value)window.__dreAtualizar?.();},150));
 document.getElementById('dreMesInput')?.addEventListener('change',()=>finRender());
+/* ================= JORNADA DO CLIENTE (13/10/2026, Lincoln: "tipo Notion — quem faz o quê e em que etapa") =================
+   Coleção jornadas/{id} {clienteId, nome, tipo:'entrada'|'saida', itens:{k:{st:'ok'|'na', por, em, obs}}, criadoEm, criadoPor, concluida}.
+   Modelo fixo em JR_ETAPAS (responsáveis decididos pelo Lincoln). Item: pendente → feito (✓) → não se aplica (—) → pendente. */
+const JR_ETAPAS=[
+ {k:'fechamento',t:'Fechamento',dono:'Guilherme',itens:[['contrato','Contrato assinado','Guilherme'],['asaas','Cobrança criada no Asaas','Guilherme'],['origem','Origem do cliente marcada na ficha','Guilherme']]},
+ {k:'onboarding',t:'Onboarding',dono:'Guilherme',itens:[['boasvindas','Mensagem de boas-vindas','Guilherme'],['acessos','Checklist, acessos e documentos recebidos','Guilherme'],['grupo','Grupo de WhatsApp criado (Carol, Mirela e Isa dentro)','Guilherme'],['passagem','Passagem pra operação (Guilherme → Carol)','Guilherme']]},
+ {k:'abertura',t:'Abertura e conexão',dono:'Isa',itens:[['contas','Contas abertas nos marketplaces contratados','Isa'],['shopee','Shopee conectada no sistema (ERP + Ads)','Isa'],['ml','Mercado Livre conectado','Isa'],['tiktok','TikTok Shop conectado','Isa'],['shein','SHEIN conectada','Isa']]},
+ {k:'estrutura',t:'Estruturar a loja',dono:'Isa',itens:[['perfil','Perfil da loja (logo, descrição)','Isa'],['cupom','Cupom fixo 3%','Isa'],['desconto','Desconto fixo LB','Isa'],['anuncios','Anúncios criados/padronizados','Isa'],['ads','Ads ROAS 20 nos produtos','Isa'],['bannerml','Página e banner do Mercado Livre','Mirela'],['conferencia','Conferência do padrão LB','Caroline']]},
+ {k:'primeiromes',t:'Primeiro mês',dono:'Caroline',itens:[['robos','Robôs rodando (relâmpago, Ads, renovações)','Caroline'],['linkproduto','Link de cadastro de produto enviado ao cliente','Isa'],['relatorio','1º relatório mensal enviado','Mirela'],['adsml','1ª análise do Ads do Mercado Livre (30 dias)','Caroline']]},
+];
+const JR_SAIDA=[{k:'saida',t:'Saída do cliente',dono:'Caroline',itens:[['cancelarAsaas','Cancelar assinatura no Asaas','Caroline'],['robosOff','Desligar robôs (relâmpago, Ads, impulsionar)','Caroline'],['desconectar','Desconectar APIs dos marketplaces','Caroline'],['avisarEquipe','Avisar a equipe e sair do grupo','Caroline'],['inativo','Marcar o cliente como inativo no sistema','Caroline']]}];
+const JR_PESSOAS=['Guilherme','Caroline','Mirela','Isa','Lincoln'];
+const jr={lista:[],sel:null,filtro:'',unsub:null};
+window.jr=jr;
+const jrModelo=j=>j.tipo==='saida'?JR_SAIDA:JR_ETAPAS;
+function jrStatus(j){const et=jrModelo(j);let tot=0,ok=0,prox=null,etapa=null;
+  for(const e of et)for(const[k,t,q] of e.itens){tot++;const st=j.itens?.[k]?.st;if(st)ok++;else if(!prox){prox={k,t,q};etapa=e.k;}}
+  return{tot,ok,pct:tot?Math.round(ok/tot*100):0,prox,etapa:etapa||'feito'};}
+function jrIniciar(){
+  if(!jr.unsub)jr.unsub=onSnapshot(collection(db,'jornadas'),sn=>{jr.lista=sn.docs.map(d=>({id:d.id,...d.data()}));jrRender();},e=>{document.getElementById('jrCorpo').innerHTML=`<div class="empty-state" style="padding:20px">Sem acesso às jornadas (${esc(e.code||e.message)}).</div>`;});
+  jrRender();
+}
+window.__jrFiltro=v=>{jr.filtro=v;jrRender();};
+function jrRender(){
+  const top=document.getElementById('jrTop'),el=document.getElementById('jrCorpo');if(!el)return;
+  const ativos=(clientesCache||[]).filter(c=>c.ativo!==false&&!jr.lista.some(j=>j.clienteId===c.id&&j.tipo!=='saida'));
+  top.innerHTML=`<button class="btn btn-gold btn-sm" onclick="window.__jrNovo()">+ Cliente novo na jornada</button>
+    <select id="jrNovoCli" style="max-width:240px"><option value="">— escolha o cliente —</option>${ativos.map(c=>`<option value="${c.id}">${esc(c.nome||c.loja||c.id)}</option>`).join('')}</select>
+    <span style="flex:1"></span><span style="font-size:12px;color:var(--text-dim)">Ver itens de:</span>
+    ${['',...JR_PESSOAS].map(p=>`<button class="btn btn-sm ${jr.filtro===p?'btn-gold':'btn-ghost'}" onclick="window.__jrFiltro('${p}')">${p||'Todos'}</button>`).join('')}`;
+  const vivas=jr.lista.filter(j=>!j.concluida);
+  const cols=[...JR_ETAPAS.map(e=>({k:e.k,t:e.t,dono:e.dono})),{k:'saida',t:'Saída',dono:'Caroline'}];
+  const naCol=(j,k)=>j.tipo==='saida'?k==='saida':jrStatus(j).etapa===k||(k==='primeiromes'&&jrStatus(j).etapa==='feito');
+  el.innerHTML=`<div class="jr-board">${cols.map(c=>{const cs=vivas.filter(j=>naCol(j,c.k)).filter(j=>!jr.filtro||jrModelo(j).some(e=>e.itens.some(([k,,q])=>q===jr.filtro&&!j.itens?.[k]?.st)));
+    return `<div class="jr-col"><h4>${c.t}</h4><div class="jr-dono">${c.dono}</div>${cs.map(j=>{const s=jrStatus(j);const dias=j.criadoEm?.seconds?Math.floor((Date.now()/1000-j.criadoEm.seconds)/86400):0;
+      return `<div class="jr-card ${jr.sel===j.id?'sel':''}" onclick="window.__jrAbrir('${j.id}')"><b>${esc(j.nome)}</b><div class="jr-bar"><i style="width:${s.pct}%"></i></div>
+      <div class="jr-prox">${s.prox?`Próximo: ${esc(s.prox.t)} <span class="jr-pill ${s.prox.q}">${s.prox.q}</span>`:'Tudo feito — pode concluir'}</div><div class="jr-meta" style="margin-top:4px">${s.ok}/${s.tot} · ${dias} dia(s)</div></div>`;}).join('')||'<div class="jr-meta">—</div>'}</div>`;}).join('')}</div>`;
+  jrDetalhe();
+}
+window.__jrNovo=async()=>{const id=document.getElementById('jrNovoCli').value;if(!id)return showToast('Escolha o cliente na lista ao lado.');
+  const c=clientesCache.find(x=>x.id===id);
+  const r=await addDoc(collection(db,'jornadas'),{clienteId:id,nome:c?.nome||c?.loja||id,tipo:'entrada',itens:{},criadoEm:serverTimestamp(),criadoPor:currentUser,concluida:false});
+  jr.sel=r.id;showToast('Jornada criada.');};
+window.__jrAbrir=id=>{jr.sel=jr.sel===id?null:id;jrRender();};
+function jrDetalhe(){const box=document.getElementById('jrDet');const j=jr.lista.find(x=>x.id===jr.sel);if(!box)return;if(!j){box.innerHTML='';return;}
+  const s=jrStatus(j);
+  box.innerHTML=`<div class="jr-det"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3 style="font:600 20px Oswald,sans-serif;flex:1">${esc(j.nome)} <span style="font-size:13px;color:var(--text-dim)">${j.tipo==='saida'?'saída':'entrada'} · ${s.ok}/${s.tot}</span></h3>
+    ${j.tipo!=='saida'?`<button class="btn btn-ghost btn-sm" onclick="window.__jrSaida('${j.id}')">Iniciar saída do cliente</button>`:''}
+    <button class="btn btn-ghost btn-sm" onclick="window.__jrConcluir('${j.id}')">Concluir jornada</button></div>
+    ${jrModelo(j).map(e=>`<div class="jr-etapa"><h4>${e.t}</h4>${e.itens.map(([k,t,q])=>{const it=j.itens?.[k]||{};const cls=it.st==='ok'?'ok':it.st==='na'?'na':'';
+      return `<div class="jr-it ${cls} ${jr.filtro===q&&!it.st?'jr-minha':''}"><button class="jr-chk" title="Clique: feito → não se aplica → pendente" onclick="window.__jrMarcar('${j.id}','${k}')">${it.st==='ok'?'✓':it.st==='na'?'—':''}</button>
+        <span><span class="t">${esc(t)}</span>${it.por?`<div class="jr-meta">${it.st==='na'?'não se aplica':'feito'} por ${esc(it.por)}${it.em?.seconds?' em '+new Date(it.em.seconds*1000).toLocaleDateString('pt-BR'):''}</div>`:''}
+        <input placeholder="observação" value="${esc(it.obs||'')}" onchange="window.__jrObs('${j.id}','${k}',this.value)" style="margin-top:4px;width:100%;font-size:12px;padding:3px 6px;background:transparent;border:1px solid var(--border-soft);border-radius:6px;color:var(--text)"></span>
+        <span class="jr-pill ${q}">${q}</span></div>`;}).join('')}</div>`).join('')}</div>`;}
+window.__jrMarcar=async(id,k)=>{const j=jr.lista.find(x=>x.id===id);const atual=j.itens?.[k]?.st;const novo=!atual?'ok':atual==='ok'?'na':null;
+  const v=novo?{...(j.itens?.[k]||{}),st:novo,por:currentUser,em:serverTimestamp()}:{obs:j.itens?.[k]?.obs||''};
+  await updateDoc(doc(db,'jornadas',id),{['itens.'+k]:v,atualizadoEm:serverTimestamp()}).catch(e=>showToast('Erro: '+e.message));};
+window.__jrObs=(id,k,v)=>updateDoc(doc(db,'jornadas',id),{['itens.'+k+'.obs']:v}).catch(e=>showToast('Erro: '+e.message));
+window.__jrSaida=async id=>{const j=jr.lista.find(x=>x.id===id);if(!await lbConfirmar(`Iniciar a saída de ${j.nome}? Cria a checklist de saída pra Carol.`,{perigo:false}))return;
+  const r=await addDoc(collection(db,'jornadas'),{clienteId:j.clienteId,nome:j.nome,tipo:'saida',itens:{},criadoEm:serverTimestamp(),criadoPor:currentUser,concluida:false});
+  await updateDoc(doc(db,'jornadas',id),{concluida:true,concluidaEm:serverTimestamp()});jr.sel=r.id;};
+window.__jrConcluir=async id=>{if(!await lbConfirmar('Concluir esta jornada? Ela sai do quadro.',{perigo:false}))return;await updateDoc(doc(db,'jornadas',id),{concluida:true,concluidaEm:serverTimestamp(),concluidaPor:currentUser});jr.sel=null;};
 /* ================= LB MARKETING (agência) — 13/10/2026 =================
    Dados em lbMarketing/config (planos) e lbMarketing/dados/{clientes,conteudos}. Regras do Firestore: só Lincoln e Carol.
    IA: lb-diretor-criativo acao=calendario_conteudo (calendário do mês). Nada daqui mistura com clientes/robôs da LB Marketplace. */
