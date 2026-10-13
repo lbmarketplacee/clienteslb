@@ -9605,7 +9605,7 @@ window.__cpGerar=async(semFotos)=>{ // semFotos=true: usa só as fotos enviadas,
   const medidas=Object.fromEntries(dirLerTamanhos(document.getElementById('cpTam').value).map(t=>[t.tam.toUpperCase(),t.campos]));
   const cores=v1?v1.op:[];const nome1=v1?.nome||'';const nome2=v2?.nome||'';
   const tamanhos=(v2?v2.op:[]).map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}}));
-  // guia de tamanhos (Shopee) só se a variação de tamanho tiver medida/"veste" informada
+  // guia de tamanhos (Shopee): sempre que houver variação de Tamanho — sem medida, usa a régua BR (dirGuiaIA). 13/10/2026: a Shopee passou a exigir no add_item
   const varTam=[v1,v2].find(v=>v&&/tamanho/i.test(v.nome));
   const linhasGuia=varTam?varTam.op.map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}})).filter(t=>Object.keys(t.campos).length):[];
   const plataformas=[document.getElementById('cpPlatShopee').checked&&'shopee',document.getElementById('cpPlatMl').checked&&'ml',document.getElementById('cpPlatTiktok')?.checked&&'tiktok'].filter(Boolean);
@@ -9628,7 +9628,7 @@ window.__cpGerar=async(semFotos)=>{ // semFotos=true: usa só as fotos enviadas,
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
     let tituloMl='';
     if(plataformas.includes('ml')){st.textContent='Gerando o título do Mercado Livre...';try{const t=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:produtoIA})})).json();tituloMl=t.ok?t.titulo:'';}catch(e){}}
-    window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:linhasGuia.length?dirGuiaTamanhos(linhasGuia,''):null,reais:cpFotos.slice(),cores,tamanhos,nome1,nome2,medidas,plataformas,material,lojaId};
+    window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:varTam?await dirGuiaIA(varTam.op.map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}})),fotos[0]?.imagem||cpFotos[0]||null,produto):null,reais:cpFotos.slice(),cores,tamanhos,nome1,nome2,medidas,plataformas,material,lojaId};
     st.textContent=semFotos?`✓ Título e descrição prontos — o anúncio usa as ${cpFotos.length} foto(s) enviadas${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo (a foto por cor com IA continua opcional).`
       :`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
     dirShopeeRender('cpPasso2',lojaId);cpStep(3);
@@ -9906,6 +9906,13 @@ window.__dirShCriar=async()=>{
       item_sku:document.getElementById('dirShSku').value.trim(),guiaTamanhos:guiaId,atributos,
       cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:est,skuBase:document.getElementById('dirShSku').value.trim()};
     let r=await dirShApi('produto_criar',c,token,{dados});
+    // categoria exige guia ("Size Chart is required…", visto 13/10/2026) e não tinha variação de tamanho → guia "Único" pela régua BR e tenta de novo
+    if(!r.ok&&/size chart is required/i.test(`${r.erro||''}`)&&!dados.guiaTamanhos){
+      passo('A Shopee exige guia de tamanhos nessa categoria — montando a guia...');
+      const lista=(u.tamanhos?.length?u.tamanhos:[{tam:'Único',campos:{Veste:'36/42'}}]);
+      const g=await dirGuiaIA(lista,u.fotos?.[0]?.imagem||u.reais?.[0]||null,u.produto||'');
+      if(g){const gid=await subir(g,'guia de tamanhos');dados.guiaTamanhos=gid;if(dados.imagens.length<9&&!dados.imagens.includes(gid))dados.imagens.push(gid);r=await dirShApi('produto_criar',c,token,{dados});}
+    }
     // "This product duplicates another" = já foi criado num clique anterior → segue com o que existe (não cria outro)
     if(!r.ok&&/duplicates another/i.test(`${r.erro||''}`)){
       passo('Esse anúncio já existe na loja (clique anterior) — procurando ele pra seguir...');
