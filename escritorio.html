@@ -166,7 +166,7 @@ const MP={shopee:'Shopee',tiktok:'TikTok',ml:'Mercado Livre',shein:'SHEIN',comer
 // tipos = combinações marketplace:tipo do automacaoLog que são trabalho desse funcionário
 const AGENTES=[
   {id:'lia',nome:'Lia',cargo:'Promoções',cor:'#e0a352',acess:'estrela',chefe:'Carol',x:220,y:470,
-   tipos:[/oferta_relampago/,/campanha_ml/,/desconto_fixo/,/cupom_fixo/,/promo_giro/],
+   tipos:[/oferta_relampago/,/campanha_ml/,/desconto_fixo/,/cupom_fixo/,/promo_giro/,/padronizar/],
    faz:['Ofertas relâmpago na Shopee, TikTok e Mercado Livre','Entra nas campanhas do ML (10.10, 11.11…)','Renova desconto fixo e cupom antes de vencer','Promo de giro nos produtos parados']},
   {id:'teo',nome:'Téo',cargo:'Tráfego pago',cor:'#4d8ef0',acess:'fone',chefe:'Carol',x:410,y:470,
    tipos:[/^shopee:ads$/,/impulsionar/,/alerta_ads/],
@@ -232,6 +232,7 @@ function fala(l){
   if(/desconto_fixo/.test(k))return ruim?`Desconto fixo da ${n} precisa de atenção`:`Renovei o desconto fixo da ${n}`;
   if(/cupom_fixo/.test(k))return ruim?`Cupom da ${n} não renovou${l.motivo?': '+l.motivo:''}`:`Renovei o cupom da ${n}`;
   if(/promo_giro/.test(k))return `Promo de giro na ${n}`;
+  if(/padronizar/.test(k))return `Produtos no desconto fixo na ${n}`;
   if(/impulsionar/.test(k))return `Impulsionei ${(d.itens||[]).length||''} produto(s) da ${n}`;
   if(/^shopee:ads/.test(k)){const q=Array.isArray(d.criados)?d.criados.length:d.criados;return `${q||''} produto(s) novos da ${n} no Ads`;}
   if(/alerta_ads/.test(k))return `Avisei a ${n}: saldo do Ads zerado`;
@@ -309,6 +310,7 @@ function cartoes(lista){
   return lista.map(p=>{
     const ag=AGENTES.find(a=>a.id===p.agente);const pv=p.previa||{};let corpo='',btOk='Aprovar',btNo='Recusar',trava='';
     if(p.tipo==='promo_giro'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,60))}: ${faixaR(x.antes)} → <b>${faixaR(x.depois)}</b></li>`).join('')}</ul>${(p.dados?.itens||[]).length>8?`<em>… e mais ${p.dados.itens.length-8}</em>`:''}`;btOk='Aprovar e aplicar';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança de preço.';}
+    if(p.tipo==='padronizar_desconto'){const sh=p.dados?.marketplace==='shopee';corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(String(x.nome).slice(0,60))}: ${sh?`cheio <b>${R$(x.depois[0])}</b> · no desconto ${R$(x.depois[1])}`:`${R$(x.antes[0])} → <b>${R$(x.depois[0])}</b>`}</li>`).join('')}</ul>${(p.dados?.itens||[]).length>8?`<em>… e mais ${p.dados.itens.length-8}</em>`:''}`;btOk='Aprovar e aplicar';btNo='Agora não';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança de preço.';}
     if(/^meta_/.test(p.tipo)){const d=p.previa||{};corpo=`<div class="acao">${p.tipo==='meta_escalar'?`→ Orçamento ${d.nivel==='campanha'?'da campanha':'do conjunto'} "${esc(d.conjunto||'')}": ${R$(d.de)} → <b>${R$(d.para)}</b>/dia`:p.tipo==='meta_pausar'?'→ Pausar o anúncio (dá pra reativar no Gerenciador)':'→ Vira tarefa pra Mirela fazer criativo novo'}</div><em>CPL médio da conta (30 dias): ${d.cplMedio30?R$(d.cplMedio30):'—'}</em>`;btOk=p.tipo==='meta_escalar'?'Aumentar verba':p.tipo==='meta_pausar'?'Pausar anúncio':'Criar tarefa';btNo='Agora não';if(p.tipo!=='meta_criativo'&&!ehAdmin())trava='Só Lincoln e Carol mexem nos anúncios da LB.';}
     if(p.tipo==='ads_diagnostico'){const ET={vitrine:'Vitrine fraca (pouca gente clica)',pagina:'Página fraca (clica e não compra)',custo:'Custo alto por venda',estoque:'Sem estoque'};
       corpo=(pv||[]).slice(0,6).map(x=>`<div class="diag"><b>${esc(x.nome.slice(0,60))}</b><em>${ET[x.etapa]||x.etapa} · gastou ${R$(x.gasto)} → vendeu ${R$(x.vendas)} · CTR ${String(x.ctr).replace('.',',')}% · conversão ${String(x.conversao).replace('.',',')}%${x.meta?` · meta ROAS ${x.meta}`:''}</em><ul class="faz">${(x.causas||[]).map(c=>`<li>${esc(c)}</li>`).join('')}</ul>${(x.acoes||[]).filter(a=>a.tipo==='meta').map(a=>`<div class="acao">→ Subir meta de ROAS ${a.de} → <b>${a.para}</b></div>`).join('')}${(x.acoes||[]).some(a=>a.tipo==='anuncio'||a.tipo==='estoque')?'<div class="acao">→ Vira tarefa de melhoria do anúncio</div>':''}</div>`).join('')+((pv||[]).length>6?`<em>… e mais ${pv.length-6}</em>`:'');
@@ -325,7 +327,7 @@ function cartoes(lista){
 window.__escAprov=()=>{const p=pend[0];sel=p?(AGENTES.find(a=>a.id===p.agente)?.id||'max'):'max';desenhar();painel();};
 window.__escDecidir=async(id,decisao)=>{
   const p=pend.find(x=>x._id===id);if(!p)return;
-  if(decisao==='aprovar'&&(['promo_giro','ads_fracas','ads_diagnostico','meta_escalar','meta_pausar'].includes(p.tipo))&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
+  if(decisao==='aprovar'&&(['padronizar_desconto','promo_giro','ads_fracas','ads_diagnostico','meta_escalar','meta_pausar'].includes(p.tipo))&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
   const bts=document.querySelectorAll(`[onclick*="${id}"]`);bts.forEach(b=>b.disabled=true);
   try{
     const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao})})).json();
