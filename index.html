@@ -2576,7 +2576,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 <div class="page" id="page-jornada">
   <style>
   .jr-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-  .jr-board{display:grid;grid-template-columns:repeat(6,minmax(170px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+  .jr-board{display:grid;grid-template-columns:repeat(7,minmax(160px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
   .jr-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px;min-height:120px}
   .jr-col h4{font:600 13px Oswald,sans-serif;letter-spacing:.5px;color:var(--gold);margin-bottom:2px}
   .jr-col .jr-dono{font-size:11px;color:var(--text-dim2);margin-bottom:8px}
@@ -4533,12 +4533,13 @@ document.getElementById('dreMesInput')?.addEventListener('change',()=>finRender(
 /* ================= JORNADA DO CLIENTE (13/10/2026, Lincoln: "tipo Notion — quem faz o quê e em que etapa") =================
    Coleção jornadas/{id} {clienteId, nome, tipo:'entrada'|'saida', itens:{k:{st:'ok'|'na', por, em, obs}}, criadoEm, criadoPor, concluida}.
    Modelo fixo em JR_ETAPAS (responsáveis decididos pelo Lincoln). Item: pendente → feito (✓) → não se aplica (—) → pendente. */
-const JR_ETAPAS=[ // lousa do escritório, 13/10/2026
- {k:'comercial',t:'Comercial',dono:'Guilherme',itens:[['lead','Lead qualificado e reunião feita','Guilherme'],['fechou','Fechou (plano e valor combinados)','Guilherme'],['boasvindas','Grupo de WhatsApp + boas-vindas','Guilherme'],['acessos','Link de onboarding enviado e preenchido','Guilherme'],['origem','Origem do cliente marcada na ficha','Guilherme']]},
- {k:'contrato',t:'Contrato e pagamento',dono:'Caroline',itens:[['revisaOnb','Revisar o onboarding (dados e documentos)','Caroline'],['contrato','Gerar o contrato','Caroline'],['asaas','Contrato assinado + 1º pagamento (Asaas)','Caroline'],['grupo','Equipe no grupo (Carol, Isa e Mirela)','Caroline']]},
- {k:'abertura',t:'Abertura e conexão',dono:'Isa',itens:[['contas','Contas abertas (UpSeller, SHEIN, TikTok, ML)','Isa'],['upseller','UpSeller configurado','Isa'],['shopee','Shopee conectada no sistema (ERP + Ads)','Isa'],['ml','Mercado Livre conectado','Isa'],['tiktok','TikTok Shop conectado','Isa'],['shein','SHEIN conectada','Isa']]},
- {k:'estrutura',t:'Estrutura e anúncios',dono:'Isa',itens:[['perfil','Estrutura da conta (perfil, cupom, desconto fixo, Ads)','Isa'],['criativos','Criativos da loja (logo, banner, página ML)','Mirela'],['linkproduto','Link de produtos enviado ao cliente','Isa'],['revisaLink','Revisar os produtos que o cliente mandou','Caroline'],['anuncios','Subir os anúncios','Isa'],['conferencia','Revisão final do padrão LB','Caroline']]},
- {k:'primeiromes',t:'Primeiro mês',dono:'Caroline',itens:[['robos','Robôs rodando (relâmpago, Ads, renovações)','Caroline'],['relatorio','Relatório enviado no dia 1º','Mirela'],['adsml','1ª análise do Ads do Mercado Livre (30 dias)','Caroline'],['depoimento','Reunião com o cliente sobre depoimento','Mirela']]},
+const JR_ETAPAS=[ // processo combinado com o Lincoln 13/10/2026 (chave = o que libera a próxima etapa; prazo em dias corridos)
+ {k:'comercial',t:'Comercial',dono:'Guilherme',prazo:3,chave:'Fechou e preencheu o link de onboarding',itens:[['lead','Lead qualificado e reunião feita','Guilherme'],['fechou','Fechou (plano e valor) — tentar Pix na call','Guilherme'],['boasvindas','Grupo "LB | Loja" + boas-vindas (Carol, Isa e Mirela no grupo)','Guilherme'],['acessos','Link de onboarding enviado e cobrado (D+1, D+2; no D+3 a Carol entra)','Guilherme'],['origem','Origem do cliente marcada na ficha','Guilherme']]},
+ {k:'contrato',t:'Contrato e cadastro',dono:'Caroline',prazo:2,chave:'Contrato assinado + pagamento confirmado',itens:[['revisaOnb','Revisar o onboarding (dados e documentos)','Caroline'],['contrato','Gerar o contrato e mandar no grupo com o link de pagamento','Caroline'],['asaas','Contrato assinado + pagamento confirmado (Asaas)','Caroline']]},
+ {k:'abertura',t:'Abertura e conexão',dono:'Isa',prazo:2,chave:'Todas as contas criadas e conectadas no sistema',itens:[['apresentacao','Se apresentar no grupo e avisar que vão chegar códigos','Isa'],['upseller','UpSeller criado (link de afiliado da LB)','Isa'],['contas','Contas criadas (Shopee, TikTok, ML, SHEIN) — a Shopee às vezes demora pra aprovar','Isa'],['shopee','Shopee conectada no sistema (ERP + Ads)','Isa'],['ml','Mercado Livre conectado','Isa'],['tiktok','TikTok Shop conectado','Isa'],['shein','SHEIN conectada','Isa']]},
+ {k:'estrutura',t:'Produtos e página',dono:'Isa',prazo:5,chave:'Anúncios no ar + página decorada',itens:[['linkproduto','Link de produtos enviado e cobrado','Isa'],['criativos','Decoração da página (medidas de cada marketplace) — 3 dias','Mirela'],['anuncios','Anúncios publicados em todas as contas — 2 dias após o cliente mandar','Isa'],['padronizar','Padronizar (desconto fixo Shopee/TikTok) se subiu pelo UpSeller','Isa'],['cupomTiktok','Cupom 3% do TikTok criado no Seller Center','Isa']]},
+ {k:'revisao',t:'Revisão',dono:'Caroline',prazo:1,chave:'Padrão LB aprovado → entra na operação',itens:[['conferencia','Conferir o padrão LB (anúncios, preços, página)','Caroline'],['robos','Robôs rodando (relâmpago, Ads, renovações)','Caroline']]},
+ {k:'primeiromes',t:'Primeiro mês',dono:'Caroline',prazo:35,chave:'1º relatório entregue',itens:[['adsml','1ª análise do Ads do Mercado Livre (30 dias)','Caroline'],['relatorio','1º relatório enviado no dia 01','Mirela'],['depoimento','Reunião de depoimento (se o resultado for bom)','Mirela']]},
 ];
 const JR_SAIDA=[{k:'saida',t:'Saída do cliente',dono:'Caroline',itens:[['cancelarAsaas','Cancelar assinatura no Asaas','Caroline'],['robosOff','Desligar robôs (relâmpago, Ads, impulsionar)','Caroline'],['desconectar','Desconectar APIs dos marketplaces','Caroline'],['avisarEquipe','Avisar a equipe e sair do grupo','Caroline'],['inativo','Marcar o cliente como inativo no sistema','Caroline']]}];
 const JR_PESSOAS=['Guilherme','Caroline','Mirela','Isa','Lincoln'];
@@ -4550,6 +4551,9 @@ const JR_CONEXAO={shopee:c=>c.shopeeErpShopId||c.shopeeMktShopId||c.shopeeShopId
 function jrAuto(j,k){if(j.tipo==='saida'||!JR_CONEXAO[k])return null;const c=(clientesCache||[]).find(x=>x.id===j.clienteId);if(!c)return null;
   if(JR_CONEXAO[k](c))return 'ok';if(!(c.marketplaces||[]).includes(k))return 'na';return null;}
 const jrSt=(j,k)=>j.itens?.[k]?.st||jrAuto(j,k);
+function jrPrazo(j,etapaK){const et=jrModelo(j);const idx=et.findIndex(e=>e.k===etapaK);const e=et[idx];if(!e?.prazo)return null;
+  let ini=j.criadoEm?.seconds||0;for(const ant of et.slice(0,idx))for(const[k] of ant.itens){const t=j.itens?.[k]?.em?.seconds;if(t&&t>ini)ini=t;}
+  if(!ini)return null;const resta=Math.ceil((ini+e.prazo*86400-Date.now()/1000)/86400);return{resta,prazo:e.prazo};}
 function jrStatus(j){const et=jrModelo(j);let tot=0,ok=0,prox=null,etapa=null;
   for(const e of et)for(const[k,t,q] of e.itens){tot++;const st=jrSt(j,k);if(st)ok++;else if(!prox){prox={k,t,q};etapa=e.k;}}
   return{tot,ok,pct:tot?Math.round(ok/tot*100):0,prox,etapa:etapa||'feito'};}
@@ -4571,7 +4575,7 @@ function jrRender(){
   el.innerHTML=`<div class="jr-board">${cols.map(c=>{const cs=vivas.filter(j=>naCol(j,c.k)).filter(j=>!jr.filtro||jrModelo(j).some(e=>e.itens.some(([k,,q])=>q===jr.filtro&&!jrSt(j,k))));
     return `<div class="jr-col"><h4>${c.t}</h4><div class="jr-dono">${c.dono}</div>${cs.map(j=>{const s=jrStatus(j);const dias=j.criadoEm?.seconds?Math.floor((Date.now()/1000-j.criadoEm.seconds)/86400):0;
       return `<div class="jr-card ${jr.sel===j.id?'sel':''}" onclick="window.__jrAbrir('${j.id}')"><b>${esc(j.nome)}</b><div class="jr-bar"><i style="width:${s.pct}%"></i></div>
-      <div class="jr-prox">${s.prox?`Próximo: ${esc(s.prox.t)} <span class="jr-pill ${s.prox.q}">${s.prox.q}</span>`:'Tudo feito — pode concluir'}</div><div class="jr-meta" style="margin-top:4px">${s.ok}/${s.tot} · ${dias} dia(s)</div></div>`;}).join('')||'<div class="jr-meta">—</div>'}</div>`;}).join('')}</div>`;
+      <div class="jr-prox">${s.prox?`Próximo: ${esc(s.prox.t)} <span class="jr-pill ${s.prox.q}">${s.prox.q}</span>`:'Tudo feito — pode concluir'}</div><div class="jr-meta" style="margin-top:4px">${s.ok}/${s.tot} · ${dias} dia(s)${(()=>{const p=jrPrazo(j,s.etapa);return p?(p.resta<0?` · <b style="color:var(--red)">atrasado ${-p.resta}d</b>`:` · prazo ${p.resta}d`):'';})()}</div></div>`;}).join('')||'<div class="jr-meta">—</div>'}</div>`;}).join('')}</div>`;
   jrDetalhe();
 }
 window.__jrNovo=async()=>{const id=document.getElementById('jrNovoCli').value;if(!id)return showToast('Escolha o cliente na lista ao lado.');
@@ -4587,7 +4591,7 @@ function jrDetalhe(){const box=document.getElementById('jrDet');const j=jr.lista
   box.innerHTML=`<div class="jr-det"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3 style="font:600 20px Oswald,sans-serif;flex:1">${esc(j.nome)} <span style="font-size:13px;color:var(--text-dim)">${j.tipo==='saida'?'saída':'entrada'} · ${s.ok}/${s.tot}</span></h3>
     ${j.tipo!=='saida'&&!j.itens?.contas?.st?`<button class="btn btn-ghost btn-sm" onclick="window.__jrJaTinha('${j.id}')">Cliente já tinha as contas (só otimizar)</button>`:''}${j.tipo!=='saida'?`<button class="btn btn-ghost btn-sm" onclick="window.__jrSaida('${j.id}')">Iniciar saída do cliente</button>`:''}
     <button class="btn btn-ghost btn-sm" onclick="window.__jrConcluir('${j.id}')">Concluir jornada</button></div>
-    ${jrModelo(j).map(e=>`<div class="jr-etapa"><h4>${e.t}</h4>${e.itens.map(([k,t,q])=>{const it={...(j.itens?.[k]||{})};const au=!it.st&&jrAuto(j,k);if(au){it.st=au;it.por=au==='ok'?'sistema (já conectado)':'sistema (não contratado)';}const cls=it.st==='ok'?'ok':it.st==='na'?'na':'';
+    ${jrModelo(j).map(e=>`<div class="jr-etapa"><h4>${e.t}${e.prazo?` <span class="jr-meta">· prazo ${e.prazo} dia(s)</span>`:''}</h4>${e.chave?`<div class="jr-meta" style="margin:-2px 0 4px">Chave pra próxima etapa: <b style="color:var(--gold)">${esc(e.chave)}</b></div>`:''}${e.itens.map(([k,t,q])=>{const it={...(j.itens?.[k]||{})};const au=!it.st&&jrAuto(j,k);if(au){it.st=au;it.por=au==='ok'?'sistema (já conectado)':'sistema (não contratado)';}const cls=it.st==='ok'?'ok':it.st==='na'?'na':'';
       return `<div class="jr-it ${cls} ${jr.filtro===q&&!it.st?'jr-minha':''}"><button class="jr-chk" title="Clique: feito → não se aplica → pendente" onclick="window.__jrMarcar('${j.id}','${k}')">${it.st==='ok'?'✓':it.st==='na'?'—':''}</button>
         <span><span class="t">${esc(t)}</span>${it.por?`<div class="jr-meta">${it.st==='na'?'não se aplica':'feito'} — ${esc(it.por)}${it.em?.seconds?' em '+new Date(it.em.seconds*1000).toLocaleDateString('pt-BR'):''}</div>`:''}
         <input placeholder="observação" value="${esc(it.obs||'')}" onchange="window.__jrObs('${j.id}','${k}',this.value)" style="margin-top:4px;width:100%;font-size:12px;padding:3px 6px;background:transparent;border:1px solid var(--border-soft);border-radius:6px;color:var(--text)"></span>
