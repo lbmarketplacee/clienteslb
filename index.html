@@ -9813,7 +9813,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const ids=new Map();const subir=async(img,rot)=>{if(ids.has(img))return ids.get(img);linhaMl(`ML: subindo fotos (${rot})...`);const r=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:img},true);if(!r.ok)throw new Error('foto: '+r.erro);ids.set(img,r.id);return r.id;};
   const fotosDa={};
   for(const cor of (u.cores.length?u.cores:[''])){const unicos=[...new Set(fotosPorCor[cor]||fotosPorCor[Object.keys(fotosPorCor)[0]]||[])].slice(0,10);fotosDa[cor]=[];for(const [j,img] of unicos.entries())fotosDa[cor].push(await subir(img,`${cor||'produto'} ${j+1}/${unicos.length}`));if(!fotosDa[cor].length)throw new Error('sem fotos pra '+(cor||'o produto'));}
-  const criados=[],erros=[];
+  const criados=[],erros=[];let contaBloqueada=false;
   for(const cor of (u.cores.length?u.cores:[''])){for(const t of (u.tamanhos.length?u.tamanhos:[{tam:''}])){
     linhaMl(`ML: criando ${[cor,t.tam].filter(Boolean).join(' ')||'anúncio'}... (${criados.length+erros.length+1}/${nItens})`);
     const vars=[[u.nome1,id1,cor],[u.nome2,id2,t.tam]].filter(v=>v[2]);
@@ -9824,7 +9824,16 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:String(spec.marca||'').trim()||c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:descricao||''};
     const r=await dirMl('ml_criar_item',{access_token:token,item},true);
     if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
-  }}
+    if(!r.ok&&/unable_to_list/.test(r.erro||'')&&!criados.length){contaBloqueada=true;break;}
+  }if(contaBloqueada)break;}
+  // seller.unable_to_list = a CONTA não pode anunciar (Djan 05/10, VYM 14/10/2026) — lê o motivo no /users e para no 1º erro
+  if(contaBloqueada){let mot='a conta do ML está impedida de anunciar';try{const us=await ler(`/users/${c.mlUserId}`);const stt=us?.status||{};const m=[];
+      if(stt.mercadoenvios&&stt.mercadoenvios!=='accepted')m.push(`Mercado Envios "${stt.mercadoenvios}" — ativar em Preferências de venda → Formas de entrega`);
+      if(stt.list&&stt.list.allow===false)m.push(`anúncios bloqueados${(stt.list.codes||[]).length?` (${stt.list.codes.join(', ')})`:''}`);
+      if(stt.sell&&stt.sell.allow===false)m.push(`vendas bloqueadas${(stt.sell.codes||[]).length?` (${stt.sell.codes.join(', ')})`:''}`);
+      if(stt.site_status&&stt.site_status!=='active')m.push(`conta "${stt.site_status}"`);
+      if(m.length)mot=m.join(' · ');else mot+=' (o /users não mostra o motivo — entrar na conta da cliente e ver os avisos/dados pendentes)';}catch(e){}
+    erros.length=0;erros.push(`CONTA DO ML BLOQUEADA PRA ANUNCIAR: ${mot}. Nada foi criado; depois de resolver, clique em "Tentar de novo só no Mercado Livre".`);}
   return{criados,erros,venda:pr.venda,comissaoPct:pr.comissaoPct,cat,gridId,faltaReq,textoReq,nItens};
 }
 window.__cpCriarMl=async(depoisDaShopee=false)=>{
