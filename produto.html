@@ -66,6 +66,20 @@ table.est input{width:80px;padding:7px}
 .carregando{text-align:center;color:var(--dim);padding:60px 16px}
 .dica{background:#fff8e6;border:1px solid #f0dfae;border-radius:10px;padding:10px 12px;font-size:13px;color:#6b5a26;margin-top:10px}
 .hidden{display:none}
+.corfotos{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.corfoto{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fffdf8}
+.corfoto.falta{border-color:#f0b4ab;background:#fff6f4}
+.corfoto .cab{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:600;margin-bottom:8px}
+.corfoto .cab small{font-weight:500;color:var(--dim)}
+.corfoto .cab small.ok{color:var(--ok)}
+.corfoto .cab small.no{color:var(--err)}
+.mini{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.mini button{flex:none;width:64px;height:84px;border-radius:8px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:#eee;position:relative}
+.mini button img{width:100%;height:100%;object-fit:cover;display:block}
+.mini button.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold2)}
+.mini button.outra{opacity:.45}
+.mini button i{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-style:normal;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini label.nova{flex:none;width:64px;height:84px;border-radius:8px;border:2px dashed var(--gold2);display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;font-weight:600;color:var(--gold);cursor:pointer;background:#fffaf0;padding:4px}
 </style>
 </head>
 <body>
@@ -82,7 +96,7 @@ table.est input{width:80px;padding:7px}
 
     <section class="sec">
       <h2><span class="n">1</span>Fotos do produto</h2>
-      <p class="ajuda">Mínimo 2, até 15. Mande frente, costas, detalhes (tecido, etiqueta) e <b>uma foto de cada cor</b>. Foto com a peça vestida ou no manequim, com boa luz. Pode ser do celular.</p>
+      <p class="ajuda">Mínimo 2, até 15. Mande frente, costas, detalhes (tecido, etiqueta) e <b>uma foto de cada cor</b> (na seção 3 você diz qual foto é de qual cor). Foto com a peça vestida ou no manequim, com boa luz. Pode ser do celular.</p>
       <div class="fotos" id="fotos">
         <label class="add" for="arq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Adicionar fotos</label>
       </div>
@@ -108,6 +122,11 @@ table.est input{width:80px;padding:7px}
       <label>Cores <span class="op">(digite e aperte Enter ou "Adicionar")</span></label>
       <div class="linha"><input type="text" id="corNova" placeholder="Ex.: Preto"><button type="button" class="btn" id="corAdd">Adicionar</button></div>
       <div class="chips" id="cores"></div>
+      <div id="corFotosBox" class="hidden">
+        <label>Foto de cada cor</label>
+        <div class="ex">Toque na foto que mostra cada cor (ou envie uma). Assim a gente não troca as cores no anúncio.</div>
+        <div class="corfotos" id="corFotos"></div>
+      </div>
       <label>Tamanhos</label>
       <div class="chips" id="tamPadrao"></div>
       <div class="linha" style="margin-top:8px"><input type="text" id="tamNovo" placeholder="Outro tamanho (ex.: 38, G1, 110V)"><button type="button" class="btn" id="tamAdd">Adicionar</button></div>
@@ -172,27 +191,40 @@ async function iniciar(){
 
 // ---------- fotos: reduz no celular (até 1600 px, JPG) e já envia ----------
 function reduzir(arq){return new Promise((ok,erro)=>{const img=new Image();img.onload=()=>{const m=1600,s=Math.min(1,m/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',0.86));};img.onerror=()=>erro(new Error('não consegui abrir a foto'));img.src=URL.createObjectURL(arq);});}
-$('arq').addEventListener('change',async e=>{
-  const arqs=[...e.target.files].slice(0,15-st.fotos.length);e.target.value='';
-  for(const a of arqs){const f={id:Math.random().toString(36).slice(2),prev:URL.createObjectURL(a),url:null,cor:'',estado:'enviando...'};st.fotos.push(f);renderFotos();
+$('arq').addEventListener('change',e=>{const arqs=[...e.target.files].slice(0,15-st.fotos.length);e.target.value='';subirFotos(arqs,'');});
+async function subirFotos(arqs,cor){
+  for(const a of arqs){const f={id:Math.random().toString(36).slice(2),prev:URL.createObjectURL(a),url:null,cor:cor||'',estado:'enviando...'};st.fotos.push(f);renderFotos();
     try{const b64=await reduzir(a);const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'foto',t:T,base64:b64})});const d=await r.json();
       if(!d.ok)throw new Error(d.erro);f.url=d.url;f.estado='';}catch(err){f.estado='falhou — toque no X e envie de novo';}
     renderFotos();}
-});
+}
 function renderFotos(){
   const add=st.fotos.length<15?`<label class="add" for="arq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Adicionar fotos</label>`:'';
   $('fotos').innerHTML=st.fotos.map(f=>`<div class="foto"><img src="${f.prev}" alt=""><button type="button" class="x" onclick="tirarFoto('${f.id}')">×</button>
-    ${f.estado?`<div class="st">${esc(f.estado)}</div>`:st.cores.length?`<select onchange="corFoto('${f.id}',this.value)"><option value="">Cor: geral</option>${st.cores.map(c=>`<option ${f.cor===c?'selected':''}>${esc(c)}</option>`).join('')}</select>`:''}</div>`).join('')+add;
-  const okN=st.fotos.filter(f=>f.url).length;$('fotosInfo').textContent=st.fotos.length?`${okN} de ${st.fotos.length} foto(s) enviada(s)${st.cores.length?' · marque a cor de cada foto':''}`:'';
+    ${f.estado?`<div class="st">${esc(f.estado)}</div>`:''}</div>`).join('')+add;
+  const okN=st.fotos.filter(f=>f.url).length;$('fotosInfo').textContent=st.fotos.length?`${okN} de ${st.fotos.length} foto(s) enviada(s)`:'';
+  renderCorFotos();
+}
+// foto de cada cor (14/10/2026, Lincoln: a equipe não sabia qual foto era de qual cor)
+function renderCorFotos(){
+  const box=$('corFotosBox');if(!st.cores.length){box.classList.add('hidden');return;}box.classList.remove('hidden');
+  const prontas=st.fotos.filter(f=>f.url);
+  $('corFotos').innerHTML=st.cores.map((c,i)=>{const tem=prontas.some(f=>f.cor===c);
+    return `<div class="corfoto ${tem?'':'falta'}"><div class="cab">${esc(c)} <small class="${tem?'ok':'no'}">${tem?'✓ foto escolhida':'falta a foto'}</small></div><div class="mini">
+      ${prontas.map(f=>`<button type="button" class="${f.cor===c?'on':f.cor?'outra':''}" onclick="corFoto('${f.id}',${i})"><img src="${f.prev}" alt="">${f.cor&&f.cor!==c?`<i>${esc(f.cor)}</i>`:''}</button>`).join('')}
+      <label class="nova" for="arqCor${i}">+ enviar foto</label><input type="file" accept="image/*" id="arqCor${i}" class="hidden" onchange="enviarFotoCor(this,${i})"></div></div>`;}).join('');
 }
 window.tirarFoto=id=>{st.fotos=st.fotos.filter(f=>f.id!==id);renderFotos();};
-window.corFoto=(id,c)=>{const f=st.fotos.find(x=>x.id===id);if(f)f.cor=c;};
+window.corFoto=(id,i)=>{const c=st.cores[i];const f=st.fotos.find(x=>x.id===id);if(!f)return;
+  if(f.cor===c){f.cor='';}else{st.fotos.forEach(x=>{if(x.cor===c)x.cor='';});f.cor=c;}renderCorFotos();};
+window.enviarFotoCor=(inp,i)=>{const a=inp.files[0];inp.value='';if(!a)return;if(st.fotos.length>=15){mostrarErros(['Limite de 15 fotos. Tire alguma antes.']);return;}
+  st.fotos.forEach(x=>{if(x.cor===st.cores[i])x.cor='';});subirFotos([a],st.cores[i]);};
 
 // ---------- cores e tamanhos ----------
 function addCor(){const v=$('corNova').value.trim();if(!v)return;v.split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{if(!st.cores.includes(x))st.cores.push(x);});$('corNova').value='';renderCores();}
 $('corAdd').onclick=addCor;$('corNova').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCor();}});
 function renderCores(){$('cores').innerHTML=st.cores.map((c,i)=>`<span class="chip on" onclick="tirarCor(${i})">${esc(c)}<span class="rm">×</span></span>`).join('');renderFotos();renderEstoque();}
-window.tirarCor=i=>{st.cores.splice(i,1);renderCores();};
+window.tirarCor=i=>{const c=st.cores[i];st.fotos.forEach(f=>{if(f.cor===c)f.cor='';});st.cores.splice(i,1);renderCores();};
 function renderTams(){const extras=st.tams.filter(t=>!TAMS.includes(t));$('tamPadrao').innerHTML=[...TAMS,...extras].map(t=>`<span class="chip ${st.tams.includes(t)?'on':''}" onclick="togTam('${esc(t)}')">${esc(t)}</span>`).join('');renderEstoque();}
 window.togTam=t=>{st.tams=st.tams.includes(t)?st.tams.filter(x=>x!==t):[...st.tams,t];renderTams();};
 function addTam(){const v=$('tamNovo').value.trim();if(!v)return;v.split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{if(!st.tams.includes(x))st.tams.push(x);});$('tamNovo').value='';renderTams();}
@@ -213,6 +245,7 @@ window.todos=()=>{const v=prompt('Quantas peças de cada variação?','20');if(v
 $('form').addEventListener('submit',async e=>{
   e.preventDefault();
   if(st.fotos.some(f=>f.estado==='enviando...')){mostrarErros(['Espere as fotos terminarem de enviar.']);return;}
+  if(st.cores.length>1){const sem=st.cores.filter(c=>!st.fotos.some(f=>f.url&&f.cor===c));if(sem.length){mostrarErros([`Escolha a foto de cada cor (seção 3). Falta: ${sem.join(', ')}.`]);return;}}
   const estoque={};document.querySelectorAll('.estq').forEach(i=>{if(i.value!=='')estoque[i.dataset.k]=i.value;});
   const produto={nome:$('nome').value,descricao:$('descricao').value,material:$('material').value,sku:$('sku').value,cores:st.cores,tamanhos:st.tams,medidas:$('medidas').value,
     liquido:$('liquido').value,precoAtual:$('precoAtual').value,estoque,estoqueUnico:$('estUnico')?.value??'',peso:$('peso').value,embalagem:$('embalagem').value,codigoBarras:$('codigoBarras').value,
