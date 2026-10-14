@@ -9588,8 +9588,26 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl||temTt||temSe?`1. Criar na Shopee (oculto) — ${[temMl&&'ML',temTt&&'TikTok',temSe&&'SHEIN'].filter(Boolean).join(' e ')} entram no passo de publicar`:'Criar anúncio (oculto)'}</button>`:temMl?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre${temTt?' e no TikTok':''}${temSe?' e na SHEIN':''}</button>`:temTt?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarTt().then(()=>(window.__dirUltimo?.plataformas||[]).includes('shein')&&window.__cpCriarSh(true))">Criar no TikTok Shop${temSe?' e na SHEIN':''}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarSh()">Criar na SHEIN</button>`}
     ${temSe?`<div class="form-row" style="margin-top:10px"><div class="field"><label>Medidas da PEÇA pra SHEIN (opcional — 1 tamanho por linha)</label><textarea id="cpSheinMed" rows="4" placeholder="1 tamanho por linha:&#10;P: busto 100; comprimento 60&#10;M: busto 120; comprimento 62"></textarea></div><div class="field"><label>Categoria de reserva na SHEIN (se ela não achar sozinha)</label><input id="cpSheinCat" list="cpSheinCats" placeholder="comece a digitar: Vestido, Camiseta…" onfocus="window.__cpSheinCats()"><datalist id="cpSheinCats"></datalist></div></div>`:''}
     <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
+  cpPreencherDoPedido(lojaId);
 }
 window.__dirShopeeRender=dirShopeeRender;
+// Pedido da cliente (link de produto) → já preenche valor, estoque, SKU, peso, embalagem, EAN e medidas da SHEIN (14/10/2026, Lincoln)
+function cpPreencherDoPedido(lojaId){const pa=window.__cpPedidoAtual;window.__cpEstPedido=null;if(!pa||(lojaId&&pa.clienteId!==lojaId))return;const x=pa.x||{};
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null&&v!==''&&!el.value.trim()||el&&id==='dirShEst'&&v!=null)el.value=v;};
+  const br=n=>Number(n).toFixed(2).replace('.',',');
+  if(x.liquido>0){set('dirShLiq',br(x.liquido));window.__dirShPreco?.();}
+  const vals=Object.values(x.estoque||{}).map(Number).filter(n=>n>=0);
+  if(x.estoqueUnico!=null)set('dirShEst',x.estoqueUnico);
+  else if(vals.length){const mx=Math.max(...vals);set('dirShEst',mx);if(new Set(vals).size>1){window.__cpEstPedido={mapa:x.estoque,valor:String(mx),semCor:!(x.cores||[]).length};}}
+  if(x.sku){const el=document.getElementById('dirShSku');if(el)el.value=x.sku;}
+  if(x.peso)set('dirShPeso',br(x.peso).replace(/,?0+$/,''));
+  if(x.embalagem)set('dirShDim',x.embalagem);
+  if(x.codigoBarras)set('dirShGtin',x.codigoBarras);
+  if(x.medidas)set('cpSheinMed',x.medidas);
+  const st=document.getElementById('dirShPrecoTxt');if(st&&window.__cpEstPedido)st.insertAdjacentHTML('afterend','<div style="font-size:12px;color:#e0a352;margin:-4px 0 8px">Estoque diferente por variação (da cliente) — Shopee e ML usam o de cada variação; mudando o campo, vale o número pra todas.</div>');}
+// estoque por variação do pedido no formato do motor ('Cor|Tam'); só vale se o campo não foi mudado
+function cpEstoqueVar(u,est){const e=window.__cpEstPedido;if(!e||String(document.getElementById('dirShEst')?.value)!==e.valor)return est;
+  const out={};const ts=(u.tamanhos||[]).map(t=>t.tam??t);for(const c of (u.cores||[]))for(const t of (ts.length?ts:['']))out[`${c}|${t}`]=Number(e.mapa[`${c}|${t}`]??e.mapa[`|${c}`]??0);return out;}
 /* ---- Shopee → Cadastro → Criar Produto: cliente + fotos + infos → Central Criativa (fotos, título, descrição) → painel de criação ---- */
 let cpFotos=[];
 function cpRender(){
@@ -9834,7 +9852,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
       const ia=dirFotoVar(cor);const realOk=fotoCor[cor]&&(sel.some(x=>x.img===fotoCor[cor])||!ia)?fotoCor[cor]:null; // real desmarcada lá em cima + tem foto da IA → só a da IA
       fotosPorCor[cor]=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
     }
-    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est,u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||'',inmetro:document.getElementById('dirShInmetro')?.value||''},linhaMl);
+    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est:cpEstoqueVar(u,est),u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||'',inmetro:document.getElementById('dirShInmetro')?.value||''},linhaMl);
     const pr={venda,comissaoPct};
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
@@ -9981,7 +9999,7 @@ window.__dirShCriar=async()=>{
     const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\n${u.nome1||'Cor'}: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\n${u.nome2||'Tamanho'}: ${u.tamanhos.map(t=>t.tam+(t.campos?.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
       category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
       item_sku:document.getElementById('dirShSku').value.trim(),guiaTamanhos:guiaId,atributos,
-      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:est,skuBase:document.getElementById('dirShSku').value.trim()};
+      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:cpEstoqueVar(u,est),skuBase:document.getElementById('dirShSku').value.trim()};
     let r=await dirShApi('produto_criar',c,token,{dados});
     // categoria exige guia ("Size Chart is required…", visto 13/10/2026) e não tinha variação de tamanho → guia "Único" pela régua BR e tenta de novo
     if(!r.ok&&/size chart is required/i.test(`${r.erro||''}`)&&!dados.guiaTamanhos){
@@ -11462,7 +11480,7 @@ window.__ppStatus=async(id,st)=>{const p=ppCache.find(x=>x.id===id);if(!p)return
   if(st==='feito'||st==='descartado'){const t=(todasTarefasCache||[]).find(x=>x.pedidoProdutoId===id&&x.coluna!=='feito');if(t)await updateDoc(doc(db,'tarefas',t.id),{coluna:'feito',concluidoEm:serverTimestamp(),concluidoPor:currentUser}).catch(()=>{});}
   showToast(PP_ST[st]);};
 // Abre no Criar anúncio já com cliente, fotos (até 10; a IA usa as 5 primeiras de referência), descrição, variações e medidas; o resto (preço, estoque, SKU...) fica num quadro de referência
-window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;const x=p.produto||{};
+window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;const x=p.produto||{};window.__cpPedidoAtual={clienteId:p.clienteId,x};
   if(p.status==='novo')window.__ppStatus(id,'andamento');
   window.__pxTab('criar');await new Promise(r=>setTimeout(r,200));
   const sel=document.getElementById('cpLoja');if(sel){sel.value=p.clienteId;window.__cpLojaPlat?.();}
