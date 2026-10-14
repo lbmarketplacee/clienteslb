@@ -11144,7 +11144,7 @@ const pxCriar={
     linha('Shopee: criando (oculto)...');
     let r=await dirShApi('produto_criar',c,token,{dados});
     if(!r.ok&&/size chart is required/i.test(`${r.erro||''}`)&&!dados.guiaTamanhos){await pxGuiaShopee([{tam:'Único',campos:{Veste:'36/42'}}]);linha('Shopee: criando (oculto)...');r=await dirShApi('produto_criar',c,token,{dados});}
-    if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}`.trim());
+    if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}${/size chart/i.test(r.erro||'')?(dados.guiaTamanhos?' [guia foi enviada]':' [guia NÃO enviada]'):''}`.trim());
     const venda=iguais?Object.values(precos)[0].venda:Object.fromEntries(ops1.map(op=>[op,precos[op].venda]));
     px.criadosShopee.push({itemId:r.item_id,venda,titulo});
     await updateDoc(doc(db,'clientes',c.id),{[`shopeePendentesPublicar.${r.item_id}`]:{venda,titulo,em:Date.now()}}).catch(()=>{}); // sobrevive a recarregar a tela
