@@ -11268,14 +11268,17 @@ const pxCriar={
 };
 
 // ---------- tela ----------
+// todos os clientes ativos aparecem (14/10/2026, Lincoln: "não aparece todos"); antes só quem tinha 2+ marketplaces conectados
+function pxOpcoesLojas(){const n=c=>['shopee','ml','tiktok','shein'].filter(m=>pxTem(c,m)).length;
+  return (clientesCache||[]).filter(c=>c.ativo!==false).sort((a,b)=>a.nome.localeCompare(b.nome)).map(c=>`<option value="${c.id}">${esc(c.nome)}${n(c)<2?' — falta conectar':''}</option>`).join('');}
 function pxRender(){
-  const el=document.getElementById('pxPainel');if(!el||el.dataset.pronto)return;
+  const el=document.getElementById('pxPainel');if(!el)return;
+  if(el.dataset.pronto){const sel=document.getElementById('pxLoja');if(sel){const v=sel.value;sel.innerHTML='<option value="">Escolha…</option>'+pxOpcoesLojas();sel.value=v;}return;}
   if(!isLincoln()){el.innerHTML='<div class="saude-vazio">Só Lincoln e Carol.</div>';return;}
   el.dataset.pronto='1';
-  const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&['shopee','ml','tiktok'].some(m=>pxTem(c,m))&&['shopee','ml','tiktok','shein'].filter(m=>pxTem(c,m)).length>=2).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>De onde pra onde</h3></div><p class="prod-nota">Escolha o cliente, de onde copiar e pra onde (um ou mais). O preço sai do <b>mesmo valor a receber</b> da origem, com as regras de cada marketplace. Shopee nasce oculta (depois "Publicar"), ML já ativo, TikTok e SHEIN passam por análise.</p>
     <div class="px-rota">
-      <div class="px-rota-col"><span>Cliente</span><select id="pxLoja" onchange="window.__pxLoja()"><option value="">Escolha…</option>${lojas.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+      <div class="px-rota-col"><span>Cliente</span><select id="pxLoja" onchange="window.__pxLoja()"><option value="">Escolha…</option>${pxOpcoesLojas()}</select></div>
       <div class="px-rota-col"><span>De</span><div class="mp-pick" id="pxOrigens"><span style="font-size:12.5px;color:var(--text-dim);padding:10px 0">escolha o cliente</span></div><input type="hidden" id="pxOrigem"></div>
       <div class="px-seta"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       <div class="px-rota-col"><span>Para</span><div class="mp-pick" id="pxDestinos"></div></div>
@@ -11296,7 +11299,9 @@ window.__pxSheinBox=()=>{const box=document.getElementById('pxSheinBox');if(!box
 window.__pxLoja=()=>{
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('pxLoja').value);const so=document.getElementById('pxOrigem'),sd=document.getElementById('pxDestinos'),sob=document.getElementById('pxOrigens');
   if(!c){so.value='';sob.innerHTML='';sd.innerHTML='';return;}
-  const tem=['shopee','ml','tiktok'].filter(m=>pxTem(c,m));const atual=tem.includes(so.value)?so.value:tem[0];so.value=atual;
+  const tem=['shopee','ml','tiktok'].filter(m=>pxTem(c,m));
+  const falta=['shopee','ml','tiktok','shein'].filter(m=>!pxTem(c,m)).map(m=>m==='shopee'&&c.shopeeMktShopId?'Shopee (só o app antigo — conectar o ERP)':PX_MP[m]);
+  if(tem.length+(pxTem(c,'shein')?1:0)<2||!tem.length){so.value='';sob.innerHTML=`<span style="font-size:12.5px;color:#e0a352;padding:10px 0">Pra copiar precisa de 2 marketplaces conectados. ${tem.length?`Conectado: ${tem.map(m=>PX_MP[m]).join(', ')}. `:''}Falta conectar: ${falta.join(', ')}.</span>`;sd.innerHTML='';return;}const atual=tem.includes(so.value)?so.value:tem[0];so.value=atual;
   sob.innerHTML=tem.map(m=>`<label><input type="radio" name="pxOrigemR" value="${m}" ${m===atual?'checked':''} onchange="document.getElementById('pxOrigem').value=this.value;window.__pxLoja()">${mpIco(m)} ${PX_MP[m]}</label>`).join('');
   sd.innerHTML=[...tem,...(pxTem(c,'shein')?['shein']:[])].filter(m=>m!==atual).map(m=>`<label><input type="checkbox" class="pxDest" value="${m}" ${m==='shein'?'':'checked'} onchange="window.__pxSheinBox()">${mpIco(m)} ${PX_MP[m]}</label>`).join('');
   window.__pxSheinBox();
