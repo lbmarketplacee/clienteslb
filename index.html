@@ -2588,7 +2588,8 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
   .jr-prox{font-size:11.5px;color:var(--text-dim)}
   .jr-pill{display:inline-block;font-size:11px;border-radius:999px;padding:1px 8px;border:1px solid var(--border-strong);color:var(--text-dim);white-space:nowrap}
   .jr-pill.Guilherme{color:#7fb3f0;border-color:#7fb3f055}.jr-pill.Caroline{color:#b9a7f5;border-color:#b9a7f555}.jr-pill.Mirela{color:#f09ac0;border-color:#f09ac055}.jr-pill.Isa{color:#6fd3b3;border-color:#6fd3b355}.jr-pill.Lincoln{color:var(--gold);border-color:var(--gold-soft)}
-  .jr-det{margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .jr-estr{border:1px solid var(--gold);border-radius:12px;padding:12px 14px;margin:12px 0;background:rgba(201,162,74,.06)}
+.jr-det{margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px}
   .jr-etapa{margin-top:14px}.jr-etapa h4{font:600 14px Oswald,sans-serif;color:var(--gold);margin-bottom:6px}
   .jr-it{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:7px 4px;border-top:1px solid var(--border-soft);font-size:13px}
   .jr-it.ok span.t{color:var(--text-dim2);text-decoration:line-through}.jr-it.na span.t{color:var(--text-dim2);font-style:italic}
@@ -4586,11 +4587,27 @@ window.__jrJaTinha=id=>updateDoc(doc(db,'jornadas',id),{'itens.contas':{st:'na',
 // Cliente novo (cadastro convertido ou criado à mão) já entra na jornada sozinho.
 async function jrCriarAuto(clienteId,nome){try{if(jr.lista.some(j=>j.clienteId===clienteId&&!j.concluida))return;await addDoc(collection(db,'jornadas'),{clienteId,nome,tipo:'entrada',itens:{},criadoEm:serverTimestamp(),criadoPor:currentUser+' (automático)',concluida:false});}catch(e){console.warn('jornada',e);}}
 window.__jrAbrir=id=>{jr.sel=jr.sel===id?null:id;jrRender();};
+// Robô Estruturar loja (14/10/2026) — backend lb-shopee-gmv/api/agentes?acao=estruturar
+const JR_ESTR_ST={feito:['✓','#10b981','feito'],executar:['▶','var(--gold)','o robô faz'],robo:['⟳','#60a5fa','robô diário cuida'],manual:['✋','#e0a352','tarefa'],conectar:['🔌','#ef4444','conectar'],erro:['!','#ef4444','erro']};
+function jrEstrHtml(r,antigo){if(!r?.passos?.length)return'';const mp={shopee:'Shopee',tiktok:'TikTok',ml:'Mercado Livre',shein:'SHEIN'};
+  const grupos=[...new Set(r.passos.map(p=>p.mp))];
+  return `${antigo&&r.quando?`<div class="jr-meta" style="margin-top:8px">Última vez: ${new Date(r.quando).toLocaleString('pt-BR')} (${esc(r.por||'')})</div>`:''}${grupos.map(g=>`<div style="margin-top:8px"><div style="font-weight:600;font-size:13px;margin-bottom:4px">${mpIco(g,14)} ${mp[g]||g}</div>${r.passos.filter(p=>p.mp===g).map(p=>{const[i,cor,lab]=JR_ESTR_ST[p.status]||['·','var(--text-dim)',p.status];
+    return `<div style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0"><span style="color:${cor};width:16px;text-align:center;flex:none">${i}</span><span style="flex:1">${esc(p.titulo)}${p.resultado?`<span class="jr-meta"> — ${esc(p.resultado)}</span>`:''}${p.tarefa?`<span class="jr-meta"> — tarefa: ${esc(p.tarefa)}</span>`:''}${p.quem&&!p.tarefa&&['manual','conectar'].includes(p.status)?`<span class="jr-meta"> — ${esc(p.quem)}</span>`:''}</span><span style="color:${cor};font-size:11px;flex:none">${lab}</span></div>`;}).join('')}</div>`).join('')}`;}
+window.__jrEstruturar=async(id,exec)=>{const j=jr.lista.find(x=>x.id===id);const box=document.getElementById('jrEstrRes');if(!j||!box)return;
+  if(exec&&!await lbConfirmar(`Estruturar a loja ${j.nome} agora?\nO robô coloca produtos no desconto fixo (cheio ×1,30 na Shopee; −5% no TikTok), cria o cupom 3%, põe no Ads (ROAS 20) e impulsiona. O que não tem API vira tarefa.`,{okTxt:'Estruturar'}))return;
+  box.innerHTML=`<div class="jr-meta" style="margin-top:8px">${exec?'Estruturando… (pode levar até 4 min)':'Lendo a loja nos marketplaces… (até 1 min)'}</div>`;
+  try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'estruturar',clienteId:j.clienteId,executar:exec?1:0})})).json();
+    if(!r.ok)throw new Error(r.erro||'erro');
+    box.innerHTML=`<div style="margin-top:8px;font-size:12.5px"><b>${exec?'Feito':'Simulação'}:</b> ${r.resumo.feito} ok · ${r.resumo.executar?r.resumo.executar+' o robô faz · ':''}${r.resumo.robo} robô diário · ${r.resumo.manual} tarefa(s) · ${r.resumo.conectar} pra conectar${r.jornadaMarcada?.length?` · Jornada marcada: ${r.jornadaMarcada.join(', ')}`:''}</div>`+jrEstrHtml(r);
+    if(exec)showToast('Estrutura aplicada — veja as tarefas criadas');}
+  catch(e){box.innerHTML=`<div style="color:var(--red);margin-top:8px;font-size:12.5px">Erro: ${esc(e.message)}</div>`;}};
 function jrDetalhe(){const box=document.getElementById('jrDet');const j=jr.lista.find(x=>x.id===jr.sel);if(!box)return;if(!j){box.innerHTML='';return;}
   const s=jrStatus(j);
   box.innerHTML=`<div class="jr-det"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3 style="font:600 20px Oswald,sans-serif;flex:1">${esc(j.nome)} <span style="font-size:13px;color:var(--text-dim)">${j.tipo==='saida'?'saída':'entrada'} · ${s.ok}/${s.tot}</span></h3>
     ${j.tipo!=='saida'&&!j.itens?.contas?.st?`<button class="btn btn-ghost btn-sm" onclick="window.__jrJaTinha('${j.id}')">Cliente já tinha as contas (só otimizar)</button>`:''}${j.tipo!=='saida'?`<button class="btn btn-ghost btn-sm" onclick="window.__jrSaida('${j.id}')">Iniciar saída do cliente</button>`:''}
     <button class="btn btn-ghost btn-sm" onclick="window.__jrConcluir('${j.id}')">Concluir jornada</button></div>
+    ${j.tipo!=='saida'?`<div class="jr-estr"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="flex:1">Robô Estruturar loja</b><button class="btn btn-ghost btn-sm" onclick="window.__jrEstruturar('${j.id}',false)">Ver o que falta</button>${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__jrEstruturar('${j.id}',true)">Estruturar agora</button>`:''}</div>
+      <div class="jr-meta" style="margin-top:2px">Lê a loja pelas APIs: põe os produtos no desconto fixo, cria o cupom, coloca no Ads e impulsiona. O que não tem API vira tarefa pra pessoa certa e a Jornada é marcada sozinha.</div><div id="jrEstrRes">${jrEstrHtml(((clientesCache||[]).find(c=>c.id===j.clienteId)||{}).estruturaUltima,true)}</div></div>`:''}
     ${jrModelo(j).map(e=>`<div class="jr-etapa"><h4>${e.t}${e.prazo?` <span class="jr-meta">· prazo ${e.prazo} dia(s)</span>`:''}</h4>${e.chave?`<div class="jr-meta" style="margin:-2px 0 4px">Chave pra próxima etapa: <b style="color:var(--gold)">${esc(e.chave)}</b></div>`:''}${e.itens.map(([k,t,q])=>{const it={...(j.itens?.[k]||{})};const au=!it.st&&jrAuto(j,k);if(au){it.st=au;it.por=au==='ok'?'sistema (já conectado)':'sistema (não contratado)';}const cls=it.st==='ok'?'ok':it.st==='na'?'na':'';
       return `<div class="jr-it ${cls} ${jr.filtro===q&&!it.st?'jr-minha':''}"><button class="jr-chk" title="Clique: feito → não se aplica → pendente" onclick="window.__jrMarcar('${j.id}','${k}')">${it.st==='ok'?'✓':it.st==='na'?'—':''}</button>
         <span><span class="t">${esc(t)}</span>${it.por?`<div class="jr-meta">${it.st==='na'?'não se aplica':'feito'} — ${esc(it.por)}${it.em?.seconds?' em '+new Date(it.em.seconds*1000).toLocaleDateString('pt-BR'):''}</div>`:''}
