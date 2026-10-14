@@ -11151,6 +11151,31 @@ async function sheinIA(perguntas,produto){
 }
 // medida pedida pela SHEIN (ex.: "Busto (cm)") ← campos do tamanho ("Busto": "84-88")
 const SHEIN_MEDIDA={busto:['busto','peito'],comprimento:['comprimento'],quadril:['quadril'],ombro:['ombro'],'comprimento da manga':['manga'],cintura:['cintura'],'tamanho do quadril':['quadril']};
+// Medida que a SHEIN exige e ninguém informou (14/10/2026, Lincoln: "deixar automático") → estimativa pelo tipo de peça
+// (título/descrição) e pelo tamanho: +2 cm de comprimento e +1 cm de ombro por tamanho a partir do M. O que a cliente ou o quadro informar vale primeiro.
+const SHEIN_ORDEM_TAM=['PP','P','M','G','GG','XG','G1','G2','G3','G4'];
+function sheinEstimativa(attrNome,tam,texto){
+  const alvo=sheinSem(String(attrNome).replace(/\(.*?\)/g,'')).replace(/^tamanho d[aoe]s? /,'');const t=sheinSem(texto||'');
+  let i=SHEIN_ORDEM_TAM.indexOf(String(tam||'').toUpperCase());const passo=i<0?0:i-2; // M = base
+  const tem=(...r)=>r.some(x=>new RegExp(x).test(t));
+  if(/ombro/.test(alvo))return 38+passo;
+  if(/manga/.test(alvo))return tem('manga longa')?60+passo:tem('regata','alca','tomara','sem manga')?null:22+passo;
+  if(/comprimento/.test(alvo)){
+    let base=65;
+    if(tem('macacao'))base=tem('curto','short','macaquinho')?80:145;
+    else if(tem('vestido'))base=tem('longo','maxi','longuete')?140:tem('midi')?115:tem('curto','mini','tubinho')?85:110;
+    else if(tem('saia'))base=tem('longa','maxi')?95:tem('midi')?75:tem('curta','mini')?42:70;
+    else if(tem('calca','pantalona','legging','jogger'))base=tem('capri','pescador')?80:105;
+    else if(tem('short','bermuda'))base=tem('bermuda')?50:38;
+    else if(tem('saida de praia','kimono','quimono','robe','roupao'))base=tem('curta','curto')?75:110;
+    else if(tem('jaqueta','casaco','blazer','sobretudo','moletom'))base=tem('sobretudo','trench')?100:68;
+    else if(tem('cropped'))base=42;
+    else if(tem('pijama','camisola'))base=tem('camisola')?90:62;
+    else if(tem('body','blusa','camiseta','camisa','regata','top','bata'))base=62;
+    return Math.round(base+2*passo);
+  }
+  return null;
+}
 function sheinMedida(attrNome,campos){
   // "Tamanho da Cintura (cm)" / "Tamanho do quadril (cm)" → cintura / quadril
   const alvo=sheinSem(String(attrNome).replace(/\(.*?\)/g,'')).replace(/^tamanho d[aoe]s? /,'');const chaves=SHEIN_MEDIDA[alvo]||[alvo];
@@ -11295,9 +11320,11 @@ const pxCriar={
     // tabela de medidas: o que a origem tiver + quadro "Medidas pra SHEIN" + régua BR (busto/cintura/quadril pelo veste)
     const extra={};for(const t of dirLerTamanhos(ctx.sheinMedidas||''))if(t.tam)extra[String(t.tam).toUpperCase()]=t.campos;
     const regua=Object.fromEntries(dirMedidasGuia(tams.map(t=>({tam:migTamLimpo(t.nome),campos:{...(t.veste?{Veste:t.veste}:{}),...t.campos}}))).map(x=>[String(x.tam).toUpperCase(),x.campos]));
-    const medAttrs=A.filter(a=>a.tipo===2);const falta=[];
+    const medAttrs=A.filter(a=>a.tipo===2);const falta=[];const estimadas=new Set();
     for(const t of tams){const k=migTamLimpo(t.nome).toUpperCase();const campos={...(regua[k]||{}),...t.campos,...(extra[k]||{})};t.medidas={};
-      for(const a of medAttrs){const v=sheinMedida(a.nome,campos);if(v)t.medidas[a.id]=v;else if(a.obrigatorio)falta.push(`${a.nome.replace(/\s*\(cm\)/,'')} (${t.nome})`);}}
+      for(const a of medAttrs){let v=sheinMedida(a.nome,campos);if(!v&&a.obrigatorio){v=sheinEstimativa(a.nome,k,`${P.titulo} ${String(P.descricao||'').slice(0,300)}`);if(v)estimadas.add(a.nome.replace(/\s*\(cm\)/,'').toLowerCase());}
+        if(v)t.medidas[a.id]=v;else if(a.obrigatorio)falta.push(`${a.nome.replace(/\s*\(cm\)/,'')} (${t.nome})`);}}
+    if(estimadas.size)linha(`SHEIN: ${[...estimadas].join(', ')} estimado(s) pelo tipo de peça (+2 cm por tamanho)`);
     if(falta.length)throw new Error(`faltam medidas pra SHEIN: ${falta.join(', ')} — preencha o quadro "Medidas pra SHEIN" (ex.: M: comprimento 60)`);
     // atributos obrigatórios do produto (Material, Elasticidade...) pela IA
     const obrig=A.filter(a=>(a.tipo===3||a.tipo===4)&&a.obrigatorio);const atributos=[];
