@@ -2299,7 +2299,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           <div class="toolbar">
             <p style="font-size:12.5px;color:var(--text-dim);margin:0">Confere direto na Shopee se o Cupom Fixo está mesmo ativo em cada cliente — a data aqui pode estar desatualizada se alguém mexeu direto na Shopee.</p>
             <div class="spacer"></div>
-            <button class="btn btn-gold btn-sm" id="cupomSincronizarTodosBtn" onclick="window.__cupomSincronizarTodos()">Sincronizar Todos</button>
+<button class="btn btn-ghost btn-sm" id="cupomRenovarBtn" onclick="window.__cupomRenovarVencendo()">Renovar os que vencem em 8 dias</button> <button class="btn btn-gold btn-sm" id="cupomSincronizarTodosBtn" onclick="window.__cupomSincronizarTodos()">Sincronizar Todos</button>
           </div>
           <div class="cm-lista-simples" id="cmCuponsLista"></div>
           </div>
@@ -8237,6 +8237,17 @@ window.__cupomVerTodos=async(clienteId)=>{
   }catch(e){corpo.innerHTML='<div class="empty-state" style="padding:20px">Erro ao buscar os cupons.</div>';console.error(e);}
 };
 document.getElementById('cupomLojaFecharBtn')?.addEventListener('click',()=>document.getElementById('cupomLojaModalOverlay').classList.add('hidden'));
+// Renovar agora (14/10/2026): roda o mesmo robô das 6h (desconto + cupom) só nas lojas com cupom vencendo — não espera a fila do dia
+window.__cupomRenovarVencendo=async()=>{
+  if(!isLincoln()){showToast('Só Lincoln e Carol.');return;}
+  const lim=Date.now()+8*86400000;const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.cupomFim&&new Date(c.cupomFim).getTime()<lim&&(c.shopeeMktShopId||c.shopeeErpShopId));
+  if(!lojas.length){lbAvisar('Nenhuma loja com cupom vencendo nos próximos 8 dias.');return;}
+  if(!await lbConfirmar(`Renovar agora?\n${lojas.map(c=>`${c.nome} (vence ${new Date(c.cupomFim).toLocaleDateString('pt-BR')})`).join('\n')}\n\nCria o cupom seguinte (3%, mesmo mínimo da loja) começando 10 min depois do atual — e confere o desconto fixo.`,{okTxt:'Renovar'}))return;
+  const btn=document.getElementById('cupomRenovarBtn');btn.disabled=true;const res=[];
+  for(const c of lojas){btn.textContent=`Renovando ${c.nome}...`;
+    try{const r=await fetch(`${SHOPEE_API}?acao=rodar_renovacoes&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()}).then(x=>x.json());const x=(r.resultados||[])[0]||{};res.push(`${c.nome}: cupom ${x.cupom||x.erro||r.erro||'?'} · desconto ${x.desconto||'—'}`);}
+    catch(e){res.push(`${c.nome}: erro ${e.message}`);}}
+  btn.disabled=false;btn.textContent='Renovar os que vencem em 8 dias';lbAvisar('Renovação\n'+res.join('\n'));};
 window.__cupomSincronizarTodos=async()=>{
   const lista=(clientesCache||[]).filter(c=>c.ativo!==false&&(c.marketplaces||[]).includes('shopee')&&shopeeAppPreferido(c).shopId);
   if(!lista.length){showToast('Nenhum cliente com Marketing/ERP conectado.');return;}
