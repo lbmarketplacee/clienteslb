@@ -10989,7 +10989,19 @@ async function mig3Atributos(atributos,produto){
     if(s.value_name)return{id:a.id,valores:[{name:String(s.value_name)}]};const v=a.valores[Number(s.value_id)-1];return v?{id:a.id,valores:[{id:String(v.id)}]}:null;}).filter(Boolean);
 }
 async function mig3PorNoDesconto(c,pid,venda){
-  if(!c.tiktokDescontoFixoId)return 'loja sem desconto fixo sincronizado (TikTok → Descontos)';
+  // loja sem desconto fixo marcado (VYM, 14/10/2026): procura um FIXED_PRICE longo na loja; se não tiver, cria "desconto fixo lb AAAAMMDD" (340 dias) já com o produto
+  if(!c.tiktokDescontoFixoId){
+    const l=await mig3Api(c,'listar');if(!l.ok)return 'não consegui ler as promoções: '+String(l.erro||'').slice(0,80);
+    const vivos=(l.atividades||[]).filter(a=>['ONGOING','NOT_START'].includes(a.status)&&(a.fim-a.inicio)>=60*86400);
+    const fixo=vivos.filter(a=>a.tipo==='FIXED_PRICE').sort((a,b)=>b.fim-a.fim)[0];
+    if(fixo){c.tiktokDescontoFixoId=fixo.id;await updateDoc(doc(db,'clientes',c.id),{tiktokDescontoFixoId:fixo.id,tiktokDescontoFixoNome:fixo.titulo,descontoFixoFimTiktok:new Date((fixo.fim-3*3600)*1000).toISOString().slice(0,16)}).catch(()=>{});}
+    else if(vivos.some(a=>a.tipo==='DIRECT_DISCOUNT'))return 'a loja usa desconto em % (UpSeller) — colocar o produto à mão no Seller Center';
+    else{const ini=Math.floor(Date.now()/1000)+300,hoje=new Date().toISOString().slice(0,10).replace(/-/g,'');
+      const r=await mig3Api(c,'criar',{tipo:'FIXED_PRICE',titulo:`desconto fixo lb ${hoje}`,inicio:ini,fim:ini+340*86400,itens:[{id:pid,preco:venda}]});
+      if(!r.ok)return 'criar desconto fixo: '+String(r.erro||'erro').slice(0,90);
+      c.tiktokDescontoFixoId=String(r.id);await updateDoc(doc(db,'clientes',c.id),{tiktokDescontoFixoId:String(r.id),tiktokDescontoFixoNome:r.titulo||`desconto fixo lb ${hoje}`,descontoFixoFimTiktok:new Date((ini+340*86400-3*3600)*1000).toISOString().slice(0,16)}).catch(()=>{});
+      return (r.recusados||[]).length?'desconto fixo criado, mas a TikTok recusou o preço do produto':'ok';}
+  }
   const r=await mig3Api(c,'precos',{id:c.tiktokDescontoFixoId,itens:[{id:pid,preco:venda}]});return r.ok?'ok':String(r.erro||'erro').slice(0,90);
 }
 /* ============== PRODUTOS → Migrar / copiar entre Shopee, Mercado Livre e TikTok (motor único, 07/10/2026) ==============
@@ -11248,7 +11260,7 @@ const pxCriar={
     if(r.simulado){window.__pxCorpo=r.corpo;return{id:null,msg:`simulado · ${skus.length} SKU · ${vendas.map(fmtR).join('/')}`};}
     let desc='variações com preços diferentes — sem desconto fixo';
     if(vendas.length===1){desc=await mig3PorNoDesconto(c,r.produtoId,vendas[0]);
-      if(desc!=='ok'){await updateDoc(doc(db,'clientes',c.id),{[`tiktokDescontoPendente.${r.produtoId}`]:vendas[0]}).catch(()=>{});c.tiktokDescontoPendente={...(c.tiktokDescontoPendente||{}),[r.produtoId]:vendas[0]};desc='pendente';}}
+      if(desc!=='ok'){await updateDoc(doc(db,'clientes',c.id),{[`tiktokDescontoPendente.${r.produtoId}`]:vendas[0]}).catch(()=>{});c.tiktokDescontoPendente={...(c.tiktokDescontoPendente||{}),[r.produtoId]:vendas[0]};desc=`pendente (${desc})`;}}
     return{id:String(r.produtoId),msg:`em análise · ${vendas.map(fmtR).join('/')} · desconto ${desc}`};
   },
   async shein(c,P,linha,ctx){
