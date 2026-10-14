@@ -11136,8 +11136,15 @@ const pxCriar={
       const skus={};for(const s of P.skus)if(s.sku)skus[`${s.op[0]}|${s.op[1]??''}`]=s.sku; // SKU da cliente em cada variação
       Object.assign(dados,{cores:v1.opcoes.map(o=>o.nome),tamanhos:v2?v2.opcoes.map(o=>o.nome):[],nome1:v1.nome,nome2:v2?.nome||'Tamanho',fotosCor,estoque,skus,skuBase:P.sku||'LB',estoqueTotal:P.skus.reduce((t,s)=>t+s.est,0)});
     }else{dados.estoqueTotal=P.skus[0]?.est||0;if(P.skus[0]?.sku)dados.item_sku=P.skus[0].sku;}
+    // guia de tamanhos (14/10/2026, Djan: "Size Chart is required" no Migrar) — com variação de tamanho já vai; sem, só se a Shopee exigir (Único 36/42)
+    const pxGuiaShopee=async(lista)=>{linha('Shopee: guia de tamanhos...');const g=await dirGuiaIA(lista,await migJpg(P.fotos[0]),P.titulo);if(!g)throw new Error('não consegui montar a guia de tamanhos');
+      const gid=await subir(g);dados.guiaTamanhos=gid;if(dados.imagens.length<9&&!dados.imagens.includes(gid))dados.imagens.push(gid);};
+    const vt=P.vars.find(v=>v.tam||/tamanho|size/i.test(v.nome||''));
+    if(vt)await pxGuiaShopee(vt.opcoes.map(o=>({tam:o.nome,campos:o.campos&&Object.keys(o.campos).length?o.campos:(o.veste?{Veste:o.veste}:{})})));
     linha('Shopee: criando (oculto)...');
-    const r=await dirShApi('produto_criar',c,token,{dados});if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}`.trim());
+    let r=await dirShApi('produto_criar',c,token,{dados});
+    if(!r.ok&&/size chart is required/i.test(`${r.erro||''}`)&&!dados.guiaTamanhos){await pxGuiaShopee([{tam:'Único',campos:{Veste:'36/42'}}]);linha('Shopee: criando (oculto)...');r=await dirShApi('produto_criar',c,token,{dados});}
+    if(!r.ok)throw new Error(`${r.etapa||''} ${r.erro||''}`.trim());
     const venda=iguais?Object.values(precos)[0].venda:Object.fromEntries(ops1.map(op=>[op,precos[op].venda]));
     px.criadosShopee.push({itemId:r.item_id,venda,titulo});
     await updateDoc(doc(db,'clientes',c.id),{[`shopeePendentesPublicar.${r.item_id}`]:{venda,titulo,em:Date.now()}}).catch(()=>{}); // sobrevive a recarregar a tela
