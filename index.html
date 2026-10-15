@@ -10771,7 +10771,7 @@ window.__infFalar=async()=>{const x=inf.lista.find(i=>i.id===inf.sel);if(!x)retu
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}btn.disabled=false;};
 window.__infTrocar=async()=>{const x=inf.lista.find(i=>i.id===inf.sel);if(!x)return;const f=document.getElementById('infVideo').files?.[0];const st=document.getElementById('infSt'),btn=document.getElementById('infTrocarBtn');
   if(!f){lbAvisar('Escolha o vídeo.');return;}if(!document.getElementById('infAutorizado').checked){lbAvisar('Só dá pra trocar a pessoa em vídeo da LB ou da cliente. Marque a confirmação.');return;}
-  const dur=await new Promise(ok=>{const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>ok(v.duration);v.onerror=()=>ok(0);v.src=URL.createObjectURL(f);});
+  const dur=await Promise.race([new Promise(ok=>{const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>ok(v.duration);v.onerror=()=>ok(0);v.src=URL.createObjectURL(f);}),new Promise(ok=>setTimeout(()=>ok(0),4000))]); // 0 = não deu pra ler aqui; o Google confere
   if(dur>10.5){lbAvisar(`O vídeo tem ${Math.round(dur)} s — o Google aceita até 10 s. Corte antes (no celular ou CapCut).`);return;}
   btn.disabled=true;const t0=Date.now();
   try{st.textContent='Enviando o vídeo pro Google...';
