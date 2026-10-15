@@ -1187,7 +1187,8 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 /* ===== Card Produtos — visual (07/10/2026) ===== */
 .prod-hero{display:flex;align-items:center;gap:16px;margin:8px 0 18px}
 .nav-grupo{display:flex;flex-direction:column}
-.nav-grupo-cab{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.nav-grupo-cab{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--text-dim);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s}
+.nav-grupo-cab:hover{color:var(--text);background:#ffffff08}
 .nav-grupo-cab svg{flex:none;width:19px;height:19px}
 .nav-grupo-cab .chev{width:14px;height:14px;margin-left:auto;transition:transform .2s;opacity:.6}.nav-grupo.aberto .nav-grupo-cab .chev{transform:rotate(90deg)}
 .nav-grupo-itens{display:none;flex-direction:column;margin:2px 0 4px 14px;padding-left:10px;border-left:1px solid var(--border)}
@@ -3402,7 +3403,7 @@ function navMontarGrupos(){
   const mk=document.querySelector('.nav-item[data-page="marketing"]');if(mk)mk.lastChild.textContent=' Todas as lojas';
   for(const g of NAV_GRUPOS){
     const box=document.createElement('div');box.className='nav-grupo'+(aberto[g.id]?' aberto':'');box.dataset.grupo=g.id;
-    box.innerHTML=`<button type="button" class="nav-grupo-cab sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${g.ico}</svg> ${g.rot}<svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button><div class="nav-grupo-itens"></div>`;
+    box.innerHTML=`<button type="button" class="nav-grupo-cab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${g.ico}</svg> ${g.rot}<svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button><div class="nav-grupo-itens"></div>`;
     const itens=box.querySelector('.nav-grupo-itens');
     for(const [pg,rot] of g.itens){const b=nav.querySelector(`.nav-item[data-page="${pg}"]`);if(!b)continue;itens.appendChild(b);const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim());if(t)t.textContent=' '+rot;}
     const ref=g.depois?nav.querySelector(`.nav-item[data-page="${g.depois}"]`):null;
