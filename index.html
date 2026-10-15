@@ -3400,7 +3400,6 @@ const NAV_GRUPOS=[
 function navMontarGrupos(){
   const nav=document.querySelector('.nav-item[data-page="dashboard"]')?.parentElement;if(!nav||nav.dataset.agrupado)return;nav.dataset.agrupado='1';
   let aberto={};try{aberto=JSON.parse(localStorage.getItem('navGrupos')||'{}');}catch(e){}
-  const mk=document.querySelector('.nav-item[data-page="marketing"]');if(mk)mk.lastChild.textContent=' Todas as lojas';
   for(const g of NAV_GRUPOS){
     const box=document.createElement('div');box.className='nav-grupo'+(aberto[g.id]?' aberto':'');box.dataset.grupo=g.id;
     box.innerHTML=`<button type="button" class="nav-grupo-cab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${g.ico}</svg> ${g.rot}<svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button><div class="nav-grupo-itens"></div>`;
