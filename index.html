@@ -4804,7 +4804,38 @@ function ljAjHtml(){const l=ljAjLinha();if(!l)return'';const s=l.sh;const vars=s
       <div><span>4</span>Na próxima hora o robô recoloca nas relâmpagos com −5% do preço novo</div></div>
     ${r?`<div class="lj-alerta ${r.ok?'':'ruim'}" style="margin-top:10px"><span class="lj-dot ${r.ok?'ok':'ruim'}"></span><span><b>${r.ok?'Aplicado':'Não deu certo'}</b><small>${esc(r.msg)}</small></span></div>`:''}
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" style="flex:1" id="ljAjBtn" onclick="window.__ljAjAplicar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Aplicar</button><button class="btn btn-ghost" onclick="window.__ljAjFechar()">Cancelar</button></div></aside>`;}
-window.__ljAjAplicar=async()=>{showToast('A aplicação automática entra no ar depois do teste na loja AQUARIOS.');};
+window.__ljAjAplicar=async()=>{
+  const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=ljAjLinha();if(!c||!l?.sh)return;const s=l.sh;
+  const liq=lj.aj.liq;const pSh=dirPrecosLB(liq),pTt=dirPrecosTT(liq);if(!pSh){lbAvisar('Valor a receber inválido.');return;}
+  const est={};for(const v of (s.temVariacao?s.variacoes:[{id:0,estoque:s.estoque}])){const n=lj.aj.est[String(v.id)];if(n!=null&&n!==(v.estoque??0))est[String(v.id)]=n;}
+  const mudaPreco=Math.abs(pSh.venda-(s.precoMin||0))>=0.01||(s.temVariacao&&new Set(s.variacoes.map(v=>v.atual)).size>1);
+  if(!mudaPreco&&!Object.keys(est).length){lbAvisar('Nada mudou: o preço e o estoque são os mesmos de hoje.');return;}
+  const linhas=[mudaPreco&&`Shopee: ${fmtR(s.precoMin)} → ${fmtR(pSh.venda)} (cheio ${fmtR(pSh.cheio)})`,mudaPreco&&l.tt&&pTt&&`TikTok: → ${fmtR(pTt.venda)} no desconto (cheio ${fmtR(pTt.cheio)})`,mudaPreco&&l.ml&&`Mercado Livre: ${l.ml.ids.length} anúncio(s) pela comissão real`,Object.keys(est).length&&`Estoque Shopee: ${Object.keys(est).length} variação(ões)`].filter(Boolean);
+  if(!await lbConfirmar(`Aplicar em ${c.nome}?\n${l.nome.slice(0,70)}\n\n${linhas.join('\n')}\n\nO produto sai das relâmpagos agendadas da Shopee e o robô recoloca na próxima hora com o preço novo.`,{okTxt:'Aplicar'}))return;
+  const btn=document.getElementById('ljAjBtn');if(btn){btn.disabled=true;btn.textContent='Aplicando…';}
+  const res=[];let tudoOk=true;const nota=(ok,t)=>{res.push((ok?'✓ ':'✗ ')+t);if(!ok)tudoOk=false;};
+  try{
+    const token=await shopeeGarantirTokenValido(c,'erp');
+    const r=await (await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ajustar_produto',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,item_id:s.id,
+      venda:mudaPreco?pSh.venda:null,cheio:mudaPreco?pSh.cheio:null,modelos:s.temVariacao?s.variacoes.map(v=>v.id):[],estoque:est})})).json();
+    if(!r.passos)nota(false,'Shopee: '+(r.erro||'erro'));else for(const p of r.passos)nota(p.ok,`Shopee ${p.etapa}: ${p.ok?p.msg:p.erro}`);
+  }catch(e){nota(false,'Shopee: '+e.message);}
+  if(mudaPreco&&l.tt&&pTt){try{
+      const pr=await mig3Api(c,'produto_ler',{id:l.tt.id});const skus=(pr.produto?.skus||[]).map(k=>({id:k.id,preco:pTt.cheio}));
+      if(skus.length){const r1=await mig3Api(c,'produto_preco',{id:l.tt.id,skus});nota(r1.ok,`TikTok cheio: ${r1.ok?fmtR(pTt.cheio):r1.erro}`);}
+      if(c.tiktokDescontoFixoId){const r2=await mig3Api(c,'precos',{id:c.tiktokDescontoFixoId,itens:[{id:l.tt.id,preco:pTt.venda}]});nota(r2.ok,`TikTok desconto: ${r2.ok?fmtR(pTt.venda):r2.erro}`);}
+      else nota(false,'TikTok: loja sem desconto fixo marcado');
+    }catch(e){nota(false,'TikTok: '+e.message);}}
+  if(mudaPreco&&l.ml){try{
+      const token=await mlGarantirTokenValido(c);const base=l.ml.ref?.base||{};
+      const pm=await dirMl('ml_preco',{access_token:token,categoria:base.category_id,liquido:liq,peso:Number(s.peso)||0.5},true);
+      if(!pm.ok)throw new Error(pm.erro);let ok=0;const erros=[];
+      for(const id of l.ml.ids){const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:id,mudancas:{price:pm.venda}},true);if(r.ok)ok++;else erros.push(r.erro);}
+      nota(!erros.length,`Mercado Livre: ${ok} de ${l.ml.ids.length} anúncio(s) a ${fmtR(pm.venda)}${erros.length?` (${erros[0]})`:''}`);
+    }catch(e){nota(false,'Mercado Livre: '+e.message);}}
+  await log(c.id,c.nome,'ajuste de preço/estoque (Central da Loja)',`${l.nome.slice(0,60)} · recebe ${fmtR(liq)} · ${res.join(' | ')}`).catch(()=>{});
+  lj.aj.res={ok:tudoOk,msg:res.join(' · ')};if(btn){btn.disabled=false;btn.textContent='Aplicar';}
+  ljRender();if(tudoOk)showToast('Ajuste aplicado. Clique em Recarregar pra ver os números novos.');};
 window.__ljEstruturar=async exec=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
   if(exec&&!await lbConfirmar(`Estruturar a loja ${c.nome} agora?\nDesconto fixo, cupom 3%, Ads (ROAS 20) e impulsionar onde faltar. O que não tem API vira tarefa.`,{okTxt:'Estruturar'}))return;
   lj.estr={carregando:true};ljRender();
