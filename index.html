@@ -4817,7 +4817,7 @@ window.__ljAjAplicar=async()=>{
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');
     const r=await (await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ajustar_produto',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,item_id:s.id,
-      venda:mudaPreco?pSh.venda:null,cheio:mudaPreco?pSh.cheio:null,modelos:s.temVariacao?s.variacoes.map(v=>v.id):[],estoque:est})})).json();
+      venda:mudaPreco?pSh.venda:null,cheio:mudaPreco?pSh.cheio:null,cheio_atual:s.cheioMin||s.precoCheio||null,modelos:s.temVariacao?s.variacoes.map(v=>v.id):[],estoque:est})})).json();
     if(!r.passos)nota(false,'Shopee: '+(r.erro||'erro'));else for(const p of r.passos)nota(p.ok,`Shopee ${p.etapa}: ${p.ok?p.msg:p.erro}`);
   }catch(e){nota(false,'Shopee: '+e.message);}
   if(mudaPreco&&l.tt&&pTt){try{
