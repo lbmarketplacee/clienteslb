@@ -1196,6 +1196,11 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .nav-grupo-itens .nav-item{font-size:13px;padding-top:8px;padding-bottom:8px}
 .nav-grupo-itens .nav-item svg{width:15px;height:15px}
 .nav-grupo.tem-ativo>.nav-grupo-cab{color:var(--gold)}
+.wa-tipo-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+.wa-tipo-tab{font:inherit;font-size:12.5px;font-weight:600;padding:8px 6px;border-radius:7px;border:0;background:transparent;color:var(--text-dim);cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center}
+.wa-tipo-tab.active{background:var(--gold);color:#181712}.wa-tipo-tab b{font-size:10.5px;background:var(--red);color:#fff;border-radius:9px;padding:0 6px;min-width:16px}.wa-tipo-tab b:empty{display:none}
+.wa-tag-cli{background:#5aa9e622!important;color:#7dbcf0!important;border-color:#5aa9e655!important}.wa-tag-lead{background:var(--gold-soft)!important;color:var(--gold)!important}
+.wa-crm-row.cli .wa-avatar{background:#5aa9e633;color:#7dbcf0}
 .lj-novo{margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#181712;border-radius:6px;padding:1px 6px}
 .lj-hero{flex-wrap:wrap}.lj-hero .prod-hero-ico{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600}
 .lj-hero-acoes{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -1628,13 +1633,18 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
             <div class="page" id="page-whatsapp">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Conversas WhatsApp</h2><p class="page-sub">Leads que entraram em contato — a IA responde as primeiras mensagens, depois passa pra equipe.</p></div>
+          <div class="page-head-text"><h2 class="page-title">Conversas WhatsApp</h2><p class="page-sub">Leads e clientes separados: em Leads a IA responde as primeiras mensagens; em Clientes ficam as respostas aos avisos (saldo do Ads, cobrança, resumo).</p></div>
         </div>
 
         <div class="wa-crm-wrap">
           <div class="wa-crm-list">
             <div class="wa-crm-list-top">
               <input type="text" id="waBusca" placeholder="Buscar por nome ou telefone..." style="padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="window.__waRenderizarComFiltro()">
+              <div class="wa-tipo-tabs" id="waTipoTabs" role="tablist" aria-label="Tipo de conversa">
+                <button type="button" class="wa-tipo-tab active" data-watipo="lead" onclick="window.__waFiltrarTipo('lead')">Leads <b id="waTipoQtdLead"></b></button>
+                <button type="button" class="wa-tipo-tab" data-watipo="cliente" onclick="window.__waFiltrarTipo('cliente')">Clientes <b id="waTipoQtdCliente"></b></button>
+                <button type="button" class="wa-tipo-tab" data-watipo="todas" onclick="window.__waFiltrarTipo('todas')">Todas</button>
+              </div>
               <div style="display:flex;gap:6px;flex-wrap:wrap" id="waFiltroModo">
                 <button class="btn btn-gold btn-sm wa-filtro-btn active" data-wafiltro="todas" onclick="window.__waFiltrarModo('todas')">Todas</button>
                 <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="aguardando_humano" onclick="window.__waFiltrarModo('aguardando_humano')">Aguardando <span id="waContadorPendentes" class="tt-status-pill atrasada" style="margin-left:2px">0</span></button>
@@ -4147,6 +4157,20 @@ function whatsappIniciar(){
   });
 }
 let waFiltroModoAtual='todas';
+// Lead × cliente (15/10/2026, Lincoln: alerta de Ads e cobrança dos clientes misturavam com os leads). Cliente = telefone bate com
+// whatsappAvisos/whatsappContrato/telefone de algum cliente (compara DDD + 8 últimos dígitos, ignora o 9 e o 55) ou qualificação "cliente".
+let waFiltroTipo='lead';
+const WA_EQUIPE={'1191277027':'Lincoln','1192800455':'Caroline'};
+function waChaveTel(t){const d=String(t||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');return d.length>=10?d.slice(0,2)+d.slice(-8):null;}
+let waMapaClientes=null,waMapaVersao=-1;
+function waTipoConversa(c){
+  const cache=clientesCache||[];if(waMapaVersao!==cache.length){waMapaClientes={};for(const cl of cache){if(cl.ativo===false)continue;for(const f of ['whatsappAvisos','whatsappContrato','telefone','whatsapp','celular']){const k=waChaveTel(cl[f]);if(k&&!waMapaClientes[k])waMapaClientes[k]=cl.nome;}}waMapaVersao=cache.length;}
+  const k=waChaveTel(c.telefone||c.id);
+  if(k&&WA_EQUIPE[k])return{tipo:'cliente',nome:'Equipe LB · '+WA_EQUIPE[k]};
+  if(k&&waMapaClientes[k])return{tipo:'cliente',nome:waMapaClientes[k]};
+  if(c.qualificacao==='cliente')return{tipo:'cliente',nome:c.nome||''};
+  return{tipo:'lead'};}
+window.__waFiltrarTipo=t=>{waFiltroTipo=t;document.querySelectorAll('.wa-tipo-tab').forEach(b=>b.classList.toggle('active',b.dataset.watipo===t));whatsappRenderizarLista();};
 let waFiltroPeriodo='all';
 function waDataDentroDoPeriodo(emIso){
   if(waFiltroPeriodo==='all')return true;
@@ -4221,6 +4245,10 @@ function whatsappRenderizarLista(){
   const esconderNaoQualif=document.getElementById('waEsconderNaoQualificado')?.checked;
 
   let lista=whatsappConversasCache.slice();
+  const qtdT={lead:0,cliente:0},naoLT={lead:0,cliente:0};for(const c of lista){const t=waTipoConversa(c).tipo;qtdT[t]++;naoLT[t]+=waNaoLidas(c)?1:0;}
+  const qL=document.getElementById('waTipoQtdLead'),qC=document.getElementById('waTipoQtdCliente');
+  if(qL)qL.textContent=naoLT.lead?naoLT.lead:'';if(qC)qC.textContent=naoLT.cliente?naoLT.cliente:'';
+  if(waFiltroTipo!=='todas')lista=lista.filter(c=>waTipoConversa(c).tipo===waFiltroTipo);
   if(waFiltroModoAtual!=='todas')lista=lista.filter(c=>c.modo===waFiltroModoAtual);
   if(esconderNaoQualif)lista=lista.filter(c=>c.qualificacao!=='nao_qualificado');
   if(termoBusca)lista=lista.filter(c=>(c.nome||'').toLowerCase().includes(termoBusca)||(c.telefone||c.id||'').toLowerCase().includes(termoBusca));
@@ -4236,7 +4264,8 @@ function whatsappRenderizarLista(){
     const vistoLista=ultima&&ultima.de!=='lead'?waSeloVisto(ultima.status):'';
     const pendente=c.modo==='aguardando_humano';
     const ativa=c.id===waConversaAtualTelefone;
-    return `<div class="wa-crm-row${pendente?' pendente':''}${ativa?' active':''}" onclick="window.__waAbrirConversa('${c.id}')">
+    const tp=waTipoConversa(c);
+    return `<div class="wa-crm-row${pendente?' pendente':''}${ativa?' active':''}${tp.tipo==='cliente'?' cli':''}" onclick="window.__waAbrirConversa('${c.id}')">
       <div class="wa-avatar">${esc(waIniciais(c.nome||c.telefone))}</div>
       <div class="wa-crm-row-body">
         <div class="wa-crm-row-top">
@@ -4245,6 +4274,7 @@ function whatsappRenderizarLista(){
         </div>
         <div class="wa-crm-row-preview">${vistoLista}${esc(prefixo+waPreviewTexto(ultima))}</div>
         <div class="wa-crm-row-tags">
+          ${tp.tipo==='cliente'?`<span class="wa-crm-tag wa-tag-cli">Cliente · ${esc(tp.nome)}</span>`:'<span class="wa-crm-tag wa-tag-lead">Lead</span>'}
           <span class="wa-crm-tag${pendente?' pendente':''}">${labelModo[c.modo]||c.modo}</span>
           ${c.qualificacao?`<span class="wa-crm-tag auto">${labelQualif[c.qualificacao]||c.qualificacao}</span>`:''}
         </div>
