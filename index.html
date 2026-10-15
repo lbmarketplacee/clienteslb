@@ -1224,6 +1224,13 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .lj-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px}.lj-sub.ok{color:var(--green)}.lj-sub.at,.at{color:var(--amber)}.lj-na{color:var(--text-dim2);font-size:12px}.lj-ruim{color:var(--red)}
 .lj-cv{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}.lj-cv.a{background:var(--green);color:#0d1a10}.lj-cv.b{background:var(--amber);color:#1f1505}.lj-cv.c{background:var(--border-strong);color:var(--text)}.lj-cv.p{background:var(--purple);color:#fff}
 .lj-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.lj-promo th[scope=row]{width:200px;background:transparent;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);vertical-align:top}.lj-promo td{vertical-align:top;min-width:200px}
+.lj-st{font-weight:600;font-size:13px}.lj-st.ok{color:var(--green)}.lj-st.at{color:var(--amber)}.lj-st.ruim{color:var(--red)}.lj-st.na{color:var(--text-dim2);font-weight:500}
+.lj-agenda{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.lj-dia{border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--text-dim);background:var(--bg-card2)}
+.lj-dia b{font-family:'Oswald',sans-serif;font-size:18px;color:var(--text)}.lj-dia.ok{border-color:#5fbf7a66;background:linear-gradient(180deg,var(--green-bg),transparent)}.lj-dia.at{border-color:#e0a35266;background:linear-gradient(180deg,var(--amber-bg),transparent)}
+@media(max-width:800px){.lj-agenda{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 .lj-spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--border-strong);border-top-color:var(--gold);margin:0 auto 12px;animation:ljgira 1s linear infinite}@keyframes ljgira{to{transform:rotate(360deg)}}
 .lj-aj{border-color:var(--gold-dim);background:linear-gradient(180deg,#d4a94a12,var(--bg-card) 40%);position:sticky;top:16px}
 .lj-aj-nome{font-family:'Oswald',sans-serif;font-size:18px;color:var(--text);margin:-8px 0 14px;line-height:1.25}
@@ -4654,7 +4661,7 @@ window.__jrAbrir=id=>{jr.sel=jr.sel===id?null:id;jrRender();};
 /* ============== CENTRAL DA LOJA — Fase 1 (15/10/2026, Lincoln: organizar por loja, não por marketplace) ==============
    Escolhe o cliente uma vez: vendas do mês, estrutura (robô Estruturar), promoções/robôs por marketplace, o que pede atenção
    e o que os robôs fizeram. Só leitura + atalhos pras telas que já existem. Abas Produtos/Promoções/… = próximas fases. */
-const lj={id:null,logs:null,estr:null,tab:'visao',prod:null,filtro:'todos',aj:null};
+const lj={id:null,logs:null,estr:null,tab:'visao',prod:null,filtro:'todos',aj:null,agenda:null,acao:null};
 const LJ_MPS=[['shopee','Shopee'],['tiktok','TikTok Shop'],['ml','Mercado Livre']];
 const ljMes=(off=0)=>{const d=new Date(Date.now()-3*3600000);d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+off);return d.toISOString().slice(0,7).replace('-','_');};
 const ljMs=v=>{if(v==null||v==='')return null;if(v?.seconds)return v.seconds*1000;if(typeof v==='number')return v<1e11?v*1000:v;const t=Date.parse(v);return isNaN(t)?null:t;};
@@ -4669,8 +4676,8 @@ function ljIniciar(){
   sel.innerHTML='<option value="">Escolha o cliente…</option>'+ativos.map(c=>`<option value="${c.id}" ${c.id===lj.id?'selected':''}>${esc(c.nome||c.id)}</option>`).join('');
   ljRender();if(lj.id&&!lj.logs)ljLogs();
 }
-window.__ljTrocar=id=>{lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
-window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
+window.__ljTrocar=id=>{lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
+window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
 async function ljLogs(){const id=lj.id;try{const sn=await getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(120)));
   if(lj.id!==id)return;lj.logs=sn.docs.map(d=>d.data()).sort((a,b)=>(ljMs(b.quando)||0)-(ljMs(a.quando)||0)).slice(0,10);}catch(e){lj.logs=[];console.warn('[loja] log',e);}ljRender();}
 function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que pede atenção',1,'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>'],
@@ -4678,7 +4685,7 @@ function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que
   ['promocoes','Promoções','Desconto, cupom e relâmpago num quadro',0,'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>'],
   ['anuncios','Anúncios','Ads, impulsionar e saldo',0,'<path d="M3 11l18-5v12L3 14v-3z"/>'],
   ['historico','Histórico','Tudo que os robôs fizeram',0,'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>']];
-  return tabs.map(([k,t,d,on,ic])=>{const pronta=['visao','produtos'].includes(k);return `<button type="button" class="prod-tab ${lj.tab===k?'active':''} ${pronta?'':'breve'}" onclick="${pronta?`window.__ljTab('${k}')`:`showToast('${t}: entra na próxima etapa da Central da Loja')`}"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span><span><b>${t}</b><small>${d}</small></span></button>`;}).join('');}
+  return tabs.map(([k,t,d,on,ic])=>{const pronta=['visao','produtos','promocoes'].includes(k);return `<button type="button" class="prod-tab ${lj.tab===k?'active':''} ${pronta?'':'breve'}" onclick="${pronta?`window.__ljTab('${k}')`:`showToast('${t}: entra na próxima etapa da Central da Loja')`}"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span><span><b>${t}</b><small>${d}</small></span></button>`;}).join('');}
 function ljAlertas(c){const a=[];const s=c.saudeShopee||{};
   const errTok=[c.saudeErro,c.financeiroErro,c.ofertaRelampagoAutoUltimoResultado,JSON.stringify(c.gmvDiarioErros||'')].filter(Boolean).join(' ');
   if(/refresh_token|token .*(venc|renova)|reconect|invalid_acceess_token|expired/i.test(errTok))a.push(['ruim','Conexão da Shopee caída','O robô não consegue entrar na loja — reconectar o app ERP.',`window.__irParaMarketing('shopee','apis')`,'Reconectar']);
@@ -4710,7 +4717,7 @@ function ljLog(l){const mp={shopee:'Shopee',tiktok:'TikTok',ml:'ML',shein:'SHEIN
   return `<div class="lj-lin"><span class="t">${dia===hoje?'hoje':ljData(ms)}</span><span class="lj-dot ${l.resultado==='ok'?'ok':l.resultado==='falhou'?'ruim':'at'}"></span><span><b>${esc(mp?mp+': ':'')}${esc(String(t).slice(0,90))}</b>${l.resultado==='falhou'&&l.motivo?`<small>${esc(String(l.motivo).slice(0,120))}</small>`:''}</span></div>`;}
 
 /* ---------- Central da Loja → Produtos (15/10/2026): catálogo único Shopee + TikTok + ML, curva ABC e ajuste de preço/estoque ---------- */
-window.__ljTab=k=>{lj.tab=k;ljRender();if(k==='produtos'&&!lj.prod)ljCarregarProdutos();};
+window.__ljTab=k=>{lj.tab=k;ljRender();if(k==='produtos'&&!lj.prod)ljCarregarProdutos();if(k==='promocoes'&&!lj.agenda)ljCarregarAgenda();};
 window.__ljFiltro=f=>{lj.filtro=f;ljRender();};
 function ljLigacoes(c){ // shopeeId → {tiktok, ml} pelas ligações gravadas nas cópias/migrações
   const m={};const pl=c.produtosLigados||{};
@@ -4839,6 +4846,63 @@ window.__ljAjAplicar=async()=>{
   if(res.some(x=>/^✓ Shopee desconto/.test(x))){s.precoMin=s.precoMax=pSh.venda;(s.variacoes||[]).forEach(v=>{v.atual=pSh.venda;v.cheio=pSh.cheio;});}
   lj.aj.res={ok:tudoOk,msg:res.join(' · ')};if(btn){btn.disabled=false;btn.textContent='Aplicar';}
   ljRender();if(tudoOk)showToast('Ajuste aplicado. Clique em Recarregar pra ver os números novos.');};
+
+/* ---------- Central da Loja → Promoções (15/10/2026): desconto, cupom, relâmpago, campanhas e giro × marketplace, com os robôs ---------- */
+async function ljCarregarAgenda(){const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c||!(c.shopeeErpShopId&&c.shopeeErpRefreshToken)){lj.agenda={sem:true};ljRender();return;}
+  const id=c.id;lj.agenda={carregando:true};ljRender();
+  try{const token=await shopeeGarantirTokenValido(c,'erp');const ler=async type=>{const r=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/shop_flash_sale/get_shop_flash_sale_list',query:JSON.stringify({type,offset:0,limit:100})});return r?.response?.flash_sale_list||[];};
+    const lista=[...await ler(2),...await ler(1)];if(lj.id!==id)return;
+    const dias={};const hoje0=new Date(Date.now()-3*3600000);hoje0.setUTCHours(0,0,0,0);
+    for(let i=0;i<7;i++){const d=new Date(hoje0.getTime()+i*86400000);dias[d.toISOString().slice(0,10)]={ofertas:0,itens:0,max:0};}
+    for(const f of lista){const k=new Date((Number(f.start_time)-3*3600)*1000).toISOString().slice(0,10);if(!dias[k])continue;const n=Number(f.enabled_item_count??f.item_count??0);dias[k].ofertas++;dias[k].itens+=n;dias[k].max=Math.max(dias[k].max,n);}
+    lj.agenda={dias,total:lista.length};}catch(e){lj.agenda={erro:e.message};}
+  if(lj.id===id)ljRender();}
+window.__ljAcao=async(tipo)=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
+  const exec=tipo!=='tt_simular';
+  if(exec&&!isLincoln()){showToast('Só Lincoln e Carol.');return;}
+  const txt={sh_renovar:'Renovar agora o desconto fixo e o cupom da Shopee (só renova o que vence em até 8 dias)?',sh_relampago:'Completar agora a relâmpago da Shopee?\nCria nos horários livres e completa as ofertas já agendadas (até 50 produtos cada).',tt_rodar:'Rodar agora o robô do TikTok (desconto fixo + ofertas relâmpago)?'}[tipo];
+  if(exec&&!await lbConfirmar(`${c.nome}\n\n${txt}`,{okTxt:'Fazer agora'}))return;
+  lj.acao={tipo,rodando:true};ljRender();
+  try{let msg='';
+    if(tipo==='sh_renovar'){const r=await (await fetch(`${SHOPEE_API}?acao=rodar_renovacoes&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()})).json();const x=(r.resultados||[])[0]||{};msg=r.ok?`Desconto: ${x.desconto||x.erro||'—'} · Cupom: ${x.cupom||'—'}`:(r.erro||'erro');}
+    else if(tipo==='sh_relampago'){const token=await shopeeGarantirTokenValido(c,'erp');const p=new URLSearchParams({acao:'criar_oferta_relampago',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,discount_id:c.shopeeDescontoFixoId||'',percentual:5,qtd_por_produto:5,limite_produtos:50,max_horarios:14,completar:'1'});
+      const r=await (await fetch(`${SHOPEE_API}?${p}`)).json();const comp=r.completadas||r.detalhe?.completadas;
+      msg=`${r.ok?`${r.total_ofertas} oferta(s) nova(s) com ${r.total_produtos} produto(s)`:(r.erro||'nenhuma oferta nova')}${comp?.produtos?` · +${comp.produtos} produto(s) em ${comp.ofertas} oferta(s) já agendada(s)`:''}`;lj.agenda=null;}
+    else{const p=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId:c.id});if(exec)p.set('executar','1');const r=await (await fetch(`${SHOPEE_API}?${p}`,{headers:await authHeaders()})).json();msg=r.ok?ttResumoRobo((r.resultados||[])[0],r.modo).replace(/\n+/g,' · '):(r.erro||'erro');}
+    lj.acao={tipo,msg,ok:true};}catch(e){lj.acao={tipo,msg:e.message,ok:false};}
+  ljRender();if(tipo==='sh_relampago')ljCarregarAgenda();};
+function ljPromoHtml(c){const sh=ljTem(c,'shopee'),tt=ljTem(c,'tiktok'),ml=ljTem(c,'ml');
+  const fim=(ms,lim,auto)=>{if(!ms)return['na','—',''];const d=ljDias(ms);return[d<0?'ruim':d<=lim?'at':'ok',`${d<0?'venceu em':'ativo até'} ${ljData(ms)}`,auto];};
+  const cel=(x)=>{const [k,t,sub,btn]=x;return `<td><span class="lj-st ${k}">${esc(t)}</span>${sub?`<div class="lj-sub">${sub}</div>`:''}${btn||''}</td>`;};
+  const b=(tipo,rot,gold)=>`<button class="btn btn-sm ${gold?'btn-gold':'btn-ghost'}" style="margin-top:8px" onclick="window.__ljAcao('${tipo}')" ${lj.acao?.rodando?'disabled':''}>${lj.acao?.rodando&&lj.acao.tipo===tipo?'Rodando…':rot}</button>`;
+  const lk=(js,rot)=>`<button class="btn btn-sm btn-ghost" style="margin-top:8px" onclick="${js}">${rot}</button>`;
+  const nd=['na','—',''];
+  const linhas=[
+    ['Desconto fixo','preço do dia a dia',
+      sh?(c.shopeeDescontoFixoId?[...fim(ljMs(c.descontoFixoFim),15,`"${esc(c.shopeeDescontoFixoNome||'desconto fixo')}" · robô renova 8 dias antes`),isLincoln()?b('sh_renovar','Renovar agora'):'']:['at','não marcado','sem ele o robô não renova',lk(`window.__irParaMarketing('shopee','descontos')`,'Marcar o desconto')]):nd,
+      tt?(c.tiktokDescontoFixoId?[...fim(ljMs(c.descontoFixoFimTiktok),30,'robô renova 30 dias antes (340 dias)')]:['at','não marcado','',lk(`window.__ljTab('produtos')`,'Ver produtos')]):nd,
+      ml?['na','não existe no ML','preço direto no anúncio']:nd],
+    ['Cupom 3%','loja toda',
+      sh?[...fim(ljMs(c.cupomFim),8,'mín. R$ 15 · robô renova 8 dias antes'),isLincoln()?b('sh_renovar','Renovar agora'):'']:nd,
+      tt?(c.tiktokCupomFim?fim(ljMs(c.tiktokCupomFim),15,'criado no Seller Center (a API só lê)'):['at','criar no Seller Center','a API do TikTok não cria cupom']):nd,
+      ml?['na','opcional','não é padrão LB']:nd],
+    ['Oferta relâmpago','desconto fixo −5%',
+      sh?(c.ofertaRelampagoAuto===false?['at','robô desligado','']:[ljMs(c.ofertaRelampagoShopeeCobertaAte)&&ljDias(ljMs(c.ofertaRelampagoShopeeCobertaAte))>=0?'ok':'at',ljMs(c.ofertaRelampagoShopeeCobertaAte)?`coberto até ${ljData(ljMs(c.ofertaRelampagoShopeeCobertaAte))}`:'robô a cada hora',esc(String(c.ofertaRelampagoAutoUltimoResultado||'').slice(0,110)),isLincoln()?b('sh_relampago','Completar agora',true):'']):nd,
+      tt?(c.tiktokOfertaAuto===false?['at','robô desligado','']:[ljMs(c.tiktokOfertaCobertaAte)&&ljDias(ljMs(c.tiktokOfertaCobertaAte))>=0?'ok':'ruim',ljMs(c.tiktokOfertaCobertaAte)?`coberto até ${ljData(ljMs(c.tiktokOfertaCobertaAte))}`:'sem oferta agendada','ofertas de 72h emendadas · robô 4x/dia',b('tt_simular','Simular')+(isLincoln()?' '+b('tt_rodar','Rodar agora'):'')]):nd,
+      ml?(c.mlOfertaAuto===false?['at','robô desligado','']:['ok','robô todo dia 8h','até −7% · o ML escolhe o dia',lk(`window.__irParaMarketing('mercadolivre','oferta')`,'Ver robô do ML')]):nd],
+    ['Campanhas e datas','11.11, Black Friday…',sh?['na','pelo Seller Center','']:nd,tt?['na','pelo Seller Center','']:nd,ml?['ok','robô entra sozinho','−5% (até 7%) nas campanhas do ML']:nd],
+  ];
+  const giros=Object.entries(c.promoGiro||{}).filter(([,g])=>(g.fim||0)>Date.now());
+  linhas.push(['Promo de giro','parados: −15% por 15 dias',sh?(giros.length?['ok',`${giros.length} produto(s) em giro`,`volta sozinho até ${ljData(Math.max(...giros.map(([,g])=>g.fim)))}`,lk(`window.__irParaMarketing('shopee','curva')`,'Ver na Curva ABC')]:['na','nenhum agora','a Lia propõe toda semana no Escritório',lk(`window.__irParaMarketing('shopee','curva')`,'Analisar parados')]):nd,nd,nd]);
+  const tab=`<div class="panel"><div class="panel-head"><h3>Promoções da loja</h3><span class="p-sub">o que dá desconto, por marketplace · o robô mantém sozinho, o botão faz agora</span></div>
+    ${lj.acao&&!lj.acao.rodando?`<div class="lj-alerta ${lj.acao.ok?'':'ruim'}" style="margin-bottom:12px"><span class="lj-dot ${lj.acao.ok?'ok':'ruim'}"></span><span><b>${lj.acao.ok?'Feito':'Não deu certo'}</b><small>${esc(lj.acao.msg)}</small></span></div>`:''}
+    <div class="lj-tabela"><table class="lj-promo"><thead><tr><th></th>${sh?'<th>Shopee</th>':''}${tt?'<th>TikTok Shop</th>':''}${ml?'<th>Mercado Livre</th>':''}</tr></thead><tbody>
+    ${linhas.map(([n,d,a,bb,cc])=>`<tr><th scope="row"><b>${n}</b><div class="lj-sub">${d}</div></th>${sh?cel(a):''}${tt?cel(bb):''}${ml?cel(cc):''}</tr>`).join('')}</tbody></table></div></div>`;
+  // agenda
+  const A=lj.agenda;let ag='';
+  if(sh){const corpoAg=!A||A.carregando?'<div class="lj-vazio" style="padding:18px">Lendo a agenda na Shopee…</div>':A.erro?`<div class="lj-vazio" style="padding:18px">Não li a agenda: ${esc(A.erro)}</div>`:A.sem?'':`<div class="lj-agenda">${Object.entries(A.dias).map(([d,x])=>{const dt=new Date(d+'T12:00:00');const k=x.ofertas?(x.max>=10?'ok':'at'):'livre';return `<div class="lj-dia ${k}"><span>${dt.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')} ${dt.getDate()}</span><b>${x.ofertas?`${x.max} prod.`:'livre'}</b><small>${x.ofertas?`${x.ofertas} oferta(s)`:'robô cria'}</small></div>`;}).join('')}</div><div class="lj-sub" style="margin-top:10px">Verde = 10+ produtos na oferta · amarelo = poucos (use Completar agora) · cinza = horário ainda livre</div>`;
+    ag=`<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>Relâmpago Shopee — próximos 7 dias</h3><span class="p-sub">${A?.total!=null?`${A.total} oferta(s) agendada(s) ou no ar`:''}</span></div>${corpoAg}</div>`;}
+  return tab+ag;}
 window.__ljEstruturar=async exec=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
   if(exec&&!await lbConfirmar(`Estruturar a loja ${c.nome} agora?\nDesconto fixo, cupom 3%, Ads (ROAS 20) e impulsionar onde faltar. O que não tem API vira tarefa.`,{okTxt:'Estruturar'}))return;
   lj.estr={carregando:true};ljRender();
@@ -4855,6 +4919,7 @@ function ljRender(){
   if(!c){tabs.innerHTML='';corpo.innerHTML=`<div class="panel lj-vazio">Escolha um cliente no campo acima.<br><small style="color:var(--text-dim2)">Dica: na lista de clientes, o ícone da loja abre direto aqui.</small></div>`;return;}
   tabs.innerHTML=ljTabs();
   if(lj.tab==='produtos'){corpo.innerHTML=ljProdutosHtml(c);return;}
+  if(lj.tab==='promocoes'){corpo.innerHTML=ljPromoHtml(c);return;}
   // vendas do mês
   const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-1)]||{};
   const tot=o=>['shopee','tiktok','ml'].reduce((t,k)=>t+(Number(o[k])||0),0);
