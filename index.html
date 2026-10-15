@@ -10145,7 +10145,10 @@ function lbSkuVar(base,...ops){const limpa=x=>String(x||'').normalize('NFD').rep
 async function lbCodigoNovo(c){const ref=doc(db,'mapaProdutos',c.id);const d=(await getDoc(ref)).data()||{};
   const pre=d.prefixo||lbPrefixoLoja(c.nome);const max=Math.max(Number(d.ultimoCodigo)||0,...(d.grupos||[]).map(g=>Number(String(g.codigo||'').split('-').pop())||0));
   await setDoc(ref,{prefixo:pre,ultimoCodigo:max+1},{merge:true});return `LB-${pre}-${String(max+1).padStart(4,'0')}`;}
-async function cpSkuBase(c){const el=document.getElementById('dirShSku');let v=(el?.value||'').trim();if(!v){v=await lbCodigoNovo(c);if(el)el.value=v;}return v;}
+// loja com SKU próprio (clientes.skuCliente === true — Roma, 15/10/2026): o sistema NUNCA gera SKU nela
+async function cpSkuBase(c){const el=document.getElementById('dirShSku');let v=(el?.value||'').trim();
+  if(!v&&c.skuCliente){const m=`A ${c.nome} usa SKU próprio — digite o SKU dela no campo "SKU (base)". O sistema não gera SKU nessa loja.`;el?.focus();lbAvisar(m);throw new Error(m);}
+  if(!v){v=await lbCodigoNovo(c);if(el)el.value=v;}return v;}
 function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
   const u=window.__dirUltimo;const el=document.getElementById(alvoId);if(!el||!u)return;
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.shopeeErpShopId&&c.shopeeErpRefreshToken)||(c.mlUserId&&c.mlRefreshToken)||(c.tiktokShopCipher&&c.tiktokAccessToken))).sort((a,b)=>a.nome.localeCompare(b.nome));
@@ -12158,8 +12161,9 @@ window.__pxCopiar=async()=>{
   const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('pxSheinMedidas')?.value||'',sheinCategoria:document.getElementById('pxSheinCat')?.value||''};
   for(const x of fila){
     let P;try{P=await pxLer[px.origem].detalhar(c,x,t=>{st.textContent=`${x.nome.slice(0,50)}: ${t}`;});if(!P.skus.length)throw new Error('sem variação com preço');
+      if(!c.skuCliente){ // loja com SKU próprio (Roma): leva só o que veio da origem, não gera nada
       if(!ctx.simular&&!P.sku&&!P.skus.some(s=>s.sku))P.sku=await lbCodigoNovo(c); // sem SKU na origem → Código LB
-      if(P.sku)for(const s of P.skus)if(!s.sku)s.sku=lbSkuVar(P.sku,...s.op);}
+      if(P.sku)for(const s of P.skus)if(!s.sku)s.sku=lbSkuVar(P.sku,...s.op);}}
     catch(e){for(const d of px.destinos)if(x.sel[d])x.st[d]='erro: '+e.message;pxRenderLista();console.error(e);continue;}
     for(const d of px.destinos){if(!x.sel[d]||/^ok/.test(x.st[d]||''))continue;
       const linha=t=>{x.st[d]=String(t).replace(/<[^>]+>/g,'');st.textContent=`${x.nome.slice(0,50)} → ${PX_MP[d]}: ${x.st[d]}`;pxRenderLista();};
