@@ -2328,7 +2328,8 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
                   <div class="form-row" style="margin-top:6px"><div class="field"><label>Vídeo (gravado pela LB ou pela cliente)</label><input type="file" id="infVideo" accept="video/mp4,video/quicktime,video/webm"></div>
                     <div class="field"><label>Quem trocar (se tiver mais de 1 pessoa)</label><input id="infQuem" placeholder="Ex.: a mulher de vestido vermelho"></div></div>
                   <label style="display:flex;gap:6px;align-items:flex-start;font-size:12.5px;margin-bottom:8px"><input type="checkbox" id="infAutorizado"> <span>O vídeo é da LB ou da cliente (temos autorização). <b>Vídeo de outra pessoa/criador não pode</b> — é cópia e uso de imagem sem autorização.</span></label>
-                  <button type="button" class="btn btn-gold btn-sm" id="infTrocarBtn" onclick="window.__infTrocar()">Trocar pessoa (~R$ 5,50)</button></div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="infTrocarBtn" disabled title="O Google recusa troca de pessoa em vídeo (política de uso). Aguardando outro serviço.">Trocar pessoa — em breve</button>
+                  <p class="p-sub" style="margin:6px 0 0">O Google (Gemini) recusa trocar a pessoa de um vídeo (teste 15/10/2026). Vamos ligar outro serviço próprio pra isso (Runway Act-Two ou Wan Animate).</p></div>
                 <div id="infSt" style="margin-top:10px;font-size:13px"></div>
               </div>
             </div>
