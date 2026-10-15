@@ -1212,6 +1212,32 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 @media(max-width:700px){.lj-status{grid-template-columns:110px repeat(3,minmax(0,1fr));font-size:11.5px}}
 .lj-feed{display:flex;flex-direction:column}.lj-feed .lj-lin .t{flex:none;width:58px;color:var(--text-dim2);font-size:11.5px;padding-top:1px}
 .lj-vazio{padding:40px 20px;text-align:center;color:var(--text-dim);font-size:14px}
+.lj-prod-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}.lj-prod-grid.com-aj{grid-template-columns:minmax(0,1fr) 380px;align-items:start}
+@media(max-width:1200px){.lj-prod-grid.com-aj{grid-template-columns:minmax(0,1fr)}}
+.lj-filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}.lj-filtros .chip b{margin-left:4px;color:var(--gold)}
+.lj-tabela{overflow-x:auto;border:1px solid var(--border);border-radius:12px}.lj-tabela table{width:100%;border-collapse:collapse;min-width:820px;font-size:13px}
+.lj-tabela th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:600;padding:11px 12px;background:var(--bg-card2);border-bottom:1px solid var(--border)}
+.lj-tabela td{padding:11px 12px;border-bottom:1px solid var(--border-soft);vertical-align:middle}.lj-tabela tr:last-child td{border-bottom:0}
+.lj-tabela tr:hover td{background:#ffffff05}.lj-tabela tr.sel td{background:var(--gold-soft)}
+.lj-prod{display:flex;gap:10px;align-items:center;max-width:380px}.lj-prod b{display:block;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lj-foto{width:40px;height:52px;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border);flex:none;overflow:hidden}.lj-foto img{width:100%;height:100%;object-fit:cover}
+.lj-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px}.lj-sub.ok{color:var(--green)}.lj-sub.at,.at{color:var(--amber)}.lj-na{color:var(--text-dim2);font-size:12px}.lj-ruim{color:var(--red)}
+.lj-cv{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}.lj-cv.a{background:var(--green);color:#0d1a10}.lj-cv.b{background:var(--amber);color:#1f1505}.lj-cv.c{background:var(--border-strong);color:var(--text)}.lj-cv.p{background:var(--purple);color:#fff}
+.lj-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.lj-spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--border-strong);border-top-color:var(--gold);margin:0 auto 12px;animation:ljgira 1s linear infinite}@keyframes ljgira{to{transform:rotate(360deg)}}
+.lj-aj{border-color:var(--gold-dim);background:linear-gradient(180deg,#d4a94a12,var(--bg-card) 40%);position:sticky;top:16px}
+.lj-aj-nome{font-family:'Oswald',sans-serif;font-size:18px;color:var(--text);margin:-8px 0 14px;line-height:1.25}
+.lj-aj-lbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:14px 0 6px;font-weight:600}
+.lj-aj-liq{width:100%;font:inherit;font-family:'Oswald',sans-serif;font-size:24px;padding:10px 12px;border-radius:12px;border:1px solid var(--gold-dim);background:var(--bg);color:var(--text)}
+.lj-aj-precos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.lj-aj-mp{background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--text-dim)}
+.lj-aj-mp span{display:flex;gap:6px;align-items:center}.lj-aj-mp b{font-family:'Oswald',sans-serif;font-size:18px;color:var(--text);font-weight:600}.lj-aj-mp.off{opacity:.45}
+.lj-aj-est{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.lj-aj-est label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim);background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:7px}
+.lj-aj-est label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lj-aj-est input{width:100%;font:inherit;font-size:14px;padding:5px 7px;border-radius:7px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text)}.lj-aj-est input.zero{border-color:var(--red)}
+.lj-aj-passos{margin-top:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12.5px;display:flex;flex-direction:column;gap:7px;color:var(--text-dim)}
+.lj-aj-passos b{color:var(--text);font-size:13px}.lj-aj-passos div{display:flex;gap:9px}.lj-aj-passos div span{color:var(--gold);font-weight:700;flex:none}
+
 .prod-hero-ico{width:54px;height:54px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#181712;background:linear-gradient(145deg,var(--gold-bright),var(--gold) 55%,var(--gold-dim));box-shadow:0 8px 22px rgba(212,169,74,.22),inset 0 1px 0 rgba(255,255,255,.35)}
 .prod-hero h2{font-family:'Oswald',sans-serif;font-size:26px;font-weight:600;color:var(--text);letter-spacing:.01em;margin:0;line-height:1.1}
 .prod-hero p{margin:4px 0 0;font-size:13px;color:var(--text-dim)}
@@ -4628,7 +4654,7 @@ window.__jrAbrir=id=>{jr.sel=jr.sel===id?null:id;jrRender();};
 /* ============== CENTRAL DA LOJA — Fase 1 (15/10/2026, Lincoln: organizar por loja, não por marketplace) ==============
    Escolhe o cliente uma vez: vendas do mês, estrutura (robô Estruturar), promoções/robôs por marketplace, o que pede atenção
    e o que os robôs fizeram. Só leitura + atalhos pras telas que já existem. Abas Produtos/Promoções/… = próximas fases. */
-const lj={id:null,logs:null,estr:null};
+const lj={id:null,logs:null,estr:null,tab:'visao',prod:null,filtro:'todos',aj:null};
 const LJ_MPS=[['shopee','Shopee'],['tiktok','TikTok Shop'],['ml','Mercado Livre']];
 const ljMes=(off=0)=>{const d=new Date(Date.now()-3*3600000);d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+off);return d.toISOString().slice(0,7).replace('-','_');};
 const ljMs=v=>{if(v==null||v==='')return null;if(v?.seconds)return v.seconds*1000;if(typeof v==='number')return v<1e11?v*1000:v;const t=Date.parse(v);return isNaN(t)?null:t;};
@@ -4643,8 +4669,8 @@ function ljIniciar(){
   sel.innerHTML='<option value="">Escolha o cliente…</option>'+ativos.map(c=>`<option value="${c.id}" ${c.id===lj.id?'selected':''}>${esc(c.nome||c.id)}</option>`).join('');
   ljRender();if(lj.id&&!lj.logs)ljLogs();
 }
-window.__ljTrocar=id=>{lj.id=id||null;lj.logs=null;lj.estr=null;try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
-window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
+window.__ljTrocar=id=>{lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
+window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
 async function ljLogs(){const id=lj.id;try{const sn=await getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(120)));
   if(lj.id!==id)return;lj.logs=sn.docs.map(d=>d.data()).sort((a,b)=>(ljMs(b.quando)||0)-(ljMs(a.quando)||0)).slice(0,10);}catch(e){lj.logs=[];console.warn('[loja] log',e);}ljRender();}
 function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que pede atenção',1,'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>'],
@@ -4652,7 +4678,7 @@ function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que
   ['promocoes','Promoções','Desconto, cupom e relâmpago num quadro',0,'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>'],
   ['anuncios','Anúncios','Ads, impulsionar e saldo',0,'<path d="M3 11l18-5v12L3 14v-3z"/>'],
   ['historico','Histórico','Tudo que os robôs fizeram',0,'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>']];
-  return tabs.map(([k,t,d,on,ic])=>`<button type="button" class="prod-tab ${on?'active':'breve'}" ${on?'':`onclick="showToast('${t}: entra na próxima etapa da Central da Loja')"`}><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span><span><b>${t}</b><small>${d}</small></span></button>`).join('');}
+  return tabs.map(([k,t,d,on,ic])=>{const pronta=['visao','produtos'].includes(k);return `<button type="button" class="prod-tab ${lj.tab===k?'active':''} ${pronta?'':'breve'}" onclick="${pronta?`window.__ljTab('${k}')`:`showToast('${t}: entra na próxima etapa da Central da Loja')`}"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span><span><b>${t}</b><small>${d}</small></span></button>`;}).join('');}
 function ljAlertas(c){const a=[];const s=c.saudeShopee||{};
   const errTok=[c.saudeErro,c.financeiroErro,c.ofertaRelampagoAutoUltimoResultado,JSON.stringify(c.gmvDiarioErros||'')].filter(Boolean).join(' ');
   if(/refresh_token|token .*(venc|renova)|reconect|invalid_acceess_token|expired/i.test(errTok))a.push(['ruim','Conexão da Shopee caída','O robô não consegue entrar na loja — reconectar o app ERP.',`window.__irParaMarketing('shopee','apis')`,'Reconectar']);
@@ -4682,6 +4708,101 @@ function ljLog(l){const mp={shopee:'Shopee',tiktok:'TikTok',ml:'ML',shein:'SHEIN
   else if(l.tipo==='impulsionar')t=`produtos impulsionados${Array.isArray(d.ok)?` (${d.ok.length})`:''}`;
   const ms=ljMs(l.quando);const hoje=new Date(Date.now()-3*3600000).toISOString().slice(0,10);const dia=ms?new Date(ms-3*3600000).toISOString().slice(0,10):'';
   return `<div class="lj-lin"><span class="t">${dia===hoje?'hoje':ljData(ms)}</span><span class="lj-dot ${l.resultado==='ok'?'ok':l.resultado==='falhou'?'ruim':'at'}"></span><span><b>${esc(mp?mp+': ':'')}${esc(String(t).slice(0,90))}</b>${l.resultado==='falhou'&&l.motivo?`<small>${esc(String(l.motivo).slice(0,120))}</small>`:''}</span></div>`;}
+
+/* ---------- Central da Loja → Produtos (15/10/2026): catálogo único Shopee + TikTok + ML, curva ABC e ajuste de preço/estoque ---------- */
+window.__ljTab=k=>{lj.tab=k;ljRender();if(k==='produtos'&&!lj.prod)ljCarregarProdutos();};
+window.__ljFiltro=f=>{lj.filtro=f;ljRender();};
+function ljLigacoes(c){ // shopeeId → {tiktok, ml} pelas ligações gravadas nas cópias/migrações
+  const m={};const pl=c.produtosLigados||{};
+  for(const [k,v] of Object.entries(pl)){const [o,id]=k.split(/_(.+)/);if(o==='shopee'){m[id]={...(m[id]||{}),...v};}else if(v?.shopee){const sid=String([].concat(v.shopee)[0]);m[sid]={...(m[sid]||{}),[o]:id};}}
+  for(const [tt,sid] of Object.entries(c.migracaoShopeeTiktok||{}))m[String(sid)]={...(m[String(sid)]||{}),tiktok:tt};
+  for(const [mlb,sid] of Object.entries(c.migracaoMlShopee||{}))m[String(sid)]={...(m[String(sid)]||{}),ml:mlb};
+  return m;}
+async function ljCarregarProdutos(){
+  const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;const id=c.id;
+  lj.prod={carregando:true,passo:'Lendo os produtos…'};ljRender();
+  const passo=t=>{if(lj.id!==id||!lj.prod?.carregando)return;lj.prod.passo=t;const el=document.getElementById('ljProdPasso');if(el)el.textContent=t;};
+  const err=e=>({erro:e.message||String(e)});
+  const [sh,tt,ml,curva]=await Promise.all([
+    c.shopeeErpShopId&&c.shopeeErpRefreshToken?(async()=>{const token=await shopeeGarantirTokenValido(c,'erp');return migLerShopeeAtivos(c,token,passo);})().catch(err):null,
+    ljTem(c,'tiktok')?mig3Api(c,'produtos').then(r=>r.ok?(r.produtos||[]).filter(p=>p.status==='ACTIVATE'):{erro:r.erro}).catch(err):null,
+    ljTem(c,'ml')?pxLer.ml.listar(c,()=>{}).catch(err):null,
+    getDoc(doc(db,'curvaAbc',id)).then(d=>d.exists()?d.data():null).catch(()=>null)]);
+  if(lj.id!==id)return;
+  const lig=ljLigacoes(c);const usados={tt:new Set(),ml:new Set()};
+  const ttL=Array.isArray(tt)?tt:[],mlL=Array.isArray(ml)?ml:[];
+  const curvaPor={};for(const l of curva?.linhas||[])curvaPor[String(l.id)]=l;const parados=new Set((curva?.parados||[]).map(String));
+  const linhas=[];
+  for(const it of Array.isArray(sh)?sh:[]){
+    const sid=String(it.id);const L=lig[sid]||{};
+    let t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;
+    if(!t){const tit=pxParecido([it.nome],ttL.filter(p=>!usados.tt.has(p.id)).map(p=>p.titulo));if(tit)t=ttL.find(p=>p.titulo===tit&&!usados.tt.has(p.id));}
+    if(t)usados.tt.add(t.id);
+    let m=L.ml?mlL.find(f=>f.ids.includes(String(L.ml))||f.id===String(L.ml)):null;
+    if(!m){const cand=mlL.filter(f=>!usados.ml.has(f.id));const tit=pxParecido([it.nome],cand.flatMap(f=>f.titulos));if(tit)m=cand.find(f=>f.titulos.includes(tit));}
+    if(m)usados.ml.add(m.id);
+    const cv=curvaPor[sid];
+    linhas.push({k:'s'+sid,nome:it.nome,foto:it.foto,sh:it,tt:t,ml:m,classe:parados.has(sid)?'Parado':(cv?.classe||null),vendas30:cv?.qtd??null});
+  }
+  for(const t of ttL)if(!usados.tt.has(t.id))linhas.push({k:'t'+t.id,nome:t.titulo,foto:null,sh:null,tt:t,ml:null,classe:null});
+  for(const m of mlL)if(!usados.ml.has(m.id))linhas.push({k:'m'+m.id,nome:m.nome,foto:m.foto,sh:null,tt:null,ml:m,classe:null});
+  const ordem={A:0,B:1,C:2,Parado:3};linhas.sort((a,b)=>(ordem[a.classe]??4)-(ordem[b.classe]??4)||(b.sh?.vendas||0)-(a.sh?.vendas||0));
+  lj.prod={linhas,erros:[['Shopee',sh],['TikTok',tt],['Mercado Livre',ml]].filter(([,x])=>x?.erro).map(([n,x])=>`${n}: ${x.erro}`),curvaQuando:curva?.quando?ljMs(curva.quando):null,
+    tem:{shopee:Array.isArray(sh),tiktok:Array.isArray(tt),ml:Array.isArray(ml)}};
+  ljRender();}
+const LJ_FILTROS=[['todos','Todos',()=>true],['fora','Fora do desconto',l=>l.sh&&!l.sh.emPromocao],['semest','Sem estoque',l=>l.sh&&(l.sh.estoque||0)<=0],['zerada','Variação zerada',l=>l.sh&&l.sh.variacoesZeradas>0],['parados','Parados',l=>l.classe==='Parado'],['falta','Falta em algum marketplace',l=>(lj.prod?.tem?.tiktok&&!l.tt)||(lj.prod?.tem?.ml&&!l.ml)||(lj.prod?.tem?.shopee&&!l.sh)]];
+function ljCel(x,preco,extra){return x?`<b>${fmtR(preco)}</b><div class="lj-sub">${extra}</div>`:`<span class="lj-na">não tem</span>`;}
+function ljProdutosHtml(c){
+  const P=lj.prod;
+  if(!P||P.carregando)return `<div class="panel lj-vazio"><div class="lj-spin"></div><div id="ljProdPasso">${esc(P?.passo||'Lendo os produtos…')}</div><small style="color:var(--text-dim2)">Shopee, TikTok e Mercado Livre ao mesmo tempo · lojas grandes levam até 1 min</small></div>`;
+  const f=LJ_FILTROS.find(x=>x[0]===lj.filtro)||LJ_FILTROS[0];const vis=P.linhas.filter(f[2]);
+  const cls={A:'a',B:'b',C:'c',Parado:'p'};
+  const linha=l=>{const s=l.sh;const sub=s?`${s.temVariacao?`${s.variacoes.length} variações`:'sem variação'}${s.sku?` · ${esc(s.sku)}`:''}`:(l.tt?'só no TikTok':'só no Mercado Livre');
+    return `<tr class="${lj.aj?.k===l.k?'sel':''}">
+      <td><div class="lj-prod"><div class="lj-foto">${l.foto?`<img src="${esc(l.foto)}" loading="lazy" alt="">`:''}</div><div style="min-width:0"><b title="${esc(l.nome)}">${esc(l.nome)}</b><div class="lj-sub">${sub}</div></div></div></td>
+      <td>${l.classe?`<span class="lj-cv ${cls[l.classe]}">${l.classe}</span>`:'<span class="lj-na">—</span>'}${l.vendas30?`<div class="lj-sub">${l.vendas30} vend./30d</div>`:''}</td>
+      <td>${s?`<b>${fmtR(s.precoMin)}${s.precoMax>s.precoMin?'+':''}</b><div class="lj-sub ${s.emPromocao?'ok':'at'}">${s.emPromocao?'no desconto':'fora do desconto'}</div>`:'<span class="lj-na">não tem</span>'}</td>
+      <td>${ljCel(l.tt,l.tt?.preco,'')}</td>
+      <td>${ljCel(l.ml,l.ml?.preco,l.ml?`${l.ml.ids.length} anúncio(s)`:'')}</td>
+      <td>${s?`<b class="${(s.estoque||0)<=0?'lj-ruim':''}">${s.estoque??'—'}</b>${s.variacoesZeradas?`<div class="lj-sub at">${s.variacoesZeradas} zerada(s)</div>`:''}`:(l.tt?l.tt.estoque:l.ml?.estoque??'—')}</td>
+      <td>${s?`<button class="btn btn-sm ${lj.aj?.k===l.k?'btn-gold':'btn-ghost'}" onclick="window.__ljAjAbrir('${l.k}')">Ajustar</button>`:''}</td></tr>`;};
+  const filtros=LJ_FILTROS.map(([k,n,fn])=>{const q=P.linhas.filter(fn).length;return (k==='todos'||q)?`<button class="chip ${lj.filtro===k?'active':''}" onclick="window.__ljFiltro('${k}')">${n} <b>${q}</b></button>`:'';}).join('');
+  const tabela=`<div class="panel lj-tab-panel"><div class="panel-head"><h3>Catálogo da loja</h3><span class="p-sub">${P.linhas.length} produto(s) · Shopee + TikTok + ML na mesma linha${P.curvaQuando?` · curva de ${new Date(P.curvaQuando).toLocaleDateString('pt-BR')}`:' · sem curva ABC (analisar na Shopee → Curva ABC)'}</span></div>
+    ${P.erros.length?`<div class="lj-alerta at" style="margin-bottom:12px"><span class="lj-dot at"></span><span><b>Não li tudo</b><small>${esc(P.erros.join(' · '))}</small></span></div>`:''}
+    <div class="lj-filtros">${filtros}<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="lj.prod=null;window.__ljTab('produtos')">Recarregar</button></div>
+    <div class="lj-tabela"><table><thead><tr><th>Produto</th><th>Curva</th><th>Shopee</th><th>TikTok</th><th>Mercado Livre</th><th>Estoque</th><th></th></tr></thead><tbody>${vis.map(linha).join('')||'<tr><td colspan="7" class="lj-vazio" style="padding:24px">Nenhum produto nesse filtro.</td></tr>'}</tbody></table></div>
+    <div class="lj-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('criar'),300)">+ Novo produto</button><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('migrar'),300)">Copiar pra outro marketplace</button><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('padronizar'),300)">Padronizar / otimizar</button></div></div>`;
+  return `<div class="lj-prod-grid ${lj.aj?'com-aj':''}">${tabela}${lj.aj?ljAjHtml():''}</div>`;}
+// ---- Ajustar preço e estoque (painel) ----
+window.__ljAjAbrir=k=>{const l=lj.prod?.linhas.find(x=>x.k===k);if(!l?.sh)return;const s=l.sh;
+  lj.aj={k,liq:dirLiquido(s.precoMin||0),est:Object.fromEntries((s.temVariacao?s.variacoes:[{id:0,estoque:s.estoque}]).map(v=>[String(v.id),v.estoque??0])),res:null};ljRender();
+  setTimeout(()=>document.querySelector('.lj-aj')?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);};
+window.__ljAjFechar=()=>{lj.aj=null;ljRender();};
+window.__ljAjLiq=v=>{if(!lj.aj)return;lj.aj.liq=lbValorBR(v)||0;const b=document.getElementById('ljAjPrecos');if(b)b.innerHTML=ljAjPrecos();};
+window.__ljAjEst=(id,v)=>{if(lj.aj)lj.aj.est[id]=Math.max(0,parseInt(v)||0);};
+function ljAjLinha(){return lj.prod?.linhas.find(x=>x.k===lj.aj?.k);}
+function ljAjPrecos(){const l=ljAjLinha();const liq=lj.aj.liq;const sh=dirPrecosLB(liq),tt=dirPrecosTT(liq);
+  return `<div class="lj-aj-mp"><span>${mpIco('shopee',16)} Shopee</span><b>${sh?fmtR(sh.venda):'—'}</b><small>cheio ${sh?fmtR(sh.cheio):'—'} · hoje ${fmtR(l.sh.precoMin)}</small></div>
+    <div class="lj-aj-mp ${l.tt?'':'off'}"><span>${mpIco('tiktok',16)} TikTok</span><b>${l.tt&&tt?fmtR(tt.venda):'—'}</b><small>${l.tt?`cheio ${tt?fmtR(tt.cheio):'—'}`:'não está no TikTok'}</small></div>
+    <div class="lj-aj-mp ${l.ml?'':'off'}"><span>${mpIco('ml',16)} Mercado Livre</span><b>${l.ml?'comissão real':'—'}</b><small>${l.ml?`${l.ml.ids.length} anúncio(s) · calcula ao aplicar`:'não está no ML'}</small></div>`;}
+function ljAjHtml(){const l=ljAjLinha();if(!l)return'';const s=l.sh;const vars=s.temVariacao?s.variacoes:[{id:0,nome:'Estoque',estoque:s.estoque}];
+  const difer=s.temVariacao&&new Set(s.variacoes.map(v=>v.atual)).size>1;const r=lj.aj.res;
+  return `<aside class="panel lj-aj"><div class="panel-head"><h3>Ajustar preço e estoque</h3><button class="btn btn-ghost btn-sm" onclick="window.__ljAjFechar()" aria-label="Fechar">✕</button></div>
+    <div class="lj-aj-nome">${esc(l.nome)}</div>
+    <label class="lj-aj-lbl" for="ljAjLiq">Quanto a cliente quer receber por peça</label>
+    <input id="ljAjLiq" class="lj-aj-liq" value="${String(lj.aj.liq.toFixed(2)).replace('.',',')}" oninput="window.__ljAjLiq(this.value)" inputmode="decimal">
+    <small class="lj-sub">Hoje ≈ ${fmtR(dirLiquido(s.precoMin||0))} na Shopee · o preço de cada marketplace sai da regra LB${difer?' · <span class="at">variações com preços diferentes: o novo vale pra todas</span>':''}</small>
+    <div id="ljAjPrecos" class="lj-aj-precos">${ljAjPrecos()}</div>
+    <div class="lj-aj-lbl">Estoque na Shopee${s.temVariacao?' por variação':''}</div>
+    <div class="lj-aj-est">${vars.map(v=>`<label><span title="${esc(v.nome||'')}">${esc(v.nome||'Estoque')}</span><input type="number" min="0" value="${lj.aj.est[String(v.id)]??0}" oninput="window.__ljAjEst('${v.id}',this.value)" class="${(lj.aj.est[String(v.id)]??0)<=0?'zero':''}"></label>`).join('')}</div>
+    <div class="lj-aj-passos"><b>O que o sistema vai fazer</b>
+      <div><span>1</span>Shopee: tira só este produto das relâmpagos agendadas (as outras peças continuam)</div>
+      <div><span>2</span>Shopee: novo preço no desconto fixo (cheio ×1,30) e o estoque novo</div>
+      <div><span>3</span>${[l.tt&&'TikTok',l.ml&&'Mercado Livre'].filter(Boolean).join(' e ')||'Outros marketplaces'}: ${l.tt||l.ml?'preço e estoque novos':'não tem o produto'}</div>
+      <div><span>4</span>Na próxima hora o robô recoloca nas relâmpagos com −5% do preço novo</div></div>
+    ${r?`<div class="lj-alerta ${r.ok?'':'ruim'}" style="margin-top:10px"><span class="lj-dot ${r.ok?'ok':'ruim'}"></span><span><b>${r.ok?'Aplicado':'Não deu certo'}</b><small>${esc(r.msg)}</small></span></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" style="flex:1" id="ljAjBtn" onclick="window.__ljAjAplicar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Aplicar</button><button class="btn btn-ghost" onclick="window.__ljAjFechar()">Cancelar</button></div></aside>`;}
+window.__ljAjAplicar=async()=>{showToast('A aplicação automática entra no ar depois do teste na loja AQUARIOS.');};
 window.__ljEstruturar=async exec=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
   if(exec&&!await lbConfirmar(`Estruturar a loja ${c.nome} agora?\nDesconto fixo, cupom 3%, Ads (ROAS 20) e impulsionar onde faltar. O que não tem API vira tarefa.`,{okTxt:'Estruturar'}))return;
   lj.estr={carregando:true};ljRender();
@@ -4697,6 +4818,7 @@ function ljRender(){
   document.getElementById('ljSub').innerHTML=c?[resp&&`Responsável: <b style="color:var(--text)">${esc(resp)}</b>`,c.dataInicio&&`cliente desde ${esc(new Date(c.dataInicio+'T12:00').toLocaleDateString('pt-BR'))}`,(c.marketplaces||[]).map(m=>MP_L[m]||m).join(' · ')].filter(Boolean).join(' · '):'Escolha um cliente: tudo dele num lugar só.';
   if(!c){tabs.innerHTML='';corpo.innerHTML=`<div class="panel lj-vazio">Escolha um cliente no campo acima.<br><small style="color:var(--text-dim2)">Dica: na lista de clientes, o ícone da loja abre direto aqui.</small></div>`;return;}
   tabs.innerHTML=ljTabs();
+  if(lj.tab==='produtos'){corpo.innerHTML=ljProdutosHtml(c);return;}
   // vendas do mês
   const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-1)]||{};
   const tot=o=>['shopee','tiktok','ml'].reduce((t,k)=>t+(Number(o[k])||0),0);
