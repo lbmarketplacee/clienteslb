@@ -4836,6 +4836,13 @@ function ljLigacoes(c){ // shopeeId → {tiktok, ml} pelas ligações gravadas n
   for(const [tt,sid] of Object.entries(c.migracaoShopeeTiktok||{}))m[String(sid)]={...(m[String(sid)]||{}),tiktok:tt};
   for(const [mlb,sid] of Object.entries(c.migracaoMlShopee||{}))m[String(sid)]={...(m[String(sid)]||{}),ml:mlb};
   return m;}
+// casa pelas opções da 1ª variação (cores): pega anúncio com título trocado (Isabina 15/10/2026)
+const ljOpN=v=>String(v||'').split(',')[0].normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+function ljPorOpcoes(it,cands){
+  const a=new Set((it.variacoes||[]).map(v=>ljOpN(v.nome)).filter(Boolean));if(a.size<2)return null;let melhor=null,mx=0;
+  for(const p of cands){const b=new Set((p.opcoes||[]).map(ljOpN));if(b.size<2)continue;const n=[...a].filter(x=>b.has(x)).length;
+    if(n>=2&&n>=0.6*Math.min(a.size,b.size)&&n>mx){mx=n;melhor=p;}}
+  return melhor;}
 // casa Shopee × TikTok pelo SKU (variações primeiro; o SKU do anúncio só se não for repetido na loja)
 const ljSkuN=v=>String(v||'').trim().toLowerCase();
 function ljPorSku(it,cands){
@@ -4866,6 +4873,7 @@ async function ljCarregarProdutos(){
     const sid=String(it.id);const L=lig[sid]||{};
     let t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;
     if(!t)t=ljPorSku(it,ttL.filter(p=>!usados.tt.has(p.id)));
+    if(!t)t=ljPorOpcoes(it,ttL.filter(p=>!usados.tt.has(p.id)));
     if(!t){const tit=pxParecido([it.nome],ttL.filter(p=>!usados.tt.has(p.id)).map(p=>p.titulo));if(tit)t=ttL.find(p=>p.titulo===tit&&!usados.tt.has(p.id));}
     if(t)usados.tt.add(t.id);
     let m=L.ml?mlL.find(f=>f.ids.includes(String(L.ml))||f.id===String(L.ml)):null;
