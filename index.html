@@ -10137,6 +10137,15 @@ function dirPrecosLB(liq){ // espelho de lb-shopee-gmv/lib/produto.js (precosLB)
 function dirPara34(dataUrl){return new Promise((ok,erro)=>{const im=new Image();im.onload=()=>{const cv=document.createElement('canvas');cv.width=900;cv.height=1200;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,900,1200);
   const r=im.width/im.height;if(Math.abs(r-0.75)<0.02)g.drawImage(im,0,0,900,1200);else{const e=Math.min(900/im.width,1200/im.height);const w=im.width*e,h=im.height*e;g.drawImage(im,(900-w)/2,(1200-h)/2,w,h);}
   ok(cv.toDataURL('image/jpeg',0.88));};im.onerror=()=>erro(new Error('imagem inválida'));im.src=dataUrl;});}
+// ---- Código LB (15/10/2026, Lincoln): o mesmo SKU nas 3 plataformas. LB-ISA-0012 → variação LB-ISA-0012-PRETO-M
+// (igual ao skuModelo do backend). SKU próprio da cliente no campo vale no lugar. Reserva no mapaProdutos/{cliente}.ultimoCodigo.
+function lbPrefixoLoja(nome){const w=tfNorm(nome).replace(/\b(loja|modas?|store|oficial|ltda|me|eireli|comercio|confeccoes?|the)\b/g,' ').replace(/[^a-z]/g,'');return (w||'LOJ').slice(0,3).toUpperCase().padEnd(3,'X');}
+function lbSkuVar(base,...ops){const limpa=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'');
+  const b=String(base||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9-]+/g,'');return [b,...ops.map(limpa)].filter(Boolean).join('-').slice(0,50);}
+async function lbCodigoNovo(c){const ref=doc(db,'mapaProdutos',c.id);const d=(await getDoc(ref)).data()||{};
+  const pre=d.prefixo||lbPrefixoLoja(c.nome);const max=Math.max(Number(d.ultimoCodigo)||0,...(d.grupos||[]).map(g=>Number(String(g.codigo||'').split('-').pop())||0));
+  await setDoc(ref,{prefixo:pre,ultimoCodigo:max+1},{merge:true});return `LB-${pre}-${String(max+1).padStart(4,'0')}`;}
+async function cpSkuBase(c){const el=document.getElementById('dirShSku');let v=(el?.value||'').trim();if(!v){v=await lbCodigoNovo(c);if(el)el.value=v;}return v;}
 function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
   const u=window.__dirUltimo;const el=document.getElementById(alvoId);if(!el||!u)return;
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.shopeeErpShopId&&c.shopeeErpRefreshToken)||(c.mlUserId&&c.mlRefreshToken)||(c.tiktokShopCipher&&c.tiktokAccessToken))).sort((a,b)=>a.nome.localeCompare(b.nome));
@@ -10145,7 +10154,6 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
   const cands=[...(u.fotos[0]?[{tipo:'IA · '+u.fotos[0].tipo,img:u.fotos[0].imagem}]:[]),...u.reais.map((r,i)=>({tipo:'Foto real '+(i+1),img:r})),...u.fotos.slice(1).map(f=>({tipo:'IA · '+f.tipo,img:f.imagem}))];
   window.__dirCands=cands;
   const maxSel=u.guia?8:9;
-  const skuSug=(u.titulo||u.produto).normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().split(/\s+/).filter(w=>w.length>2).slice(0,3).join('-').replace(/[^A-Z0-9-]/g,'');
   el.innerHTML=`<div class="prod-box" style="border-color:var(--gold-dim)">
     <div class="prod-box-tit"><span class="prod-num">2</span><h3>Conferir e criar</h3><span style="display:flex;gap:6px;margin-left:6px">${[temSh&&'shopee',temMl&&'ml',temTt&&'tiktok'].filter(Boolean).map(m=>mpIco(m,18)).join('')}</span></div>
     <div class="form-row">
@@ -10158,7 +10166,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     <div class="field"><label>Descrição (pode editar)</label><textarea id="dirShDesc" style="min-height:120px">${esc(u.descricao)}</textarea></div>
     <div class="form-row">
       <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
-      <div class="field"><label>SKU (base)</label><input type="text" id="dirShSku" value="${esc(skuSug)}"></div>
+      <div class="field"><label>SKU (base) — igual nas plataformas</label><input type="text" id="dirShSku" value="" placeholder="automático: Código LB (ex.: LB-ISA-0012)" title="Vazio = o sistema gera o Código LB. Se a cliente tem SKU próprio, digite aqui: vale pra Shopee, TikTok, ML e SHEIN."></div>
       ${temMl?`<div class="field"><label>Código de barras / EAN (opcional — sem ele o ML recebe "não tem código cadastrado")</label><input type="text" inputmode="numeric" id="dirShGtin" placeholder="7891234567890"></div>
       <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>
       <div class="field"><label>Registro Inmetro (opcional — eletroportáteis, vem no selo da caixa)</label><input type="text" id="dirShInmetro" placeholder="CE-EL-074/23-F05-ACERT"></div>`:''}
@@ -10340,7 +10348,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   if(paraIA.some(a=>a.id==='MANUFACTURER')&&!extras.some(e=>e.id==='MANUFACTURER'))extras.push({id:'MANUFACTURER',value_name:c.nome});
   // número de peça obrigatório (autopeças, ex.: Pontas de Eixos — erro visto ao vivo na Rodan 05/10/2026) → SKU do produto
   const skuMl=String(sku||'').trim();
-  for(const id of ['PART_NUMBER','MPN','SELLER_SKU'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
+  for(const id of ['PART_NUMBER','MPN'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
   // o que ficou SEM valor depois da IA e dos padrões (o ML pode preencher sozinho — conferir no anúncio)
   // código de barras: categoria com GTIN obrigatório/condicional (ex.: Modeladores de Cachos MLB44076, visto ao vivo 07/10/2026)
   // → manda o EAN informado ou, sem ele, o motivo "O produto não tem código cadastrado" (senão o ML recusa)
@@ -10404,7 +10412,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
     const estC=typeof est==='object'?Number(est[`${cor}|${t.tam||''}`]??est[cor]??0):est;
     if(typeof est==='object'&&!(estC>0))continue; // migração: combinação sem estoque (ou fora das 30 com mais estoque) não vira anúncio
-    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:String(spec.marca||'').trim()||c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar],descricao:descricao||''};
+    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:String(spec.marca||'').trim()||c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar,...((spec.skus?.[`${cor}|${t.tam||''}`]||skuMl)?[{id:'SELLER_SKU',value_name:String(spec.skus?.[`${cor}|${t.tam||''}`]||lbSkuVar(skuMl,cor,t.tam)).slice(0,60)}]:[])],descricao:descricao||''};
     const r=await dirMl('ml_criar_item',{access_token:token,item},true);
     if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
     if(!r.ok&&/unable_to_list/.test(r.erro||'')&&!criados.length){contaBloqueada=true;break;}
@@ -10444,7 +10452,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
       const ia=dirFotoVar(cor);const realOk=fotoCor[cor]&&(sel.some(x=>x.img===fotoCor[cor])||!ia)?fotoCor[cor]:null; // real desmarcada lá em cima + tem foto da IA → só a da IA
       fotosPorCor[cor]=i===0?[...(ia?[ia]:[]),...(realOk?[realOk]:[]),...sel.map(x=>x.img)]:[ia,realOk].filter(Boolean);
     }
-    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est:cpEstoqueVar(u,est),u,sku:document.getElementById('dirShSku')?.value||'',descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||'',inmetro:document.getElementById('dirShInmetro')?.value||''},linhaMl);
+    const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est:cpEstoqueVar(u,est),u,sku:await cpSkuBase(c),descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||'',inmetro:document.getElementById('dirShInmetro')?.value||''},linhaMl);
     const pr={venda,comissaoPct};
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${erros.length&&!criados.length?`<button class="btn btn-gold btn-sm" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
@@ -10469,9 +10477,9 @@ window.__cpCriarTt=async(depois=false)=>{
     vars.push({nome:u.nome1||'Cor',tam:/tamanho/i.test(u.nome1||''),opcoes:u.cores.map(op=>({nome:op,foto:dirFotoVar(op)||fotoCor[op]||null,campos:u.medidas?.[String(op).toUpperCase()]||null}))});}
   if(u.tamanhos.length)vars.push({nome:u.nome2||'Tamanho',tam:/tamanho/i.test(u.nome2||'Tamanho'),opcoes:u.tamanhos.map(t=>({nome:t.tam,campos:t.campos||null}))});
   const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
-  const skuBase=document.getElementById('dirShSku')?.value||'';
+  const skuBase=await cpSkuBase(c);
   const P={titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
-    skus:combos.map(op=>({op,liq,est,sku:[skuBase,...op].filter(Boolean).join('-').slice(0,50)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
+    skus:combos.map(op=>({op,liq,est,sku:lbSkuVar(skuBase,...op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
   if(!depois&&!await lbConfirmar(`Criar no TikTok Shop\nLoja: ${c.nome}\n${combos.length} SKU(s), ${est} un. cada · preço pelas taxas do TikTok (${fmtR(dirPrecosTT(liq)?.venda)})\nVai pra análise da TikTok e entra no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
   if(btn&&!depois)btn.disabled=true;
   try{const r=await pxCriar.tiktok(c,P,t=>linha('TikTok: '+esc(t)),{simular:!!window.__pxSimular});if(!r.id){linha('TikTok: '+esc(r.msg));if(btn&&!depois)btn.disabled=false;return;}
@@ -10498,9 +10506,9 @@ window.__cpCriarSh=async(depois=false)=>{
     vars.push({nome:u.nome1||'Cor',tam:/tamanho/i.test(u.nome1||''),opcoes:u.cores.map(op=>({nome:op,foto:dirFotoVar(op)||fotoCor[op]||null,campos:u.medidas?.[String(op).toUpperCase()]||null}))});}
   if(u.tamanhos.length)vars.push({nome:u.nome2||'Tamanho',tam:/tamanho/i.test(u.nome2||'Tamanho'),opcoes:u.tamanhos.map(t=>({nome:t.tam,campos:t.campos||null,veste:t.campos?.Veste}))});
   const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
-  const skuBase=document.getElementById('dirShSku')?.value||'';
+  const skuBase=await cpSkuBase(c);
   const P={titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
-    skus:combos.map(op=>({op,liq,est,sku:[skuBase,...op].filter(Boolean).join('-').slice(0,50)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
+    skus:combos.map(op=>({op,liq,est,sku:lbSkuVar(skuBase,...op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
   if(!depois&&!await lbConfirmar(`Criar na SHEIN\nLoja: ${c.nome}\n${combos.length} variação(ões), ${est} un. cada · 1 preço só (${fmtR(sheinPreco(liq))})\nVai pra análise da SHEIN.`,{okTxt:'Criar na SHEIN'}))return;
   if(btn&&!depois)btn.disabled=true;
   const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('cpSheinMed')?.value||'',sheinCategoria:document.getElementById('cpSheinCat')?.value||''};
@@ -10590,8 +10598,8 @@ window.__dirShCriar=async()=>{
     passo('Criando o anúncio (oculto)...');
     const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\n${u.nome1||'Cor'}: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\n${u.nome2||'Tamanho'}: ${u.tamanhos.map(t=>t.tam+(t.campos?.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
       category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
-      item_sku:document.getElementById('dirShSku').value.trim(),guiaTamanhos:guiaId,atributos,
-      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:cpEstoqueVar(u,est),skuBase:document.getElementById('dirShSku').value.trim()};
+      item_sku:await cpSkuBase(c),guiaTamanhos:guiaId,atributos,
+      cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:cpEstoqueVar(u,est),skuBase:await cpSkuBase(c)};
     let r=await dirShApi('produto_criar',c,token,{dados});
     // categoria exige guia ("Size Chart is required…", visto 13/10/2026) e não tinha variação de tamanho → guia "Único" pela régua BR e tenta de novo
     if(!r.ok&&/size chart is required/i.test(`${r.erro||''}`)&&!dados.guiaTamanhos){
@@ -11835,7 +11843,7 @@ const pxCriar={
     const jpg={};const pega=async url=>jpg[url]||(jpg[url]=await migJpg(url));const fotosPorCor={};
     for(const cor of (u.cores.length?u.cores:[''])){const opF=v1?.opcoes.find(o=>o.nome===cor)?.foto;fotosPorCor[cor]=[];
       for(const url of [...new Set([...(opF?[opF]:[]),...P.fotos])].slice(0,10))fotosPorCor[cor].push(await pega(url));}
-    const r=await mlCriarProduto(c,{familia,liq,peso:P.peso||0.5,dim:pxDimsOk(P.dims)?[P.dims.c,P.dims.l,P.dims.a]:[20,15,10],est,u,sku:P.sku||'',descricao:String(P.descricao).slice(0,4900),fotosPorCor},t=>linha(t));
+    const r=await mlCriarProduto(c,{familia,liq,peso:P.peso||0.5,dim:pxDimsOk(P.dims)?[P.dims.c,P.dims.l,P.dims.a]:[20,15,10],est,u,sku:P.sku||'',skus:Object.fromEntries(P.skus.filter(s=>s.sku).map(s=>[`${s.op[0]??''}|${s.op[1]??''}`,s.sku])),descricao:String(P.descricao).slice(0,4900),fotosPorCor},t=>linha(t));
     if(!r.criados.length)throw new Error(r.erros[0]||'nenhum anúncio criado');
     return{id:r.criados.map(x=>x.item_id),msg:`${r.criados.length}/${r.nItens} anúncio(s) a ${fmtR(r.venda)}${r.erros.length?` · ${r.erros[0]}`:''}`};
   },
@@ -12149,7 +12157,9 @@ window.__pxCopiar=async()=>{
   if(!window.__pxSimular&&!await lbConfirmar(`Copiar da ${PX_MP[px.origem]} da ${c.nome}?\n${resumo}\nShopee nasce oculta; ML já ativo; TikTok e SHEIN vão pra análise.`,{okTxt:'Copiar'}))return;
   const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('pxSheinMedidas')?.value||'',sheinCategoria:document.getElementById('pxSheinCat')?.value||''};
   for(const x of fila){
-    let P;try{P=await pxLer[px.origem].detalhar(c,x,t=>{st.textContent=`${x.nome.slice(0,50)}: ${t}`;});if(!P.skus.length)throw new Error('sem variação com preço');}
+    let P;try{P=await pxLer[px.origem].detalhar(c,x,t=>{st.textContent=`${x.nome.slice(0,50)}: ${t}`;});if(!P.skus.length)throw new Error('sem variação com preço');
+      if(!ctx.simular&&!P.sku&&!P.skus.some(s=>s.sku))P.sku=await lbCodigoNovo(c); // sem SKU na origem → Código LB
+      if(P.sku)for(const s of P.skus)if(!s.sku)s.sku=lbSkuVar(P.sku,...s.op);}
     catch(e){for(const d of px.destinos)if(x.sel[d])x.st[d]='erro: '+e.message;pxRenderLista();console.error(e);continue;}
     for(const d of px.destinos){if(!x.sel[d]||/^ok/.test(x.st[d]||''))continue;
       const linha=t=>{x.st[d]=String(t).replace(/<[^>]+>/g,'');st.textContent=`${x.nome.slice(0,50)} → ${PX_MP[d]}: ${x.st[d]}`;pxRenderLista();};
