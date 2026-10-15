@@ -4843,6 +4843,10 @@ function ljPorOpcoes(it,cands){
   for(const p of cands){const b=new Set((p.opcoes||[]).map(ljOpN));if(b.size<2)continue;const n=[...a].filter(x=>b.has(x)).length;
     if(n>=2&&n>=0.6*Math.min(a.size,b.size)&&n>mx){mx=n;melhor=p;}}
   return melhor;}
+// nota do par (0 = não casa): fração das opções/SKUs em comum
+function ljParScore(fn,it,p){if(fn(it,[p])!==p)return 0;
+  if(fn===ljPorSku){const vs=new Set((it.variacoes||[]).map(v=>ljSkuN(v.sku)).filter(Boolean));const n=(p.skus||[]).filter(k=>vs.has(ljSkuN(k))).length;return 1+(n||0.5)/Math.max(1,(p.skus||[]).length);}
+  const a=new Set((it.variacoes||[]).map(v=>ljOpN(v.nome)));const b=new Set((p.opcoes||[]).map(ljOpN));const n=[...a].filter(x=>b.has(x)).length;return n/Math.min(a.size,b.size)+n/1000;}
 // casa Shopee × TikTok pelo SKU (variações primeiro; o SKU do anúncio só se não for repetido na loja)
 const ljSkuN=v=>String(v||'').trim().toLowerCase();
 function ljPorSku(it,cands){
@@ -4869,11 +4873,15 @@ async function ljCarregarProdutos(){
   const ttL=Array.isArray(tt)?tt:[],mlL=Array.isArray(ml)?ml:[];
   const curvaPor={};for(const l of curva?.linhas||[])curvaPor[String(l.id)]=l;const parados=new Set((curva?.parados||[]).map(String));
   const linhas=[];
-  for(const it of Array.isArray(sh)?sh:[]){
+  // TikTok: 1º ligações gravadas, depois SKU, depois cores — sempre o MELHOR par da loja toda (não a ordem da lista)
+  const shL=Array.isArray(sh)?sh:[];const ttDe={};
+  for(const it of shL){const L=lig[String(it.id)]||{};const t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;if(t&&!usados.tt.has(t.id)){ttDe[it.id]=t;usados.tt.add(t.id);}}
+  for(const fn of [ljPorSku,ljPorOpcoes])for(let volta=0;volta<shL.length;volta++){let melhor=null;
+    for(const it of shL){if(ttDe[it.id])continue;for(const p of ttL){if(usados.tt.has(p.id))continue;const sc=ljParScore(fn,it,p);if(sc&&(!melhor||sc>melhor.sc))melhor={it,p,sc};}}
+    if(!melhor)break;ttDe[melhor.it.id]=melhor.p;usados.tt.add(melhor.p.id);}
+  for(const it of shL){
     const sid=String(it.id);const L=lig[sid]||{};
-    let t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;
-    if(!t)t=ljPorSku(it,ttL.filter(p=>!usados.tt.has(p.id)));
-    if(!t)t=ljPorOpcoes(it,ttL.filter(p=>!usados.tt.has(p.id)));
+    let t=ttDe[it.id]||null;
     if(!t){const tit=pxParecido([it.nome],ttL.filter(p=>!usados.tt.has(p.id)).map(p=>p.titulo));if(tit)t=ttL.find(p=>p.titulo===tit&&!usados.tt.has(p.id));}
     if(t)usados.tt.add(t.id);
     let m=L.ml?mlL.find(f=>f.ids.includes(String(L.ml))||f.id===String(L.ml)):null;
