@@ -1237,6 +1237,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .lj-prod{display:flex;gap:10px;align-items:center;max-width:380px}.lj-prod b{display:block;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lj-foto{width:40px;height:52px;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border);flex:none;overflow:hidden}.lj-foto img{width:100%;height:100%;object-fit:cover}
 .lj-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px}.lj-sub.ok{color:var(--green)}.lj-sub.at,.at{color:var(--amber)}.lj-na{color:var(--text-dim2);font-size:12px}.lj-ruim{color:var(--red)}
+.lj-cod{display:inline-block;font:600 10.5px/1.6 ui-monospace,Menlo,monospace;color:var(--gold);border:1px solid var(--gold-dim,rgba(212,175,55,.35));border-radius:5px;padding:0 6px;margin-right:4px}.lj-conf{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;color:var(--amber);white-space:normal}.lj-conf i{color:var(--text-dim)}
 .lj-cv{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px}.lj-cv.a{background:var(--green);color:#0d1a10}.lj-cv.b{background:var(--amber);color:#1f1505}.lj-cv.c{background:var(--border-strong);color:var(--text)}.lj-cv.p{background:var(--purple);color:#fff}
 .lj-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .lj-promo th[scope=row]{width:200px;background:transparent;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);vertical-align:top}.lj-promo td{vertical-align:top;min-width:200px}
@@ -4860,16 +4861,19 @@ async function ljCarregarProdutos(){
   lj.prod={carregando:true,passo:'Lendo os produtos…'};ljRender();
   const passo=t=>{if(lj.id!==id||!lj.prod?.carregando)return;lj.prod.passo=t;const el=document.getElementById('ljProdPasso');if(el)el.textContent=t;};
   const err=e=>({erro:e.message||String(e)});
-  const [sh,tt,ml,curva]=await Promise.all([
+  const [sh,tt,ml,curva,mapa]=await Promise.all([
     c.shopeeErpShopId&&c.shopeeErpRefreshToken?(async()=>{const token=await shopeeGarantirTokenValido(c,'erp');return migLerShopeeAtivos(c,token,passo);})().catch(err):null,
     ljTem(c,'tiktok')?mig3Api(c,'produtos').then(r=>r.ok?(r.produtos||[]).filter(p=>p.status==='ACTIVATE'):{erro:r.erro}).catch(err):null,
     ljTem(c,'ml')?pxLer.ml.listar(c,()=>{}).catch(err):null,
-    getDoc(doc(db,'curvaAbc',id)).then(d=>d.exists()?d.data():null).catch(()=>null)]);
+    getDoc(doc(db,'curvaAbc',id)).then(d=>d.exists()?d.data():null).catch(()=>null),
+    getDoc(doc(db,'mapaProdutos',id)).then(d=>d.exists()?d.data():null).catch(()=>null)]);
   if(lj.id!==id)return;
   // preço do TikTok no desconto fixo (o que o comprador paga) — o produtos/search só traz o cheio
   const ttDesc={};if(Array.isArray(tt)&&c.tiktokDescontoFixoId){try{const d=await mig3Api(c,'detalhe',{id:c.tiktokDescontoFixoId});for(const x of d.produtos||[])if(x.preco>0)ttDesc[String(x.id)]=x.preco;}catch(e){}}
   if(lj.id!==id)return; // trocou de loja enquanto lia o desconto do TikTok
   const lig=ljLigacoes(c);const usados={tt:new Set(),ml:new Set()};
+  const mapaPor={};for(const g of mapa?.grupos||[]){for(const mp of ['shopee','tiktok','ml'])if(g[mp])mapaPor[mp+':'+g[mp]]=g;
+    if(g.shopee){const L=lig[g.shopee]||{};lig[g.shopee]={tiktok:L.tiktok&&L.tiktok!=='-'?L.tiktok:(g.tiktok||L.tiktok),ml:L.ml&&L.ml!=='-'?L.ml:(g.ml||L.ml)};}}
   const ttL=Array.isArray(tt)?tt:[],mlL=Array.isArray(ml)?ml:[];
   const curvaPor={};for(const l of curva?.linhas||[])curvaPor[String(l.id)]=l;const parados=new Set((curva?.parados||[]).map(String));
   const linhas=[];
@@ -4880,25 +4884,25 @@ async function ljCarregarProdutos(){
    for(let i=0;i<falta.length;i+=5){passo(`Lendo as variações do TikTok... ${i}/${falta.length}`);await Promise.all(falta.slice(i,i+5).map(async p=>{try{const d=await mig3Api(c,'produto_ler',{id:p.id});const pr=d.produto||d.data||d;
      p.opcoes=[...new Set((pr.skus||[]).map(k=>String(k.sales_attributes?.[0]?.value_name||'').trim()).filter(Boolean))];if(!(p.skus||[]).length)p.skus=[...new Set((pr.skus||[]).map(k=>String(k.seller_sku||'').trim()).filter(Boolean))];}catch(e){}}));}
    if(lj.id!==id)return;}
-  for(const it of shL){const L=lig[String(it.id)]||{};const t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;if(t&&!usados.tt.has(t.id)){ttDe[it.id]=t;usados.tt.add(t.id);}}
+  for(const it of shL){const L=lig[String(it.id)]||{};if(L.tiktok==='-'){ttDe[it.id]='-';continue;}const t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;if(t&&!usados.tt.has(t.id)){ttDe[it.id]=t;usados.tt.add(t.id);}}
   for(const fn of [ljPorSku,ljPorOpcoes])for(let volta=0;volta<shL.length;volta++){let melhor=null;
     for(const it of shL){if(ttDe[it.id])continue;for(const p of ttL){if(usados.tt.has(p.id))continue;const sc=ljParScore(fn,it,p);if(sc&&(!melhor||sc>melhor.sc))melhor={it,p,sc};}}
     if(!melhor)break;ttDe[melhor.it.id]=melhor.p;usados.tt.add(melhor.p.id);}
   for(const it of shL){
     const sid=String(it.id);const L=lig[sid]||{};
-    let t=ttDe[it.id]||null;
-    if(!t){const tit=pxParecido([it.nome],ttL.filter(p=>!usados.tt.has(p.id)).map(p=>p.titulo));if(tit)t=ttL.find(p=>p.titulo===tit&&!usados.tt.has(p.id));}
+    let t=ttDe[it.id]==='-'?null:(ttDe[it.id]||null);
+    if(!t&&ttDe[it.id]!=='-'){const tit=pxParecido([it.nome],ttL.filter(p=>!usados.tt.has(p.id)).map(p=>p.titulo));if(tit)t=ttL.find(p=>p.titulo===tit&&!usados.tt.has(p.id));}
     if(t)usados.tt.add(t.id);
     let m=L.ml?mlL.find(f=>f.ids.includes(String(L.ml))||f.id===String(L.ml)):null;
-    if(!m){const cand=mlL.filter(f=>!usados.ml.has(f.id));const tit=pxParecido([it.nome],cand.flatMap(f=>f.titulos));if(tit)m=cand.find(f=>f.titulos.includes(tit));}
+    if(!m&&L.ml!=='-'){const cand=mlL.filter(f=>!usados.ml.has(f.id));const tit=pxParecido([it.nome],cand.flatMap(f=>f.titulos));if(tit)m=cand.find(f=>f.titulos.includes(tit));}
     if(m)usados.ml.add(m.id);
     const cv=curvaPor[sid];
-    linhas.push({k:'s'+sid,nome:it.nome,foto:it.foto,sh:it,tt:t,ml:m,classe:parados.has(sid)?'Parado':(cv?.classe||null),vendas30:cv?.qtd??null});
+    linhas.push({k:'s'+sid,nome:it.nome,foto:it.foto,sh:it,tt:t,ml:m,classe:parados.has(sid)?'Parado':(cv?.classe||null),vendas30:cv?.qtd??null,mapa:mapaPor['shopee:'+sid]||null});
   }
-  for(const t of ttL)if(!usados.tt.has(t.id))linhas.push({k:'t'+t.id,nome:t.titulo,foto:null,sh:null,tt:t,ml:null,classe:null});
-  for(const m of mlL)if(!usados.ml.has(m.id))linhas.push({k:'m'+m.id,nome:m.nome,foto:m.foto,sh:null,tt:null,ml:m,classe:null});
+  for(const t of ttL)if(!usados.tt.has(t.id))linhas.push({k:'t'+t.id,nome:t.titulo,foto:null,sh:null,tt:t,ml:null,classe:null,mapa:mapaPor['tiktok:'+t.id]||null});
+  for(const m of mlL)if(!usados.ml.has(m.id))linhas.push({k:'m'+m.id,nome:m.nome,foto:m.foto,sh:null,tt:null,ml:m,classe:null,mapa:mapaPor['ml:'+m.id]||null});
   const ordem={A:0,B:1,C:2,Parado:3};linhas.sort((a,b)=>(ordem[a.classe]??4)-(ordem[b.classe]??4)||(b.sh?.vendas||0)-(a.sh?.vendas||0));
-  lj.prod={linhas,ttDesc,erros:[['Shopee',sh],['TikTok',tt],['Mercado Livre',ml]].filter(([,x])=>x?.erro).map(([n,x])=>`${n}: ${x.erro}`),curvaQuando:curva?.quando?ljMs(curva.quando):null,
+  lj.prod={linhas,ttDesc,mapaQuando:mapa?.quando||null,erros:[['Shopee',sh],['TikTok',tt],['Mercado Livre',ml]].filter(([,x])=>x?.erro).map(([n,x])=>`${n}: ${x.erro}`),curvaQuando:curva?.quando?ljMs(curva.quando):null,
     tem:{shopee:Array.isArray(sh),tiktok:Array.isArray(tt),ml:Array.isArray(ml)}};
   ljRender();}
 const LJ_FILTROS=[['todos','Todos',()=>true],['fora','Fora do desconto',l=>(l.sh&&!l.sh.emPromocao)||(l.tt&&!lj.prod?.ttDesc?.[String(l.tt.id)])],['semest','Sem estoque',l=>l.sh&&(l.sh.estoque||0)<=0],['zerada','Variação zerada',l=>l.sh&&l.sh.variacoesZeradas>0],['parados','Parados',l=>l.classe==='Parado'],['falta','Falta em algum marketplace',l=>(lj.prod?.tem?.tiktok&&!l.tt)||(lj.prod?.tem?.ml&&!l.ml)||(lj.prod?.tem?.shopee&&!l.sh)]];
@@ -4908,7 +4912,7 @@ function ljProdutosHtml(c){
   if(!P||P.carregando)return `<div class="panel lj-vazio"><div class="lj-spin"></div><div id="ljProdPasso">${esc(P?.passo||'Lendo os produtos…')}</div><small style="color:var(--text-dim2)">Shopee, TikTok e Mercado Livre ao mesmo tempo · lojas grandes levam até 1 min</small></div>`;
   const f=LJ_FILTROS.find(x=>x[0]===lj.filtro)||LJ_FILTROS[0];const vis=P.linhas.filter(f[2]);
   const cls={A:'a',B:'b',C:'c',Parado:'p'};
-  const linha=l=>{const s=l.sh;const sub=s?`${s.temVariacao?`${s.variacoes.length} variações`:'sem variação'}${s.sku?` · ${esc(s.sku)}`:''}`:(l.tt?'só no TikTok':'só no Mercado Livre');
+  const linha=l=>{const s=l.sh;const sub=(l.mapa?`<span class="lj-cod" title="Código LB — o mesmo produto nas 3 plataformas">${esc(l.mapa.codigo)}</span> `:'')+(s?`${s.temVariacao?`${s.variacoes.length} variações`:'sem variação'}${s.sku?` · ${esc(s.sku)}`:''}`:(l.tt?'só no TikTok':'só no Mercado Livre'))+ljConfirmarHtml(l);
     return `<tr class="${lj.aj?.k===l.k?'sel':''}">
       <td><div class="lj-prod"><div class="lj-foto">${l.foto?`<img src="${esc(l.foto)}" loading="lazy" alt="">`:''}</div><div style="min-width:0"><b title="${esc(l.nome)}">${esc(l.nome)}</b><div class="lj-sub">${sub}</div></div></div></td>
       <td>${l.classe?`<span class="lj-cv ${cls[l.classe]}">${l.classe}</span>`:'<span class="lj-na">—</span>'}${l.vendas30?`<div class="lj-sub">${l.vendas30} vend./30d</div>`:''}</td>
@@ -4918,12 +4922,23 @@ function ljProdutosHtml(c){
       <td>${s?`<b class="${(s.estoque||0)<=0?'lj-ruim':''}">${s.estoque??'—'}</b>${s.variacoesZeradas?`<div class="lj-sub at">${s.variacoesZeradas} zerada(s)</div>`:''}`:(l.tt?l.tt.estoque:l.ml?.estoque??'—')}</td>
       <td>${s?`<button class="btn btn-sm ${lj.aj?.k===l.k?'btn-gold':'btn-ghost'}" onclick="window.__ljAjAbrir('${l.k}')">Ajustar</button>`:''}</td></tr>`;};
   const filtros=LJ_FILTROS.map(([k,n,fn])=>{const q=P.linhas.filter(fn).length;return (k==='todos'||q)?`<button class="chip ${lj.filtro===k?'active':''}" onclick="window.__ljFiltro('${k}')">${n} <b>${q}</b></button>`:'';}).join('');
-  const tabela=`<div class="panel lj-tab-panel"><div class="panel-head"><h3>Catálogo da loja</h3><span class="p-sub">${P.linhas.length} produto(s) · Shopee + TikTok + ML na mesma linha${P.curvaQuando?` · curva de ${new Date(P.curvaQuando).toLocaleDateString('pt-BR')}`:' · sem curva ABC (analisar na Shopee → Curva ABC)'}</span></div>
+  const tabela=`<div class="panel lj-tab-panel"><div class="panel-head"><h3>Catálogo da loja</h3><span class="p-sub">${P.linhas.length} produto(s) · ${P.mapaQuando?`mapa de ${new Date(P.mapaQuando).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:'sem mapa ainda'} <a href="#" onclick="event.preventDefault();window.__ljMapaRefazer(this)">atualizar mapa</a>${P.curvaQuando?` · curva de ${new Date(P.curvaQuando).toLocaleDateString('pt-BR')}`:' · sem curva ABC (analisar na Shopee → Curva ABC)'}</span></div>
     ${P.erros.length?`<div class="lj-alerta at" style="margin-bottom:12px"><span class="lj-dot at"></span><span><b>Não li tudo</b><small>${esc(P.erros.join(' · '))}</small></span></div>`:''}
     <div class="lj-filtros">${filtros}<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="window.__ljRecarregarProd()">Recarregar</button></div>
     <div class="lj-tabela"><table><thead><tr><th>Produto</th><th>Curva</th><th>Shopee</th><th>TikTok</th><th>Mercado Livre</th><th>Estoque</th><th></th></tr></thead><tbody>${vis.map(linha).join('')||'<tr><td colspan="7" class="lj-vazio" style="padding:24px">Nenhum produto nesse filtro.</td></tr>'}</tbody></table></div>
     <div class="lj-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('criar'),300)">+ Novo produto</button><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('migrar'),300)">Copiar pra outro marketplace</button><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('padronizar'),300)">Padronizar / otimizar</button></div></div>`;
   return `<div class="lj-prod-grid ${lj.aj?'com-aj':''}">${tabela}${lj.aj?ljAjHtml():''}</div>`;}
+// ---- Mapa de produtos (Código LB + ligações a confirmar) ----
+const LJ_COMO={sku:'pelo SKU',cores:'pelas cores',titulo:'pelo título',ligado:'ligação gravada','cores?':'só pelas cores'};
+function ljConfirmarHtml(l){const g=l.mapa;if(!g?.confirmar||!g.shopee)return'';
+  return ['tiktok','ml'].filter(mp=>['titulo','cores?'].includes(g.como?.[mp])).map(mp=>`<div class="lj-conf"><span>${mp==='ml'?'ML':'TikTok'} ligado ${LJ_COMO[g.como[mp]]}: <i>${esc((mp==='ml'?g.tituloMl:g.tituloTiktok)||'')}</i> — é o mesmo produto?</span>
+    <button class="btn btn-ghost btn-sm" onclick="window.__ljLigar('${g.shopee}','${mp}','${esc(g[mp])}',this)">É sim</button><button class="btn btn-ghost btn-sm" onclick="window.__ljLigar('${g.shopee}','${mp}','-',this)">Não é</button></div>`).join('');}
+window.__ljLigar=async(sid,mp,alvo,btn)=>{btn.disabled=true;try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/mapa-produtos',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ligar',clienteId:lj.id,shopee:sid,[mp]:alvo})})).json();if(!r.ok)throw new Error(r.erro);
+  const l=lj.prod?.linhas.find(x=>x.mapa?.shopee===sid);if(l?.mapa){l.mapa.como={...l.mapa.como,[mp]:'ligado'};l.mapa.confirmar=['tiktok','ml'].some(m=>['titulo','cores?'].includes(l.mapa.como[m]));if(alvo==='-'){l[mp==='ml'?'ml':'tt']=null;l.mapa[mp]=null;}}
+  showToast(alvo==='-'?'Anotado: não é o mesmo produto. Atualize o mapa pra ele aparecer separado.':'Ligação confirmada.');ljRender();}catch(e){btn.disabled=false;showToast('Erro: '+e.message);}};
+window.__ljMapaRefazer=async a=>{if(!lj.id)return;a.textContent='atualizando o mapa… (até 2 min)';a.style.pointerEvents='none';
+  try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/mapa-produtos?clienteId='+encodeURIComponent(lj.id),{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);showToast(`Mapa: ${r.resumo.total} produto(s), ${r.resumo.completos} em todos os marketplaces${r.resumo.confirmar?`, ${r.resumo.confirmar} pra confirmar`:''}.`);window.__ljRecarregarProd();}
+  catch(e){a.textContent='atualizar mapa';a.style.pointerEvents='';showToast('Erro no mapa: '+e.message);}};
 // ---- Ajustar preço e estoque (painel) ----
 window.__ljAjAbrir=k=>{const l=lj.prod?.linhas.find(x=>x.k===k);if(!l?.sh)return;const s=l.sh;
   lj.aj={k,liq:dirLiquido(s.precoMin||0),est:Object.fromEntries((s.temVariacao?s.variacoes:[{id:0,estoque:s.estoque}]).map(v=>[String(v.id),v.estoque??0])),res:null};ljRender();
