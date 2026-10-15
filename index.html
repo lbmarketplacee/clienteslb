@@ -1186,6 +1186,14 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .cat-var input{padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;width:100%}
 /* ===== Card Produtos — visual (07/10/2026) ===== */
 .prod-hero{display:flex;align-items:center;gap:16px;margin:8px 0 18px}
+.nav-grupo{display:flex;flex-direction:column}
+.nav-grupo-cab{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:left}
+.nav-grupo-cab .chev{margin-left:auto;transition:transform .2s;opacity:.6}.nav-grupo.aberto .nav-grupo-cab .chev{transform:rotate(90deg)}
+.nav-grupo-itens{display:none;flex-direction:column;margin:2px 0 4px 14px;padding-left:10px;border-left:1px solid var(--border)}
+.nav-grupo.aberto .nav-grupo-itens{display:flex}
+.nav-grupo-itens .nav-item{font-size:13px;padding-top:8px;padding-bottom:8px}
+.nav-grupo-itens .nav-item svg{width:15px;height:15px}
+.nav-grupo.tem-ativo>.nav-grupo-cab{color:var(--gold)}
 .lj-novo{margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#181712;border-radius:6px;padding:1px 6px}
 .lj-hero{flex-wrap:wrap}.lj-hero .prod-hero-ico{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600}
 .lj-hero-acoes{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -3379,6 +3387,38 @@ function atualizarTopbar(pg){
   ver('importInitialBtn',pg==='clientes'&&isLincoln());
 }
 document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+
+// ===== Menu agrupado (15/10/2026, Lincoln: "muita coisa na esquerda") — só REAGRUPA os botões que já existem (cliques,
+// permissões e telas continuam iguais); grupo some se nenhum item dele estiver liberado pra pessoa. Estado aberto/fechado no localStorage.
+const NAV_GRUPOS=[
+  {id:'clientes',rot:'Clientes',depois:'loja',ico:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',itens:[['clientes','Carteira'],['jornada','Jornada do cliente'],['cadastros','Cadastros recebidos'],['desempenho','Desempenho']]},
+  {id:'ferramentas',rot:'Ferramentas',depois:'whatsapp',ico:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',itens:[['calculadora','Calculadora'],['checklisthub','Checklist'],['links','Links Úteis']]},
+  {id:'restrita',rot:'Área restrita',depois:null,ico:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',itens:[['comercial','Comercial & Marketing'],['rh','Financeiro RH'],['dre','Financeiro LB'],['lbmk','LB Marketing']]},
+];
+function navMontarGrupos(){
+  const nav=document.querySelector('.nav-item[data-page="dashboard"]')?.parentElement;if(!nav||nav.dataset.agrupado)return;nav.dataset.agrupado='1';
+  let aberto={};try{aberto=JSON.parse(localStorage.getItem('navGrupos')||'{}');}catch(e){}
+  const mk=document.querySelector('.nav-item[data-page="marketing"]');if(mk)mk.lastChild.textContent=' Todas as lojas';
+  for(const g of NAV_GRUPOS){
+    const box=document.createElement('div');box.className='nav-grupo'+(aberto[g.id]?' aberto':'');box.dataset.grupo=g.id;
+    box.innerHTML=`<button type="button" class="nav-grupo-cab sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${g.ico}</svg> ${g.rot}<svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button><div class="nav-grupo-itens"></div>`;
+    const itens=box.querySelector('.nav-grupo-itens');
+    for(const [pg,rot] of g.itens){const b=nav.querySelector(`.nav-item[data-page="${pg}"]`);if(!b)continue;itens.appendChild(b);const t=[...b.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim());if(t)t.textContent=' '+rot;}
+    const ref=g.depois?nav.querySelector(`.nav-item[data-page="${g.depois}"]`):null;
+    if(ref)ref.after(box);else nav.appendChild(box);
+    box.querySelector('.nav-grupo-cab').addEventListener('click',()=>{box.classList.toggle('aberto');aberto[g.id]=box.classList.contains('aberto');try{localStorage.setItem('navGrupos',JSON.stringify(aberto));}catch(e){}});
+  }
+  // ordem: Dashboard · Tarefas · Central da Loja · [Clientes] · Todas as lojas · Conversas · [Ferramentas] · [Área restrita]
+  const ordem=['dashboard','tarefas','loja','#clientes','marketing','whatsapp','#ferramentas','#restrita'];
+  for(const k of ordem){const el=k[0]==='#'?nav.querySelector(`.nav-grupo[data-grupo="${k.slice(1)}"]`):nav.querySelector(`:scope > .nav-item[data-page="${k}"]`);if(el)nav.appendChild(el);}
+  navGruposAtualizar();new MutationObserver(navGruposAtualizar).observe(nav,{subtree:true,attributes:true,attributeFilter:['class','style']});
+}
+function navGruposAtualizar(){
+  document.querySelectorAll('.nav-grupo').forEach(g=>{const itens=[...g.querySelectorAll('.nav-item')];
+    const vis=itens.filter(b=>!b.classList.contains('hidden')&&b.style.display!=='none');
+    const sumir=!vis.length;if(g.style.display!==(sumir?'none':''))g.style.display=sumir?'none':'';
+    const ativo=itens.some(b=>b.classList.contains('active'));g.classList.toggle('tem-ativo',ativo);if(ativo&&!g.classList.contains('aberto'))g.classList.add('aberto');});}
+navMontarGrupos();
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
