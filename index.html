@@ -4781,7 +4781,7 @@ function ljIniciar(){
   sel.innerHTML='<option value="">Escolha o cliente…</option>'+ativos.map(c=>`<option value="${c.id}" ${c.id===lj.id?'selected':''}>${esc(c.nome||c.id)}</option>`).join('');
   ljRender();if(lj.id&&!lj.logs)ljLogs();
 }
-window.__ljTrocar=id=>{setTimeout(()=>{if(lj.tab==='anuncios')ljCarregarTeo();if(lj.tab==='historico')ljCarregarHist();},0);lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
+window.__ljTrocar=id=>{setTimeout(()=>{if(lj.tab==='anuncios')ljCarregarTeo();if(lj.tab==='historico')ljCarregarHist();},0);lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);if(lj.tab==='produtos'&&id)setTimeout(ljCarregarProdutos,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
 window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
 async function ljLogs(){const id=lj.id;try{const sn=await getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(120)));
   if(lj.id!==id)return;lj.logs=sn.docs.map(d=>d.data()).sort((a,b)=>(ljMs(b.quando)||0)-(ljMs(a.quando)||0)).slice(0,10);}catch(e){lj.logs=[];console.warn('[loja] log',e);}ljRender();}
@@ -4827,6 +4827,7 @@ function ljLog(l){const mp={shopee:'Shopee',tiktok:'TikTok',ml:'ML',shein:'SHEIN
   return `<div class="lj-lin"><span class="t">${dia===hoje?'hoje':ljData(ms)}</span><span class="lj-dot ${l.resultado==='ok'?'ok':l.resultado==='falhou'?'ruim':'at'}"></span><span><b>${esc(mp?mp+': ':'')}${esc(String(t).slice(0,90))}</b>${l.resultado==='falhou'&&l.motivo?`<small>${esc(String(l.motivo).slice(0,120))}</small>`:''}</span></div>`;}
 
 /* ---------- Central da Loja → Produtos (15/10/2026): catálogo único Shopee + TikTok + ML, curva ABC e ajuste de preço/estoque ---------- */
+window.__ljRecarregarProd=()=>{lj.prod=null;lj.aj=null;window.__ljTab('produtos');};
 window.__ljTab=k=>{lj.tab=k;ljRender();if(k==='produtos'&&!lj.prod)ljCarregarProdutos();if(k==='promocoes'&&!lj.agenda)ljCarregarAgenda();if(k==='anuncios'&&!lj.teo)ljCarregarTeo();if(k==='historico'&&!lj.hist)ljCarregarHist();};
 window.__ljFiltro=f=>{lj.filtro=f;ljRender();};
 function ljLigacoes(c){ // shopeeId → {tiktok, ml} pelas ligações gravadas nas cópias/migrações
@@ -4848,6 +4849,7 @@ async function ljCarregarProdutos(){
   if(lj.id!==id)return;
   // preço do TikTok no desconto fixo (o que o comprador paga) — o produtos/search só traz o cheio
   const ttDesc={};if(Array.isArray(tt)&&c.tiktokDescontoFixoId){try{const d=await mig3Api(c,'detalhe',{id:c.tiktokDescontoFixoId});for(const x of d.produtos||[])if(x.preco>0)ttDesc[String(x.id)]=x.preco;}catch(e){}}
+  if(lj.id!==id)return; // trocou de loja enquanto lia o desconto do TikTok
   const lig=ljLigacoes(c);const usados={tt:new Set(),ml:new Set()};
   const ttL=Array.isArray(tt)?tt:[],mlL=Array.isArray(ml)?ml:[];
   const curvaPor={};for(const l of curva?.linhas||[])curvaPor[String(l.id)]=l;const parados=new Set((curva?.parados||[]).map(String));
@@ -4888,7 +4890,7 @@ function ljProdutosHtml(c){
   const filtros=LJ_FILTROS.map(([k,n,fn])=>{const q=P.linhas.filter(fn).length;return (k==='todos'||q)?`<button class="chip ${lj.filtro===k?'active':''}" onclick="window.__ljFiltro('${k}')">${n} <b>${q}</b></button>`:'';}).join('');
   const tabela=`<div class="panel lj-tab-panel"><div class="panel-head"><h3>Catálogo da loja</h3><span class="p-sub">${P.linhas.length} produto(s) · Shopee + TikTok + ML na mesma linha${P.curvaQuando?` · curva de ${new Date(P.curvaQuando).toLocaleDateString('pt-BR')}`:' · sem curva ABC (analisar na Shopee → Curva ABC)'}</span></div>
     ${P.erros.length?`<div class="lj-alerta at" style="margin-bottom:12px"><span class="lj-dot at"></span><span><b>Não li tudo</b><small>${esc(P.erros.join(' · '))}</small></span></div>`:''}
-    <div class="lj-filtros">${filtros}<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="lj.prod=null;window.__ljTab('produtos')">Recarregar</button></div>
+    <div class="lj-filtros">${filtros}<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="window.__ljRecarregarProd()">Recarregar</button></div>
     <div class="lj-tabela"><table><thead><tr><th>Produto</th><th>Curva</th><th>Shopee</th><th>TikTok</th><th>Mercado Livre</th><th>Estoque</th><th></th></tr></thead><tbody>${vis.map(linha).join('')||'<tr><td colspan="7" class="lj-vazio" style="padding:24px">Nenhum produto nesse filtro.</td></tr>'}</tbody></table></div>
     <div class="lj-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('criar'),300)">+ Novo produto</button><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('migrar'),300)">Copiar pra outro marketplace</button><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__pxTab?.('padronizar'),300)">Padronizar / otimizar</button></div></div>`;
   return `<div class="lj-prod-grid ${lj.aj?'com-aj':''}">${tabela}${lj.aj?ljAjHtml():''}</div>`;}
