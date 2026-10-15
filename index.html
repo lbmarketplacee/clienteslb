@@ -4729,6 +4729,8 @@ async function ljCarregarProdutos(){
     ljTem(c,'ml')?pxLer.ml.listar(c,()=>{}).catch(err):null,
     getDoc(doc(db,'curvaAbc',id)).then(d=>d.exists()?d.data():null).catch(()=>null)]);
   if(lj.id!==id)return;
+  // preço do TikTok no desconto fixo (o que o comprador paga) — o produtos/search só traz o cheio
+  const ttDesc={};if(Array.isArray(tt)&&c.tiktokDescontoFixoId){try{const d=await mig3Api(c,'detalhe',{id:c.tiktokDescontoFixoId});for(const x of d.produtos||[])if(x.preco>0)ttDesc[String(x.id)]=x.preco;}catch(e){}}
   const lig=ljLigacoes(c);const usados={tt:new Set(),ml:new Set()};
   const ttL=Array.isArray(tt)?tt:[],mlL=Array.isArray(ml)?ml:[];
   const curvaPor={};for(const l of curva?.linhas||[])curvaPor[String(l.id)]=l;const parados=new Set((curva?.parados||[]).map(String));
@@ -4747,10 +4749,10 @@ async function ljCarregarProdutos(){
   for(const t of ttL)if(!usados.tt.has(t.id))linhas.push({k:'t'+t.id,nome:t.titulo,foto:null,sh:null,tt:t,ml:null,classe:null});
   for(const m of mlL)if(!usados.ml.has(m.id))linhas.push({k:'m'+m.id,nome:m.nome,foto:m.foto,sh:null,tt:null,ml:m,classe:null});
   const ordem={A:0,B:1,C:2,Parado:3};linhas.sort((a,b)=>(ordem[a.classe]??4)-(ordem[b.classe]??4)||(b.sh?.vendas||0)-(a.sh?.vendas||0));
-  lj.prod={linhas,erros:[['Shopee',sh],['TikTok',tt],['Mercado Livre',ml]].filter(([,x])=>x?.erro).map(([n,x])=>`${n}: ${x.erro}`),curvaQuando:curva?.quando?ljMs(curva.quando):null,
+  lj.prod={linhas,ttDesc,erros:[['Shopee',sh],['TikTok',tt],['Mercado Livre',ml]].filter(([,x])=>x?.erro).map(([n,x])=>`${n}: ${x.erro}`),curvaQuando:curva?.quando?ljMs(curva.quando):null,
     tem:{shopee:Array.isArray(sh),tiktok:Array.isArray(tt),ml:Array.isArray(ml)}};
   ljRender();}
-const LJ_FILTROS=[['todos','Todos',()=>true],['fora','Fora do desconto',l=>l.sh&&!l.sh.emPromocao],['semest','Sem estoque',l=>l.sh&&(l.sh.estoque||0)<=0],['zerada','Variação zerada',l=>l.sh&&l.sh.variacoesZeradas>0],['parados','Parados',l=>l.classe==='Parado'],['falta','Falta em algum marketplace',l=>(lj.prod?.tem?.tiktok&&!l.tt)||(lj.prod?.tem?.ml&&!l.ml)||(lj.prod?.tem?.shopee&&!l.sh)]];
+const LJ_FILTROS=[['todos','Todos',()=>true],['fora','Fora do desconto',l=>(l.sh&&!l.sh.emPromocao)||(l.tt&&!lj.prod?.ttDesc?.[String(l.tt.id)])],['semest','Sem estoque',l=>l.sh&&(l.sh.estoque||0)<=0],['zerada','Variação zerada',l=>l.sh&&l.sh.variacoesZeradas>0],['parados','Parados',l=>l.classe==='Parado'],['falta','Falta em algum marketplace',l=>(lj.prod?.tem?.tiktok&&!l.tt)||(lj.prod?.tem?.ml&&!l.ml)||(lj.prod?.tem?.shopee&&!l.sh)]];
 function ljCel(x,preco,extra){return x?`<b>${fmtR(preco)}</b><div class="lj-sub">${extra}</div>`:`<span class="lj-na">não tem</span>`;}
 function ljProdutosHtml(c){
   const P=lj.prod;
@@ -4762,7 +4764,7 @@ function ljProdutosHtml(c){
       <td><div class="lj-prod"><div class="lj-foto">${l.foto?`<img src="${esc(l.foto)}" loading="lazy" alt="">`:''}</div><div style="min-width:0"><b title="${esc(l.nome)}">${esc(l.nome)}</b><div class="lj-sub">${sub}</div></div></div></td>
       <td>${l.classe?`<span class="lj-cv ${cls[l.classe]}">${l.classe}</span>`:'<span class="lj-na">—</span>'}${l.vendas30?`<div class="lj-sub">${l.vendas30} vend./30d</div>`:''}</td>
       <td>${s?`<b>${fmtR(s.precoMin)}${s.precoMax>s.precoMin?'+':''}</b><div class="lj-sub ${s.emPromocao?'ok':'at'}">${s.emPromocao?'no desconto':'fora do desconto'}</div>`:'<span class="lj-na">não tem</span>'}</td>
-      <td>${ljCel(l.tt,l.tt?.preco,'')}</td>
+      <td>${l.tt?(lj.prod.ttDesc[String(l.tt.id)]?`<b>${fmtR(lj.prod.ttDesc[String(l.tt.id)])}</b><div class="lj-sub ok">no desconto</div>`:`<b>${fmtR(l.tt.preco)}</b><div class="lj-sub at">fora do desconto</div>`):'<span class="lj-na">não tem</span>'}</td>
       <td>${ljCel(l.ml,l.ml?.preco,l.ml?`${l.ml.ids.length} anúncio(s)`:'')}</td>
       <td>${s?`<b class="${(s.estoque||0)<=0?'lj-ruim':''}">${s.estoque??'—'}</b>${s.variacoesZeradas?`<div class="lj-sub at">${s.variacoesZeradas} zerada(s)</div>`:''}`:(l.tt?l.tt.estoque:l.ml?.estoque??'—')}</td>
       <td>${s?`<button class="btn btn-sm ${lj.aj?.k===l.k?'btn-gold':'btn-ghost'}" onclick="window.__ljAjAbrir('${l.k}')">Ajustar</button>`:''}</td></tr>`;};
