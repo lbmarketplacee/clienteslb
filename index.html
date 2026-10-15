@@ -4875,6 +4875,11 @@ async function ljCarregarProdutos(){
   const linhas=[];
   // TikTok: 1º ligações gravadas, depois SKU, depois cores — sempre o MELHOR par da loja toda (não a ordem da lista)
   const shL=Array.isArray(sh)?sh:[];const ttDe={};
+  // a lista do TikTok não traz as cores → lê o detalhe (até 40, 5 por vez) dos que ainda não têm ligação gravada
+  {const lig2=new Set(Object.values(lig).map(L=>String(L.tiktok||'')));const falta=ttL.filter(p=>!(p.opcoes||[]).length&&!lig2.has(String(p.id))).slice(0,40);
+   for(let i=0;i<falta.length;i+=5){passo(`Lendo as variações do TikTok... ${i}/${falta.length}`);await Promise.all(falta.slice(i,i+5).map(async p=>{try{const d=await mig3Api(c,'produto_ler',{id:p.id});const pr=d.produto||d.data||d;
+     p.opcoes=[...new Set((pr.skus||[]).map(k=>String(k.sales_attributes?.[0]?.value_name||'').trim()).filter(Boolean))];if(!(p.skus||[]).length)p.skus=[...new Set((pr.skus||[]).map(k=>String(k.seller_sku||'').trim()).filter(Boolean))];}catch(e){}}));}
+   if(lj.id!==id)return;}
   for(const it of shL){const L=lig[String(it.id)]||{};const t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;if(t&&!usados.tt.has(t.id)){ttDe[it.id]=t;usados.tt.add(t.id);}}
   for(const fn of [ljPorSku,ljPorOpcoes])for(let volta=0;volta<shL.length;volta++){let melhor=null;
     for(const it of shL){if(ttDe[it.id])continue;for(const p of ttL){if(usados.tt.has(p.id))continue;const sc=ljParScore(fn,it,p);if(sc&&(!melhor||sc>melhor.sc))melhor={it,p,sc};}}
