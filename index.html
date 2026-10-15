@@ -4836,6 +4836,14 @@ function ljLigacoes(c){ // shopeeId → {tiktok, ml} pelas ligações gravadas n
   for(const [tt,sid] of Object.entries(c.migracaoShopeeTiktok||{}))m[String(sid)]={...(m[String(sid)]||{}),tiktok:tt};
   for(const [mlb,sid] of Object.entries(c.migracaoMlShopee||{}))m[String(sid)]={...(m[String(sid)]||{}),ml:mlb};
   return m;}
+// casa Shopee × TikTok pelo SKU (variações primeiro; o SKU do anúncio só se não for repetido na loja)
+const ljSkuN=v=>String(v||'').trim().toLowerCase();
+function ljPorSku(it,cands){
+  const vs=new Set((it.variacoes||[]).map(v=>ljSkuN(v.sku)).filter(Boolean));let melhor=null,mx=0;
+  if(vs.size)for(const p of cands){const n=(p.skus||[]).filter(k=>vs.has(ljSkuN(k))).length;if(n>mx){mx=n;melhor=p;}}
+  if(melhor)return melhor;
+  const k=ljSkuN(it.sku);if(!k)return null;const achou=cands.filter(p=>(p.skus||[]).some(x=>ljSkuN(x)===k||ljSkuN(x).startsWith(k+'-')));
+  return achou.length===1?achou[0]:null;}
 async function ljCarregarProdutos(){
   const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;const id=c.id;
   lj.prod={carregando:true,passo:'Lendo os produtos…'};ljRender();
@@ -4857,6 +4865,7 @@ async function ljCarregarProdutos(){
   for(const it of Array.isArray(sh)?sh:[]){
     const sid=String(it.id);const L=lig[sid]||{};
     let t=L.tiktok?ttL.find(p=>String(p.id)===String(L.tiktok)):null;
+    if(!t)t=ljPorSku(it,ttL.filter(p=>!usados.tt.has(p.id)));
     if(!t){const tit=pxParecido([it.nome],ttL.filter(p=>!usados.tt.has(p.id)).map(p=>p.titulo));if(tit)t=ttL.find(p=>p.titulo===tit&&!usados.tt.has(p.id));}
     if(t)usados.tt.add(t.id);
     let m=L.ml?mlL.find(f=>f.ids.includes(String(L.ml))||f.id===String(L.ml)):null;
