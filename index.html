@@ -4676,8 +4676,8 @@ function ljIniciar(){
   sel.innerHTML='<option value="">Escolha o cliente…</option>'+ativos.map(c=>`<option value="${c.id}" ${c.id===lj.id?'selected':''}>${esc(c.nome||c.id)}</option>`).join('');
   ljRender();if(lj.id&&!lj.logs)ljLogs();
 }
-window.__ljTrocar=id=>{lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
-window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
+window.__ljTrocar=id=>{setTimeout(()=>{if(lj.tab==='anuncios')ljCarregarTeo();if(lj.tab==='historico')ljCarregarHist();},0);lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
+window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
 async function ljLogs(){const id=lj.id;try{const sn=await getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(120)));
   if(lj.id!==id)return;lj.logs=sn.docs.map(d=>d.data()).sort((a,b)=>(ljMs(b.quando)||0)-(ljMs(a.quando)||0)).slice(0,10);}catch(e){lj.logs=[];console.warn('[loja] log',e);}ljRender();}
 function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que pede atenção',1,'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>'],
@@ -4685,7 +4685,7 @@ function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que
   ['promocoes','Promoções','Desconto, cupom e relâmpago num quadro',0,'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>'],
   ['anuncios','Anúncios','Ads, impulsionar e saldo',0,'<path d="M3 11l18-5v12L3 14v-3z"/>'],
   ['historico','Histórico','Tudo que os robôs fizeram',0,'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>']];
-  return tabs.map(([k,t,d,on,ic])=>{const pronta=['visao','produtos','promocoes'].includes(k);return `<button type="button" class="prod-tab ${lj.tab===k?'active':''} ${pronta?'':'breve'}" onclick="${pronta?`window.__ljTab('${k}')`:`showToast('${t}: entra na próxima etapa da Central da Loja')`}"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span><span><b>${t}</b><small>${d}</small></span></button>`;}).join('');}
+  return tabs.map(([k,t,d,on,ic])=>{const pronta=true;return `<button type="button" class="prod-tab ${lj.tab===k?'active':''} ${pronta?'':'breve'}" onclick="${pronta?`window.__ljTab('${k}')`:`showToast('${t}: entra na próxima etapa da Central da Loja')`}"><span class="prod-tab-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></span><span><b>${t}</b><small>${d}</small></span></button>`;}).join('');}
 function ljAlertas(c){const a=[];const s=c.saudeShopee||{};
   const errTok=[c.saudeErro,c.financeiroErro,c.ofertaRelampagoAutoUltimoResultado,JSON.stringify(c.gmvDiarioErros||'')].filter(Boolean).join(' ');
   if(/refresh_token|token .*(venc|renova)|reconect|invalid_acceess_token|expired/i.test(errTok))a.push(['ruim','Conexão da Shopee caída','O robô não consegue entrar na loja — reconectar o app ERP.',`window.__irParaMarketing('shopee','apis')`,'Reconectar']);
@@ -4717,7 +4717,7 @@ function ljLog(l){const mp={shopee:'Shopee',tiktok:'TikTok',ml:'ML',shein:'SHEIN
   return `<div class="lj-lin"><span class="t">${dia===hoje?'hoje':ljData(ms)}</span><span class="lj-dot ${l.resultado==='ok'?'ok':l.resultado==='falhou'?'ruim':'at'}"></span><span><b>${esc(mp?mp+': ':'')}${esc(String(t).slice(0,90))}</b>${l.resultado==='falhou'&&l.motivo?`<small>${esc(String(l.motivo).slice(0,120))}</small>`:''}</span></div>`;}
 
 /* ---------- Central da Loja → Produtos (15/10/2026): catálogo único Shopee + TikTok + ML, curva ABC e ajuste de preço/estoque ---------- */
-window.__ljTab=k=>{lj.tab=k;ljRender();if(k==='produtos'&&!lj.prod)ljCarregarProdutos();if(k==='promocoes'&&!lj.agenda)ljCarregarAgenda();};
+window.__ljTab=k=>{lj.tab=k;ljRender();if(k==='produtos'&&!lj.prod)ljCarregarProdutos();if(k==='promocoes'&&!lj.agenda)ljCarregarAgenda();if(k==='anuncios'&&!lj.teo)ljCarregarTeo();if(k==='historico'&&!lj.hist)ljCarregarHist();};
 window.__ljFiltro=f=>{lj.filtro=f;ljRender();};
 function ljLigacoes(c){ // shopeeId → {tiktok, ml} pelas ligações gravadas nas cópias/migrações
   const m={};const pl=c.produtosLigados||{};
@@ -4903,6 +4903,53 @@ function ljPromoHtml(c){const sh=ljTem(c,'shopee'),tt=ljTem(c,'tiktok'),ml=ljTem
   if(sh){const corpoAg=!A||A.carregando?'<div class="lj-vazio" style="padding:18px">Lendo a agenda na Shopee…</div>':A.erro?`<div class="lj-vazio" style="padding:18px">Não li a agenda: ${esc(A.erro)}</div>`:A.sem?'':`<div class="lj-agenda">${Object.entries(A.dias).map(([d,x])=>{const dt=new Date(d+'T12:00:00');const k=x.ofertas?(x.max>=10?'ok':'at'):'livre';return `<div class="lj-dia ${k}"><span>${dt.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')} ${dt.getDate()}</span><b>${x.ofertas?`${x.max} prod.`:'livre'}</b><small>${x.ofertas?`${x.ofertas} oferta(s)`:'robô cria'}</small></div>`;}).join('')}</div><div class="lj-sub" style="margin-top:10px">Verde = 10+ produtos na oferta · amarelo = poucos (use Completar agora) · cinza = horário ainda livre</div>`;
     ag=`<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>Relâmpago Shopee — próximos 7 dias</h3><span class="p-sub">${A?.total!=null?`${A.total} oferta(s) agendada(s) ou no ar`:''}</span></div>${corpoAg}</div>`;}
   return tab+ag;}
+
+/* ---------- Central da Loja → Anúncios (15/10/2026): Shopee Ads e ML Ads do mês, robô de Ads, impulsionar, propostas do Téo ---------- */
+async function ljCarregarTeo(){const id=lj.id;if(!id)return;try{const sn=await getDocs(query(collection(db,'aprovacoes'),where('clienteId','==',id),limit(60)));if(lj.id!==id)return;
+  lj.teo=sn.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.agente==='teo'&&a.status==='pendente');}catch(e){lj.teo=[];}ljRender();}
+window.__ljAds=async exec=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
+  if(exec&&!await lbConfirmar(`Colocar agora no Shopee Ads (ROAS 20, orçamento ilimitado) os produtos de ${c.nome} que estão fora?`,{okTxt:'Colocar no Ads'}))return;
+  lj.adsSim={rodando:true};ljRender();
+  try{const r=await (await fetch(`https://lb-shopee-gmv.vercel.app/api/ads-robo?clienteId=${encodeURIComponent(c.id)}${exec?'&executar=1':''}`,{headers:await authHeaders()})).json();
+    lj.adsSim=r.ok===false?{erro:r.erro}:{r:(r.resultados||[r])[0]||r,exec};}catch(e){lj.adsSim={erro:e.message};}ljRender();};
+function ljAdsHtml(c){const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-1)]||{};
+  const roas=(v,i)=>i>0?(v/i).toFixed(1).replace('.',',')+'x':'—';
+  const card=(glow,ico,rot,valor,foot)=>`<div class="summary-card metric-card ${glow}"><div class="sc-top"><div class="sc-icon gold metric-icon">${ico}</div><div><div class="sc-label">${rot}</div></div></div><div class="sc-value metric-value">${valor}</div><div class="sc-foot">${foot}</div></div>`;
+  const sh=!!c.shopeeAdsShopId,ml=ljTem(c,'ml');
+  const iS=Number(m0.ads_shopee)||0,vS=Number(m0.ads_shopee_vendas)||0,iM=Number(m0.ads_ml)||0,vM=Number(m0.ads_ml_vendas)||0;
+  const cards=`<div class="summary-grid">
+    ${card('glow-coral',mpIco('shopee',22),'Shopee Ads<br>investido no mês',fmtR(iS),sh?`vendas pelo Ads ${fmtR(vS)} · ROAS <b>${roas(vS,iS)}</b>${m1.ads_shopee?` · mês passado ${roas(Number(m1.ads_shopee_vendas)||0,Number(m1.ads_shopee))}`:''}`:'<span class="down">app de Ads não conectado</span>')}
+    ${card(c.adsSaldoAtual!=null&&Number(c.adsSaldoAtual)<=0?'glow-coral':'glow-teal','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>','Saldo do<br>Shopee Ads',c.adsSaldoAtual!=null?fmtR(Number(c.adsSaldoAtual)):'—',c.adsSaldoAtual!=null&&Number(c.adsSaldoAtual)<=0?'<span class="down">zerado — campanhas paradas</span>':'alerta no WhatsApp quando zera')}
+    ${ml?card('glow-gold',mpIco('ml',22),'Mercado Ads<br>investido no mês',fmtR(iM),`vendas pelo Ads ${fmtR(vM)} · ROAS <b>${roas(vM,iM)}</b>`):''}
+  </div>`;
+  const S=lj.adsSim;
+  const robo=`<div class="panel"><div class="panel-head"><h3>Robô de Ads (Shopee)</h3><span class="p-sub">todo produto ativo num anúncio próprio, ROAS 20, orçamento ilimitado</span></div>
+    ${!sh?'<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>Conectar o app de Ads da Shopee</b><small>Sem ele o robô não cria anúncios. Central de Marketing → Shopee → APIs.</small></span></div>':`
+    <div class="lj-lin"><span class="lj-dot ${c.adsAuto===false?'at':'ok'}"></span><span><b>${c.adsAuto===false?'Robô desligado nesta loja':'Robô ligado — roda todo dia 07h30'}</b><small>${esc(c.adsAutoUltimoResultado||'ainda não rodou')}${c.adsAutoUltimaVerificacao?` · ${new Date(ljMs(c.adsAutoUltimaVerificacao)).toLocaleString('pt-BR')}`:''}</small></span></div>
+    <div class="lj-lin"><span class="lj-dot ${c.impulsionarAuto===false?'at':'ok'}"></span><span><b>Impulsionar (os 5 que mais vendem)</b><small>${esc(c.impulsionarUltimoResultado||'robô 6x por dia')}</small></span></div>
+    ${S?.rodando?'<div class="lj-vazio" style="padding:14px">Lendo produtos e campanhas…</div>':S?.erro?`<div class="lj-alerta ruim"><span><b>Não deu certo</b><small>${esc(S.erro)}</small></span></div>`:S?.r?`<div class="lj-alerta ${S.exec?'':'at'}" style="margin-top:8px"><span class="lj-dot ${S.exec?'ok':'at'}"></span><span><b>${S.exec?`${(S.r.criados||[]).length} produto(s) colocados no Ads`:`${S.r.foraDoAds??0} de ${S.r.ativos??'?'} produto(s) fora do Ads`}</b><small>${S.exec&&S.r.semEstoque?`${S.r.semEstoque} sem estoque ficaram de fora`:'ROAS 20 · orçamento ilimitado'}</small></span></div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="window.__ljAds(false)">Ver o que está fora</button>${isLincoln()?'<button class="btn btn-gold btn-sm" onclick="window.__ljAds(true)">Colocar no Ads agora</button>':''}<button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('shopee','ads')">Saldo de todas as lojas</button></div>`}</div>`;
+  const T=lj.teo;
+  const teo=`<div class="panel"><div class="panel-head"><h3>Téo (IA) — campanhas pra melhorar</h3><span class="p-sub">análise semanal do funil de cada campanha</span></div>
+    ${T==null?'<div class="lj-vazio" style="padding:14px">Carregando…</div>':T.length?T.map(a=>`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>${esc(a.titulo||'')}</b><small>${esc(String(a.descricao||'').slice(0,160))}</small></span><button class="btn btn-ghost btn-sm" onclick="window.open('/escritorio.html','_blank')">Escritório</button></div>`).join(''):'<div class="lj-alerta"><span class="lj-dot ok"></span><span><b>Nenhuma campanha com problema</b><small>O Téo olha CTR, conversão e ROAS de 14 dias toda semana.</small></span></div>'}
+    ${ml?`<div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('mercadolivre','ads')">Campanhas do Mercado Ads</button> <span class="lj-sub">criar campanha no ML é manual (o ML não libera a API)</span></div>`:''}</div>`;
+  return cards+`<div class="lj-grid"><div style="min-width:0">${robo}</div><div style="min-width:0">${teo}</div></div>`;}
+/* ---------- Central da Loja → Histórico: robôs (automacaoLog) + equipe (historico), filtros ---------- */
+async function ljCarregarHist(){const id=lj.id;if(!id)return;
+  try{const [a,h]=await Promise.all([getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(300))),getDocs(query(collection(db,'historico'),where('clienteId','==',id),limit(300)))]);if(lj.id!==id)return;
+    const itens=[...a.docs.map(d=>({quem:'robo',ms:ljMs(d.data().quando),l:d.data()})),...h.docs.map(d=>({quem:'equipe',ms:ljMs(d.data().timestamp),l:d.data()}))].sort((x,y)=>(y.ms||0)-(x.ms||0));
+    lj.hist={itens,filtro:'todos'};}catch(e){lj.hist={erro:e.message,itens:[]};}ljRender();}
+window.__ljHistFiltro=f=>{if(lj.hist){lj.hist.filtro=f;ljRender();}};
+function ljHistHtml(c){const H=lj.hist;if(!H)return '<div class="panel lj-vazio"><div class="lj-spin"></div>Carregando o histórico…</div>';
+  const F=[['todos','Tudo'],['robo','Robôs'],['equipe','Equipe'],['shopee','Shopee'],['tiktok','TikTok'],['ml','Mercado Livre']];
+  const passa=x=>H.filtro==='todos'||x.quem===H.filtro||(x.quem==='robo'&&x.l.marketplace===H.filtro);
+  const vis=H.itens.filter(passa).slice(0,150);
+  const linha=x=>{const d=x.ms?new Date(x.ms):null;const dt=d?`${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`:'';
+    if(x.quem==='robo')return ljLog(x.l).replace(/<span class="t">[^<]*<\/span>/,`<span class="t" style="width:92px">${dt}<br><small style="color:var(--text-dim2)">robô</small></span>`);
+    return `<div class="lj-lin"><span class="t" style="width:92px">${dt}<br><small style="color:var(--text-dim2)">${esc(x.l.usuario||'equipe')}</small></span><span class="lj-dot" style="background:var(--gold)"></span><span><b>${esc(x.l.acao||'')}</b>${x.l.detalhes?`<small>${esc(String(x.l.detalhes).slice(0,220))}</small>`:''}</span></div>`;};
+  return `<div class="panel"><div class="panel-head"><h3>Histórico da loja</h3><span class="p-sub">${H.itens.length} registro(s) · o que vai pro relatório do cliente</span></div>
+    <div class="lj-filtros">${F.map(([k,n])=>`<button class="chip ${H.filtro===k?'active':''}" onclick="window.__ljHistFiltro('${k}')">${n}</button>`).join('')}</div>
+    <div class="lj-feed">${vis.length?vis.map(linha).join(''):'<div class="lj-vazio" style="padding:18px">Nada nesse filtro.</div>'}</div></div>`;}
 window.__ljEstruturar=async exec=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
   if(exec&&!await lbConfirmar(`Estruturar a loja ${c.nome} agora?\nDesconto fixo, cupom 3%, Ads (ROAS 20) e impulsionar onde faltar. O que não tem API vira tarefa.`,{okTxt:'Estruturar'}))return;
   lj.estr={carregando:true};ljRender();
@@ -4920,6 +4967,8 @@ function ljRender(){
   tabs.innerHTML=ljTabs();
   if(lj.tab==='produtos'){corpo.innerHTML=ljProdutosHtml(c);return;}
   if(lj.tab==='promocoes'){corpo.innerHTML=ljPromoHtml(c);return;}
+  if(lj.tab==='anuncios'){corpo.innerHTML=ljAdsHtml(c);return;}
+  if(lj.tab==='historico'){corpo.innerHTML=ljHistHtml(c);return;}
   // vendas do mês
   const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-1)]||{};
   const tot=o=>['shopee','tiktok','ml'].reduce((t,k)=>t+(Number(o[k])||0),0);
