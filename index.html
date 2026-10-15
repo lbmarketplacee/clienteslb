@@ -4834,6 +4834,9 @@ window.__ljAjAplicar=async()=>{
       nota(!erros.length,`Mercado Livre: ${ok} de ${l.ml.ids.length} anúncio(s) a ${fmtR(pm.venda)}${erros.length?` (${erros[0]})`:''}`);
     }catch(e){nota(false,'Mercado Livre: '+e.message);}}
   await log(c.id,c.nome,'ajuste de preço/estoque (Central da Loja)',`${l.nome.slice(0,60)} · recebe ${fmtR(liq)} · ${res.join(' | ')}`).catch(()=>{});
+  // atualiza a linha na tela com o que foi gravado (senão o próximo ajuste compara com o valor antigo)
+  if(res.some(x=>/^✓ Shopee estoque/.test(x))){for(const [id,n] of Object.entries(est)){const v=(s.variacoes||[]).find(x=>String(x.id)===id);if(v)v.estoque=n;}s.estoque=s.temVariacao?s.variacoes.reduce((t,v)=>t+(v.estoque||0),0):(est['0']??s.estoque);s.variacoesZeradas=(s.variacoes||[]).filter(v=>(v.estoque||0)<=0).length;}
+  if(res.some(x=>/^✓ Shopee desconto/.test(x))){s.precoMin=s.precoMax=pSh.venda;(s.variacoes||[]).forEach(v=>{v.atual=pSh.venda;v.cheio=pSh.cheio;});}
   lj.aj.res={ok:tudoOk,msg:res.join(' · ')};if(btn){btn.disabled=false;btn.textContent='Aplicar';}
   ljRender();if(tudoOk)showToast('Ajuste aplicado. Clique em Recarregar pra ver os números novos.');};
 window.__ljEstruturar=async exec=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
