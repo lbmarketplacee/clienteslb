@@ -2305,6 +2305,33 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
             <button type="button" class="btn btn-gold" id="vidGerarBtn" onclick="window.__vidGerar()">Gerar vídeo (~R$ 2,20)</button>
             <div id="vidStatus" style="margin-top:10px;font-size:13px"></div>
             <div id="vidResultado" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px"></div>
+
+            <!-- Influencer de IA (15/10/2026): pessoa fictícia fixa → vídeo falando do produto / troca de pessoa em vídeo PRÓPRIO -->
+            <div id="infBox" style="margin-top:26px;padding-top:20px;border-top:1px dashed var(--border)">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px"><h4 style="margin:0;font-size:15px">Influencer de IA</h4><span class="p-sub">pessoa fictícia que aparece igual em todos os vídeos</span><button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="window.__infNova()">+ Nova influencer</button></div>
+              <div id="infLista" style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 12px"></div>
+              <div id="infNovaBox" class="hidden" style="background:var(--surface-2,rgba(255,255,255,.03));border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+                <div class="form-row"><div class="field" style="max-width:220px"><label>Nome</label><input id="infNome" placeholder="Ex.: Bia"></div>
+                  <div class="field"><label>Como ela é (idade, estilo, cabelo, tipo físico)</label><input id="infDesc" placeholder="Ex.: brasileira, 27 anos, cabelo castanho ondulado na altura do ombro, pele morena clara, estilo casual chique"></div></div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button type="button" class="btn btn-gold btn-sm" id="infGerarBtn" onclick="window.__infGerar()">Gerar 3 fotos (~R$ 1,10)</button><button type="button" class="btn btn-ghost btn-sm hidden" id="infSalvarBtn" onclick="window.__infSalvar()">Salvar influencer</button><span id="infNovaSt" style="font-size:12.5px"></span></div>
+                <div id="infNovaFotos" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"></div>
+              </div>
+              <div id="infAcoes" class="hidden">
+                <div class="form-row" style="align-items:flex-start">
+                  <div class="field" style="flex:2"><label>1) Vídeo dela falando do produto — fala (português, até ~20 palavras)</label><textarea id="infFala" rows="2" oninput="window.__infContar()" placeholder="Ex.: Gente, olha esse vestido! Tecido levinho, não amassa e veste muito bem. Corre no link que tá com desconto!"></textarea><small id="infFalaN" class="p-sub"></small></div>
+                  <div class="field" style="max-width:190px"><label>Cena</label><select id="infCena"><option value="selfie">Selfie no quarto</option><option value="provador">Provador / espelho</option><option value="sofa">Sofá da sala</option><option value="rua">Andando na rua</option></select>
+                    <label style="display:flex;gap:6px;align-items:center;margin-top:8px;font-size:12.5px"><input type="checkbox" id="infVestindo" checked> ela está vestindo (roupa)</label></div>
+                </div>
+                <p class="p-sub" style="margin:0 0 8px">Usa a foto escolhida em "Foto de partida" acima como o produto. Veo 3.1 Fast, 8 s, 9:16, com voz.</p>
+                <button type="button" class="btn btn-gold btn-sm" id="infFalarBtn" onclick="window.__infFalar()">Gerar vídeo falando (~R$ 4,40)</button>
+                <div style="margin-top:18px"><label style="font-size:12.5px;font-weight:600">2) Trocar a pessoa de um vídeo NOSSO pela influencer (até 10 s)</label>
+                  <div class="form-row" style="margin-top:6px"><div class="field"><label>Vídeo (gravado pela LB ou pela cliente)</label><input type="file" id="infVideo" accept="video/mp4,video/quicktime,video/webm"></div>
+                    <div class="field"><label>Quem trocar (se tiver mais de 1 pessoa)</label><input id="infQuem" placeholder="Ex.: a mulher de vestido vermelho"></div></div>
+                  <label style="display:flex;gap:6px;align-items:flex-start;font-size:12.5px;margin-bottom:8px"><input type="checkbox" id="infAutorizado"> <span>O vídeo é da LB ou da cliente (temos autorização). <b>Vídeo de outra pessoa/criador não pode</b> — é cópia e uso de imagem sem autorização.</span></label>
+                  <button type="button" class="btn btn-gold btn-sm" id="infTrocarBtn" onclick="window.__infTrocar()">Trocar pessoa (~R$ 5,50)</button></div>
+                <div id="infSt" style="margin-top:10px;font-size:13px"></div>
+              </div>
+            </div>
           </div>
 
           <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
@@ -9457,7 +9484,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='relatorio')dtRender();
   if(alvo==='criarprodutos'){const h=document.getElementById('prodHeroMps');if(h&&!h.innerHTML)h.innerHTML=['shopee','ml','tiktok'].map(m=>`<span title="${MP_L[m]}">${mpIco(m,17)}</span>`).join('');cpRender();pxRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
-  if(alvo==='diretor'){const v=document.getElementById('vidSecao');const r=document.getElementById('dirResultado');if(v&&r&&v.parentElement!==r.parentElement){r.after(v);v.style.marginTop='32px';v.style.borderTop='1px solid var(--border)';}v?.classList.toggle('hidden',!isLincoln());if(isLincoln()){vidPrepararCampos();window.__vidFotos?.();}} // vídeo: só Lincoln e Carol
+  if(alvo==='diretor'){const v=document.getElementById('vidSecao');const r=document.getElementById('dirResultado');if(v&&r&&v.parentElement!==r.parentElement){r.after(v);v.style.marginTop='32px';v.style.borderTop='1px solid var(--border)';}v?.classList.toggle('hidden',!isLincoln());if(isLincoln())infCarregar();if(isLincoln()){vidPrepararCampos();window.__vidFotos?.();}} // vídeo: só Lincoln e Carol
   if(alvo==='criarprodutos')document.querySelectorAll('.admin-only-vid').forEach(b=>b.classList.toggle('hidden',!isLincoln()));
 }));
 window.__irParaMarketing=(painel,subtab)=>{
@@ -9840,8 +9867,8 @@ async function iaFetch(url,opts){
     const midias=[...(Array.isArray(d?.fotos)?d.fotos.filter(f=>/^data:image/.test(f?.imagem||'')).map((f,i)=>({nome:`${(f.tipo||'foto').toString().replace(/[^\w\-]+/g,'-').slice(0,40)}-${midiaHora()}-${i+1}.${midiaExt(f.imagem)}`,dataUrl:f.imagem})):[]),
       ...(/^data:image/.test(d?.imagem||'')?[{nome:`${corpo?.acao||'imagem'}${corpo?.opcao?'-'+String(corpo.opcao).replace(/[^\w\-]+/g,'-'):''}-${midiaHora()}.${midiaExt(d.imagem)}`,dataUrl:d.imagem}]:[])];
     if(midias.length)midiaGuardar(midias);
-    if(/^video_(status|baixar)$/.test(corpo?.acao||''))return; // vídeo é contado uma vez, no início
-    const videos=corpo?.acao==='video_iniciar'&&d?.ok?1:0;
+    if(/^video_(status|baixar|upload_iniciar|arquivo|troca_status)$/.test(corpo?.acao||''))return; // vídeo é contado uma vez, no início
+    const videos=['video_iniciar','video_influencer','video_troca'].includes(corpo?.acao)&&d?.ok?1:0;
     const fotos=Array.isArray(d?.fotos)?d.fotos.filter(f=>f.imagem).length:(d?.imagem?1:0);
     const textos=!videos&&(prev===0||(!corpo?.acao&&Array.isArray(corpo?.imagens)))?1:0;
     if(!fotos&&!textos&&!videos)return;
@@ -10705,6 +10732,62 @@ window.__vidGerar=async()=>{
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}
   btn.disabled=false;
 };
+/* ---- Influencer de IA (15/10/2026) — coleção influencers {nome, descricao, fotos{rosto,meio,corpo} (jpeg ~900px), clienteId, criadoPor} ---- */
+const inf={lista:[],sel:null,novas:{}};
+async function infCarregar(){try{const sn=await getDocs(collection(db,'influencers'));inf.lista=sn.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));}catch(e){inf.lista=[];}infRender();}
+function infRender(){const el=document.getElementById('infLista');if(!el)return;
+  el.innerHTML=inf.lista.length?inf.lista.map(x=>`<button type="button" onclick="window.__infSel('${x.id}')" style="display:flex;gap:8px;align-items:center;padding:6px 10px 6px 6px;border-radius:12px;border:1px solid ${inf.sel===x.id?'var(--gold)':'var(--border)'};background:${inf.sel===x.id?'rgba(212,175,55,.08)':'transparent'};color:var(--text);cursor:pointer"><img src="${x.fotos?.rosto||''}" style="width:40px;height:40px;border-radius:50%;object-fit:cover"><span style="text-align:left"><b style="font-size:13px">${esc(x.nome)}</b><br><small class="p-sub">${esc((clientesCache||[]).find(c=>c.id===x.clienteId)?.nome||'LB')}</small></span></button>`).join(''):'<span class="p-sub">Nenhuma influencer ainda — crie a primeira.</span>';
+  document.getElementById('infAcoes')?.classList.toggle('hidden',!inf.sel);}
+window.__infSel=id=>{inf.sel=inf.sel===id?null:id;infRender();};
+window.__infNova=()=>{document.getElementById('infNovaBox').classList.toggle('hidden');};
+async function infJpeg(u,max=900){const im=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});const e=Math.min(1,max/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*e);cv.height=Math.round(im.height*e);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);return cv.toDataURL('image/jpeg',0.85);}
+window.__infGerar=async()=>{const desc=document.getElementById('infDesc').value.trim();if(desc.length<10){lbAvisar('Descreva como ela é (idade, cabelo, estilo...).');return;}
+  const btn=document.getElementById('infGerarBtn'),st=document.getElementById('infNovaSt'),box=document.getElementById('infNovaFotos');btn.disabled=true;inf.novas={};box.innerHTML='';
+  try{for(const pose of ['rosto','meio','corpo']){st.textContent=`Gerando ${pose==='rosto'?'o rosto':pose==='meio'?'meio corpo':'corpo inteiro'}...`;
+      const r=await (await vidApi({acao:'influencer_foto',descricao:desc,pose,referencia:pose==='rosto'?undefined:inf.novas.rosto})).json();if(!r.ok)throw new Error(r.erro||'não gerou');
+      inf.novas[pose]=await infJpeg(r.imagem);box.insertAdjacentHTML('beforeend',`<img src="${inf.novas[pose]}" style="height:180px;border-radius:10px;border:1px solid var(--border)">`);}
+    st.textContent='Confira: é a mesma pessoa nas 3? Se sim, salve. Se não, gere de novo.';document.getElementById('infSalvarBtn').classList.remove('hidden');}
+  catch(e){st.innerHTML=`<span style="color:var(--red)">${esc(e.message)}</span>`;}btn.disabled=false;};
+window.__infSalvar=async()=>{const nome=document.getElementById('infNome').value.trim()||'Influencer';if(!inf.novas.corpo)return;
+  const ref=await addDoc(collection(db,'influencers'),{nome,descricao:document.getElementById('infDesc').value.trim(),fotos:inf.novas,clienteId:document.getElementById('vidLoja')?.value||null,criadoPor:currentUser||'',criadoEm:serverTimestamp()});
+  midiaGuardar(Object.entries(inf.novas).map(([k,v])=>({nome:`influencer-${nome}-${k}.jpg`,dataUrl:v})));
+  inf.sel=ref.id;inf.novas={};document.getElementById('infNovaBox').classList.add('hidden');document.getElementById('infNovaFotos').innerHTML='';document.getElementById('infSalvarBtn').classList.add('hidden');showToast('Influencer salva.');infCarregar();};
+window.__infContar=()=>{const n=document.getElementById('infFala').value.trim().split(/\s+/).filter(Boolean).length;const el=document.getElementById('infFalaN');el.textContent=`${n} palavra(s)${n>22?' — muito longa pra 8 s':''}`;el.style.color=n>22?'var(--red)':'';};
+async function infBaixarVideo(uri,nome,st,t0){st.textContent='Baixando...';const v=await vidApi({acao:'video_baixar',uri});if(!v.ok||!/video/.test(v.headers.get('content-type')||''))throw new Error('não consegui baixar o vídeo');
+  const blob=await v.blob();const url=URL.createObjectURL(blob);midiaGuardar([{nome,blob}]);
+  document.getElementById('vidResultado').insertAdjacentHTML('afterbegin',`<div style="width:220px"><video src="${url}" controls loop playsinline style="width:100%;border-radius:10px;border:1px solid var(--border)"></video><a class="btn btn-gold btn-sm" style="margin-top:6px;display:inline-block" href="${url}" download="${nome}">Baixar</a></div>`);
+  st.textContent=`Pronto em ${Math.round((Date.now()-t0)/1000)} s. Vídeo feito com IA — no TikTok/Instagram marque como "conteúdo gerado por IA".`;}
+window.__infFalar=async()=>{const x=inf.lista.find(i=>i.id===inf.sel);if(!x)return;if(!vid.fontes.length)window.__vidFotos();const prod=vid.fontes[vid.sel];
+  const fala=document.getElementById('infFala').value.trim();const st=document.getElementById('infSt'),btn=document.getElementById('infFalarBtn');
+  if(!prod){lbAvisar('Escolha a foto do produto em "Foto de partida".');return;}if(!fala){lbAvisar('Escreva a fala.');return;}
+  btn.disabled=true;const t0=Date.now();
+  try{st.textContent='Enviando pro Google...';
+    const r=await (await vidApi({acao:'video_influencer',refs:[x.fotos.rosto,x.fotos.corpo,await infJpeg(prod,1000)],fala,cena:document.getElementById('infCena').value,produto:vidProdutoTxt().slice(0,300),vestindo:document.getElementById('infVestindo').checked})).json();
+    if(!r.ok)throw new Error(r.erro||'não começou');
+    let s=null;for(let k=0;k<50;k++){st.textContent=`Gerando o vídeo da ${x.nome}... ${Math.round((Date.now()-t0)/1000)} s (1 a 4 min)`;await new Promise(z=>setTimeout(z,8000));
+      s=await (await vidApi({acao:'video_status',operacao:r.operacao})).json();if(!s.ok)throw new Error(s.erro);if(s.pronto)break;}
+    if(!s?.pronto)throw new Error('o Google demorou demais — tente de novo');if(s.erro)throw new Error(s.erro);
+    await infBaixarVideo(s.uri,`influencer-${x.nome}-${Date.now()}.mp4`,st,t0);
+  }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}btn.disabled=false;};
+window.__infTrocar=async()=>{const x=inf.lista.find(i=>i.id===inf.sel);if(!x)return;const f=document.getElementById('infVideo').files?.[0];const st=document.getElementById('infSt'),btn=document.getElementById('infTrocarBtn');
+  if(!f){lbAvisar('Escolha o vídeo.');return;}if(!document.getElementById('infAutorizado').checked){lbAvisar('Só dá pra trocar a pessoa em vídeo da LB ou da cliente. Marque a confirmação.');return;}
+  const dur=await new Promise(ok=>{const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>ok(v.duration);v.onerror=()=>ok(0);v.src=URL.createObjectURL(f);});
+  if(dur>10.5){lbAvisar(`O vídeo tem ${Math.round(dur)} s — o Google aceita até 10 s. Corte antes (no celular ou CapCut).`);return;}
+  btn.disabled=true;const t0=Date.now();
+  try{st.textContent='Enviando o vídeo pro Google...';
+    const u=await (await vidApi({acao:'video_upload_iniciar',mimeType:f.type||'video/mp4',tamanho:f.size})).json();if(!u.ok)throw new Error(u.erro||'upload não começou');
+    const up=await fetch(u.url,{method:'POST',headers:{'X-Goog-Upload-Command':'upload, finalize','X-Goog-Upload-Offset':'0'},body:f});
+    const arq=(await up.json().catch(()=>({})))?.file;if(!up.ok||!arq?.name)throw new Error('o Google não recebeu o vídeo');
+    let a=null;for(let k=0;k<30;k++){a=await (await vidApi({acao:'video_arquivo',nome:arq.name})).json();if(a.estado==='ACTIVE')break;if(a.estado==='FAILED')throw new Error('o Google não conseguiu ler o vídeo');st.textContent='O Google está processando o vídeo...';await new Promise(z=>setTimeout(z,3000));}
+    if(a?.estado!=='ACTIVE')throw new Error('o vídeo não ficou pronto no Google');
+    const r=await (await vidApi({acao:'video_troca',arquivo:a.uri,mimeType:a.mimeType||f.type,imagem:x.fotos.corpo,quem:document.getElementById('infQuem').value.trim(),autorizado:true})).json();
+    if(!r.ok)throw new Error(r.erro||'não começou');
+    let s=r.pronto?r:null;for(let k=0;k<60&&!s?.pronto;k++){st.textContent=`Trocando a pessoa pela ${x.nome}... ${Math.round((Date.now()-t0)/1000)} s`;await new Promise(z=>setTimeout(z,8000));
+      s=await (await vidApi({acao:'video_troca_status',id:r.id})).json();if(!s.ok)throw new Error(s.erro);}
+    if(!s?.pronto)throw new Error('o Google demorou demais — tente de novo');if(s.erro)throw new Error(s.erro);
+    if(s.uri)await infBaixarVideo(s.uri,`troca-${x.nome}-${Date.now()}.mp4`,st,t0);
+    else if(s.imagemVideo){const blob=await (await fetch(s.imagemVideo)).blob();const url=URL.createObjectURL(blob);midiaGuardar([{nome:`troca-${x.nome}.mp4`,blob}]);document.getElementById('vidResultado').insertAdjacentHTML('afterbegin',`<div style="width:220px"><video src="${url}" controls loop playsinline style="width:100%;border-radius:10px"></video></div>`);st.textContent='Pronto.';}
+  }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;}btn.disabled=false;};
 /* ---- Gerador de Logotipo (dentro da Central Criativa IA) ---- */
 document.getElementById('logoGerarBtn')?.addEventListener('click', async ()=>{
   const nomeLoja = document.getElementById('logoNomeLoja').value.trim();
@@ -12151,7 +12234,7 @@ window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;cons
 window.__abrirPedidoUrl=()=>{const id=new URLSearchParams(location.search).get('pedido');if(!id)return;ppIniciar();
   const tentar=n=>{if(ppCache.find(x=>x.id===id)&&(clientesCache||[]).length){history.replaceState(null,'',location.pathname);window.__irParaMarketing('criarprodutos');setTimeout(()=>window.__ppAbrir(id),700);}else if(n<60)setTimeout(()=>tentar(n+1),500);};tentar(0);};
 window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.pxtab===t));document.getElementById('cpPainel').classList.toggle('hidden',t!=='criar');document.getElementById('pxPainel').classList.toggle('hidden',t!=='migrar');document.getElementById('ptPainel').classList.toggle('hidden',t!=='padronizar');document.getElementById('pvPainel').classList.toggle('hidden',t!=='video');document.getElementById('ppPainel').classList.toggle('hidden',t!=='pedidos');if(t==='pedidos')ppRender();if(t==='migrar')pxRender();if(t==='padronizar')ptRender();
-  if(t==='video'){const v=document.getElementById('vidSecao');document.getElementById('pvPainel').appendChild(v);v.classList.remove('hidden');v.style.marginTop='0';v.style.borderTop='0';vidPrepararCampos();window.__vidFotos();}};
+  if(t==='video'){const v=document.getElementById('vidSecao');document.getElementById('pvPainel').appendChild(v);v.classList.remove('hidden');v.style.marginTop='0';v.style.borderTop='0';vidPrepararCampos();window.__vidFotos();infCarregar();}};
 window.__pxIrDiretor=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="diretor"]')?.click();};
 window.__pxSel=(i,d)=>{const x=px.linhas.find(y=>y.i===i);if(x){x.sel[d]=!x.sel[d];pxRenderLista();}};
 window.__pxCopiar=async()=>{
