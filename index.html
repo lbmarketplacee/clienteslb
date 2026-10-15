@@ -4650,13 +4650,13 @@ document.getElementById('dreMesInput')?.addEventListener('change',()=>finRender(
 const JR_ETAPAS=[ // processo combinado com o Lincoln 13/10/2026 (chave = o que libera a próxima etapa; prazo em dias corridos)
  {k:'comercial',t:'Comercial',dono:'Guilherme',prazo:3,chave:'Fechou e preencheu o link de onboarding',itens:[['lead','Lead qualificado e reunião feita','Guilherme'],['fechou','Fechou (plano e valor) — tentar Pix na call','Guilherme'],['boasvindas','Grupo "LB | Loja" + boas-vindas (Carol, Isa e Mirela no grupo)','Guilherme'],['acessos','Link de onboarding enviado e cobrado (D+1, D+2; no D+3 a Carol entra)','Guilherme'],['origem','Origem do cliente marcada na ficha','Guilherme']]},
  {k:'contrato',t:'Contrato e cadastro',dono:'Caroline',prazo:2,chave:'Contrato assinado + pagamento confirmado',itens:[['revisaOnb','Revisar o onboarding (dados e documentos)','Caroline'],['contrato','Gerar o contrato e mandar no grupo com o link de pagamento','Caroline'],['asaas','Contrato assinado + pagamento confirmado (Asaas)','Caroline']]},
- {k:'abertura',t:'Abertura e conexão',dono:'Isa',prazo:2,chave:'Todas as contas criadas e conectadas no sistema',itens:[['apresentacao','Se apresentar no grupo e avisar que vão chegar códigos','Isa'],['upseller','UpSeller criado (link de afiliado da LB)','Isa'],['contas','Contas criadas (Shopee, TikTok, ML, SHEIN) — a Shopee às vezes demora pra aprovar','Isa'],['shopee','Shopee conectada no sistema (ERP + Ads)','Isa'],['ml','Mercado Livre conectado','Isa'],['tiktok','TikTok Shop conectado','Isa'],['shein','SHEIN conectada','Isa']]},
- {k:'estrutura',t:'Produtos e página',dono:'Isa',prazo:5,chave:'Anúncios no ar + página decorada',itens:[['linkproduto','Link de produtos enviado e cobrado','Isa'],['criativos','Decoração da página (medidas de cada marketplace) — 3 dias','Mirela'],['anuncios','Anúncios publicados em todas as contas — 2 dias após o cliente mandar','Isa'],['padronizar','Padronizar (desconto fixo Shopee/TikTok) se subiu pelo UpSeller','Isa'],['cupomTiktok','Cupom 3% do TikTok criado no Seller Center','Isa']]},
+ {k:'abertura',t:'Abertura e conexão',dono:'Guilherme',prazo:2,chave:'Todas as contas criadas e conectadas no sistema',itens:[['apresentacao','Se apresentar no grupo e avisar que vão chegar códigos','Guilherme'],['upseller','UpSeller criado (link de afiliado da LB)','Guilherme'],['contas','Contas criadas (Shopee, TikTok, ML, SHEIN) — a Shopee às vezes demora pra aprovar','Guilherme'],['shopee','Shopee conectada no sistema (ERP + Ads)','Guilherme'],['ml','Mercado Livre conectado','Guilherme'],['tiktok','TikTok Shop conectado','Guilherme'],['shein','SHEIN conectada','Guilherme']]},
+ {k:'estrutura',t:'Produtos e página',dono:'Guilherme',prazo:5,chave:'Anúncios no ar + página decorada',itens:[['linkproduto','Link de produtos enviado e cobrado','Guilherme'],['criativos','Decoração da página (medidas de cada marketplace) — 3 dias','Mirela'],['anuncios','Anúncios publicados em todas as contas — 2 dias após o cliente mandar','Guilherme'],['padronizar','Padronizar (desconto fixo Shopee/TikTok) se subiu pelo UpSeller','Guilherme'],['cupomTiktok','Cupom 3% do TikTok criado no Seller Center','Guilherme']]},
  {k:'revisao',t:'Revisão',dono:'Caroline',prazo:1,chave:'Padrão LB aprovado → entra na operação',itens:[['conferencia','Conferir o padrão LB (anúncios, preços, página)','Caroline'],['robos','Robôs rodando (relâmpago, Ads, renovações)','Caroline']]},
  {k:'primeiromes',t:'Primeiro mês',dono:'Caroline',prazo:35,chave:'1º relatório entregue',itens:[['adsml','1ª análise do Ads do Mercado Livre (30 dias)','Caroline'],['relatorio','1º relatório enviado no dia 01','Mirela'],['depoimento','Reunião de depoimento (se o resultado for bom)','Mirela']]},
 ];
 const JR_SAIDA=[{k:'saida',t:'Saída do cliente',dono:'Caroline',itens:[['cancelarAsaas','Cancelar assinatura no Asaas','Caroline'],['robosOff','Desligar robôs (relâmpago, Ads, impulsionar)','Caroline'],['desconectar','Desconectar APIs dos marketplaces','Caroline'],['avisarEquipe','Avisar a equipe e sair do grupo','Caroline'],['inativo','Marcar o cliente como inativo no sistema','Caroline']]}];
-const JR_PESSOAS=['Guilherme','Caroline','Mirela','Isa','Lincoln'];
+const JR_PESSOAS=['Guilherme','Caroline','Mirela','Lincoln']; // 15/10/2026: sem a Isa por enquanto — abertura e estrutura com o Guilherme
 const jr={lista:[],sel:null,filtro:'',unsub:null};
 window.jr=jr;
 const jrModelo=j=>j.tipo==='saida'?JR_SAIDA:JR_ETAPAS;
@@ -4672,7 +4672,7 @@ function jrStatus(j){const et=jrModelo(j);let tot=0,ok=0,prox=null,etapa=null;
   for(const e of et)for(const[k,t,q] of e.itens){tot++;const st=jrSt(j,k);if(st)ok++;else if(!prox){prox={k,t,q};etapa=e.k;}}
   return{tot,ok,pct:tot?Math.round(ok/tot*100):0,prox,etapa:etapa||'feito'};}
 function jrIniciar(){
-  if(!jr.unsub)jr.unsub=onSnapshot(collection(db,'jornadas'),sn=>{jr.lista=sn.docs.map(d=>({id:d.id,...d.data()}));jrRender();},e=>{document.getElementById('jrCorpo').innerHTML=`<div class="empty-state" style="padding:20px">Sem acesso às jornadas (${esc(e.code||e.message)}).</div>`;});
+  if(!jr.unsub)jr.unsub=onSnapshot(collection(db,'jornadas'),sn=>{jr.lista=sn.docs.map(d=>({id:d.id,...d.data()}));jrRender();jrSincTarefas(jr.lista);},e=>{document.getElementById('jrCorpo').innerHTML=`<div class="empty-state" style="padding:20px">Sem acesso às jornadas (${esc(e.code||e.message)}).</div>`;});
   jrRender();
 }
 window.__jrFiltro=v=>{jr.filtro=v;jrRender();};
@@ -4700,6 +4700,40 @@ window.__jrJaTinha=id=>updateDoc(doc(db,'jornadas',id),{'itens.contas':{st:'na',
 // Cliente novo (cadastro convertido ou criado à mão) já entra na jornada sozinho.
 async function jrCriarAuto(clienteId,nome){try{if(jr.lista.some(j=>j.clienteId===clienteId&&!j.concluida))return;await addDoc(collection(db,'jornadas'),{clienteId,nome,tipo:'entrada',itens:{},criadoEm:serverTimestamp(),criadoPor:currentUser+' (automático)',concluida:false});}catch(e){console.warn('jornada',e);}}
 window.__jrAbrir=id=>{jr.sel=jr.sel===id?null:id;jrRender();};
+// ===== Jornada → tarefas automáticas (15/10/2026, Lincoln): a etapa ATUAL de cada jornada vira 1 tarefa por pessoa (itens dela
+// na descrição, prazo da etapa); fecha sozinha quando a pessoa marca todos os itens dela. Id fixo jr_{jornada}_{etapa}_{pessoa}
+// = não duplica mesmo com várias telas abertas. Roda ao abrir o sistema, quando a Jornada muda e ao criar jornada.
+const JR_EMAIL={Guilherme:'guilherme@lbmarketplace.com.br',Caroline:'caroline@lbmarketplace.com.br',Mirela:'mirela@lbmarketplace.com.br',Lincoln:'lincoln@lbmarketplace.com.br',Isa:'guilherme@lbmarketplace.com.br'};
+let jrSincRodando=false;
+async function jrSincTarefas(lista){
+  if(jrSincRodando||!lista?.length)return;jrSincRodando=true;
+  try{const hoje=new Date(Date.now()-3*3600000);
+    for(const j of lista){
+      const et=jrModelo(j);const st=jrStatus(j);
+      for(const e of et){
+        const porPessoa={};for(const [k,t,q] of e.itens){(porPessoa[q]=porPessoa[q]||[]).push([k,t]);}
+        for(const [pessoa,itens] of Object.entries(porPessoa)){
+          const id=`jr_${j.id}_${e.k}_${pessoa}`.replace(/[^\w-]/g,'_');const ref=doc(db,'tarefas',id);
+          const pend=itens.filter(([k])=>!jrSt(j,k));
+          const atual=!j.concluida&&(j.tipo==='saida'?true:st.etapa===e.k);
+          if(atual&&pend.length){
+            const sn=await getDoc(ref);if(sn.exists())continue;
+            const pz=jrPrazo(j,e.k);const prazo=new Date(hoje.getTime()+Math.max(0,pz?.resta??e.prazo??2)*86400000).toISOString().slice(0,10);
+            const email=JR_EMAIL[pessoa]||JR_EMAIL.Caroline;
+            await setDoc(ref,{titulo:`${j.nome} · ${e.t}`,descricao:`Jornada do cliente — etapa "${e.t}"${e.chave?`\nChave pra próxima etapa: ${e.chave}`:''}\n\nSeus itens:\n${pend.map(([,t])=>'• '+t).join('\n')}\n\nMarque cada item na Jornada do cliente — esta tarefa fecha sozinha quando todos estiverem feitos.`,
+              prazo,prioridade:'alta',tipo:'interno',clienteId:j.clienteId||null,clienteNome:j.nome,coluna:'afazer',responsavelEmail:email,responsavel:USERS_MAP[email]||pessoa,
+              criadoPor:'Jornada (automático)',auto:true,chaveAuto:`jornada|${j.id}|${e.k}|${pessoa}`,timestamp:serverTimestamp()});
+          }else if(!pend.length){
+            const sn=await getDoc(ref);if(sn.exists()&&sn.data().coluna!=='feito')await updateDoc(ref,{coluna:'feito',concluidoEm:serverTimestamp(),concluidoPor:'Jornada (itens marcados)'});
+          }
+        }
+      }
+    }
+  }catch(e){console.warn('[jornada → tarefas]',e);}finally{jrSincRodando=false;}
+}
+async function jrSincInicial(){try{const sn=await getDocs(collection(db,'jornadas'));await jrSincTarefas(sn.docs.map(d=>({id:d.id,...d.data()})));}catch(e){console.warn('[jornada → tarefas] inicial',e);}}
+setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail]&&currentEmail!=='felipesoares@potencialmidia.com')jrSincInicial();}},3000);},2000);
+
 /* ============== CENTRAL DA LOJA — Fase 1 (15/10/2026, Lincoln: organizar por loja, não por marketplace) ==============
    Escolhe o cliente uma vez: vendas do mês, estrutura (robô Estruturar), promoções/robôs por marketplace, o que pede atenção
    e o que os robôs fizeram. Só leitura + atalhos pras telas que já existem. Abas Produtos/Promoções/… = próximas fases. */
