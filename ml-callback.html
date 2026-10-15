@@ -71,6 +71,18 @@ async function processarCallback() {
       const data = await resp.json();
       if (!data.ok) { mostrarErro(data.erro || 'Falha ao trocar o código por token.'); return; }
 
+      // trava (15/10/2026): Yashop ficou com o ML da LAB PAPER (navegador logado na conta dela)
+      const outros = [];
+      for (const v of [String(data.user_id), Number(data.user_id)]) {
+        const sn = await db.collection('clientes').where('mlUserId', '==', v).get();
+        sn.forEach((d) => { if (d.id !== clienteId && d.id !== 'teste' && d.data().ativo !== false && !outros.some((o) => o.id === d.id)) outros.push({ id: d.id, nome: d.data().nome || d.id }); });
+      }
+      if (outros.length) {
+        // o token novo é válido pra conta do dono — grava nele (não deixa a conexão dele cair) e NÃO grava neste cliente
+        await db.collection('clientes').doc(outros[0].id).update({ mlAccessToken: data.access_token, mlRefreshToken: data.refresh_token, mlTokenExpiraEm: Date.now() + (data.expires_in * 1000) });
+        mostrarErro(`Essa conta do Mercado Livre (${data.user_id}) é de ${outros.map((o) => o.nome).join(', ')}, não deste cliente. O navegador estava logado na conta errada. Nada foi salvo aqui. Saia da conta no mercadolivre.com.br (ou use janela anônima), entre com a conta certa e conecte de novo.`);
+        return;
+      }
       await db.collection('clientes').doc(clienteId).update({
         mlAccessToken: data.access_token,
         mlRefreshToken: data.refresh_token,

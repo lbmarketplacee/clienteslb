@@ -25,7 +25,7 @@ p{color:var(--text-dim);font-size:14px;line-height:1.6;margin-bottom:24px;}
 </div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import{getFirestore,doc,updateDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import{getFirestore,doc,updateDoc,serverTimestamp,collection,query,where,getDocs}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
@@ -72,6 +72,12 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
     return;
   }
 
+  // trava (15/10/2026): Brother ficou com a Shopee da Bela Brás porque o navegador estava logado na conta dela
+  try{const campos=['shopeeErpShopId','shopeeMktShopId','shopeeAdsShopId','shopeeShopId','shopeeProdutoShopId'];const donos=new Map();
+    for(const f of campos)for(const v of [shopId,Number(shopId)]){const sn=await getDocs(query(collection(db,'clientes'),where(f,'==',v)));sn.forEach(d=>{if(d.id!==clienteId&&d.id!=='teste'&&d.data().ativo!==false)donos.set(d.id,d.data().nome||d.id);});}
+    if(donos.size){const nomes=[...donos.values()].join(', ');
+      mostrar('⛔','Essa loja da Shopee é de outro cliente',`A Shopee entregou a loja <b>${shopId}</b>, que já está ligada em <b style="color:var(--text)">${nomes}</b> — não em ${clienteNome}. O navegador provavelmente estava logado na conta de ${nomes}. <b>Nada foi salvo.</b> Saia da conta na Shopee (ou use uma janela anônima), entre com a conta de ${clienteNome} e conecte de novo.`,true);return;}
+  }catch(e){console.warn('[trava conta repetida]',e);}
   try{
     const resp=await fetch(`${SHOPEE_API}?acao=trocar_codigo_por_token&app=${app}&code=${code}&shop_id=${shopId}`);
     const data=await resp.json();

@@ -567,6 +567,20 @@ async function processarCallback(){
          SALVAR DADOS DA LOJA NO FIRESTORE
       --------------------------------------------------- */
 
+      // trava (15/10/2026): loja já ligada em OUTRO cliente = navegador logado na conta errada
+      if (data.shop_id) {
+        const outros = [];
+        for (const v of [String(data.shop_id), Number(data.shop_id)]) {
+          const sn = await db.collection('clientes').where('tiktokShopId', '==', v).get();
+          sn.forEach((d) => { if (d.id !== clienteId && d.id !== 'teste' && d.data().ativo !== false && !outros.some((o) => o.id === d.id)) outros.push({ id: d.id, nome: d.data().nome || d.id }); });
+        }
+        if (outros.length) {
+          await db.collection('clientes').doc(outros[0].id).update({ tiktokAccessToken: data.access_token, tiktokRefreshToken: data.refresh_token });
+          alert(`Essa loja do TikTok (${data.shop_name || data.shop_id}) já é de ${outros.map((o) => o.nome).join(', ')}, não deste cliente. O navegador estava logado na conta errada — nada foi salvo aqui. Saia da conta no TikTok Seller (ou use janela anônima) e conecte de novo com a conta certa.`);
+          window.location.href = 'https://sistema.lbmarketplace.com.br/';
+          return;
+        }
+      }
       await db
         .collection('clientes')
         .doc(clienteId)
