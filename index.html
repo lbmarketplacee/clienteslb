@@ -4713,6 +4713,11 @@ function ljLog(l){const mp={shopee:'Shopee',tiktok:'TikTok',ml:'ML',shein:'SHEIN
   else if(l.tipo==='oferta_relampago'&&d.produtos)t=`+${d.produtos} produto(s) nas relâmpagos agendadas`;
   else if(l.tipo==='ads'&&Array.isArray(d.criados))t=`${d.criados.length} produto(s) colocados no Ads`;
   else if(l.tipo==='impulsionar')t=`produtos impulsionados${Array.isArray(d.ok)?` (${d.ok.length})`:''}`;
+  else if(l.tipo==='promo_giro')t=l.acao==='aplicar'?`promo de giro −15% em ${Array.isArray(d.itens)?d.itens.length:'?'} produto(s)`:`promo de giro: ${l.acao||''}`;
+  else if(l.tipo==='padronizar')t=`${Array.isArray(d.itens)?d.itens.length:'?'} produto(s) colocados no desconto fixo`;
+  else if(l.acao==='aprovado')t=`proposta aprovada no Escritório (${String(l.tipo||'').replace(/_/g,' ')})`;
+  else if(l.tipo==='cupom_fixo'||l.tipo==='cupom')t=`cupom fixo ${l.acao||''}`;
+  else if(l.tipo==='desconto_fixo')t=`desconto fixo ${l.acao||''}`;
   const ms=ljMs(l.quando);const hoje=new Date(Date.now()-3*3600000).toISOString().slice(0,10);const dia=ms?new Date(ms-3*3600000).toISOString().slice(0,10):'';
   return `<div class="lj-lin"><span class="t">${dia===hoje?'hoje':ljData(ms)}</span><span class="lj-dot ${l.resultado==='ok'?'ok':l.resultado==='falhou'?'ruim':'at'}"></span><span><b>${esc(mp?mp+': ':'')}${esc(String(t).slice(0,90))}</b>${l.resultado==='falhou'&&l.motivo?`<small>${esc(String(l.motivo).slice(0,120))}</small>`:''}</span></div>`;}
 
