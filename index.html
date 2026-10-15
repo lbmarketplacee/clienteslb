@@ -1146,6 +1146,8 @@ textarea{resize:vertical;min-height:70px;}
 @media(max-width:800px){.ttp-form{grid-template-columns:1fr}}
 /* Portal do cliente (08/10/2026): a cliente entra com login próprio e só vê o card do Mercado Livre da loja dela */
 body.modo-portal .nav-item:not([data-page="marketing"]){display:none!important}
+body.modo-comercial .nav-item:not([data-page="comercial"]),body.modo-comercial .nav-grupo-cab,body.modo-comercial #notifBtn,body.modo-comercial .topbar-actions{display:none!important}
+body.modo-comercial .nav-grupo-itens{display:flex!important;flex-direction:column}
 body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
 body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):not([data-mlsub="qualidade"]){display:none!important}
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
@@ -3276,7 +3278,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi"};
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 // Quem tem acesso total (tudo que era "só Lincoln"): Lincoln + Caroline (pedido do Lincoln, 07/10/2026)
 const ADMIN_EMAILS=[LINCOLN_EMAIL,"caroline@lbmarketplace.com.br"];
@@ -3406,7 +3408,14 @@ let unsubC=null,unsubG=null,unsubCt=null;
 // (conectar a conta PRINCIPAL e ver as métricas). As regras do Firestore liberam só esse documento pra esse e-mail.
 const PORTAL_CLIENTES={'roma@lbmarketplace.com.br':'X6EXAnrhX3J1MCKvt3Mw'};
 const portalClienteId=()=>PORTAL_CLIENTES[currentEmail]||null;
+// Freela do comercial (Akemi, 15/10/2026): só a tela Comercial & Marketing (Marketing, Comercial, Tráfego Meta, CRM de Leads).
+// Não carrega clientes/tarefas/robôs — as regras do Firestore também só liberam comercialBoard, comercialDiario e crmLeads.
+const COMERCIAL_FREELA=['akemikimidesign@gmail.com'];
+const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase());
 function startListeners(){if(unsubC)return;
+  if(ehFreelaComercial()){document.body.classList.add('modo-comercial');unsubC=()=>{};
+    setTimeout(()=>{try{document.querySelector('.nav-item[data-page="comercial"]')?.click();}catch(e){}},700);
+    return;}
   if(portalClienteId()){document.body.classList.add('modo-portal');
     unsubC=onSnapshot(doc(db,"clientes",portalClienteId()),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();portalAviso();},e=>console.error('[portal]',e));
     setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('mercadolivre');setTimeout(()=>{window.__mlSubTab('gmv');portalAviso();},700);}catch(e){}},900);
@@ -3722,7 +3731,7 @@ initGoogle();
 const IA_ENDPOINT='https://lbiagerador.vercel.app/api/gerar';
 
 /* ================= COMERCIAL & MARKETING (restrito) ================= */
-const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br'];
+const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com'];
 const isComercialAllowed=()=>COMERCIAL_EMAILS.includes(currentEmail);
 let comEntriesCache=[],comMetasCache=null,comMesAtual='';
 function comSetupAcesso(){
