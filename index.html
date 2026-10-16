@@ -11733,6 +11733,11 @@ const pxTexto=h=>String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|li|di
 const pxEhTam=n=>/tamanho|size/i.test(String(n||''));
 
 // ---------- leitores: listar (leve, pra tela) e detalhar (P completo, na hora de copiar) ----------
+// fotos de TODOS os anúncios da família (UP: 1 anúncio por cor/tamanho — cada cor pode ter só a foto dela; Djan 16/10/2026
+// migrou com 2 fotos porque pegava só o anúncio que mais vende). Começa pelo que tem mais fotos, sem repetir, até 9.
+function pxFotosFamilia(lista){const vistos=new Set(),out=[];
+  for(const it of [...lista].sort((a,b)=>(b.pictures||[]).length-(a.pictures||[]).length))for(const p of it.pictures||[]){const u=(p.secure_url||p.url||'').replace(/^http:/,'https:');const k=p.id||u;if(!u||vistos.has(k))continue;vistos.add(k);out.push(u);}
+  return out.slice(0,9);}
 const pxLer={
   shopee:{
     async listar(c,passo){const token=await shopeeGarantirTokenValido(c,'erp');const itens=await migLerShopeeAtivos(c,token,passo);
@@ -11798,7 +11803,7 @@ const pxLer={
       const dm=migDim(base)||{c:0,l:0,a:0};
       let desc=descricao;
       if(desc.length<40){linha('descrição pela IA...');const ia=await iaFetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:`${base.family_name||base.title}. ${atr}`,marketplace:'shopee',imagem:null})}).then(r=>r.json()).catch(()=>({}));desc=ia.descricao||`${base.family_name||base.title}.`;}
-      return{titulo:base.family_name||base.title,descricao:desc,atributosTxt:atr,fotos:(base.pictures||[]).map(p=>(p.secure_url||p.url||'').replace(/^http:/,'https:')).filter(Boolean).slice(0,9),
+      return{titulo:base.family_name||base.title,descricao:desc,atributosTxt:atr,fotos:pxFotosFamilia(lista),
         vars,skus:Object.values(skuMap).filter(s=>s.liq>0),peso:Math.max(...lista.map(x=>migPesoKg(x)||0))||0.5,dims:dm,sku:migAttr(base,'SELLER_SKU')||migAttr(base,'PART_NUMBER')||''};
     }
   },
