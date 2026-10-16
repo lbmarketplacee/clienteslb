@@ -922,6 +922,7 @@ textarea{resize:vertical;min-height:70px;}
 .crm-filters{display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:flex-end;}
 .crm-filters select,.crm-filters input{width:auto;flex:0 1 auto;max-width:200px}
 .crm-filters input{min-width:200px;max-width:260px;padding:7px 10px;font-size:12px}
+.crm-placar{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 12px}.crm-placar-item{flex:1;min-width:220px;display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card,rgba(255,255,255,.02));cursor:pointer;font-size:12.5px;color:var(--text-dim)}.crm-placar-item b{color:var(--text)}.crm-placar-item.on{border-color:var(--gold)}.crm-placar-item.sem{cursor:default;border-style:dashed}.crm-placar-item .btn{align-self:flex-start;margin-top:4px}.crm-comissao{margin-top:2px;color:var(--gold)}
 .crm-resumo{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .crm-resumo-item{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dim);font-size:12px;cursor:pointer}
 .crm-resumo-item b{font-size:14px;color:var(--text)}
@@ -10972,7 +10973,26 @@ function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) 
 
 let crmLeads = [];
 let crmView = 'kanban';
-let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all'};
+let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all'};
+// Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
+const CRM_VENDEDORES=[{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'}];
+const CRM_COMISSAO=500;
+const crmEhVendedor=()=>CRM_VENDEDORES.some(v=>v.email===String(currentEmail||'').toLowerCase());
+const crmMes=()=>crmHojeISO().slice(0,7);
+function crmDonoPorRodizio(){const mes=crmMes();const cont={};for(const l of crmLeads)if((l.createdDate||'').startsWith(mes)&&l.donoEmail)cont[l.donoEmail]=(cont[l.donoEmail]||0)+1;return [...CRM_VENDEDORES].sort((a,b)=>(cont[a.email]||0)-(cont[b.email]||0))[0];}
+function crmPlacarHtml(){const mes=crmMes();
+  const linha=v=>{const meus=crmLeads.filter(l=>l.donoEmail===v.email);const doMes=meus.filter(l=>(l.createdDate||'').startsWith(mes));
+    const agend=doMes.filter(l=>['agendado','compareceu','fechado'].includes(l.stage)).length;const fech=meus.filter(l=>l.stage==='fechado'&&(l.fechadoEm||l.atualizadoEm||'').startsWith(mes)).length;
+    const abertos=meus.filter(l=>['novo','contato'].includes(l.stage)).length;
+    return `<div class="crm-placar-item ${crmFilter.dono===v.email?'on':''}" onclick="window.__crmFiltro('dono','${crmFilter.dono===v.email?'all':v.email}')"><b>${esc(v.nome)}</b><span>${doMes.length} leads no mês · ${abertos} em aberto</span><span>${agend} agendaram · <b style="color:var(--green)">${fech} fechados</b></span><span class="crm-comissao">Comissão do mês: <b>${fmtR(fech*CRM_COMISSAO)}</b></span></div>`;};
+  const semDono=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu'].includes(l.stage)).length;
+  return `<div class="crm-placar">${CRM_VENDEDORES.map(linha).join('')}${semDono&&isLincoln()?`<div class="crm-placar-item sem"><b>${semDono} lead(s) sem dono</b><span>novo/contato vão em rodízio; agendado/compareceu ficam com o Guilherme</span><button class="btn btn-gold btn-sm" onclick="event.stopPropagation();window.__crmDistribuir()">Distribuir agora</button></div>`:''}</div>`;}
+window.__crmDistribuir=async()=>{const sem=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu'].includes(l.stage));if(!sem.length)return;
+  if(!await lbConfirmar(`Distribuir ${sem.length} lead(s) sem dono?\nNovo/contato: rodízio entre ${CRM_VENDEDORES.map(v=>v.nome).join(' e ')}. Agendado/compareceu: Guilherme.`,{okTxt:'Distribuir'}))return;
+  const novos=sem.filter(l=>['novo','contato'].includes(l.stage)).sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||''));let i=0,n=0;
+  for(const l of sem){const v=['agendado','compareceu'].includes(l.stage)?CRM_VENDEDORES[0]:CRM_VENDEDORES[(i++)%CRM_VENDEDORES.length];
+    try{await updateDoc(doc(db,'crmLeads',l.id),{donoEmail:v.email,donoNome:v.nome});n++;}catch(e){console.error(e);}}
+  showToast(`${n} lead(s) distribuído(s).`);};
 function crmDataDentroDoPeriodo(createdDate){
   if(crmFilter.periodo==='all'||!createdDate)return true;
   const hoje=new Date();hoje.setHours(0,0,0,0);
@@ -11001,6 +11021,7 @@ let crmUnsub = null;
 
 function crmIniciar(){
   if(crmUnsub)return;
+  if(crmEhVendedor())crmFilter.dono=String(currentEmail).toLowerCase();
   crmUnsub = onSnapshot(collection(db,"crmLeads"), snap=>{
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderCRM();
@@ -11009,6 +11030,7 @@ function crmIniciar(){
 
 function crmFilteredLeads(){
   return crmLeads.filter(l=>{
+    if(crmFilter.dono!=='all' && (l.donoEmail||'')!==crmFilter.dono) return false;
     if(crmFilter.stage!=='all' && l.stage!==crmFilter.stage) return false;
     if(crmFilter.origem!=='all' && l.origem!==crmFilter.origem) return false;
     if(crmFilter.tipoServico!=='all' && l.tipoServico!==crmFilter.tipoServico) return false;
@@ -11047,7 +11069,8 @@ window.__crmSubmitForm=async()=>{
   const notas=document.getElementById('lead-notas').value.trim();
   const proximoContato=document.getElementById('lead-proximo')?.value||'';
   const motivoEl=document.getElementById('lead-motivo-perda');
-  const extras={proximoContato,atualizadoEm:crmHojeISO(),...(motivoEl?{motivoPerda:motivoEl.value}:{})};
+  const donoSel=document.getElementById('lead-dono')?.value||'';const dono=CRM_VENDEDORES.find(v=>v.email===donoSel)||(editingLeadId?null:crmDonoPorRodizio());
+  const extras={proximoContato,atualizadoEm:crmHojeISO(),...(motivoEl?{motivoPerda:motivoEl.value}:{}),...(dono?{donoEmail:dono.email,donoNome:dono.nome}:{})};
   try{
     if(editingLeadId){
       await updateDoc(doc(db,"crmLeads",editingLeadId),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras});
@@ -11083,7 +11106,7 @@ window.__crmMoveStage=async(id,stage)=>{
   try{
     const stageAntiga=crmStageInfo(lead.stage).label;
     const stageNova=crmStageInfo(stage).label;
-    await updateDoc(doc(db,"crmLeads",id),{stage,atualizadoEm:crmHojeISO()});
+    await updateDoc(doc(db,"crmLeads",id),{stage,atualizadoEm:crmHojeISO(),...(stage==='fechado'&&lead.stage!=='fechado'?{fechadoEm:crmHojeISO(),fechadoPor:lead.donoNome||currentUser}:{})});
     if(stage==='perdido'&&lead.stage!=='perdido'){editingLeadId=id;leadFormOpen=true;showToast('Marque o motivo da perda e salve.');}
     await log(id,lead.nome,'mudança de etapa',`${currentUser} moveu de "${stageAntiga}" para "${stageNova}".`);
     if(stage==='fechado' && lead.stage!=='fechado') showToast(`✓ ${lead.nome} fechado!`);
@@ -11124,6 +11147,7 @@ function crmLeadFormHtml(){
           ${CRM_TIPOS_SERVICO.map(s=>`<option value="${s.key}" ${lead&&lead.tipoServico===s.key?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </div>
+      <div class="field"><label>Responsável (dono do lead)</label><select id="lead-dono"><option value="">— rodízio automático —</option>${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${(lead?lead.donoEmail:(crmEhVendedor()?String(currentEmail).toLowerCase():''))===v.email?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>
       <div class="field"><label>Origem</label>
         <select id="lead-origem">${CRM_ORIGENS.map(o=>`<option value="${o}" ${lead&&lead.origem===o?'selected':''}>${o}</option>`).join('')}</select>
       </div>
@@ -11166,7 +11190,7 @@ function crmKanbanHtml(){
           return `
           <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
             <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}${l.respostasTypebot&&Object.keys(l.respostasTypebot).length?`<span class="wa-btn" title="Tem respostas do Typebot">📋</span>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
-            <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}</div>
+            <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}${l.donoNome?` · <b style="color:var(--gold)">${esc(l.donoNome)}</b>`:' · <span style="color:var(--amber)">sem dono</span>'}</div>
             ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
             ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
             <div>
@@ -11185,7 +11209,7 @@ function crmListHtml(){
   const leads = crmFilteredLeads();
   if(!leads.length) return '<div class="empty-crm">Nenhum lead encontrado.</div>';
   return `<table class="crm-table">
-    <thead><tr><th>Nome</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Acompanhamento</th><th>Valor</th><th>Criado em</th></tr></thead>
+    <thead><tr><th>Nome</th><th>Dono</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Acompanhamento</th><th>Valor</th><th>Criado em</th></tr></thead>
     <tbody>
       ${[...leads].sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||'')).map(l=>{
         const s = crmStageInfo(l.stage);
@@ -11194,6 +11218,7 @@ function crmListHtml(){
         const partes = (l.createdDate||'').split('-');
         return `<tr onclick="window.__crmOpenEdit('${l.id}')">
           <td>${esc(l.nome)}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></td>
+          <td>${esc(l.donoNome||'—')}</td>
           <td>${esc(l.whatsapp||'—')}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}</td>
           <td>${esc(nichoLabel||'—')}</td>
           <td>${tipo?`<span class="stage-pill" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:'—'}</td>
@@ -11224,6 +11249,10 @@ function renderCRM(){
     </div>
     <div class="crm-filters">
       <input type="text" id="crmBusca" placeholder="Buscar nome ou contato" value="${esc(crmFilter.search)}" oninput="window.__crmFiltro('search',this.value)">
+      <select onchange="window.__crmFiltro('dono',this.value)">
+        <option value="all" ${crmFilter.dono==='all'?'selected':''}>Todos os donos</option>
+        ${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${crmFilter.dono===v.email?'selected':''}>${v.email===String(currentEmail||'').toLowerCase()?'Meus leads':'Leads de '+esc(v.nome)}</option>`).join('')}
+      </select>
       <select onchange="window.__crmFiltro('stage',this.value)">
         <option value="all">Todas as etapas</option>
         ${CRM_STAGES.map(s=>`<option value="${s.key}" ${crmFilter.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
@@ -11250,6 +11279,7 @@ function renderCRM(){
     </div>
     <button class="btn-newlead" onclick="window.__crmToggleForm(true)">+ Novo Lead</button>
   </div>
+  ${crmPlacarHtml()}
   ${crmResumoHtml()}
   ${leadFormOpen ? crmLeadFormHtml() : ''}
   ${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}
