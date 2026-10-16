@@ -4820,8 +4820,8 @@ function ljIniciar(){
   sel.innerHTML='<option value="">Escolha o cliente…</option>'+ativos.map(c=>`<option value="${c.id}" ${c.id===lj.id?'selected':''}>${esc(c.nome||c.id)}</option>`).join('');
   ljRender();if(lj.id&&!lj.logs)ljLogs();
 }
-window.__ljTrocar=id=>{setTimeout(()=>{if(lj.tab==='anuncios')ljCarregarTeo();if(lj.tab==='historico')ljCarregarHist();},0);lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);if(lj.tab==='produtos'&&id)setTimeout(ljCarregarProdutos,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
-window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
+window.__ljTrocar=id=>{setTimeout(()=>{if(lj.tab==='anuncios')ljCarregarTeo();if(lj.tab==='historico')ljCarregarHist();},0);lj.id=id||null;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;lj.rel=null;if(lj.tab==='promocoes')setTimeout(ljCarregarAgenda,0);if(lj.tab==='produtos'&&id)setTimeout(ljCarregarProdutos,0);try{localStorage.setItem('ljCliente',lj.id||'');}catch(e){}ljRender();if(lj.id)ljLogs();};
+window.__ljAbrir=id=>{lj.id=id;lj.logs=null;lj.estr=null;lj.prod=null;lj.aj=null;lj.agenda=null;lj.acao=null;lj.teo=null;lj.hist=null;lj.adsSim=null;lj.rel=null;try{localStorage.setItem('ljCliente',id);}catch(e){}document.querySelector('.nav-item[data-page="loja"]')?.click();};
 async function ljLogs(){const id=lj.id;try{const sn=await getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(120)));
   if(lj.id!==id)return;lj.logs=sn.docs.map(d=>d.data()).sort((a,b)=>(ljMs(b.quando)||0)-(ljMs(a.quando)||0)).slice(0,10);}catch(e){lj.logs=[];console.warn('[loja] log',e);}ljRender();}
 function ljTabs(){const tabs=[['visao','Visão geral','Vendas, estrutura e o que pede atenção',1,'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>'],
@@ -5060,12 +5060,59 @@ window.__ljAcao=async(tipo)=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);
   lj.acao={tipo,rodando:true};ljRender();
   try{let msg='';
     if(tipo==='sh_renovar'){const r=await (await fetch(`${SHOPEE_API}?acao=rodar_renovacoes&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()})).json();const x=(r.resultados||[])[0]||{};msg=r.ok?`Desconto: ${x.desconto||x.erro||'—'} · Cupom: ${x.cupom||'—'}`:(r.erro||'erro');}
-    else if(tipo==='sh_relampago'){const token=await shopeeGarantirTokenValido(c,'erp');const p=new URLSearchParams({acao:'criar_oferta_relampago',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,discount_id:c.shopeeDescontoFixoId||'',percentual:5,qtd_por_produto:5,limite_produtos:50,max_horarios:14,completar:'1'});
+    else if(tipo==='sh_relampago'){if(ljRelPausada(c))throw new Error('A relâmpago desta loja está pausada — religue antes de completar.');const token=await shopeeGarantirTokenValido(c,'erp');const p=new URLSearchParams({acao:'criar_oferta_relampago',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,discount_id:c.shopeeDescontoFixoId||'',percentual:5,qtd_por_produto:5,limite_produtos:50,max_horarios:14,completar:'1',excluir_itens:ljRelItensPausados(c).join(',')});
       const r=await (await fetch(`${SHOPEE_API}?${p}`)).json();const comp=r.completadas||r.detalhe?.completadas;
       msg=`${r.ok?`${r.total_ofertas} oferta(s) nova(s) com ${r.total_produtos} produto(s)`:(r.erro||'nenhuma oferta nova')}${comp?.produtos?` · +${comp.produtos} produto(s) em ${comp.ofertas} oferta(s) já agendada(s)`:''}`;lj.agenda=null;}
     else{const p=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId:c.id});if(exec)p.set('executar','1');const r=await (await fetch(`${SHOPEE_API}?${p}`,{headers:await authHeaders()})).json();msg=r.ok?ttResumoRobo((r.resultados||[])[0],r.modo).replace(/\n+/g,' · '):(r.erro||'erro');}
     lj.acao={tipo,msg,ok:true};}catch(e){lj.acao={tipo,msg:e.message,ok:false};}
   ljRender();if(tipo==='sh_relampago')ljCarregarAgenda();};
+// ===== Cancelar relâmpago Shopee (16/10/2026, LN Modas quer mexer no estoque). Backend: lb-shopee-gmv/api/mapa-produtos (acao=relampago_*) =====
+const LJ_REL_API='https://lb-shopee-gmv.vercel.app/api/mapa-produtos';
+function ljRelPausada(c){return c.ofertaRelampagoAuto===false||Number(c.ofertaRelampagoPausadaAte||0)>Date.now();}
+function ljRelItensPausados(c){return Object.entries(c.ofertaRelampagoItensPausados||{}).filter(([,a])=>Number(a)>Date.now()).map(([i])=>i);}
+function ljRelAteTxt(a){a=Number(a);return a>=4102444800000?'até religar':`até ${new Date(a).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`;}
+window.__ljRelAbrir=async()=>{const id=lj.id;lj.rel={carregando:true,sel:new Set(),escopo:'produtos',dias:'1'};ljRender();
+  let novo;try{const r=await (await fetch(`${LJ_REL_API}?acao=relampago_ver&clienteId=${encodeURIComponent(id)}`,{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);novo={...lj.rel,carregando:false,dados:r};}
+  catch(e){novo={erro:e.message};}if(lj.id!==id)return;lj.rel=novo;ljRender();setTimeout(()=>document.getElementById('ljRelBox')?.scrollIntoView({behavior:'smooth',block:'start'}),50);};
+window.__ljRelFechar=()=>{lj.rel=null;ljRender();};
+window.__ljRelMarcar=(id,on)=>{if(!lj.rel?.sel)return;on?lj.rel.sel.add(String(id)):lj.rel.sel.delete(String(id));const n=document.getElementById('ljRelN');if(n)n.textContent=lj.rel.sel.size;};
+window.__ljRelTodos=(on)=>{(lj.rel?.dados?.produtos||[]).forEach(p=>window.__ljRelMarcar(p.item_id,on));document.querySelectorAll('.ljRelChk').forEach(x=>x.checked=on);};
+window.__ljRelOpcao=(k,v)=>{lj.rel[k]=v;ljRender();};
+window.__ljRelCancelar=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);const R=lj.rel;if(!c||!R?.dados)return;
+  if(!isLincoln()){showToast('Só Lincoln e Carol.');return;}
+  const itens=[...R.sel];if(R.escopo==='produtos'&&!itens.length){showToast('Marque os produtos.');return;}
+  const dTxt={'1':'1 dia','3':'3 dias','7':'7 dias','0':'até religar'}[R.dias];
+  const o=R.dados.ofertas||[],noAr=o.filter(x=>x.noAr).length,ag=o.length-noAr;
+  const txt=R.escopo==='loja'?`Cancelar a relâmpago da LOJA TODA?\n\n• ${noAr} oferta(s) no ar serão DESLIGADAS\n• ${ag} oferta(s) agendada(s) serão APAGADAS\n• o robô fica pausado ${dTxt}`:`Tirar ${itens.length} produto(s) de todas as relâmpagos?\n\n• na oferta no ar o produto é desligado; nas agendadas é retirado\n• o resto da loja continua com relâmpago\n• esses produtos ficam pausados ${dTxt}`;
+  if(!await lbConfirmar(`${c.nome}\n\n${txt}\n\nDepois o estoque fica livre pra mexer (a Shopee pode levar alguns minutos pra soltar).`,{okTxt:'Cancelar agora'}))return;
+  lj.rel.rodando=true;ljRender();
+  try{const r=await (await fetch(LJ_REL_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'relampago_cancelar',clienteId:c.id,escopo:R.escopo,itens:itens.join(','),dias:R.dias,executar:1})})).json();
+    if(!r.ok&&!r.feitos)throw new Error(r.erro||'erro');
+    lj.acao={tipo:'rel',ok:!r.erros?.length,msg:`${r.feitos.length} operação(ões) feita(s)${r.erros?.length?` · ${r.erros.length} com erro: ${r.erros.map(e=>e.erro).join(' | ').slice(0,200)}`:''} · pausa ${ljRelAteTxt(r.pausaAte)}`};lj.rel=null;lj.agenda=null;}
+  catch(e){lj.acao={tipo:'rel',ok:false,msg:e.message};lj.rel.rodando=false;}
+  ljRender();ljCarregarAgenda();};
+window.__ljRelReligar=async(item)=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;if(!isLincoln()){showToast('Só Lincoln e Carol.');return;}
+  if(!await lbConfirmar(`${c.nome}\n\n${item?'Religar a relâmpago deste produto?':'Religar a relâmpago da loja?'}\nO robô volta a criar e completar as ofertas na próxima hora (ou clique em Completar agora).`,{okTxt:'Religar'}))return;
+  try{const r=await (await fetch(LJ_REL_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'relampago_religar',clienteId:c.id,itens:item||''})})).json();if(!r.ok)throw new Error(r.erro);
+    lj.acao={tipo:'rel',ok:true,msg:item?'Produto religado na relâmpago.':'Relâmpago da loja religada.'};if(lj.rel&&item)return window.__ljRelAbrir();}catch(e){lj.acao={tipo:'rel',ok:false,msg:e.message};}ljRender();};
+function ljRelHtml(c){const R=lj.rel;if(!R)return '';
+  const cab=`<div class="panel-head"><h3>Cancelar relâmpago — Shopee</h3><span class="p-sub">pra mexer no estoque ou no preço sem a relâmpago travar</span><button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="window.__ljRelFechar()">Fechar</button></div>`;
+  if(R.carregando)return `<div class="panel" id="ljRelBox" style="margin-top:16px">${cab}<div class="lj-vazio" style="padding:18px">Lendo as ofertas na Shopee…</div></div>`;
+  if(R.erro)return `<div class="panel" id="ljRelBox" style="margin-top:16px">${cab}<div class="lj-vazio" style="padding:18px">Não li as ofertas: ${esc(R.erro)}</div></div>`;
+  const D=R.dados,o=D.ofertas||[],noAr=o.filter(x=>x.noAr),ag=o.filter(x=>!x.noAr);
+  const pausados=D.itensPausados||{};const pausadoAte=(id)=>Number(pausados[id]||0)>Date.now()?pausados[id]:0;
+  const dt=(ms)=>new Date(ms).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  const lista=(D.produtos||[]).map(p=>`<label style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">${R.escopo==='produtos'?`<input type="checkbox" class="ljRelChk" ${R.sel.has(p.item_id)?'checked':''} onchange="window.__ljRelMarcar('${p.item_id}',this.checked)">`:''}${p.imagem?`<img src="https://cf.shopee.com.br/file/${esc(p.imagem)}_tn" style="width:34px;height:34px;border-radius:6px;object-fit:cover">`:''}<span style="flex:1;min-width:0"><b style="font-weight:500">${esc(p.nome||p.item_id)}</b><div class="lj-sub">em ${p.ofertas} oferta(s)${p.noAr?' · no ar agora':''}</div></span></label>`).join('');
+  const jaPausados=Object.keys(pausados).filter(pausadoAte);
+  const pausHtml=jaPausados.length?`<div style="margin-top:14px"><b>Produtos pausados</b>${jaPausados.map(i=>`<div style="display:flex;gap:8px;align-items:center;padding:4px 0"><span style="flex:1">${esc((D.produtos||[]).find(p=>p.item_id===i)?.nome||'produto '+i)} <span class="lj-sub">${ljRelAteTxt(pausados[i])}</span></span>${isLincoln()?`<button class="btn btn-sm btn-ghost" onclick="window.__ljRelReligar('${i}')">Religar</button>`:''}</div>`).join('')}</div>`:'';
+  const op=(k,v,t)=>`<label style="display:inline-flex;gap:6px;align-items:center;margin-right:14px"><input type="radio" name="ljRel_${k}" ${R[k]===v?'checked':''} onchange="window.__ljRelOpcao('${k}','${v}')">${t}</label>`;
+  return `<div class="panel" id="ljRelBox" style="margin-top:16px">${cab}
+    <div class="lj-sub" style="margin-bottom:12px">${noAr.length} no ar (${noAr.map(x=>dt(x.inicio)).join(', ')||'—'}) · ${ag.length} agendada(s)${ag.length?` (${dt(ag[0].inicio)} a ${dt(ag[ag.length-1].inicio)})`:''}. Oferta no ar não pode ser apagada: ela é <b>desligada</b>. As agendadas são <b>apagadas</b>.</div>
+    <div style="margin-bottom:10px"><b>O que cancelar:</b> ${op('escopo','produtos','Só os produtos marcados')}${op('escopo','loja','A loja toda')}</div>
+    <div style="margin-bottom:12px"><b>Pausar o robô por:</b> ${op('dias','1','1 dia')}${op('dias','3','3 dias')}${op('dias','7','7 dias')}${op('dias','0','até religar')}</div>
+    ${R.escopo==='produtos'?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><b><span id="ljRelN">${R.sel.size}</span> marcado(s)</b><button class="btn btn-sm btn-ghost" onclick="window.__ljRelTodos(true)">Marcar todos</button><button class="btn btn-sm btn-ghost" onclick="window.__ljRelTodos(false)">Limpar</button></div><div style="max-height:360px;overflow:auto">${lista||'<div class="lj-vazio">Nenhum produto em relâmpago agora.</div>'}</div>`:''}
+    ${pausHtml}
+    <div style="margin-top:14px;display:flex;gap:8px">${isLincoln()?`<button class="btn btn-gold" onclick="window.__ljRelCancelar()" ${R.rodando?'disabled':''}>${R.rodando?'Cancelando…':'Cancelar relâmpago'}</button>`:'<span class="lj-sub">Só Lincoln e Carol cancelam.</span>'}</div></div>`;}
 function ljPromoHtml(c){const sh=ljTem(c,'shopee'),tt=ljTem(c,'tiktok'),ml=ljTem(c,'ml');
   const fim=(ms,lim,auto)=>{if(!ms)return['na','—',''];const d=ljDias(ms);return[d<0?'ruim':d<=lim?'at':'ok',`${d<0?'venceu em':'ativo até'} ${ljData(ms)}`,auto];};
   const cel=(x)=>{const [k,t,sub,btn]=x;return `<td><span class="lj-st ${k}">${esc(t)}</span>${sub?`<div class="lj-sub">${sub}</div>`:''}${btn||''}</td>`;};
@@ -5082,7 +5129,7 @@ function ljPromoHtml(c){const sh=ljTem(c,'shopee'),tt=ljTem(c,'tiktok'),ml=ljTem
       tt?(c.tiktokCupomFim?fim(ljMs(c.tiktokCupomFim),15,'criado no Seller Center (a API só lê)'):['at','criar no Seller Center','a API do TikTok não cria cupom']):nd,
       ml?['na','opcional','não é padrão LB']:nd],
     ['Oferta relâmpago','desconto fixo −5%',
-      sh?(c.ofertaRelampagoAuto===false?['at','robô desligado','']:[ljMs(c.ofertaRelampagoShopeeCobertaAte)&&ljDias(ljMs(c.ofertaRelampagoShopeeCobertaAte))>=0?'ok':'at',ljMs(c.ofertaRelampagoShopeeCobertaAte)?`coberto até ${ljData(ljMs(c.ofertaRelampagoShopeeCobertaAte))}`:'robô a cada hora',esc(String(c.ofertaRelampagoAutoUltimoResultado||'').slice(0,110)),isLincoln()?b('sh_relampago','Completar agora',true):'']):nd,
+      sh?(ljRelPausada(c)?['at',c.ofertaRelampagoAuto===false?'robô desligado':`pausada ${ljRelAteTxt(c.ofertaRelampagoPausadaAte)}`,'o robô não cria nem completa até religar',isLincoln()?lk(`window.__ljRelReligar()`,'Religar')+' '+lk(`window.__ljRelAbrir()`,'Ver ofertas'):'']:[ljMs(c.ofertaRelampagoShopeeCobertaAte)&&ljDias(ljMs(c.ofertaRelampagoShopeeCobertaAte))>=0?'ok':'at',ljMs(c.ofertaRelampagoShopeeCobertaAte)?`coberto até ${ljData(ljMs(c.ofertaRelampagoShopeeCobertaAte))}`:'robô a cada hora',esc(String(c.ofertaRelampagoAutoUltimoResultado||'').slice(0,110))+(ljRelItensPausados(c).length?`<br><b>${ljRelItensPausados(c).length} produto(s) pausado(s)</b>`:''),(isLincoln()?b('sh_relampago','Completar agora',true)+' ':'')+lk(`window.__ljRelAbrir()`,'Cancelar relâmpago')]):nd,
       tt?(c.tiktokOfertaAuto===false?['at','robô desligado','']:[ljMs(c.tiktokOfertaCobertaAte)&&ljDias(ljMs(c.tiktokOfertaCobertaAte))>=0?'ok':'ruim',ljMs(c.tiktokOfertaCobertaAte)?`coberto até ${ljData(ljMs(c.tiktokOfertaCobertaAte))}`:'sem oferta agendada','ofertas de 72h emendadas · robô 4x/dia',b('tt_simular','Simular')+(isLincoln()?' '+b('tt_rodar','Rodar agora'):'')]):nd,
       ml?(c.mlOfertaAuto===false?['at','robô desligado','']:['ok','robô todo dia 8h','até −7% · o ML escolhe o dia',lk(`window.__irParaMarketing('mercadolivre','oferta')`,'Ver robô do ML')]):nd],
     ['Campanhas e datas','11.11, Black Friday…',sh?['na','pelo Seller Center','']:nd,tt?['na','pelo Seller Center','']:nd,ml?['ok','robô entra sozinho','−5% (até 7%) nas campanhas do ML']:nd],
@@ -5097,7 +5144,7 @@ function ljPromoHtml(c){const sh=ljTem(c,'shopee'),tt=ljTem(c,'tiktok'),ml=ljTem
   const A=lj.agenda;let ag='';
   if(sh){const corpoAg=!A||A.carregando?'<div class="lj-vazio" style="padding:18px">Lendo a agenda na Shopee…</div>':A.erro?`<div class="lj-vazio" style="padding:18px">Não li a agenda: ${esc(A.erro)}</div>`:A.sem?'':`<div class="lj-agenda">${Object.entries(A.dias).map(([d,x])=>{const dt=new Date(d+'T12:00:00');const k=x.ofertas?(x.max>=10?'ok':'at'):'livre';return `<div class="lj-dia ${k}"><span>${dt.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')} ${dt.getDate()}</span><b>${x.ofertas?`${x.max} prod.`:'livre'}</b><small>${x.ofertas?`${x.ofertas} oferta(s)`:'robô cria'}</small></div>`;}).join('')}</div><div class="lj-sub" style="margin-top:10px">Verde = 10+ produtos na oferta · amarelo = poucos (use Completar agora) · cinza = horário ainda livre</div>`;
     ag=`<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>Relâmpago Shopee — próximos 7 dias</h3><span class="p-sub">${A?.total!=null?`${A.total} oferta(s) agendada(s) ou no ar`:''}</span></div>${corpoAg}</div>`;}
-  return tab+ag;}
+  return tab+(sh?ljRelHtml(c):'')+ag;}
 
 /* ---------- Central da Loja → Anúncios (15/10/2026): Shopee Ads e ML Ads do mês, robô de Ads, impulsionar, propostas do Téo ---------- */
 async function ljCarregarTeo(){const id=lj.id;if(!id)return;try{const sn=await getDocs(query(collection(db,'aprovacoes'),where('clienteId','==',id),limit(60)));if(lj.id!==id)return;
