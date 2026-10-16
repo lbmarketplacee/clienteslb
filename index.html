@@ -7,6 +7,11 @@
      Embedded Signup no futuro (com ou sem Coexistência). -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sistema LB">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>LB Marketplace · Gestão</title>
 <meta name="description" content="Sistema interno de gestão da LB Marketplace Assessoria: controle de clientes, tarefas, marketing e desempenho em marketplaces como Shopee, Mercado Livre e TikTok Shop.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23080808'/%3E%3Crect x='1' y='1' width='62' height='62' rx='13' fill='none' stroke='%23d4a94a' stroke-width='2'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-weight='bold' font-size='28' fill='%23d4a94a' text-anchor='middle'%3ELB%3C/text%3E%3C/svg%3E">
@@ -1374,6 +1379,24 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .prod-sim-tabela th{text-align:left;color:var(--text-dim);font-weight:500;padding:4px 6px;border-bottom:1px solid var(--border)}
 .prod-sim-tabela td{padding:5px 6px;border-bottom:1px solid var(--border)}
 .prod-preco-novo{color:#a855f7;font-weight:600}
+
+/* ===== iPad / tablet (16/10/2026). Só mexe em tela até 1180px ou toque — no computador nada muda. ===== */
+.main-area{min-width:0}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cm-card-grid>*,.sgmv-summary>*,.summary-grid>*{min-width:0}
+@media(max-width:1024px){.cm-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sgmv-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.lj-tabs{grid-template-columns:repeat(3,minmax(0,1fr))!important}.lj-tabs .prod-tab small{display:none}}
+@media(min-width:700px) and (max-width:900px){.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(pointer:coarse){
+  *{-webkit-tap-highlight-color:transparent}
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}
+  .btn{min-height:40px}.btn.btn-sm{min-height:34px}
+  .nav-item{min-height:44px}
+  .icon-act{min-width:36px;min-height:36px}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px}
+  .table-wrap,.lj-tabela,.lj-rel-grid{overscroll-behavior-x:contain}
+}
+@supports(padding:env(safe-area-inset-top)){.sidebar{padding-top:max(24px,env(safe-area-inset-top))}}
 </style>
 <link rel="preload" as="style" href="lb-dashboard-modern.css" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="lb-dashboard-modern.css"></noscript>
