@@ -1,0 +1,10 @@
+{
+  "name": "Sistema LB Marketplace",
+  "short_name": "Sistema LB",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a09",
+  "theme_color": "#0a0a09",
+  "icons": [{ "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }]
+}

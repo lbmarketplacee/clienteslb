@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sistema LB">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>LB Marketplace · Gestão</title>
 <meta name="description" content="Sistema interno de gestão da LB Marketplace Assessoria: controle de clientes, tarefas, marketing e desempenho em marketplaces como Shopee, Mercado Livre e TikTok Shop.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23080808'/%3E%3Crect x='1' y='1' width='62' height='62' rx='13' fill='none' stroke='%23d4a94a' stroke-width='2'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-weight='bold' font-size='28' fill='%23d4a94a' text-anchor='middle'%3ELB%3C/text%3E%3C/svg%3E">
@@ -1514,6 +1515,10 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
     <div class="drive-status drive-off status-pill" id="driveStatus" style="cursor:pointer" title="Conectar Google Drive">
       <span class="drive-dot off status-dot offline" id="driveDot"></span>
       <span id="driveStatusTxt">Drive desconectado</span>
+    </div>
+    <div class="drive-status drive-off status-pill hidden" id="pushStatus" style="cursor:pointer;margin-top:6px" title="Notificações neste aparelho" onclick="window.__pushLigar()">
+      <span class="drive-dot off" id="pushDot"></span>
+      <span id="pushTxt">Ligar notificações</span>
     </div>
     <div class="nav-user">
       <div class="avatar" id="navAvatar">L</div>
@@ -3415,7 +3420,7 @@ document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth))
 // Some com a tela de carregamento assim que o Firebase responde (se não responder em 10s, mostra o login).
 const sairDoCarregamento=()=>document.getElementById('bootScreen')?.classList.add('hidden');
 setTimeout(()=>{if(!document.getElementById('bootScreen')?.classList.contains('hidden')&&appScreen.classList.contains('hidden')){sairDoCarregamento();loginScreen.classList.remove('hidden');}},10000);
-onAuthStateChanged(auth,user=>{sairDoCarregamento();if(user){setTimeout(()=>{try{onSnapshot(query(collection(db,'aprovacoes'),where('status','==','pendente')),sn=>{const b=document.getElementById('escAprovBadge');if(b){b.textContent=sn.size+' p/ aprovar';b.classList.toggle('hidden',!sn.size);}},()=>{});}catch(e){}},2500);setTimeout(()=>window.__abrirPedidoUrl?.(),1200);
+onAuthStateChanged(auth,user=>{sairDoCarregamento();if(user){setTimeout(()=>{try{pushIniciar();}catch(e){}},3000);setTimeout(()=>{try{onSnapshot(query(collection(db,'aprovacoes'),where('status','==','pendente')),sn=>{const b=document.getElementById('escAprovBadge');if(b){b.textContent=sn.size+' p/ aprovar';b.classList.toggle('hidden',!sn.size);}},()=>{});}catch(e){}},2500);setTimeout(()=>window.__abrirPedidoUrl?.(),1200);
   if(!USERS_MAP[user.email]){
     // Segurança: mesmo que o login tenha passado no Google/Firebase, se o e-mail
     // não está na lista de autorizados, desloga na hora e nunca mostra o app.
@@ -5096,6 +5101,37 @@ window.__ljAcao=async(tipo)=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);
     else{const p=new URLSearchParams({acao:'rodar_robo_tiktok',clienteId:c.id});if(exec)p.set('executar','1');const r=await (await fetch(`${SHOPEE_API}?${p}`,{headers:await authHeaders()})).json();msg=r.ok?ttResumoRobo((r.resultados||[])[0],r.modo).replace(/\n+/g,' · '):(r.erro||'erro');}
     lj.acao={tipo,msg,ok:true};}catch(e){lj.acao={tipo,msg:e.message,ok:false};}
   ljRender();if(tipo==='sh_relampago')ljCarregarAgenda();};
+// ===== Notificações no celular/iPad (16/10/2026). Backend: lb-shopee-gmv/api/push.js; aparelho: /sw.js =====
+const PUSH_API='https://lb-shopee-gmv.vercel.app/api/push';
+const PUSH_CHAVE='BNwjen2YsuTE-Vfw2LsZfBpIckGdDvdiG6SniIXx-uSqe1Fq57OTDC-cPuIm3kMn3QUlZMwk6oz5L7h6433vi8c';
+const pushIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const pushApp=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const pushSuporta=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+function pushB64(b){const p='='.repeat((4-b.length%4)%4);const r=atob((b+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...r].map(c=>c.charCodeAt(0)));}
+function pushPintar(estado){const el=document.getElementById('pushStatus');if(!el)return;
+  const ok=estado==='on';el.classList.remove('hidden');document.getElementById('pushDot').className='drive-dot '+(ok?'on':'off');
+  document.getElementById('pushTxt').textContent=ok?'Notificações ligadas':estado==='negado'?'Notificações bloqueadas':'Ligar notificações';}
+async function pushEnviarInscricao(sub){const r=await fetch(PUSH_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'inscrever',subscription:sub.toJSON(),ua:navigator.userAgent})});const j=await r.json();if(!j.ok)throw new Error(j.erro||'não gravou');}
+async function pushIniciar(){
+  if(document.body.classList.contains('modo-portal'))return;
+  if(!pushSuporta()){if(pushIOS()&&!pushApp())pushPintar('off');return;}
+  try{const reg=await navigator.serviceWorker.register('/sw.js');
+    const sub=await reg.pushManager.getSubscription();
+    if(sub&&Notification.permission==='granted'){pushPintar('on');pushEnviarInscricao(sub).catch(()=>{});}
+    else pushPintar(Notification.permission==='denied'?'negado':'off');
+  }catch(e){console.warn('push',e);}}
+window.__pushLigar=async()=>{
+  if(pushIOS()&&!pushApp()){lbAvisar('No iPhone/iPad as notificações só funcionam com o sistema aberto pelo ícone da Tela de Início.\n\nNo Safari: botão Compartilhar → "Adicionar à Tela de Início". Depois abra pelo ícone LB e toque aqui de novo.');return;}
+  if(!pushSuporta()){lbAvisar('Este navegador não aceita notificações.');return;}
+  if(Notification.permission==='denied'){lbAvisar('As notificações estão bloqueadas pra este site. Libere nos Ajustes do aparelho (ou nas configurações do navegador) e toque aqui de novo.');return;}
+  try{const perm=await Notification.requestPermission();if(perm!=='granted'){pushPintar(perm==='denied'?'negado':'off');return;}
+    const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pushB64(PUSH_CHAVE)});
+    await pushEnviarInscricao(sub);pushPintar('on');
+    const t=await (await fetch(PUSH_API+'?acao=teste',{headers:await authHeaders()})).json();
+    showToast(t.ok?'Notificações ligadas — mandei uma de teste.':'Ligado, mas o teste não chegou: '+(t.erro||t.erros?.[0]||''));
+  }catch(e){lbAvisar('Não consegui ligar as notificações: '+e.message);}};
 // ===== Cancelar relâmpago Shopee (16/10/2026, LN Modas quer mexer no estoque). Backend: lb-shopee-gmv/api/mapa-produtos (acao=relampago_*) =====
 const LJ_REL_API='https://lb-shopee-gmv.vercel.app/api/mapa-produtos';
 function ljRelPausada(c){return c.ofertaRelampagoAuto===false||Number(c.ofertaRelampagoPausadaAte||0)>Date.now();}
