@@ -55,6 +55,13 @@ async function processarCallback() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   const clienteId = params.get('state');
+  // LB Precifica (19/10/2026): a conta do Mercado Livre é do cliente do Precifica, não de cliente da LB → devolve pro Precifica, sem gravar nada aqui
+  if (/^pf_[a-f0-9]{24}$/.test(clienteId || '')) {
+    const q = new URLSearchParams({ mlstate: clienteId });
+    if (code) q.set('mlcode', code); else q.set('mlerro', params.get('error') || 'cancelado');
+    location.replace('https://lbprecifica.lbmarketplace.com.br/?' + q.toString());
+    return;
+  }
   if (!code) { mostrarErro('Código de autorização não encontrado na URL.'); return; }
   if (!clienteId) { mostrarErro('Não sei pra qual cliente é essa conexão (state ausente).'); return; }
 
