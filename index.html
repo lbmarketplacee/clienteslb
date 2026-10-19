@@ -12177,12 +12177,17 @@ const sheinSem=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerC
 function sheinAcharValor(valores,nome){const a=sheinSem(nome);if(!a)return null;const l=(valores||[]).map(v=>({id:v.id,n:sheinSem(v.nome)}));
   return (l.find(v=>v.n===a)||l.find(v=>v.n.replace(/ /g,'')===a.replace(/ /g,''))||{}).id||null;}
 // foto pra SHEIN: quadrada 1200×1200 fundo branco (vale pra principal, detalhe e quadrada: 1:1 de 900 a 2200 px) ou 80×80 recortada (miniatura de cor)
-async function sheinJpg(url,lado=1200){
+// formato: 'retrato' = 1340×1785 (3:4, principal/detalhe), 'quadrada' = 1200×1200, número < 200 = miniatura da cor.
+// SEM borda branca: a SHEIN recusa principal com borda (Florecer, 19/10/2026) → preenche cortando (cover), nunca encaixando.
+async function sheinJpg(url,formato='retrato'){
   const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
   const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
-  const cv=document.createElement('canvas');cv.width=cv.height=lado;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,lado,lado);
-  if(lado<200){const m=Math.min(img.width,img.height)*0.5;g.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,lado,lado);} // miolo da peça = cor
-  else{const e=Math.min(lado/img.width,lado/img.height);g.drawImage(img,(lado-img.width*e)/2,(lado-img.height*e)/2,img.width*e,img.height*e);}
+  const [W,H]=typeof formato==='number'?[formato,formato]:formato==='quadrada'?[1200,1200]:[1340,1785];
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  if(typeof formato==='number'&&formato<200){const m=Math.min(img.width,img.height)*0.5;g.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,W,H);} // miolo da peça = cor
+  else{const e=Math.max(W/img.width,H/img.height),w=img.width*e,h=img.height*e;
+    // corta igual dos lados; no vertical corta mais embaixo que em cima (não corta a cabeça da modelo)
+    g.drawImage(img,(W-w)/2,(H-h)*0.2,w,h);}
   URL.revokeObjectURL(u);return cv.toDataURL('image/jpeg',0.9);
 }
 // IA escolhe o valor da SHEIN quando o nome não bate (cor "Off white" → "Branco"; atributos obrigatórios: Material, Elasticidade...)
@@ -12391,11 +12396,11 @@ const pxCriar={
       const r=await sheinApi(c,'publicar',{spec,simular:1});if(!r.ok)throw new Error(r.erro);window.__pxCorpoShein=r.corpo;
       return{id:null,msg:`simulado · ${prep.categoria.nome.split(' > ').pop()} · ${cores.length} cor(es) × ${Math.max(1,tams.length)} tam. · ${vendas.map(fmtR).join('/')}`};}
     // fotos → URL da SHEIN (cada envio conta no plano da Fixie): detalhe = até 4 fotos gerais, 1 principal por cor (vale como quadrada), miniatura 80×80 se >1 cor
-    const subir=async(url,tipo)=>{const r=await sheinApi(c,'imagem',{tipo,base64:await sheinJpg(url,tipo===6?80:1200)});if(!r.ok)throw new Error('foto: '+r.erro);return r.url;};
+    const subir=async(url,tipo)=>{const r=await sheinApi(c,'imagem',{tipo,base64:await sheinJpg(url,tipo===6?80:tipo===5?'quadrada':'retrato')});if(!r.ok)throw new Error('foto: '+r.erro);return r.url;};
     const fotosCor=new Set(cores.map(x=>x.foto).filter(Boolean));const gerais=P.fotos.filter(u=>!fotosCor.has(u)).slice(0,4);const detalhes=[];
     for(const u of gerais){linha(`SHEIN: fotos ${detalhes.length+1}/${gerais.length}`);detalhes.push(await subir(u,2));}
     for(const [i,x] of cores.entries()){const foto=x.foto||P.fotos[0];if(!foto)throw new Error('produto sem foto');linha(`SHEIN: foto da cor ${i+1}/${cores.length}`);
-      const principal=await subir(foto,1);spec.cores[i].imagens={principal,detalhes,quadrada:principal,cor:cores.length>1?await subir(foto,6):null};}
+      const principal=await subir(foto,1);spec.cores[i].imagens={principal,detalhes,quadrada:await subir(foto,5),cor:cores.length>1?await subir(foto,6):null};}
     linha('SHEIN: publicando...');
     const r=await sheinApi(c,'publicar',{spec});if(!r.ok)throw new Error(r.erro);
     return{id:String(r.spu),msg:`enviado pra análise da SHEIN · ${r.spu} · ${vendas.map(fmtR).join('/')}${r.avisos?.length?` · aviso: ${r.avisos[0]}`:''}`};
