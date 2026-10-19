@@ -6831,9 +6831,9 @@ function shopeeAtualizarStatusModal(c){
   const btnAtualizar=document.getElementById('atualizarGmvBtn');
   if(!c||!c.id){wrap.classList.add('hidden');return;} // só mostra em cliente já salvo
   wrap.classList.remove('hidden');
-  if(c.shopeeShopId){
+  if(c.shopeeErpShopId||c.shopeeShopId){
     const dt=c.gmvShopeeAtualizadoEm?new Date(c.gmvShopeeAtualizadoEm.seconds?c.gmvShopeeAtualizadoEm.seconds*1000:c.gmvShopeeAtualizadoEm).toLocaleString('pt-BR'):'ainda não atualizado';
-    txt.innerHTML=`✅ Conectado — Loja <b style="color:var(--text)">${c.shopeeShopId}</b><br>GMV automático (mês atual): <b style="color:var(--green)">${fmtR(c.gmvShopeeAutomatico||0)}</b><br><span style="font-size:11px">Última atualização: ${dt} — veja todos em <b style="color:var(--gold)">Shopee GMV API</b></span>`;
+    txt.innerHTML=`✅ Conectado${c.shopeeErpShopId?' (ERP)':' (app antigo)'} — Loja <b style="color:var(--text)">${c.shopeeErpShopId||c.shopeeShopId}</b><br>GMV automático (mês atual): <b style="color:var(--green)">${fmtR(c.gmvShopeeAutomatico||0)}</b><br><span style="font-size:11px">Última atualização: ${dt} — veja todos em <b style="color:var(--gold)">Shopee GMV API</b></span>`;
     btnConectar.textContent='🔄 Reconectar Shopee';
     btnAtualizar.classList.remove('hidden');
   }else{
@@ -7335,8 +7335,10 @@ function sgmvRenderizar(){
   const lista=document.getElementById('sgmvLista');
   if(!lista)return;
   const clientesShopee=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee')&&c.ativo!==false);
-  const conectados=clientesShopee.filter(c=>c.shopeeShopId);
-  const pendentes=clientesShopee.filter(c=>!c.shopeeShopId);
+  // conectada = ERP (padrão desde 05/10/2026) ou app antigo de GMV — o mesmo critério do robô de vendas (relatorio.js?modo=gmv)
+  const sgmvLoja=c=>c.shopeeErpShopId||c.shopeeShopId;
+  const conectados=clientesShopee.filter(sgmvLoja);
+  const pendentes=clientesShopee.filter(c=>!sgmvLoja(c));
 
   const totalGmv=conectados.reduce((s,c)=>s+(c.gmvShopeeAutomatico||0),0);
   animateTo(document.getElementById('sgmvTotal'),totalGmv,v=>fmtR(v));
@@ -7354,13 +7356,13 @@ function sgmvRenderizar(){
 
   const ordenados=[...conectados,...pendentes];
   lista.innerHTML=ordenados.map(c=>{
-    const conectado=!!c.shopeeShopId;
+    const conectado=!!sgmvLoja(c);
     const dt=c.gmvShopeeAtualizadoEm?.seconds?new Date(c.gmvShopeeAtualizadoEm.seconds*1000).toLocaleDateString('pt-BR'):(c.gmvShopeeAtualizadoEm?new Date(c.gmvShopeeAtualizadoEm).toLocaleDateString('pt-BR'):'nunca');
     return `<div class="sgmv-card ${conectado?'conectado':'pendente'}">
       <div class="sgmv-ico">S</div>
       <div class="sgmv-info">
         <div class="sgmv-nome">${esc(c.nome)}</div>
-        <div class="sgmv-sub">${conectado?`Loja ${c.shopeeShopId} — atualizado em ${dt}`:'Ainda não autorizou o acesso'}</div>
+        <div class="sgmv-sub">${conectado?`Loja ${sgmvLoja(c)}${c.shopeeErpShopId?'':' (app antigo)'} — atualizado em ${dt}`:'Ainda não autorizou o acesso'}</div>
       </div>
       ${conectado?`<div class="sgmv-valor"><div class="num">${fmtR(c.gmvShopeeAutomatico||0)}</div><div class="lbl">GMV mês atual</div></div>`:''}
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
@@ -8054,37 +8056,22 @@ window.__shopeeConectar=async(clienteId,clienteNome,app='gmv')=>{
 /* --- Atualizar GMV de 1 cliente (reutilizável) --- */
 window.__shopeeAtualizarGmv=async(clienteId)=>{
   const cliente=clientesCache.find(c=>c.id===clienteId);
-  if(!cliente||!cliente.shopeeShopId){showToast('Cliente não conectado à Shopee.');return;}
+  if(!cliente||!(cliente.shopeeErpShopId||cliente.shopeeShopId)){showToast('Cliente não conectado à Shopee.');return;}
   try{
-    const accessToken=await shopeeGarantirTokenValido(cliente);
-    // Uma única chamada com os 30 dias inteiros — o backend (shopee.js) é quem divide
-    // em janelas de 15 dias e pagina os pedidos. O frontend não fatia mais o período.
-    const hoje=new Date();
-    const DIAS_TOTAL=30;
-    const inicio=new Date(hoje.getTime()-(DIAS_TOTAL-1)*24*60*60*1000);
-    const primeiroDia=inicio.toISOString().split('T')[0];
-    const ultimoDia=hoje.toISOString().split('T')[0];
-    const resp=await fetch(`${SHOPEE_API}?acao=buscar_gmv&access_token=${accessToken}&shop_id=${cliente.shopeeShopId}&data_inicio=${primeiroDia}&data_fim=${ultimoDia}`);
-    const data=await resp.json();
-    const gmvTotal=Number(data.gmv)||0;
-    const pedidosTotal=Number(data.totalPedidos)||0;
-    if(!data.ok){
-      showToast(`Erro em ${cliente.nome}: `+(data.erro||'Erro ao buscar GMV.'));
-      return false;
-    }
-    await updateDoc(doc(db,"clientes",clienteId),{gmvShopeeAutomatico:gmvTotal,gmvShopeeAtualizadoEm:serverTimestamp()});
-    console.log('[Shopee GMV debug]',cliente.nome,data.debug);
-    if(pedidosTotal===0){
-      lbAvisar(`Diagnóstico Shopee — ${cliente.nome}:\n\nA Shopee não retornou nenhum pedido válido nesse período.\n\nResposta completa no Console (F12), procure por "[Shopee GMV debug]".`);
-    }
-    showToast(`✓ ${cliente.nome}: ${fmtR(gmvTotal)} (${pedidosTotal} pedidos concluídos)`);
+    // mesmo cálculo do robô (18/10/2026): mês atual em Brasília, ERP primeiro, só pedidos válidos — antes eram 30 dias pelo app antigo
+    const data=await (await fetch(`${RELATORIO_API}?modo=gmv&clienteId=${encodeURIComponent(clienteId)}`,{headers:await authHeaders()})).json();
+    if(!data.ok)throw new Error(data.erro||'erro');
+    const r=(data.resultados||[])[0]||{};
+    const err=(r.erros||[]).find(e=>/^Shopee:/.test(e));
+    if(err){showToast(`Erro em ${cliente.nome}: ${err}`);return false;}
+    showToast(`✓ ${cliente.nome}: Shopee ${fmtR(r['Shopee']||0)} no mês`);
     return true;
   }catch(e){console.error(e);showToast(`Erro em ${cliente.nome}: `+e.message);return false;}
 };
 
 document.getElementById('sgmvAtualizarTodosBtn')?.addEventListener('click',async()=>{
   const btn=document.getElementById('sgmvAtualizarTodosBtn');
-  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee')&&c.shopeeShopId&&c.ativo!==false);
+  const conectados=(clientesCache||[]).filter(c=>(c.marketplaces||[]).includes('shopee')&&(c.shopeeErpShopId||c.shopeeShopId)&&c.ativo!==false);
   if(!conectados.length){showToast('Nenhuma loja conectada ainda.');return;}
   btn.disabled=true;btn.textContent=`Atualizando 0/${conectados.length}...`;
   let sucesso=0;
