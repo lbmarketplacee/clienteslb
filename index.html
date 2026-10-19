@@ -1359,6 +1359,9 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .prod-hero-mps{margin-left:auto;display:flex;gap:6px}
 .prod-hero-mps span{width:30px;height:30px;border-radius:9px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
 .pp-badge{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.nav-pend{display:none;position:absolute;top:6px;right:10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1}.nav-pend.on{display:flex}
+.nav-grupo-cab{position:relative}.nav-grupo-cab .nav-pend{right:30px;top:50%;transform:translateY(-50%)}.nav-grupo.aberto>.nav-grupo-cab .nav-pend{display:none}
+.cm-tool-card{position:relative}.cm-tool-card .nav-pend{top:10px;right:10px}
 .pp-link{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}.pp-link input{flex:1;min-width:240px;font-size:12px}
 .pp-item{border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;background:var(--bg)}
 .pp-item.novo{border-color:var(--gold)}.pp-cab{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
@@ -1573,11 +1576,11 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <button class="nav-item sidebar-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minhas Tarefas</button>
       <button class="nav-item sidebar-item" data-page="loja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/><path d="M10 20v-4h4v4"/></svg> Central da Loja <span class="lj-novo">novo</span></button>
       <button class="nav-item sidebar-item" data-page="jornada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="19" cy="15" r="3"/></svg> Jornada do cliente</button>
-      <button class="nav-item sidebar-item" data-page="marketing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing</button>
+      <button class="nav-item sidebar-item" data-page="marketing" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing<span class="nav-pend" id="mktNavBadge" title="Pedidos de produto novos"></span></button>
       <button class="nav-item sidebar-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item sidebar-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
       <button class="nav-item sidebar-item" data-page="whatsapp" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Conversas WhatsApp<span id="waNavBadge" style="display:none;position:absolute;top:6px;right:10px;background:#25D366;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1"></span></button>
-      <button class="nav-item sidebar-item" data-page="cadastros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros</button>
+      <button class="nav-item sidebar-item" data-page="cadastros" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros<span class="nav-pend" id="cadNavBadge"></span></button>
       <button class="nav-item sidebar-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
       <button class="nav-item sidebar-item" data-page="checklisthub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist</button>
       <button class="nav-item sidebar-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
@@ -6495,6 +6498,15 @@ document.addEventListener('click',(e)=>{
   if(panel&&panel.classList.contains('open')&&!panel.contains(e.target)&&e.target!==btn){panel.classList.remove('open');}
 });
 
+function navPendencias(){
+  const nCad=(cadastrosCache||[]).filter(c=>c.status==='pendente').length,nPed=(ppCache||[]).filter(p=>p.status==='novo').length;
+  const pinta=(el,n)=>{if(!el)return;el.textContent=n>99?'99+':String(n);el.classList.toggle('on',n>0);};
+  pinta(document.getElementById('cadNavBadge'),nCad);pinta(document.getElementById('mktNavBadge'),nPed);
+  const card=document.getElementById('cmCardCriarProdutos');if(card){let b=card.querySelector('.nav-pend');if(!b){b=document.createElement('span');b.className='nav-pend';b.title='Pedidos de produto novos';card.appendChild(b);}pinta(b,nPed);}
+  // grupo "Clientes" fechado: o número aparece no cabeçalho do grupo
+  document.querySelectorAll('.nav-grupo').forEach(g=>{const cab=g.querySelector('.nav-grupo-cab');if(!cab)return;const n=[...g.querySelectorAll('.nav-item .nav-pend.on')].reduce((t,e)=>t+(parseInt(e.textContent)||0),0);
+    let b=cab.querySelector('.nav-pend');if(!b){b=document.createElement('span');b.className='nav-pend';cab.appendChild(b);}pinta(b,n);});
+}
 /* ================= CADASTROS RECEBIDOS (formulário público de onboarding) ================= */
 let cadastrosCache=[],unsubCadastros=null;
 function startCadastrosListener(){
@@ -6503,6 +6515,7 @@ function startCadastrosListener(){
     cadastrosCache=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderCadastrosRecebidos();
     notifRecalcular();
+    navPendencias();
   });
 }
 let cadastrosMostrarConvertidos=false;
@@ -12491,7 +12504,7 @@ function ppIniciar(){
   if(ppUnsub)return;
   ppUnsub=onSnapshot(query(collection(db,'pedidosProduto'),orderBy('criadoEm','desc'),limit(150)),snap=>{
     ppCache=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const n=ppCache.filter(p=>p.status==='novo').length;const b=document.getElementById('ppBadge');if(b){b.textContent=n;b.classList.toggle('hidden',!n);}
+    const n=ppCache.filter(p=>p.status==='novo').length;const b=document.getElementById('ppBadge');if(b){b.textContent=n;b.classList.toggle('hidden',!n);}navPendencias();
     if(!document.getElementById('ppPainel')?.classList.contains('hidden'))ppLista();
   },e=>console.warn('[pedidosProduto]',e));
 }
