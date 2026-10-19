@@ -5407,7 +5407,47 @@ function ljAdsHtml(c){const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-
   const teo=`<div class="panel"><div class="panel-head"><h3>Téo (IA) — campanhas pra melhorar</h3><span class="p-sub">análise semanal do funil de cada campanha</span></div>
     ${T==null?'<div class="lj-vazio" style="padding:14px">Carregando…</div>':T.length?T.map(a=>`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>${esc(a.titulo||'')}</b><small>${esc(String(a.descricao||'').slice(0,160))}</small></span><button class="btn btn-ghost btn-sm" onclick="window.open('/escritorio.html','_blank')">Escritório</button></div>`).join(''):'<div class="lj-alerta"><span class="lj-dot ok"></span><span><b>Nenhuma campanha com problema</b><small>O Téo olha CTR, conversão e ROAS de 14 dias toda semana.</small></span></div>'}
     ${ml?`<div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('mercadolivre','ads')">Campanhas do Mercado Ads</button> <span class="lj-sub">criar campanha no ML é manual (o ML não libera a API)</span></div>`:''}</div>`;
-  return cards+`<div class="lj-grid"><div style="min-width:0">${robo}</div><div style="min-width:0">${teo}</div></div>`;}
+  return cards+`<div class="lj-grid"><div style="min-width:0">${robo}</div><div style="min-width:0">${teo}</div></div>`+(ljTem(c,'tiktok')?ljAfHtml(c):'');}
+/* ---------- Central da Loja → Anúncios: Afiliados do TikTok (app "LB MARKETPLACE Afiliados", 19/10/2026) ---------- */
+const LJ_AF_API='https://lb-shopee-gmv.vercel.app/api/tiktok-afiliados';
+function ljAf(c){if(!lj.af||lj.af.id!==c.id)lj.af={id:c.id};return lj.af;}
+function ljAfHtml(c){const A=ljAf(c);const con=!!c.tiktokAfShopCipher;
+  const prods=(lj.prod?.linhas||[]).filter(l=>l.tt).map(l=>`<option value="${esc(l.tt.id)}">${esc(String(l.tt.titulo||l.nome).slice(0,70))}</option>`).join('');
+  const R=A.r;
+  const corpo=!con?`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>Afiliados ainda não conectados nesta loja</b><small>É uma autorização à parte (app LB MARKETPLACE Afiliados). Entre na conta TikTok Seller DESTA loja e aceite.</small></span><button class="btn btn-gold btn-sm" onclick="window.__ljAfConectar()">Conectar afiliados</button></div>`
+   :A.carregando?'<div class="lj-vazio" style="padding:14px"><div class="lj-spin"></div>Lendo planos e pedidos de afiliados…</div>'
+   :A.erro?`<div class="lj-alerta ruim"><span class="lj-dot ruim"></span><span><b>Não deu pra ler</b><small>${esc(A.erro)}</small></span><button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Tentar de novo</button></div>`
+   :!R?`<div class="lj-lin"><span class="lj-dot ok"></span><span><b>Conectado — ${esc(c.tiktokAfShopName||'')}</b><small>planos de afiliados, criadores e vendas por afiliado</small></span></div><button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Ver afiliados</button>`
+   :`<div class="summary-grid" style="margin-bottom:12px">
+      <div class="summary-card"><div class="sc-label">Vendas por afiliados (${R.dias}d)</div><div class="sc-value">${fmtR(R.pedidos.vendas)}</div><div class="sc-foot">${R.pedidos.pedidos} pedido(s) · comissão ${fmtR(R.pedidos.comissao)}</div></div>
+      <div class="summary-card"><div class="sc-label">Produtos no plano aberto</div><div class="sc-value">${R.abertasTotal??R.abertas.length}</div><div class="sc-foot">${R.config?.auto_add_product?.enable?`produto novo entra sozinho a ${(R.config.auto_add_product.commission_rate||0)/100}%`:'produto novo NÃO entra sozinho'}</div></div>
+      <div class="summary-card"><div class="sc-label">Criadores vendendo</div><div class="sc-value">${R.pedidos.criadores.length}</div><div class="sc-foot">${R.pedidos.criadores[0]?`top: @${esc(R.pedidos.criadores[0].criador)} ${fmtR(R.pedidos.criadores[0].vendas)}`:'nenhum ainda'}</div></div></div>
+    ${[R.configErro,R.abertasErro,R.pedidosErro].filter(Boolean).map(e=>`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>A TikTok recusou uma leitura</b><small>${esc(e)}</small></span></div>`).join('')}
+    ${R.abertas.length?`<div class="lj-tabela"><table><thead><tr><th>Produto</th><th>Comissão</th><th>Criadores</th><th>Estoque</th><th></th></tr></thead><tbody>${R.abertas.map(o=>`<tr><td><b>${esc(o.titulo)}</b><div class="lj-sub">${esc(o.statusProduto)} · ${esc(o.status)}</div></td><td><b>${o.comissao??'—'}%</b></td><td>${o.criadoresVitrine} na vitrine · ${o.criadoresConteudo} com vídeo/live</td><td>${o.estoque??'—'}</td><td>${isLincoln()?`<button class="btn btn-ghost btn-sm" onclick="window.__ljAfRemover('${o.produtoId}')">Tirar</button>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="lj-vazio" style="padding:12px">Nenhum produto no plano aberto ainda.</div>'}
+    ${R.pedidos.criadores.length?`<div class="lj-sub" style="margin:10px 0 4px"><b>Quem mais vendeu</b></div>${R.pedidos.criadores.slice(0,8).map(x=>`<div class="lj-lin"><span class="lj-dot ok"></span><span><b>@${esc(x.criador)}</b><small>${x.pedidos} pedido(s) · ${fmtR(x.vendas)} · comissão ${fmtR(x.comissao)}</small></span></div>`).join('')}`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft)">
+      <b style="font-size:13px">Pôr produto no plano aberto</b>
+      ${prods?`<select id="ljAfProd" style="max-width:320px">${prods}</select>`:`<input id="ljAfProd" placeholder="ID do produto no TikTok" style="max-width:220px">`}
+      <input id="ljAfCom" value="10" inputmode="decimal" style="width:70px" aria-label="Comissão em %"> <span class="lj-sub">% de comissão</span>
+      <button class="btn btn-gold btn-sm" onclick="window.__ljAfCriar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Pôr no plano</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Atualizar</button></div>`;
+  return `<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>${mpIco('tiktok',18)} Afiliados do TikTok</h3><span class="p-sub">criadores divulgam os produtos com carrinho laranja e ganham comissão por venda</span></div>${corpo}</div>`;}
+window.__ljAfConectar=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
+  try{const r=await (await fetch(`${LJ_AF_API}?acao=link&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);
+    lbAvisar(`Vai abrir a autorização do TikTok.\n\nO navegador precisa estar logado na conta TikTok Seller da ${c.nome} (se estiver em outra loja, saia antes ou use janela anônima COM o sistema logado).`);window.open(r.url,'_blank');}catch(e){showToast('Erro: '+e.message);}};
+window.__ljAfLer=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;const A=ljAf(c);A.carregando=true;A.erro=null;ljRender();
+  try{const r=await (await fetch(`${LJ_AF_API}?acao=ler&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()})).json();if(lj.id!==c.id)return;
+    if(!r.ok)throw new Error(r.erro);A.r=r;}catch(e){A.erro=e.message;}A.carregando=false;ljRender();};
+window.__ljAfCriar=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
+  const pid=String(document.getElementById('ljAfProd')?.value||'').trim(),com=document.getElementById('ljAfCom')?.value;
+  const nome=document.getElementById('ljAfProd')?.selectedOptions?.[0]?.textContent||pid;
+  const post=async x=>(await fetch(LJ_AF_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'criar_aberta',clienteId:c.id,product_id:pid,comissao:com,...x})})).json();
+  try{const s=await post({});if(!s.ok)throw new Error(s.erro);
+    if(!await lbConfirmar(`Pôr no plano aberto de afiliados da ${c.nome}?\n\n${nome}\nComissão: ${s.corpo.commission_rate/100}% por venda\n\nQualquer criador afiliado do TikTok vai poder divulgar esse produto.`,{okTxt:'Pôr no plano'}))return;
+    const r=await post({executar:1});if(!r.ok)throw new Error(r.erro);showToast('Produto no plano aberto de afiliados.');window.__ljAfLer();}catch(e){lbAvisar('Não deu certo: '+e.message);}};
+window.__ljAfRemover=async pid=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
+  if(!await lbConfirmar('Tirar este produto do plano aberto de afiliados?',{okTxt:'Tirar'}))return;
+  try{const r=await (await fetch(LJ_AF_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'remover_aberta',clienteId:c.id,product_id:pid,executar:1})})).json();if(!r.ok)throw new Error(r.erro);showToast('Removido do plano.');window.__ljAfLer();}catch(e){lbAvisar('Não deu certo: '+e.message);}};
 /* ---------- Central da Loja → Histórico: robôs (automacaoLog) + equipe (historico), filtros ---------- */
 async function ljCarregarHist(){const id=lj.id;if(!id)return;
   try{const [a,h]=await Promise.all([getDocs(query(collection(db,'automacaoLog'),where('clienteId','==',id),limit(300))),getDocs(query(collection(db,'historico'),where('clienteId','==',id),limit(300)))]);if(lj.id!==id)return;
