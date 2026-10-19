@@ -5149,12 +5149,12 @@ window.__ljRelCancelar=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.i
   const itens=[...R.sel];if(R.escopo==='produtos'&&!itens.length){showToast('Marque os produtos.');return;}
   const dTxt={'1':'1 dia','3':'3 dias','7':'7 dias','0':'até religar'}[R.dias];
   const o=R.dados.ofertas||[],noAr=o.filter(x=>x.noAr).length,ag=o.length-noAr;
-  const txt=R.escopo==='loja'?`Cancelar a relâmpago da LOJA TODA?\n\n• ${noAr} oferta(s) no ar serão DESLIGADAS\n• ${ag} oferta(s) agendada(s) serão APAGADAS\n• o robô fica pausado ${dTxt}`:`Tirar ${itens.length} produto(s) de todas as relâmpagos?\n\n• na oferta no ar o produto é desligado; nas agendadas é retirado\n• o resto da loja continua com relâmpago\n• esses produtos ficam pausados ${dTxt}`;
+  const txt=R.escopo==='loja'?`Cancelar a relâmpago da LOJA TODA?\n\n• ${noAr} oferta(s) no ar serão DESLIGADAS\n• ${ag} oferta(s) agendada(s) serão APAGADAS\n• o robô fica pausado ${dTxt}`:`Tirar ${itens.length} produto(s) de todas as relâmpagos?\n\n• nas agendadas o produto é retirado; na oferta de HOJE (no ar) a Shopee não deixa tirar só alguns produtos — eles saem à meia-noite (pra tirar já, use "Loja toda")\n• o resto da loja continua com relâmpago\n• esses produtos ficam pausados ${dTxt}`;
   if(!await lbConfirmar(`${c.nome}\n\n${txt}\n\nDepois o estoque fica livre pra mexer (a Shopee pode levar alguns minutos pra soltar).`,{okTxt:'Cancelar agora'}))return;
   lj.rel.rodando=true;ljRender();
   try{const r=await (await fetch(LJ_REL_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'relampago_cancelar',clienteId:c.id,escopo:R.escopo,itens:itens.join(','),dias:R.dias,executar:1})})).json();
     if(!r.ok&&!r.feitos)throw new Error(r.erro||'erro');
-    lj.acao={tipo:'rel',ok:!r.erros?.length,msg:`${r.feitos.length} operação(ões) feita(s)${r.erros?.length?` · ${r.erros.length} com erro: ${r.erros.map(e=>e.erro).join(' | ').slice(0,200)}`:''} · pausa ${ljRelAteTxt(r.pausaAte)}`};lj.rel=null;lj.agenda=null;}
+    lj.acao={tipo:'rel',ok:!r.erros?.length,msg:`${r.feitos.length} operação(ões) feita(s)${r.avisos?.length?` · na oferta de hoje (no ar) a Shopee não deixa tirar só alguns produtos: saem à meia-noite`:''}${r.erros?.length?` · ${r.erros.length} com erro: ${r.erros.map(e=>e.erro).join(' | ').slice(0,200)}`:''} · pausa ${ljRelAteTxt(r.pausaAte)}`};lj.rel=null;lj.agenda=null;}
   catch(e){lj.acao={tipo:'rel',ok:false,msg:e.message};lj.rel.rodando=false;}
   ljRender();ljCarregarAgenda();};
 window.__ljRelReligar=async(item)=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;if(!isLincoln()){showToast('Só Lincoln e Carol.');return;}
