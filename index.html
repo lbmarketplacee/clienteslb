@@ -9114,10 +9114,14 @@ async function cupomSincronizarCore(cliente,silencioso){
   // havendo mais de um cupom ativo ao mesmo tempo, considera o de vencimento mais distante como referência
   const ref=r.ativos[0]||null;
   const ativo=!!ref;
+  // 19/10/2026: o robô agenda o cupom SEGUINTE pra começar 10 min depois do atual — sem isso a tela gravava o fim do
+  // cupom atual e o card "Cupons vencendo" acusava loja já renovada (LN Modas, Ariana, Modas Antony)
+  let fimRef=ref?ref.fim:0;
+  for(let mudou=true;fimRef&&mudou;){mudou=false;for(const v of r.vouchers)if(v.inicio<=fimRef+3600&&v.fim>fimRef){fimRef=v.fim;mudou=true;}}
   try{
     await updateDoc(doc(db,"clientes",cliente.id),{
       cupomAtivo:ativo,
-      cupomFim:ref?dataLocalBR(ref.fim):(cliente.cupomFim||''),
+      cupomFim:ref?dataLocalBR(fimRef):(cliente.cupomFim||''),
       cupomNomeReal:ref?ref.nome:null,
       cupomUltimaVerificacao:Date.now()
     });
