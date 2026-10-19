@@ -11499,6 +11499,10 @@ function crmLeadFormHtml(){
   </div>`;
 }
 
+// Perfil do lead (Typebot, 19/10/2026): ouro = negócio grande vendendo pouco online; iniciante = recebeu a oferta do LB Precifica
+const CRM_PERFIL={ouro:{label:'★ Ouro',cor:'#d4a94a'},qualificado:{label:'Qualificado',cor:'#5cb88a'},iniciante:{label:'Iniciante',cor:'#9fb6ff'}};
+function crmPerfilTag(l){const p=CRM_PERFIL[l.perfil];return p?`<span class="ktag" title="${esc(l.perfilMotivo||'')}" style="color:${p.cor};background:${p.cor}22;font-weight:700">${p.label}</span>`:'';}
+
 function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
@@ -11517,6 +11521,7 @@ function crmKanbanHtml(){
             ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
             ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
             <div>
+              ${crmPerfilTag(l)}
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
               ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
             </div>
@@ -11540,7 +11545,7 @@ function crmListHtml(){
         const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
         const partes = (l.createdDate||'').split('-');
         return `<tr onclick="window.__crmOpenEdit('${l.id}')">
-          <td>${esc(l.nome)}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></td>
+          <td>${esc(l.nome)} ${crmPerfilTag(l)}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></td>
           <td>${esc(l.donoNome||'—')}</td>
           <td>${esc(l.whatsapp||'—')}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}</td>
           <td>${esc(nichoLabel||'—')}</td>
