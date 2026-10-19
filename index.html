@@ -1249,7 +1249,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .rx-mps{display:flex;gap:6px}.rx-mps button{display:flex;align-items:center;gap:6px;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-dim);border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer}.rx-mps button.on{border-color:var(--gold);color:var(--text)}
 .rx-body{display:grid;grid-template-columns:340px minmax(0,1fr);gap:22px;padding:20px}
 @media(max-width:900px){.rx-body{grid-template-columns:minmax(0,1fr)}.rx-foto{max-width:340px;margin:0 auto}}
-.rx-foto{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--border)}
+.rx-foto{position:relative;width:100%;container-type:inline-size;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--border)}
 .rx-foto img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .6s}
 .rx-foto.lendo img{filter:saturate(.35) brightness(.75) contrast(1.1)}
 .rx-semfoto{display:grid;place-items:center;height:100%;color:var(--text-dim2)}
@@ -1263,7 +1263,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .rx-pin{position:absolute;transform:translate(-50%,-50%);animation:rxPin .5s cubic-bezier(.2,.9,.3,1.4) both;animation-delay:var(--d);z-index:2}
 .rx-pin-dot{display:block;width:16px;height:16px;border-radius:50%;background:var(--amber);border:2px solid #fff;position:relative;box-shadow:0 0 0 0 #e0a352aa;animation:rxRing 1.8s ease-out infinite;animation-delay:var(--d)}
 .rx-pin.bom .rx-pin-dot{background:var(--green);animation-name:rxRingG}
-.rx-pin-txt{position:absolute;left:22px;top:50%;transform:translateY(-50%);white-space:nowrap;background:#0d0c0ae6;border:1px solid var(--border-strong);border-radius:8px;padding:4px 8px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.rx-pin-txt{position:absolute;left:22px;top:50%;transform:translateY(-50%);width:max-content;max-width:min(150px,42cqw);white-space:normal;line-height:1.3;background:#0d0c0ae6;border:1px solid var(--border-strong);border-radius:8px;padding:4px 8px;font-size:11px}
 .rx-pin.esq .rx-pin-txt{left:auto;right:22px}
 .rx-passos{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .rx-passos li{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-card);color:var(--text-dim2);transition:all .3s}
@@ -5133,7 +5133,7 @@ function rxHtml(){
   const l=rx.linha;const mps=[l.sh&&'shopee',l.ml&&'ml'].filter(Boolean);const R=rx.r;
   const tabs=mps.length>1?`<div class="rx-mps">${mps.map(m=>`<button class="${rx.mp===m?'on':''}" onclick="window.__rxAbrir('${rx.k}','${m}')" ${rx.estado==='lendo'?'disabled':''}>${mpIco(m,14)} ${m==='ml'?'Mercado Livre':'Shopee'}</button>`).join('')}</div>`:'';
   const foto=`<div class="rx-foto ${rx.estado}">${rx.foto?`<img src="${esc(rx.foto)}" alt="Capa do anúncio">`:'<div class="rx-semfoto">sem foto</div>'}<div class="rx-grade"></div><div class="rx-laser"></div><i class="rx-c tl"></i><i class="rx-c tr"></i><i class="rx-c bl"></i><i class="rx-c br"></i>
-    ${R?R.marcadores.map((m,i)=>`<div class="rx-pin ${m.tipo} ${m.x>0.55?'esq':''}" style="left:${(m.x*100).toFixed(1)}%;top:${(m.y*100).toFixed(1)}%;--d:${(1+i*0.35).toFixed(2)}s"><span class="rx-pin-dot"></span><span class="rx-pin-txt">${esc(m.texto)}</span></div>`).join(''):''}</div>`;
+    ${R?R.marcadores.map((m,i)=>`<div class="rx-pin ${m.tipo} ${m.x>=0.45?'esq':''}" style="left:${(m.x*100).toFixed(1)}%;top:${(m.y*100).toFixed(1)}%;--d:${(1+i*0.35).toFixed(2)}s"><span class="rx-pin-dot"></span><span class="rx-pin-txt">${esc(m.texto)}</span></div>`).join(''):''}</div>`;
   let dir='';
   if(rx.estado==='lendo')dir=`<div><p class="rx-lendo-tit">Escaneando o anúncio…</p><p class="rx-lendo-sub">A IA está olhando as fotos de verdade e cruzando com as regras de cada marketplace. Leva uns 20 segundos.</p>
     <ul class="rx-passos">${RX_PASSOS.map((p,i)=>`<li data-i="${i}"><i></i>${p}</li>`).join('')}</ul></div>`;
