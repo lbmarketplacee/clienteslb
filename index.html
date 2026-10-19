@@ -11126,7 +11126,7 @@ let crmUnsub = null;
 
 function crmIniciar(){
   if(crmUnsub)return;
-  if(crmEhVendedor())crmFilter.dono=String(currentEmail).toLowerCase();
+  // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
   crmUnsub = onSnapshot(collection(db,"crmLeads"), snap=>{
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderCRM();
