@@ -105,6 +105,7 @@ aside{border-left:1px solid var(--borda);background:var(--card);padding:18px;ove
 .chat{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;margin-bottom:8px}
 .msg{font-size:12.5px;line-height:1.45;padding:8px 11px;border-radius:12px;max-width:92%}.msg.eu{align-self:flex-end;background:#d4a94a26;border:1px solid #d4a94a55}.msg.agente{align-self:flex-start;background:#0f0e0b;border:1px solid var(--borda)}
 .chat-form{display:flex;gap:6px}.chat-form input{flex:1;background:#0f0e0b;border:1px solid var(--borda);border-radius:99px;padding:9px 14px;color:var(--txt);font:inherit;font-size:12.5px}.chat-form button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:0 14px;font-weight:700;cursor:pointer}
+.ot-tit{width:100%;margin:4px 0 0;padding:5px 7px;border-radius:7px;border:1px solid var(--borda);background:#16130d;color:var(--txt);font:12px Inter}.ot-desc{white-space:normal;color:var(--dim);font-size:11.5px;max-height:180px;overflow:auto;margin-top:4px}.diag details summary{cursor:pointer;color:var(--gold2);font-size:11.5px;margin-top:3px}
 .diag{border-top:1px solid var(--borda);padding-top:6px;margin-top:6px}.diag b{display:block;font-size:12.5px}.diag em{font-style:normal;color:var(--dim);font-size:11px;display:block}.acao{font-size:12px;color:var(--gold2);margin:2px 0}
 #login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9}
 #login button{background:var(--gold);color:#16130d;border:0;border-radius:99px;padding:12px 26px;font-weight:700;font-size:15px;cursor:pointer}
@@ -172,8 +173,8 @@ const AGENTES=[
    tipos:[/^shopee:ads$/,/impulsionar/,/alerta_ads/],
    faz:['Coloca todo produto novo no Ads (ROAS 20)','Diagnostica anúncio que gasta sem retorno e propõe a melhoria','Impulsiona os mais vendidos a cada 4h','Avisa o cliente quando o saldo do Ads zera']},
   {id:'nina',nome:'Nina',cargo:'Catálogo e anúncios',cor:'#a46bf0',acess:'lapis',chefe:'Nova pessoa',x:600,y:470,
-   tipos:[/pedido_produto/,/^shein:produto/,/produto/],
-   faz:['Recebe os produtos que a cliente manda pelo link','Cria e copia anúncios entre Shopee, ML, TikTok e SHEIN','Padroniza títulos, marca, preço e fotos']},
+   tipos:[/pedido_produto/,/^shein:produto/,/produto/,/otimizar_anuncio/,/desfazer_anuncio/],
+   faz:['Recebe os produtos que a cliente manda pelo link','Cria e copia anúncios entre Shopee, ML, TikTok e SHEIN','Padroniza títulos, marca, preço e fotos','Toda semana reescreve título e descrição dos anúncios fracos da Shopee (parados ou nota baixa)']},
   {id:'davi',nome:'Davi',cargo:'Saúde das lojas',cor:'#4dd6a0',acess:'cruz',chefe:'Carol',x:790,y:470,
    tipos:[/saude/],
    faz:['Lê a saúde de cada loja 4x por dia','Acha pedido atrasado antes da penalidade','Abre tarefa quando a conexão de uma loja cai']},
@@ -237,6 +238,8 @@ function fala(l){
   if(/^shopee:ads/.test(k)){const q=Array.isArray(d.criados)?d.criados.length:d.criados;return `${q||''} produto(s) novos da ${n} no Ads`;}
   if(/alerta_ads/.test(k))return `Avisei a ${n}: saldo do Ads zerado`;
   if(/pedido_produto/.test(k))return `${n} mandou produto novo pelo link`;
+  if(/otimizar_anuncio/.test(k))return ruim?`Otimização de anúncios da ${n} não aplicou`:`${d.resultado?.aplicados||''} anúncio(s) da ${n} com título e descrição novos`;
+  if(/desfazer_anuncio/.test(k))return `Desfiz a otimização de um anúncio da ${n}`;
   if(/shein:produto/.test(k))return ruim?`Produto da ${n} não subiu na SHEIN`:`Subi produto da ${n} na SHEIN`;
   if(/^meta:analise_trafego/.test(k)){const d=l.detalhes||{};return `Anúncios da LB: ${R$(d.gasto7)} em 7 dias, ${d.leads7||0} leads (${d.cpl7?R$(d.cpl7)+' cada':'—'})`;}
   if(/^meta:aprovacao_meta/.test(k))return 'Ajustei os anúncios da LB no Meta';
@@ -287,13 +290,14 @@ function painelRender(){
   let extraHtml='';
   if(a.id==='davi'){const sd=extra.saude;extraHtml=`<div class="lista">${(sd.piores||[]).map(x=>`<div class="${x.atrasados?'ruim':''}">${esc(x.nome)}<em>${x.atrasados?x.atrasados+' pedidos atrasados':''}${x.fora?` · ${x.fora} métrica(s) fora da meta`:''}</em></div>`).join('')||'<div>Nenhuma loja com problema</div>'}</div>`;}
   if(a.id==='leo'){const c=extra.crm;extraHtml=`<div class="nums"><div><b>${c.novos||0}</b><span>leads na semana</span></div><div><b>${c.agendados||0}</b><span>agendados</span></div><div><b>${c.total||0}</b><span>no CRM</span></div></div>`;}
+  if(a.id==='nina'&&(extra.otimizados||[]).length){extraHtml=`<div class="lista">${extra.otimizados.map(h=>`<div>${esc(h.cliente)}: ${esc(String(h.depois?.titulo||'').slice(0,70))}<em>antes: ${esc(String(h.antes?.titulo||'').slice(0,70))} · ${hora(ms(h.em))}${ehAdmin()?` · <a href="#" style="color:var(--gold)" onclick="event.preventDefault();window.__escDesfazer('${h.id}')">desfazer</a>`:''}</em></div>`).join('')}</div>`;}
   if(a.id==='max'){const t=extra.tarefas;extraHtml=`<div class="lista">${Object.entries(t.porPessoa||{}).map(([p,n])=>`<div>${esc(p)}<em>${n} tarefa(s) abertas criadas pela IA</em></div>`).join('')||'<div>Nenhuma tarefa aberta</div>'}</div>`;}
   $('painel').innerHTML=`<div class="perfil">${avatarSVG(a,74).replace('class="avatar"','')}<div><h2>${a.nome}</h2><p>${a.cargo}</p><div class="chefe">Supervisão: <b>${a.chefe}</b></div></div></div>
     <div class="bloco"><div class="nums"><div><b>${s.hoje}</b><span>hoje</span></div><div><b>${a.tipos.length?semana:'—'}</b><span>7 dias</span></div><div><b style="color:${s.prob?'var(--verm)':'inherit'}">${s.prob}</b><span>${a.gerente?'atrasadas':'problemas'}</span></div></div></div>
     ${a.gerente&&extra.briefing?`<div class="bloco"><h3>Briefing de hoje</h3><div class="aprov" style="border-color:#d4a94a55;white-space:pre-wrap">${extra.briefing.ia?`<b>${esc(extra.briefing.ia.frase||'Prioridades de hoje')}</b>\n${extra.briefing.ia.prioridades.map((x,i)=>`${i+1}. ${esc(x)}`).join('\n')}\n\n`:''}${esc(extra.briefing.texto)}</div></div>`:''}
     ${(a.gerente?pend:pend.filter(p=>p.agente===a.id)).length?`<div class="bloco"><h3>Esperando sua aprovação${a.gerente?' (de toda a equipe)':''}</h3>${cartoes(a.gerente?pend:pend.filter(p=>p.agente===a.id))}</div>`:''}
     <div class="bloco"><h3>O que eu faço</h3><ul class="faz">${a.faz.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>
-    ${extraHtml?`<div class="bloco"><h3>${a.id==='davi'?'Lojas que precisam de atenção':a.id==='leo'?'Comercial':'Tarefas pra equipe humana'}</h3>${extraHtml}</div>`:''}
+    ${extraHtml?`<div class="bloco"><h3>${a.id==='davi'?'Lojas que precisam de atenção':a.id==='leo'?'Comercial':a.id==='nina'?'Anúncios otimizados (30 dias)':'Tarefas pra equipe humana'}</h3>${extraHtml}</div>`:''}
     ${meus.length?`<div class="bloco"><h3>Últimos trabalhos</h3><div class="lista">${meus.map(l=>`<div class="${l.resultado==='falhou'||l.resultado==='erro'?'ruim':''}">${esc(fala(l))}<em>${hora(l._t)}</em></div>`).join('')}</div></div>`:''}
     <div class="bloco"><h3>Conversar com ${a.nome}</h3><div class="chat" id="chatLista">${(chats[a.id]||[]).map(m=>`<div class="msg ${m.de}">${esc(m.texto).replace(/\n/g,'<br>')}</div>`).join('')||`<div class="breve">Pergunte qualquer coisa sobre as lojas — ${a.nome} responde lendo os dados reais. Ex.: "como foi a Primor no 10.10?"</div>`}</div>
       <form class="chat-form" onsubmit="event.preventDefault();window.__escPerguntar('${a.id}')"><input id="chatInput" autocomplete="off" placeholder="Ex.: ${a.nome}, como está a Primor?"><button>Enviar</button></form></div>`;
@@ -317,6 +321,11 @@ function cartoes(lista){
       btOk='Aplicar melhorias';btNo='Deixar como está';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança no Ads.';}
     if(p.tipo==='ads_fracas'){corpo=`<ul class="faz">${(pv||[]).slice(0,8).map(x=>`<li>${esc(x.nome.slice(0,55))}: ${esc(x.motivo)}</li>`).join('')}</ul>${(p.dados?.campanhas||[]).length>8?`<em>… e mais ${p.dados.campanhas.length-8}</em>`:''}`;btOk='Pausar esses anúncios';btNo='Deixar como está';if(!ehAdmin())trava='Só Lincoln e Carol aprovam mudança no Ads.';}
     if(p.tipo==='diagnostico_relampago'){corpo=`<ul class="faz">${(pv.causas||[]).map(c=>`<li><b>${esc(c.titulo)}</b> (${c.vezes}x) — ${esc(c.sugestao)}</li>`).join('')}</ul>${pv.causas?.[0]?.exemplo?`<em>Ex.: ${esc(pv.causas[0].exemplo)}</em>`:''}`;btOk='Virar tarefa';btNo='Dispensar';}
+    if(p.tipo==='otimizar_anuncio'){const aj=otAj[p._id]||(otAj[p._id]={});
+      corpo=(pv||[]).map(x=>{const e=aj[x.item_id]||(aj[x.item_id]={sel:true,titulo:x.depois});return `<div class="diag"><label style="display:flex;gap:6px;align-items:flex-start"><input type="checkbox" ${e.sel?'checked':''} onchange="window.__escOt('${p._id}','${x.item_id}','sel',this.checked)"><span><b>${esc(String(x.nome||'').slice(0,90))}</b><em>${esc(x.motivo||'')}${x.nota!=null?` · nota ${x.nota}`:''}</em></span></label>
+        <input class="ot-tit" value="${esc(e.titulo)}" maxlength="120" oninput="window.__escOt('${p._id}','${x.item_id}','titulo',this.value)"><em>${String(e.titulo||'').length} caracteres</em>
+        <details><summary>Descrição nova (antes: ${x.descAntes||0} caracteres)</summary><div class="ot-desc">${esc(x.descDepois||'').replace(/\n/g,'<br>')}</div></details></div>`;}).join('');
+      btOk='Aplicar os marcados';btNo='Recusar tudo';if(!ehAdmin())trava='Só Lincoln e Carol aplicam mudança em anúncio de cliente.';}
     if(p.tipo==='rascunho_produto'){corpo=`${pv.titulo?`<div>Título: <b>${esc(pv.titulo)}</b></div>`:`<div style="color:var(--amb)">Texto não saiu (${esc(pv.erroTexto||'')}) — gera no Criar anúncio.</div>`}${pv.precos?.shopee?`<div>Shopee: venda ${R$(pv.precos.shopee.venda)} · cheio ${R$(pv.precos.shopee.cheio)}${pv.precos.tiktok?` · TikTok ${R$(pv.precos.tiktok.venda)}`:''}</div>`:''}<div>${pv.fotos||0} fotos · ${(pv.marketplaces||[]).join(', ')}</div>${(pv.falta||[]).length?`<div style="color:var(--amb)">Falta: ${pv.falta.map(esc).join(' ')}</div>`:''}`;btOk='Abrir no Criar anúncio';btNo='Dispensar';}
     return `<div class="aprov"><div class="aprov-top">${ag?avatarSVG(ag,34).replace('class="avatar"',''):''}<div><b>${esc(p.titulo)}</b><em>${esc(ag?.nome||p.agente)} · ${hora(ms(p.atualizadoEm||p.criadoEm))}</em></div></div>
       ${p.descricao?`<p>${esc(p.descricao)}</p>`:''}<div class="aprov-corpo">${corpo}</div>
@@ -324,17 +333,30 @@ function cartoes(lista){
       <div class="aprov-bts">${trava?'':`<button class="ok" onclick="window.__escDecidir('${p._id}','aprovar')">${btOk}</button>`}<button onclick="window.__escDecidir('${p._id}','recusar')">${btNo}</button></div></div>`;
   }).join('');
 }
+const otAj={}; // edições da proposta otimizar_anuncio (sobrevivem ao redesenho ao vivo)
+window.__escOt=(id,item,k,v)=>{const e=((otAj[id]=otAj[id]||{})[item]=otAj[id][item]||{sel:true,titulo:''});e[k]=v;if(k==='sel')painel();};
+window.__escDesfazer=async hid=>{
+  if(!confirm('Voltar o título e a descrição de antes neste anúncio?'))return;
+  try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'desfazer_anuncio',historicoId:hid})})).json();
+    alert(r.ok?`Desfeito: voltou "${r.titulo||''}".`:'Não deu: '+(r.erro||''));if(r.ok){extra.otimizados=(extra.otimizados||[]).filter(x=>x.id!==hid);painel();}}catch(e){alert('Erro: '+e.message);}
+};
 window.__escAprov=()=>{const p=pend[0];sel=p?(AGENTES.find(a=>a.id===p.agente)?.id||'max'):'max';desenhar();painel();};
 window.__escDecidir=async(id,decisao)=>{
   const p=pend.find(x=>x._id===id);if(!p)return;
+  let ajustes;
+  if(p.tipo==='otimizar_anuncio'&&decisao==='aprovar'){const aj=otAj[id]||{};
+    ajustes=(p.previa||[]).filter(x=>(aj[x.item_id]?.sel??true)).map(x=>({item_id:x.item_id,titulo:aj[x.item_id]?.titulo||x.depois}));
+    if(!ajustes.length){alert('Marque pelo menos 1 anúncio.');return;}
+    if(!confirm(`Aplicar título e descrição novos em ${ajustes.length} anúncio(s) da ${p.cliente} na Shopee?\nO que está lá hoje fica salvo — dá pra desfazer no perfil da Nina.`))return;}
   if(decisao==='aprovar'&&(['padronizar_desconto','promo_giro','ads_fracas','ads_diagnostico','meta_escalar','meta_pausar'].includes(p.tipo))&&!confirm(`Aplicar agora na Shopee?\n\n${p.titulo}`))return;
   const bts=document.querySelectorAll(`[onclick*="${id}"]`);bts.forEach(b=>b.disabled=true);
   try{
-    const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao})})).json();
+    const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await auth.currentUser.getIdToken()},body:JSON.stringify({acao:'decidir',id,decisao,ajustes})})).json();
     if(!r.ok&&decisao==='aprovar')alert('Não deu certo: '+(r.erro||JSON.stringify(r.resultado||{})));
     else if(p.tipo==='promo_giro'&&decisao==='aprovar')alert(`${r.resultado?.aplicados||0} produto(s) com −15% até ${r.resultado?.fim?new Date(r.resultado.fim).toLocaleDateString('pt-BR'):''}.`);
     else if(/^meta_/.test(p.tipo)&&decisao==='aprovar')alert(r.ok?(p.tipo==='meta_escalar'?`Verba ajustada: ${R$(r.resultado?.orcamentoDe)} → ${R$(r.resultado?.orcamentoPara)}/dia.`:p.tipo==='meta_pausar'?'Anúncio pausado.':'Tarefa criada pra Mirela.'):('Não deu: '+(r.erro||'')));
     else if(p.tipo==='ads_diagnostico'&&decisao==='aprovar')alert(`${r.resultado?.metas||0} meta(s) de ROAS ajustada(s)${r.resultado?.tarefaId?' e tarefa de melhoria criada':''}.${Object.keys(r.resultado?.falhas||{}).length?'\nFalhas: '+JSON.stringify(r.resultado.falhas):''}`);
+    else if(p.tipo==='otimizar_anuncio'&&decisao==='aprovar'){const x=r.resultado||{};alert(`${x.aplicados||0} anúncio(s) atualizado(s) na Shopee.${(x.pulados||[]).length?`\nPulados: ${x.pulados.map(y=>y.motivo).join('; ')}`:''}${(x.falhas||[]).length?`\nFalhas: ${x.falhas.map(y=>y.erro).join('; ')}`:''}`);carregarExtras();}
     else if(p.tipo==='ads_fracas'&&decisao==='aprovar')alert(`${r.resultado?.pausadas||0} anúncio(s) pausado(s).`);
     else if(p.tipo==='diagnostico_relampago'&&decisao==='aprovar')alert(`Tarefa criada pra ${r.resultado?.responsavel||'a equipe'}.`);
     if(p.tipo==='rascunho_produto'&&decisao==='aprovar')window.open(`/?pedido=${p.dados?.pedidoId}`,'_blank');
@@ -391,6 +413,8 @@ async function carregarExtras(){
   extra.crm={total:leads.length,novos:leads.filter(l=>(l.createdDate||'')>=semana).length,agendados:leads.filter(l=>l.stage==='agendado').length};
   extra.ia={fotos:0,videos:0,textos:0};ia.docs.forEach(d=>{const x=d.data();extra.ia.fotos+=x.fotos||0;extra.ia.videos+=x.videos||0;extra.ia.textos+=x.textos||0;});
   extra.clientes=cs.docs.map(d=>({id:d.id,nome:d.data().nome})).filter(c=>c.nome).sort((a,b)=>a.nome.localeCompare(b.nome));
+  try{const h=await getDocs(query(collection(db,'historicoAnuncios'),where('origem','==','nina')));const lim=Date.now()-30*86400000;
+    extra.otimizados=h.docs.map(d=>({id:d.id,...d.data()})).filter(x=>!x.desfeitoEm&&ms(x.em)>lim).sort((a,b)=>ms(b.em)-ms(a.em)).slice(0,20);}catch(e){extra.otimizados=[];}
   try{const b=await getDocs(query(collection(db,'briefings'),orderBy('criadoEm','desc'),limit(1)));const x=b.docs[0]?.data();extra.briefing=x&&x.dia===hoje?x:null;}catch(e){}
   const r=rs.docs[0]?.data();extra.resumo=r&&new Date(ms(r.criadoEm)-3*3600000).toISOString().slice(0,10)===hoje?r:null;
   desenhar();painel();
