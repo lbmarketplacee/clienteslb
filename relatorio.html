@@ -76,6 +76,7 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
   document.getElementById('conteudo').innerHTML=`
     <div class="titulo"><small>Relatório mensal${d.emAndamento?' · parcial':''}</small><h1>${esc(d.cliente)}</h1><p>${esc(d.mesNome.charAt(0).toUpperCase()+d.mesNome.slice(1))}${d.emAndamento?' (até hoje)':''}</p></div>
     ${d.resumo?`<div class="resumo">${esc(d.resumo)}</div>`:''}
+    ${d.analise&&d.analise.destaques&&d.analise.destaques.length?`<div class="resumo"><b>O que foi bem</b><ul style="margin:6px 0 10px 18px">${d.analise.destaques.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${(d.analise.atencao||[]).length?`<b>Pontos de atenção</b><ul style="margin:6px 0 10px 18px">${d.analise.atencao.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${(d.analise.proximoMes||[]).length?`<b>O que vamos fazer no próximo mês</b><ul style="margin:6px 0 0 18px">${d.analise.proximoMes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div>`:''}
     ${d.incompleto?`<div class="aviso">Este relatório ainda está sendo atualizado — alguns números podem mudar.</div>`:''}
     <div class="kpis">
       <div class="kpi"><label>Vendido no mês</label><b>${brl(d.total)}</b>${d.variacao!==null&&d.variacao!==undefined?`<i>${pct(d.variacao)} vs ${esc(d.mesAnteriorNome)}</i>`:''}</div>
