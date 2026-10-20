@@ -1160,6 +1160,7 @@ body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .portal-aviso{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;line-height:1.5}
 .portal-aviso b{color:var(--gold)}
+.cd-bloco{border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin:6px 0}.cd-rot{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}.cd-txt{font-size:13.5px;line-height:1.5}
 .dt-secao{margin-top:34px;padding-top:22px;border-top:1px solid var(--border)}.dt-titulo{font-family:Oswald,sans-serif;font-size:18px;margin:0 0 6px}
 .dt-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;margin-top:12px}
 .dt-num{font-family:Oswald,sans-serif;font-size:30px;font-weight:600}.dt-sub{font-size:12.5px;color:var(--text-dim)}.dt-vezes{font-family:Oswald,sans-serif;font-size:40px;font-weight:700}
@@ -2349,6 +2350,12 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
             <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Quanto todas as lojas venderam no dia da data (10.10, 11.11, Black Friday…) comparado com a média dos 7 dias anteriores. Por marketplace e por loja, com Ads do dia, produtos campeões e o que os robôs fizeram. Sai sozinho na manhã seguinte de cada data.</p>
             <div class="cat-barra"><select id="dtData"></select><button class="btn btn-gold btn-sm" id="dtGerarBtn" onclick="window.__dtGerar(false)">Ver / gerar</button><button class="btn btn-ghost btn-sm" onclick="window.__dtGerar(true)" title="Lê tudo de novo nas APIs">Refazer</button><span id="dtProg" style="font-size:12px;color:var(--text-dim)"></span></div>
             <div id="dtResultado"></div>
+          </div>
+          <div class="dt-secao">
+            <h3 class="dt-titulo">Conteúdo das datas</h3>
+            <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Pra próxima data (11.11, Black Friday, Natal…), a IA escreve pra cada cliente ativo: <b>frase da arte, chamada, legenda do post e 3 stories</b>, com o segmento e os produtos mais vendidos da loja. Sai sozinho 10 dias antes da data. Copie, poste e marque como feito.</p>
+            <div class="cat-barra"><select id="cdData" onchange="window.__cdCarregar()"></select><button class="btn btn-gold btn-sm" id="cdGerarBtn" onclick="window.__cdGerar(false)">Gerar o que falta</button><button class="btn btn-ghost btn-sm" onclick="window.__cdGerar(true)" title="Escreve tudo de novo (o que já foi marcado como feito continua marcado)">Refazer tudo</button><label style="font-size:12px;display:flex;gap:5px;align-items:center"><input type="checkbox" id="cdSoPend" onchange="window.__cdDesenhar()"> só pendentes</label><input type="text" id="cdBusca" placeholder="Buscar loja" oninput="window.__cdDesenhar()" style="max-width:160px"><span id="cdProg" style="font-size:12px;color:var(--text-dim)"></span></div>
+            <div id="cdResultado"></div>
           </div>
         </div>
                 <div class="cm-secao cm-painel" data-cmpainel="criarprodutos">
@@ -9442,6 +9449,54 @@ function dtDesenhar(v){
       ${ads.length?`<div><b>Ads:</b> ${ads.map(([n,a])=>`${n} ${fmtR(a.investidoDia)} no dia (normal ${fmtR(a.mediaInvestidoBase)}) · ROAS ${a.roasDia??'—'}`).join(' | ')}</div>`:''}
       <div><b>Robôs (véspera + dia):</b> ${rob||'nada registrado'}</div>${err.length?`<div style="color:#ef4444">${err.map(([k,m])=>`${esc(k)}: ${esc(m)}`).join('<br>')}</div>`:''}</div></details>`;}).join('')}</div>`;
 }
+// ---------- Conteúdo das datas pra Mirela (20/10/2026) — lb-shopee-gmv/api/conteudo-datas.js; lê/marca direto no Firestore ----------
+const CONTEUDO_API='https://lb-shopee-gmv.vercel.app/api/conteudo-datas';
+const cd={carregado:false,rodando:false,data:'',itens:[]};
+async function cdApi(corpo){const r=await fetch(CONTEUDO_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});return r.json();}
+async function cdRender(){
+  if(cd.carregado)return;cd.carregado=true;const sel=document.getElementById('cdData');if(!sel)return;
+  sel.innerHTML='<option>Carregando…</option>';
+  try{const r=await cdApi({acao:'proxima'});if(!r.ok)throw new Error(r.erro);
+    const br=d=>d.split('-').reverse().join('/');
+    sel.innerHTML=r.proximas.map(d=>`<option value="${d.data}">${esc(d.nome)} — ${br(d.data)} (${d.dias===0?'hoje':`em ${d.dias} dia(s)`})${d.total?` · ${d.total} prontos`:''}</option>`).join('');
+    await window.__cdCarregar();
+  }catch(e){sel.innerHTML='';cd.carregado=false;document.getElementById('cdProg').textContent='Erro: '+e.message;}
+}
+window.__cdCarregar=async()=>{
+  const data=document.getElementById('cdData')?.value;if(!data)return;cd.data=data;
+  const el=document.getElementById('cdResultado');el.innerHTML='<div class="empty-state" style="padding:20px">Carregando…</div>';
+  try{const s=await getDocs(collection(db,'conteudoDatas',data,'clientes'));cd.itens=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.cliente).localeCompare(String(b.cliente)));cdDesenhar();}
+  catch(e){el.innerHTML=`<div class="empty-state" style="padding:20px">Erro: ${esc(e.message)}</div>`;}
+};
+function cdDesenhar(){
+  const el=document.getElementById('cdResultado');if(!el)return;
+  const so=document.getElementById('cdSoPend')?.checked,b=(document.getElementById('cdBusca')?.value||'').toLowerCase();
+  const prontos=cd.itens.filter(x=>!x.erro),feitos=prontos.filter(x=>x.feito).length;
+  const lista=cd.itens.filter(x=>(!so||!x.feito)&&(!b||String(x.cliente).toLowerCase().includes(b)));
+  document.getElementById('cdProg').textContent=cd.itens.length?`${prontos.length} cliente(s) com conteúdo · ${feitos} feito(s)${cd.itens.length-prontos.length?` · ${cd.itens.length-prontos.length} com erro`:''}`:'';
+  if(!cd.itens.length){el.innerHTML='<div class="empty-state" style="padding:20px">Ainda não gerado pra essa data. Clique em "Gerar o que falta".</div>';return;}
+  const bloco=(rot,txt,id,campo,i)=>`<div class="cd-bloco"><div class="cd-rot">${rot}<button class="btn btn-ghost btn-sm" onclick="window.__cdCopiar('${id}','${campo}'${i!=null?','+i:''})">Copiar</button></div><div class="cd-txt">${esc(txt||'').replace(/\n/g,'<br>')}</div></div>`;
+  el.innerHTML=`<div class="cv-tabela">${lista.map(x=>`<details class="dt-loja"><summary class="cv-linha"><div class="cv-nome"><b>${esc(x.cliente)}</b><span>${esc(x.segmento||'sem segmento')}${(x.produtos||[]).length?` · ${x.produtos.length} mais vendidos`:''}</span></div><div class="cv-val">${x.erro?'<b style="color:#ef4444">erro</b>':x.feito?'<b style="color:#10b981">feito</b>':'<b style="color:#f59e0b">pendente</b>'}<span>${x.feito&&x.feitoPor?esc(String(x.feitoPor).split('@')[0]):''}</span></div></summary>
+    <div class="dt-det">${x.erro?`<div style="color:#ef4444">A IA não escreveu: ${esc(x.erro)}</div>`:`${(x.produtos||[]).length?`<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">Mais vendidos: ${x.produtos.map(esc).join(' · ')}</div>`:''}
+      ${bloco('Frase da arte',x.fraseArte,x.id,'fraseArte')}${bloco('Chamada',x.chamada,x.id,'chamada')}${bloco('Legenda do post',x.legenda,x.id,'legenda')}${(x.stories||[]).map((t,i)=>bloco(`Story ${i+1}`,t,x.id,'stories',i)).join('')}`}
+      <div style="display:flex;gap:10px;align-items:center;margin-top:8px">${x.erro?'':`<label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" ${x.feito?'checked':''} onchange="window.__cdFeito('${x.id}',this.checked)"> Feito (arte e posts prontos)</label>`}<button class="btn btn-ghost btn-sm" onclick="window.__cdRefazerUm('${x.id}')">Escrever de novo</button></div></div></details>`).join('')||'<div class="empty-state" style="padding:20px">Nada nesse filtro.</div>'}</div>`;
+}
+window.__cdDesenhar=cdDesenhar;
+window.__cdCopiar=(id,campo,i)=>{const x=cd.itens.find(y=>y.id===id);if(!x)return;window.__copy(i!=null?x[campo]?.[i]:x[campo]);};
+window.__cdFeito=async(id,v)=>{const x=cd.itens.find(y=>y.id===id);if(!x)return;
+  try{await updateDoc(doc(db,'conteudoDatas',cd.data,'clientes',id),{feito:v,feitoPor:v?currentEmail:null,feitoEm:v?serverTimestamp():null});x.feito=v;x.feitoPor=v?currentEmail:null;cdDesenhar();showToast(v?'Marcado como feito.':'Desmarcado.');}
+  catch(e){showToast('Não salvou: '+e.message);}};
+window.__cdGerar=async(refazer,clienteId)=>{
+  if(cd.rodando||!cd.data)return;
+  if(refazer&&!clienteId&&!await lbConfirmar('Escrever de novo o conteúdo de TODOS os clientes dessa data? (o "feito" continua marcado)',{okTxt:'Refazer'}))return;
+  const prog=document.getElementById('cdProg'),btn=document.getElementById('cdGerarBtn');cd.rodando=true;btn.disabled=true;
+  try{for(let i=0;i<8;i++){prog.textContent=clienteId?'Escrevendo…':`Escrevendo com a IA… ${cd.itens.filter(x=>!x.erro).length} prontos`;
+      const r=await cdApi({acao:'gerar',data:cd.data,refazer:refazer&&i===0?1:0,...(clienteId?{clienteId,refazer:1}:{})});if(!r.ok)throw new Error(r.erro);
+      await window.__cdCarregar();if(clienteId||!r.faltam)break;}
+  }catch(e){prog.textContent='Erro: '+e.message;}
+  cd.rodando=false;btn.disabled=false;
+};
+window.__cdRefazerUm=id=>window.__cdGerar(true,id);
 // ---------- Tráfego LB (Meta Ads) — lb-shopee-gmv/api/meta-ads.js (12/10/2026) ----------
 const META_API='https://lb-shopee-gmv.vercel.app/api/meta-ads';
 window.__mtCarregar=async(dias)=>{
@@ -9845,7 +9900,7 @@ document.querySelectorAll('.cm-tool-card').forEach(b=>b.addEventListener('click'
   if(alvo==='shopee')window.__shopeeSubTab('apis');
   if(alvo==='tiktokshop')window.__tiktokSubTab('gmv');
   if(alvo==='shein')cmRenderShein();
-  if(alvo==='relatorio')dtRender();
+  if(alvo==='relatorio'){dtRender();cdRender();}
   if(alvo==='criarprodutos'){const h=document.getElementById('prodHeroMps');if(h&&!h.innerHTML)h.innerHTML=['shopee','ml','tiktok'].map(m=>`<span title="${MP_L[m]}">${mpIco(m,17)}</span>`).join('');cpRender();pxRender();}
   if(alvo==='criarprodutos'||alvo==='diretor')iaAtualizarPainel();
   if(alvo==='diretor'){const v=document.getElementById('vidSecao');const r=document.getElementById('dirResultado');if(v&&r&&v.parentElement!==r.parentElement){r.after(v);v.style.marginTop='32px';v.style.borderTop='1px solid var(--border)';}v?.classList.toggle('hidden',!isLincoln());if(isLincoln())infCarregar();if(isLincoln()){vidPrepararCampos();window.__vidFotos?.();}} // vídeo: só Lincoln e Carol
