@@ -11506,6 +11506,7 @@ function crmLeadFormHtml(){
       </div>
       <div class="field"><label>Valor Estimado</label><input type="text" id="lead-valor" value="${lead?fmtR(lead.valor).replace('R$ ',''):''}" placeholder="0"></div>
       <div class="field"><label>Próximo contato (retorno)</label><input type="date" id="lead-proximo" value="${lead?esc(lead.proximoContato||''):''}"></div>
+      ${lead?crmIaBox(lead):''}
       ${lead&&lead.stage==='perdido'?`<div class="field"><label>Motivo da perda</label><select id="lead-motivo-perda"><option value="">Selecione</option>${CRM_MOTIVOS_PERDA.map(m=>`<option value="${m}" ${lead.motivoPerda===m?'selected':''}>${m}</option>`).join('')}</select></div>`:''}
     </div>
     ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? `
@@ -11531,8 +11532,16 @@ function crmLeadFormHtml(){
 
 // Perfil do lead (Typebot, 19/10/2026): ouro = negócio grande vendendo pouco online; iniciante = recebeu a oferta do LB Precifica
 const CRM_PERFIL={ouro:{label:'★ Ouro',cor:'#d4a94a'},qualificado:{label:'Qualificado',cor:'#5cb88a'},iniciante:{label:'Iniciante',cor:'#9fb6ff'}};
-function crmPerfilTag(l){const p=CRM_PERFIL[l.perfil];return p?`<span class="ktag" title="${esc(l.perfilMotivo||'')}" style="color:${p.cor};background:${p.cor}22;font-weight:700">${p.label}</span>`:'';}
+function crmPerfilTag(l){const t=l.ia?.temperatura;const tt=t?`<span class="ktag" title="${esc(l.ia.proximoPasso||'')}" style="color:${t==='quente'?'#e0525a':t==='morno'?'#d4a94a':'#9fb6ff'};background:${t==='quente'?'#e0525a22':t==='morno'?'#d4a94a22':'#9fb6ff22'}">${t==='quente'?'🔥 quente':t==='morno'?'morno':'frio'}</span>`:'';const p=CRM_PERFIL[l.perfil];return tt+(p?`<span class="ktag" title="${esc(l.perfilMotivo||'')}" style="color:${p.cor};background:${p.cor}22;font-weight:700">${p.label}</span>`:'');}
 
+
+// CRM pela IA (20/10/2026): a Claude lê a conversa do WhatsApp e sugere o próximo passo
+function crmIaBox(lead){const a=lead.ia;return `<div class="field" style="grid-column:1/-1;border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--bg)">
+  <label style="display:flex;justify-content:space-between;align-items:center">Análise da IA (conversa do WhatsApp)<button type="button" class="btn-sm" onclick="__crmIa('${lead.id}')">${a?'Atualizar':'Analisar agora'}</button></label>
+  ${a?`<div style="font-size:13px;line-height:1.5"><b>${a.temperatura==='quente'?'🔥 Quente':a.temperatura==='morno'?'Morno':'Frio'}</b> · ${esc(a.perfil)}<br>${a.objecao?`<b>Trava:</b> ${esc(a.objecao)}<br>`:''}<b>Próximo passo:</b> ${esc(a.proximoPasso)}<br><span style="color:var(--text-dim)">${esc(a.resumo)}</span>
+  ${a.mensagemSugerida?`<div style="margin-top:6px;padding:8px;border-radius:8px;background:var(--card)">💬 ${esc(a.mensagemSugerida)} <button type="button" class="btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(a.mensagemSugerida).replace(/"/g,'&quot;')});lbAvisar('Mensagem copiada')">Copiar</button></div>`:''}
+  <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Atualizado ${esc(new Date(a.em).toLocaleString('pt-BR'))}</div></div>`:'<div style="font-size:12px;color:var(--text-dim)">Ainda sem análise (o robô passa a cada 2h nos leads com conversa).</div>'}</div>`;}
+window.__crmIa=async(id)=>{lbAvisar('Analisando a conversa…');try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/crm-ia?acao=lead&id='+encodeURIComponent(id),{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);if(r.semConversa)return lbAvisar('Esse lead ainda não tem conversa no WhatsApp da LB.');lbAvisar('Análise pronta.');}catch(e){lbAvisar('Erro: '+e.message);}};
 function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
