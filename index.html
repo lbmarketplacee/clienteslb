@@ -11029,7 +11029,7 @@ window.__dirShCriar=async()=>{
     if(!catId)throw new Error('a Shopee não sugeriu categoria pro título');
     const arvR=await ler('/api/v2/product/get_attribute_tree',{category_id_list:String(catId),language:'pt-br'});
     const pt=x=>(x.multi_lang||[]).find(m=>/pt/i.test(m.language))?.value||x.name||x.display_value_name||x.original_value_name;
-    const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
+    const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),obrigatorio:!!a.mandatory,valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
     passo('Preenchendo as especificações...');
     let atributos=[];
     if(arvore.length){try{const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${u.titulo}\n${u.produto}\nCores: ${u.cores.join(', ')}`,arvore})}).then(r=>r.json());atributos=ra.atributos||[];}catch(e){console.warn('atributos',e);}}
@@ -12347,7 +12347,7 @@ const pxCriar={
     const rec=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/category_recommend',query:{item_name:titulo}});const catId=rec?.response?.category_id?.[0];
     if(!catId)throw new Error('a Shopee não sugeriu categoria');
     const arvR=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_attribute_tree',query:{category_id_list:String(catId),language:'pt-br'}});
-    const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
+    const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),obrigatorio:!!a.mandatory,valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
     let atributos=[];if(arvore.length){const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${titulo}\n${P.atributosTxt||String(P.descricao).slice(0,400)}`,arvore})}).then(r=>r.json()).catch(()=>({}));atributos=ra.atributos||ra.attribute_list||[];}
     const subir=async url=>{const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await migJpg(url),ratio:'1:1'});if(!r.ok)throw new Error('foto: '+r.erro);return r.image_id;};
     const imagens=[];for(const u of P.fotos.slice(0,9)){linha(`Shopee: fotos ${imagens.length+1}/${Math.min(9,P.fotos.length)}`);imagens.push(await subir(u));}
