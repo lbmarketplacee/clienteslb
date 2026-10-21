@@ -10243,6 +10243,7 @@ const CRM_STAGES = [
   {key:'contato', label:'Em Contato', color:'#9fb6ff'},
   {key:'agendado', label:'Agendado', color:'#3fa8f5'},
   {key:'compareceu', label:'Compareceu', color:'#4dd6c0'},
+  {key:'negociacao', label:'Em Negociação', color:'#f0a35e'},
   {key:'fechado', label:'Fechado', color:'var(--green)'},
   {key:'perdido', label:'Perdido', color:'var(--red)'}
 ];
@@ -11391,7 +11392,7 @@ document.getElementById('videoGerarBtn')?.addEventListener('click', async ()=>{
 
 function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
 // ---- Acompanhamento (follow-up): quem precisa de retorno e quem está esquecido ----
-const CRM_ATIVAS=['novo','contato','agendado','compareceu'];
+const CRM_ATIVAS=['novo','contato','agendado','compareceu','negociacao'];
 const CRM_DIAS_PARADO=7;
 const CRM_MOTIVOS_PERDA=['Preço','Não respondeu mais','Fechou com outra agência','Não é o momento','Sem perfil pro serviço','Outro'];
 function crmHojeISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -11431,15 +11432,15 @@ const crmMes=()=>crmHojeISO().slice(0,7);
 function crmDonoPorRodizio(){const mes=crmMes();const cont={};for(const l of crmLeads)if((l.createdDate||'').startsWith(mes)&&l.donoEmail)cont[l.donoEmail]=(cont[l.donoEmail]||0)+1;return [...CRM_VENDEDORES].sort((a,b)=>(cont[a.email]||0)-(cont[b.email]||0))[0];}
 function crmPlacarHtml(){const mes=crmMes();
   const linha=v=>{const meus=crmLeads.filter(l=>l.donoEmail===v.email);const doMes=meus.filter(l=>(l.createdDate||'').startsWith(mes));
-    const agend=doMes.filter(l=>['agendado','compareceu','fechado'].includes(l.stage)).length;const fech=meus.filter(l=>l.stage==='fechado'&&(l.fechadoEm||l.atualizadoEm||'').startsWith(mes)).length;
+    const agend=doMes.filter(l=>['agendado','compareceu','negociacao','fechado'].includes(l.stage)).length;const fech=meus.filter(l=>l.stage==='fechado'&&(l.fechadoEm||l.atualizadoEm||'').startsWith(mes)).length;
     const abertos=meus.filter(l=>['novo','contato'].includes(l.stage)).length;
     return `<div class="crm-placar-item ${crmFilter.dono===v.email?'on':''}" onclick="window.__crmFiltro('dono','${crmFilter.dono===v.email?'all':v.email}')"><b>${esc(v.nome)}</b><span>${doMes.length} leads no mês · ${abertos} em aberto</span><span>${agend} agendaram · <b style="color:var(--green)">${fech} fechados</b></span><span class="crm-comissao">Comissão do mês: <b>${fmtR(fech*CRM_COMISSAO)}</b></span></div>`;};
-  const semDono=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu'].includes(l.stage)).length;
+  const semDono=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu','negociacao'].includes(l.stage)).length;
   return `<div class="crm-placar">${CRM_VENDEDORES.map(linha).join('')}${semDono&&isLincoln()?`<div class="crm-placar-item sem"><b>${semDono} lead(s) sem dono</b><span>novo/contato vão em rodízio; agendado/compareceu ficam com o Guilherme</span><button class="btn btn-gold btn-sm" onclick="event.stopPropagation();window.__crmDistribuir()">Distribuir agora</button></div>`:''}</div>`;}
-window.__crmDistribuir=async()=>{const sem=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu'].includes(l.stage));if(!sem.length)return;
+window.__crmDistribuir=async()=>{const sem=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu','negociacao'].includes(l.stage));if(!sem.length)return;
   if(!await lbConfirmar(`Distribuir ${sem.length} lead(s) sem dono?\nNovo/contato: rodízio entre ${CRM_VENDEDORES.map(v=>v.nome).join(' e ')}. Agendado/compareceu: Guilherme.`,{okTxt:'Distribuir'}))return;
   const novos=sem.filter(l=>['novo','contato'].includes(l.stage)).sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||''));let i=0,n=0;
-  for(const l of sem){const v=['agendado','compareceu'].includes(l.stage)?CRM_VENDEDORES[0]:CRM_VENDEDORES[(i++)%CRM_VENDEDORES.length];
+  for(const l of sem){const v=['agendado','compareceu','negociacao'].includes(l.stage)?CRM_VENDEDORES[0]:CRM_VENDEDORES[(i++)%CRM_VENDEDORES.length];
     try{await updateDoc(doc(db,'crmLeads',l.id),{donoEmail:v.email,donoNome:v.nome});n++;}catch(e){console.error(e);}}
   showToast(`${n} lead(s) distribuído(s).`);};
 function crmDataDentroDoPeriodo(createdDate){

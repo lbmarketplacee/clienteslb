@@ -248,7 +248,7 @@ async function cenaComercial(){
   $('cenaComercial').innerHTML=`<div class="grid3" style="grid-template-columns:repeat(4,1fr)">
     ${[['Leads novos hoje',novosHoje,'var(--gold)'],['Leads na semana',novosSemana,'var(--txt)'],['Lembretes de agenda hoje',lembretesHoje,'#25d366'],['Reuniões agendadas',st('agendado'),'var(--azul)']].map(([r,n,c])=>`<div class="card"><div class="rot">${r}</div><div class="big" style="font-size:96px;color:${c}">${n}</div></div>`).join('')}
   </div><div class="rot" style="margin:34px 0 6px">Funil do CRM</div><div class="funil">
-    ${[['Novo','novo','var(--gold)'],['Em contato','contato','#9fb6ff'],['Agendado','agendado','var(--azul)'],['Compareceu','compareceu','#4dd6c0'],['Fechado','fechado','var(--verde)']].map(([n,k,c])=>`<div class="etapa"><div class="big" style="color:${c}">${st(k)}</div><div class="rot">${n}</div></div>`).join('')}</div>`;
+    ${[['Novo','novo','var(--gold)'],['Em contato','contato','#9fb6ff'],['Agendado','agendado','var(--azul)'],['Compareceu','compareceu','#4dd6c0'],['Negociação','negociacao','#f0a35e'],['Fechado','fechado','var(--verde)']].map(([n,k,c])=>`<div class="etapa"><div class="big" style="color:${c}">${st(k)}</div><div class="rot">${n}</div></div>`).join('')}</div>`;
 }
 async function atualizarPaineis(){try{await Promise.all([cenaGmv(),cenaEquipe(),cenaAcao(),cenaComercial()]);}catch(e){console.error(e);}}
 
