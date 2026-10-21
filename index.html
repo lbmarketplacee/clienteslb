@@ -11020,6 +11020,28 @@ async function shGarantirObrigatorios(arvore,atributos,produto){
   }
   return out;
 }
+
+// Shopee: a categoria do anúncio tem que ser FOLHA (sem subcategorias) — 21/10/2026, Alyra: add_item "Invalid category:
+// should use leaf category". category_recommend às vezes devolve a categoria-pai (ex.: 100017 Roupas Femininas).
+// get_category (confirmado ao vivo): {category_list:[{category_id, parent_category_id, display_category_name, has_children}]}.
+window.__shCats=window.__shCats||{};
+async function shCategoriaFolha(lerFn,ids,titulo){
+  ids=(ids||[]).map(Number).filter(Boolean);if(!ids.length)return null;
+  const chave='pt';let lista=window.__shCats[chave];
+  if(!lista){const r=await lerFn('/api/v2/product/get_category',{language:'pt-br'});lista=r?.response?.category_list||[];if(lista.length)window.__shCats[chave]=lista;}
+  if(!lista.length)return ids[0];
+  const porId=new Map(lista.map(x=>[x.category_id,x]));
+  const folha=ids.find(id=>porId.get(id)&&!porId.get(id).has_children);if(folha)return folha;
+  // nenhuma sugestão é folha: desce da 1ª e escolhe a folha com mais palavras em comum com o título
+  const norm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  const palavras=new Set(norm(titulo).split(/[^a-z0-9]+/).filter(w=>w.length>=4));
+  const folhas=[];const fila=[ids[0]];
+  while(fila.length){const pai=fila.shift();for(const x of lista)if(x.parent_category_id===pai){if(x.has_children)fila.push(x.category_id);else folhas.push(x);}}
+  if(!folhas.length)return ids[0];
+  const nota=x=>norm(x.display_category_name||x.original_category_name).split(/[^a-z0-9]+/).filter(w=>w.length>=4&&[...palavras].some(p=>p.startsWith(w.slice(0,5))||w.startsWith(p.slice(0,5)))).length;
+  folhas.sort((a,b)=>nota(b)-nota(a));
+  return folhas[0].category_id;
+}
 async function dirShApi(acao,c,token,extra={}){
   const r=await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,app:'erp',access_token:token,shop_id:c.shopeeErpShopId,...extra})});
   return r.json();
@@ -11043,7 +11065,7 @@ window.__dirShCriar=async()=>{
     passo('Conferindo a conexão da loja...');const token=await shopeeGarantirTokenValido(c,'erp');
     const ler=(caminho,query)=>dirShApi('produto_ler_api',c,token,{caminho,query});
     passo('Escolhendo a categoria...');
-    const rec=await ler('/api/v2/product/category_recommend',{item_name:u.titulo});const catId=rec?.response?.category_id?.[0];
+    const rec=await ler('/api/v2/product/category_recommend',{item_name:u.titulo});const catId=await shCategoriaFolha(ler,rec?.response?.category_id,u.titulo);
     if(!catId)throw new Error('a Shopee não sugeriu categoria pro título');
     const arvR=await ler('/api/v2/product/get_attribute_tree',{category_id_list:String(catId),language:'pt-br'});
     const pt=x=>(x.multi_lang||[]).find(m=>/pt/i.test(m.language))?.value||x.name||x.display_value_name||x.original_value_name;
@@ -12363,7 +12385,7 @@ const pxCriar={
     const titulo=await migTitulo(`${P.titulo}. ${P.atributosTxt||''}`,ctx.usadosShopee);if(!titulo)throw new Error('a IA não gerou título');
     linha('Shopee: categoria...');
     const pt=x=>(x.multi_lang||[]).find(m=>/pt/i.test(m.language))?.value||x.name||x.display_value_name||x.original_value_name;
-    const rec=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/category_recommend',query:{item_name:titulo}});const catId=rec?.response?.category_id?.[0];
+    const rec=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/category_recommend',query:{item_name:titulo}});const catId=await shCategoriaFolha((caminho,query)=>dirShApi('produto_ler_api',c,token,{caminho,query}),rec?.response?.category_id,titulo);
     if(!catId)throw new Error('a Shopee não sugeriu categoria');
     const arvR=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_attribute_tree',query:{category_id_list:String(catId),language:'pt-br'}});
     const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),obrigatorio:!!a.mandatory,valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
