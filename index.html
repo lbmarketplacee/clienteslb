@@ -11468,13 +11468,28 @@ let leadFormOpen = false;
 let editingLeadId = null;
 let dragLeadId = null;
 let crmUnsub = null;
+function crmGuardarRascunho(){
+  const r={foco:document.activeElement?.id||null,campos:{}};
+  document.querySelectorAll('[id^="lead-"]').forEach(el=>{if('value' in el)r.campos[el.id]={v:el.value,ini:el.selectionStart??null,fim:el.selectionEnd??null};});
+  return r;
+}
+function crmDevolverRascunho(r){
+  for(const [id,c] of Object.entries(r.campos)){const el=document.getElementById(id);if(el&&'value' in el&&el.value!==c.v)el.value=c.v;}
+  if(r.foco){const el=document.getElementById(r.foco);if(el){el.focus();const c=r.campos[r.foco];try{if(c&&c.ini!=null)el.setSelectionRange(c.ini,c.fim);}catch(e){}}}
+  if(document.getElementById('lead-nicho'))window.__crmToggleNichoOutro?.();
+}
+
 
 function crmIniciar(){
   if(crmUnsub)return;
   // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
   crmUnsub = onSnapshot(collection(db,"crmLeads"), snap=>{
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // 21/10/2026: com a ficha aberta, qualquer mudança em QUALQUER lead (lead novo, robô da IA, aviso no celular)
+    // redesenhava a tela e apagava o que a pessoa estava digitando (Duda perdia as notas). Guarda e devolve o rascunho.
+    const rascunho=leadFormOpen?crmGuardarRascunho():null;
     renderCRM();
+    if(rascunho)crmDevolverRascunho(rascunho);
   });
 }
 
