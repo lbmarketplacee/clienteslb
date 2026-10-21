@@ -11002,6 +11002,24 @@ async function dirShAcharPorNome(c,token,titulo){
   }
   return null;
 }
+
+// Shopee: garante os atributos OBRIGATÓRIOS da categoria (mandatory) — 21/10/2026, difusor da Go Braz recusado sem
+// "Contains Bluetooth...". Faltou algum na resposta da IA → pergunta SÓ os que faltam (modo obrigatório: ids com prefixo O)
+// e, se ainda faltar, usa "No/Não" quando existir.
+async function shGarantirObrigatorios(arvore,atributos,produto){
+  const tem=new Set((atributos||[]).map(a=>String(a.attribute_id)));
+  const faltam=(arvore||[]).filter(a=>a.obrigatorio&&!tem.has(String(a.id))&&(a.valores||[]).length);
+  if(!faltam.length)return atributos||[];
+  let r={};try{r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto,arvore:faltam.map(a=>({id:'O'+a.id,nome:a.nome,valores:a.valores}))})}).then(x=>x.json());}catch(e){}
+  const out=[...(atributos||[])];
+  for(const a of faltam){
+    const ia=(r.atributos||[]).find(x=>String(x.id||x.attribute_id)==='O'+a.id);
+    let v=ia?a.valores.find(x=>String(x.id)===String(ia.value_id)):null;
+    if(!v)v=a.valores.find(x=>/^(no|não|nao)$/i.test(String(x.nome).trim()));
+    if(v)out.push({attribute_id:Number(a.id),attribute_value_list:[{value_id:Number(v.id)}]});
+  }
+  return out;
+}
 async function dirShApi(acao,c,token,extra={}){
   const r=await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,app:'erp',access_token:token,shop_id:c.shopeeErpShopId,...extra})});
   return r.json();
@@ -11033,6 +11051,7 @@ window.__dirShCriar=async()=>{
     passo('Preenchendo as especificações...');
     let atributos=[];
     if(arvore.length){try{const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${u.titulo}\n${u.produto}\nCores: ${u.cores.join(', ')}`,arvore})}).then(r=>r.json());atributos=ra.atributos||[];}catch(e){console.warn('atributos',e);}}
+    atributos=await shGarantirObrigatorios(arvore,atributos,`${u.titulo}\n${u.produto}`);
     const canais=await ler('/api/v2/logistics/get_channel_list',{});
     const logisticas=(canais?.response?.logistics_channel_list||[]).filter(x=>x.enabled&&!x.mask_channel_id).map(x=>x.logistics_channel_id);
     if(!logisticas.length)throw new Error('a loja não tem frete ativo');
@@ -12348,7 +12367,7 @@ const pxCriar={
     if(!catId)throw new Error('a Shopee não sugeriu categoria');
     const arvR=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_attribute_tree',query:{category_id_list:String(catId),language:'pt-br'}});
     const arvore=(arvR?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),obrigatorio:!!a.mandatory,valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));
-    let atributos=[];if(arvore.length){const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${titulo}\n${P.atributosTxt||String(P.descricao).slice(0,400)}`,arvore})}).then(r=>r.json()).catch(()=>({}));atributos=ra.atributos||ra.attribute_list||[];}
+    let atributos=[];if(arvore.length){const ra=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${titulo}\n${P.atributosTxt||String(P.descricao).slice(0,400)}`,arvore})}).then(r=>r.json()).catch(()=>({}));atributos=ra.atributos||ra.attribute_list||[];}atributos=await shGarantirObrigatorios(arvore,atributos,titulo);
     const subir=async url=>{const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await migJpg(url),ratio:'1:1'});if(!r.ok)throw new Error('foto: '+r.erro);return r.image_id;};
     const imagens=[];for(const u of P.fotos.slice(0,9)){linha(`Shopee: fotos ${imagens.length+1}/${Math.min(9,P.fotos.length)}`);imagens.push(await subir(u));}
     if(!imagens.length)throw new Error('produto sem fotos');
