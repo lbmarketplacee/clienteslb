@@ -11606,17 +11606,7 @@ function crmLeadFormHtml(){
       ${lead?crmIaBox(lead):''}
       ${lead&&lead.stage==='perdido'?`<div class="field"><label>Motivo da perda</label><select id="lead-motivo-perda"><option value="">Selecione</option>${CRM_MOTIVOS_PERDA.map(m=>`<option value="${m}" ${lead.motivoPerda===m?'selected':''}>${m}</option>`).join('')}</select></div>`:''}
     </div>
-    ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? `
-    <div class="field" style="margin-bottom:12px;">
-      <label>Respostas do Typebot</label>
-      <div style="background:var(--bg2,#1a1a1a);border:1px solid var(--border,#333);border-radius:8px;padding:12px;display:grid;gap:8px;">
-        ${Object.keys(lead.respostasTypebot).map(chave=>`
-          <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;border-bottom:1px solid var(--border,#333);padding-bottom:6px;">
-            <span style="opacity:.65;text-transform:capitalize;">${esc(chave)}</span>
-            <span style="font-weight:500;text-align:right;">${esc(lead.respostasTypebot[chave])}</span>
-          </div>`).join('')}
-      </div>
-    </div>` : ''}
+    ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? crmTypebotHtml(lead) : ''}
     <div class="field" style="margin-bottom:12px;"><label>Notas</label><textarea id="lead-notas" placeholder="Observações...">${lead?esc(lead.notas||''):''}</textarea></div>
     <div class="lead-form-actions">
       ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
@@ -11639,6 +11629,25 @@ function crmIaBox(lead){const a=lead.ia;return `<div class="field" style="grid-c
   ${a.mensagemSugerida?`<div style="margin-top:6px;padding:8px;border-radius:8px;background:var(--card)">💬 ${esc(a.mensagemSugerida)} <button type="button" class="btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(a.mensagemSugerida).replace(/"/g,'&quot;')});lbAvisar('Mensagem copiada')">Copiar</button></div>`:''}
   <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Atualizado ${esc(new Date(a.em).toLocaleString('pt-BR'))}</div></div>`:'<div style="font-size:12px;color:var(--text-dim)">Ainda sem análise (o robô passa a cada 2h nos leads com conversa).</div>'}</div>`;}
 window.__crmIa=async(id)=>{lbAvisar('Analisando a conversa…');try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/crm-ia?acao=lead&id='+encodeURIComponent(id),{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);if(r.semConversa)return lbAvisar('Esse lead ainda não tem conversa no WhatsApp da LB.');lbAvisar('Análise pronta.');}catch(e){lbAvisar('Erro: '+e.message);}};
+
+// Respostas do Typebot legíveis (21/10/2026, Lincoln: "estranho pra enxergar"): nomes claros, 2 blocos e sem o fbclid gigante
+const CRM_TB_ROTULOS={TipoNegocio:'Tipo de negócio',CanalVendas:'Onde vende hoje',FaturamentoNegocio:'Faturamento do negócio (tudo)',faturamento:'Faturamento do negócio (tudo)',FaturamentoMarketplace:'Quanto vem dos marketplaces',segmento:'Segmento',nicho:'Nicho'};
+const CRM_TB_FONTE={ig:'Instagram',instagram:'Instagram',fb:'Facebook',facebook:'Facebook',meta:'Meta (Instagram/Facebook)',google:'Google'};
+function crmTypebotHtml(lead){
+  const r=lead.respostasTypebot||{};const linha=(rot,val,peq)=>`<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--border);min-width:0"><span style="color:var(--text-dim);font-size:12px;flex:0 0 auto">${esc(rot)}</span><span style="font-weight:600;font-size:${peq?'11px':'13px'};text-align:right;min-width:0;overflow-wrap:anywhere">${esc(val)}</span></div>`;
+  const vistos=new Set();const qual=[];
+  for(const [k,rot] of Object.entries(CRM_TB_ROTULOS)){if(r[k]==null||r[k]===''||vistos.has(rot))continue;vistos.add(rot);qual.push(linha(rot,r[k]));}
+  const ignorar=new Set([...Object.keys(CRM_TB_ROTULOS),'utm_source','utm_medium','utm_campaign','utm_term','utm_content','fbclid','perfil']);
+  for(const [k,v] of Object.entries(r)){if(ignorar.has(k)||v==null||v==='')continue;qual.push(linha(k.replace(/_/g,' ').replace(/([a-z])([A-Z])/g,'$1 $2'),v));}
+  const fonte=r.utm_source?(CRM_TB_FONTE[String(r.utm_source).toLowerCase()]||r.utm_source)+(r.utm_medium==='paid'?' · anúncio pago':''):'';
+  const origem=[fonte&&linha('Veio de',fonte),r.utm_campaign&&linha('Campanha',r.utm_campaign,1),r.utm_term&&linha('Conjunto',r.utm_term,1),r.utm_content&&linha('Anúncio',r.utm_content,1)].filter(Boolean);
+  const perfil=CRM_PERFIL?.[lead.perfil];
+  return `<div class="field" style="margin-bottom:12px;min-width:0"><label style="display:flex;justify-content:space-between;align-items:center">Respostas do formulário${perfil?`<span class="ktag" style="color:${perfil.cor};background:${perfil.cor}22;font-weight:700" title="${esc(lead.perfilMotivo||'')}">${perfil.label}</span>`:''}</label>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;min-width:0">
+      ${qual.length?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:6px 12px;min-width:0"><div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.04em;padding:4px 0">QUALIFICAÇÃO</div>${qual.join('')}</div>`:''}
+      ${origem.length?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:6px 12px;min-width:0"><div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.04em;padding:4px 0">DE ONDE VEIO</div>${origem.join('')}</div>`:''}
+    </div></div>`;
+}
 function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
