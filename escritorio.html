@@ -403,7 +403,7 @@ function ouvir(){
 }
 async function carregarExtras(){
   const hoje=hojeBRT();
-  const [cs,ts,ls,ia,rs]=await Promise.all([getDocs(collection(db,'clientes')),getDocs(collection(db,'tarefas')),getDocs(collection(db,'crmLeads')),getDocs(query(collection(db,'iaUso'),where('dia','==',hoje))),getDocs(query(collection(db,'resumos'),orderBy('criadoEm','desc'),limit(1)))]);
+  const [cs,ts,ls,ia,rs]=await Promise.all([getDocs(collection(db,'clientes')),getDocs(collection(db,'tarefas')),getDocs(collection(db,'crmLeads')).catch(()=>({docs:[]})),getDocs(query(collection(db,'iaUso'),where('dia','==',hoje))),getDocs(query(collection(db,'resumos'),orderBy('criadoEm','desc'),limit(1)))]);
   const clientes=cs.docs.map(d=>d.data()).filter(c=>c.ativo!==false);
   const piores=clientes.filter(c=>c.saudeShopee).map(c=>({nome:c.nome,atrasados:c.saudeShopee.pedidos?.atrasados||0,fora:(c.saudeShopee.foraDaMeta||[]).length})).filter(x=>x.atrasados||x.fora).sort((a,b)=>b.atrasados-a.atrasados||b.fora-a.fora);
   extra.saude={lojas:clientes.filter(c=>c.saudeShopee).length,atrasados:piores.reduce((t,x)=>t+x.atrasados,0),lojasAtraso:piores.filter(x=>x.atrasados).length,piores:piores.slice(0,8)};

@@ -11483,7 +11483,9 @@ function crmDevolverRascunho(r){
 function crmIniciar(){
   if(crmUnsub)return;
   // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
-  crmUnsub = onSnapshot(collection(db,"crmLeads"), snap=>{
+  // 21/10/2026: CRM separado por vendedor — Duda e Guilherme só recebem os leads deles (regra do banco garante); Lincoln/Carol veem tudo
+  const meu=String(currentEmail||'').toLowerCase();const fonte=(crmEhVendedor()&&!isLincoln())?query(collection(db,"crmLeads"),where('donoEmail','==',meu)):collection(db,"crmLeads");
+  crmUnsub = onSnapshot(fonte, snap=>{
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
     // 21/10/2026: com a ficha aberta, qualquer mudança em QUALQUER lead (lead novo, robô da IA, aviso no celular)
     // redesenhava a tela e apagava o que a pessoa estava digitando (Duda perdia as notas). Guarda e devolve o rascunho.
@@ -11534,7 +11536,9 @@ window.__crmSubmitForm=async()=>{
   const notas=document.getElementById('lead-notas').value.trim();
   const proximoContato=document.getElementById('lead-proximo')?.value||'';
   const motivoEl=document.getElementById('lead-motivo-perda');
-  const donoSel=document.getElementById('lead-dono')?.value||'';const dono=CRM_VENDEDORES.find(v=>v.email===donoSel)||(editingLeadId?null:crmDonoPorRodizio());
+  const donoSel=document.getElementById('lead-dono')?.value||'';const souVend=crmEhVendedor()&&!isLincoln();const eu=CRM_VENDEDORES.find(v=>v.email===String(currentEmail||'').toLowerCase());
+  // lead criado à mão = orgânico/prospecção ativa → Duda (Lincoln 21/10/2026); vendedor cria sempre pra si e não troca dono
+  const dono=souVend?(editingLeadId?null:eu):(CRM_VENDEDORES.find(v=>v.email===donoSel)||(editingLeadId?null:CRM_VENDEDORES.find(v=>v.nome==='Duda')));
   const extras={proximoContato,atualizadoEm:crmHojeISO(),...(motivoEl?{motivoPerda:motivoEl.value}:{}),...(dono?{donoEmail:dono.email,donoNome:dono.nome}:{})};
   try{
     if(editingLeadId){
@@ -11612,7 +11616,7 @@ function crmLeadFormHtml(){
           ${CRM_TIPOS_SERVICO.map(s=>`<option value="${s.key}" ${lead&&lead.tipoServico===s.key?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </div>
-      <div class="field"><label>Responsável (dono do lead)</label><select id="lead-dono"><option value="">— rodízio automático —</option>${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${(lead?lead.donoEmail:(crmEhVendedor()?String(currentEmail).toLowerCase():''))===v.email?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>
+      <div class="field"><label>Responsável (dono do lead)</label><select id="lead-dono" ${crmEhVendedor()&&!isLincoln()?'disabled title="Só Lincoln e Carol trocam o dono"':''}><option value="">— Duda (orgânico / prospecção) —</option>${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${(lead?lead.donoEmail:(crmEhVendedor()?String(currentEmail).toLowerCase():''))===v.email?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>
       <div class="field"><label>Origem</label>
         <select id="lead-origem">${CRM_ORIGENS.map(o=>`<option value="${o}" ${lead&&lead.origem===o?'selected':''}>${o}</option>`).join('')}</select>
       </div>

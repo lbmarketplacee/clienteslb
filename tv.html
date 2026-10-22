@@ -240,7 +240,7 @@ async function cenaAcao(){
 }
 // ===== Cena 5: comercial (CRM + SDR automático) =====
 async function cenaComercial(){
-  const ls=(await getDocs(collection(db,'crmLeads'))).docs.map(d=>d.data());const hoje=hojeBRT();
+  const ls=(await getDocs(collection(db,'crmLeads')).catch(()=>({docs:[]}))).docs.map(d=>d.data());const hoje=hojeBRT();
   const semana=new Date(Date.now()-7*86400000-3*3600000).toISOString().slice(0,10);
   const st=k=>ls.filter(l=>(l.stage||'novo')===k).length;
   const novosHoje=ls.filter(l=>l.createdDate===hoje).length,novosSemana=ls.filter(l=>(l.createdDate||'')>=semana).length;
