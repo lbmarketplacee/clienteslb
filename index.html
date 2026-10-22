@@ -954,8 +954,21 @@ textarea{resize:vertical;min-height:70px;}
 .btn-delete-lead{margin-right:auto;background:transparent;border:1px solid var(--red);color:var(--red);padding:9px 14px;border-radius:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
 .btn-cancel{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:9px 14px;border-radius:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
 .btn-save{background:var(--purple);color:#fff;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
-.kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;overflow-x:auto;}
-.kcol{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:10px;min-height:120px;min-width:150px;}
+.kanban{display:flex;gap:10px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
+/* 21/10/2026 (Lincoln): cada coluna rola sozinha (cabeçalho fixo), dá pra minimizar e a ficha abre na lateral */
+.kcol{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:10px 6px 10px 10px;min-height:120px;flex:0 0 240px;display:flex;flex-direction:column;max-height:calc(100vh - 230px);}
+.kcol-body{overflow-y:auto;flex:1;padding-right:4px;min-height:40px;}
+.kcol-min-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;margin-left:6px;}
+.kcol-min-btn:hover{border-color:var(--gold);color:var(--gold);}
+.kcol.min{flex:0 0 44px;padding:10px 4px;cursor:pointer;align-items:center;}
+.kcol.min .kcol-head{flex-direction:column;gap:8px;margin:0;}
+.kcol.min .kcol-head .name{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;}
+.kcol.min .kcol-body{display:none;}
+.crm-drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;}
+.crm-drawer{position:fixed;top:0;right:0;bottom:0;width:min(760px,100%);background:var(--bg-card);border-left:1px solid var(--border);z-index:901;overflow-y:auto;padding:18px;box-shadow:-10px 0 40px rgba(0,0,0,.5);}
+.crm-drawer .lead-form{margin:0;border:none;background:transparent;padding:0;}
+.crm-drawer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.crm-drawer-top h3{margin:0;font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:.5px;}
 .kcol.dragover{border-color:var(--purple);background:var(--purple-bg);}
 .kcol-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-family:'Oswald',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
 .kcol-head .count{background:var(--bg);border-radius:99px;padding:1px 7px;color:var(--text-dim);font-size:10px;}
@@ -970,7 +983,7 @@ textarea{resize:vertical;min-height:70px;}
 .crm-table tr:hover td{background:var(--bg-card2);}
 .stage-pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;}
 .empty-crm{text-align:center;padding:40px;color:var(--text-dim);}
-@media(max-width:900px){.kanban{grid-template-columns:1fr;}}
+@media(max-width:900px){.kcol{flex-basis:82vw;}}
 
 .wa-btn{display:inline-block;margin-left:6px;text-decoration:none;font-size:13px;}
 .wa-btn:hover{filter:brightness(1.3);}
@@ -11672,9 +11685,11 @@ function crmKanbanHtml(){
   return `<div class="kanban">
     ${CRM_STAGES.map(s=>{
       const inStage = leads.filter(l=>l.stage===s.key).sort((a,b)=>(CRM_PRIORIDADE[crmAcompanhamento(a).tipo]-CRM_PRIORIDADE[crmAcompanhamento(b).tipo])||(a.createdDate||'').localeCompare(b.createdDate||''));
-      return `<div class="kcol" ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
+      const min=!!crmColMin[s.key];
+      return `<div class="kcol ${min?'min':''}" data-stage="${s.key}" ${min?`onclick="window.__crmColMin('${s.key}')" title="Abrir ${s.label}"`:''} ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
         ondragleave="event.currentTarget.classList.remove('dragover')" ondrop="window.__crmDropStage('${s.key}', event)">
-        <div class="kcol-head"><span class="name" style="color:${s.color}">${s.label}</span><span class="count">${inStage.length}</span></div>
+        <div class="kcol-head"><span class="name" style="color:${s.color}">${s.label}</span><span style="display:flex;align-items:center"><span class="count">${inStage.length}</span>${min?'':`<button class="kcol-min-btn" title="Minimizar" onclick="event.stopPropagation();window.__crmColMin('${s.key}')">–</button>`}</span></div>
+        <div class="kcol-body">
         ${inStage.map(l=>{
           const tipo = l.tipoServico ? crmTipoServicoInfo(l.tipoServico) : null;
           const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
@@ -11692,6 +11707,7 @@ function crmKanbanHtml(){
             ${l.valor?`<div class="kmeta">${fmtR(l.valor)}</div>`:''}
           </div>`;
         }).join('')}
+        </div>
       </div>`;
     }).join('')}
   </div>`;
@@ -11730,9 +11746,16 @@ function crmResumoHtml(){
   const item=(k,rot)=>`<button class="crm-resumo-item ${k} ${crmFilter.acomp===k?'on':''}" onclick="window.__crmFiltro('acomp','${crmFilter.acomp===k?'all':k}')"><b>${cont[k]}</b> ${rot}</button>`;
   return `<div class="crm-resumo">${item('atrasado','retornos atrasados')}${item('hoje','pra retornar hoje')}${item('parado',`parados há ${CRM_DIAS_PARADO}+ dias`)}${crmFilter.acomp!=='all'?`<button class="crm-resumo-limpar" onclick="window.__crmFiltro('acomp','all')">Ver todos</button>`:''}</div>`;
 }
+// colunas minimizadas (por pessoa, no navegador); "Perdido" começa minimizado
+let crmColMin=(()=>{try{return JSON.parse(localStorage.getItem('crmColMin')||'null')||{perdido:true};}catch(e){return {perdido:true};}})();
+window.__crmColMin=(k)=>{crmColMin[k]=!crmColMin[k];try{localStorage.setItem('crmColMin',JSON.stringify(crmColMin));}catch(e){}renderCRM();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&leadFormOpen&&document.querySelector('.crm-drawer'))window.__crmToggleForm(false);});
 function renderCRM(){
   const container = document.getElementById('board-crm');
   if(!container)return;
+  // guarda onde cada coluna estava rolada (a tela redesenha a cada mudança nos leads)
+  const rol={board:container.querySelector('.kanban')?.scrollLeft||0,drawer:container.querySelector('.crm-drawer')?.scrollTop||0,cols:{}};
+  container.querySelectorAll('.kcol[data-stage]').forEach(c=>{rol.cols[c.dataset.stage]=c.querySelector('.kcol-body')?.scrollTop||0;});
   container.innerHTML = `
   <div class="crm-toolbar">
     <div class="crm-views">
@@ -11773,9 +11796,12 @@ function renderCRM(){
   </div>
   ${crmPlacarHtml()}
   ${crmResumoHtml()}
-  ${leadFormOpen ? crmLeadFormHtml() : ''}
   ${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}
+  ${leadFormOpen ? `<div class="crm-drawer-bg"></div><div class="crm-drawer"><div class="crm-drawer-top"><h3>${editingLeadId?esc(crmLeads.find(l=>l.id===editingLeadId)?.nome||'Lead'):'Novo lead'}</h3><button class="btn-cancel" onclick="window.__crmToggleForm(false)">Fechar ✕</button></div>${crmLeadFormHtml()}</div>` : ''}
   `;
+  const kb=container.querySelector('.kanban');if(kb)kb.scrollLeft=rol.board;
+  container.querySelectorAll('.kcol[data-stage]').forEach(c=>{const b=c.querySelector('.kcol-body');if(b&&rol.cols[c.dataset.stage])b.scrollTop=rol.cols[c.dataset.stage];});
+  const dr=container.querySelector('.crm-drawer');if(dr&&rol.drawer)dr.scrollTop=rol.drawer;
 }
 
 
