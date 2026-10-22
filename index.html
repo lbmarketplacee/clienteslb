@@ -11556,7 +11556,12 @@ window.__crmToggleNichoOutro=()=>{
   if(wrap) wrap.style.display = sel.value === 'Outros' ? 'block' : 'none';
 };
 
+let crmSalvando=false;
 window.__crmSubmitForm=async()=>{
+  // 22/10/2026 (lead Rodrigo duplicado 3x): a ficha continuava aberta depois de salvar com editingLeadId já zerado →
+  // o 2º clique em Salvar criava um lead NOVO com os dados do antigo. Agora: id preso no início, sem clique duplo, fecha a ficha.
+  if(crmSalvando)return;
+  const idEdit=editingLeadId;
   const nome=document.getElementById('lead-nome').value.trim();
   if(!nome){document.getElementById('lead-nome').focus();return;}
   const whatsapp=document.getElementById('lead-whatsapp').value.trim();
@@ -11571,19 +11576,24 @@ window.__crmSubmitForm=async()=>{
   let proximoContato=document.getElementById('lead-proximo')?.value||'';
   const motivoEl=document.getElementById('lead-motivo-perda');
   // 22/10/2026: lead aberto sempre com próxima atividade; perdido sempre com motivo
-  const leadAtual=editingLeadId?crmLeads.find(l=>l.id===editingLeadId):null;const etapaAtual=leadAtual?.stage||'novo';
+  if(!idEdit&&!document.querySelector('.crm-drawer h3')?.textContent.startsWith('Novo lead')){lbAvisar('A ficha já foi salva — feche e abra de novo o lead.');return;}
+  const leadAtual=idEdit?crmLeads.find(l=>l.id===idEdit):null;const etapaAtual=leadAtual?.stage||'novo';
   if(etapaAtual==='perdido'&&motivoEl&&!motivoEl.value){motivoEl.focus();lbAvisar('Escolha o motivo da perda antes de salvar.');return;}
   if(CRM_ATIVAS.includes(etapaAtual)&&!proximoContato){
     const d=await crmPerguntar({titulo:`Próxima atividade com ${nome}`,texto:'Todo lead aberto precisa da data do próximo contato.',tipo:'data',valor:crmSomaDias(crmHojeISO(),1)});
     if(!d)return;proximoContato=d;const el=document.getElementById('lead-proximo');if(el)el.value=d;}
   const donoSel=document.getElementById('lead-dono')?.value||'';const souVend=crmEhVendedor()&&!isLincoln();const eu=CRM_VENDEDORES.find(v=>v.email===String(currentEmail||'').toLowerCase());
   // lead criado à mão = orgânico/prospecção ativa → Duda (Lincoln 21/10/2026); vendedor cria sempre pra si e não troca dono
-  const dono=souVend?(editingLeadId?null:eu):(CRM_VENDEDORES.find(v=>v.email===donoSel)||(editingLeadId?null:CRM_VENDEDORES.find(v=>v.nome==='Duda')));
+  const dono=souVend?(idEdit?null:eu):(CRM_VENDEDORES.find(v=>v.email===donoSel)||(idEdit?null:CRM_VENDEDORES.find(v=>v.nome==='Duda')));
+  // vendedor passando o próprio lead pro outro vendedor → servidor troca o dono
+  const transferirPara=souVend&&idEdit&&donoSel&&leadAtual&&donoSel!==String(leadAtual.donoEmail||'').toLowerCase()?donoSel:null;
   const extras={proximoContato,atualizadoEm:crmHojeISO(),...(motivoEl?{motivoPerda:motivoEl.value}:{}),...(dono?{donoEmail:dono.email,donoNome:dono.nome}:{})};
+  crmSalvando=true;
   try{
-    if(editingLeadId){
-      await updateDoc(doc(db,"crmLeads",editingLeadId),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras});
-      await log(editingLeadId,nome,'edição de lead',`Dados do lead atualizados por ${currentUser}.`);
+    if(idEdit){
+      await updateDoc(doc(db,"crmLeads",idEdit),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras});
+      await log(idEdit,nome,'edição de lead',`Dados do lead atualizados por ${currentUser}.`);
+      if(transferirPara){const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/push?acao=transferir_lead&id='+encodeURIComponent(idEdit)+'&para='+encodeURIComponent(transferirPara),{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro||'não transferiu');showToast('Lead transferido.');}
     }else{
       const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
       await log(ref.id,nome,'lead criado',`Lead criado por ${currentUser}, origem: ${origem||'—'}.`);
@@ -11594,9 +11604,10 @@ window.__crmSubmitForm=async()=>{
         fetch('https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'qualificar_lead_novo',telefone:telefoneComDDI,nome,nicho:nicho===('Outros')?nichoOutro:nicho,tipoServico})}).catch(e=>console.error('Falha ao disparar qualificação via WhatsApp:',e));
       }
     }
-    leadFormOpen=false;editingLeadId=null;
+    leadFormOpen=false;editingLeadId=null;renderCRM();
     showToast('✓ Lead salvo.');
-  }catch(e){showToast('Erro ao salvar lead.');console.error(e);}
+  }catch(e){showToast('Erro ao salvar lead: '+(e.message||''));console.error(e);}
+  finally{crmSalvando=false;}
 };
 
 window.__crmDeleteLead=async(id)=>{
@@ -11661,7 +11672,7 @@ function crmLeadFormHtml(){
           ${CRM_TIPOS_SERVICO.map(s=>`<option value="${s.key}" ${lead&&lead.tipoServico===s.key?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </div>
-      <div class="field"><label>Responsável (dono do lead)</label><select id="lead-dono" ${crmEhVendedor()&&!isLincoln()?'disabled title="Só Lincoln e Carol trocam o dono"':''}><option value="">— Duda (orgânico / prospecção) —</option>${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${(lead?lead.donoEmail:(crmEhVendedor()?String(currentEmail).toLowerCase():''))===v.email?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>
+      <div class="field"><label>Responsável (dono do lead)</label><select id="lead-dono" ${crmEhVendedor()&&!isLincoln()&&!lead?'disabled title="Lead novo fica com você"':''}><option value="">— Duda (orgânico / prospecção) —</option>${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${(lead?lead.donoEmail:(crmEhVendedor()?String(currentEmail).toLowerCase():''))===v.email?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>
       <div class="field"><label>Origem</label>
         <select id="lead-origem">${CRM_ORIGENS.map(o=>`<option value="${o}" ${lead&&lead.origem===o?'selected':''}>${o}</option>`).join('')}</select>
       </div>
