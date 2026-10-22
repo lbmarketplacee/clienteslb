@@ -1392,6 +1392,13 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .nav-grupo-cab{position:relative}.nav-grupo-cab .nav-pend{right:30px;top:50%;transform:translateY(-50%)}.nav-grupo.aberto>.nav-grupo-cab .nav-pend{display:none}
 .cm-tool-card{position:relative}.cm-tool-card .nav-pend{top:10px;right:10px}
 .pp-link{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.dir-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.dir-foto{position:relative;cursor:grab;font-size:10px;color:var(--text-dim);text-align:center;border-radius:10px;padding:4px;border:2px solid transparent;transition:transform .12s,border-color .12s;user-select:none}
+.dir-foto img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:7px;border:1px solid var(--border);display:block;pointer-events:none}
+.dir-foto.arrastando{opacity:.35}.dir-foto.alvo{border-color:var(--gold-dim);transform:scale(1.03)}
+.dir-foto.capa{border-color:var(--gold)}.dir-capa{display:none;position:absolute;left:8px;top:8px;background:var(--gold);color:#181712;font-size:10px;font-weight:800;letter-spacing:.5px;border-radius:99px;padding:2px 8px;z-index:2}
+.dir-foto.capa .dir-capa{display:block}.dir-estrela{position:absolute;right:8px;top:8px;z-index:2;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#f0d791;font-size:14px;cursor:pointer;line-height:26px;padding:0}
+.dir-foto.capa .dir-estrela{display:none}.dir-foto-rot{display:block;margin-top:4px}
 /* Pedidos dos clientes agrupados por loja (22/10/2026, Lincoln: "por cliente, pra não ficar a lista imensa") */
 .pp-resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0 4px}
 .pp-resumo div{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--bg)}
@@ -10645,6 +10652,19 @@ async function lbCodigoNovo(c){const ref=doc(db,'mapaProdutos',c.id);const d=(aw
 async function cpSkuBase(c){const el=document.getElementById('dirShSku');let v=(el?.value||'').trim();
   if(!v&&c.skuCliente){const m=`A ${c.nome} usa SKU próprio — digite o SKU dela no campo "SKU (base)". O sistema não gera SKU nessa loja.`;el?.focus();lbAvisar(m);throw new Error(m);}
   if(!v){v=await lbCodigoNovo(c);if(el)el.value=v;}return v;}
+// Fotos do Criar anúncio: arrastar pra ordenar, ★ = capa (toque no iPad), selo CAPA na 1ª marcada (22/10/2026, Lincoln)
+function dirFotosArrastar(){const g=document.getElementById('dirFotosGrid');if(!g)return;let arr=null;
+  g.querySelectorAll('.dir-foto').forEach(el=>{
+    el.addEventListener('dragstart',e=>{arr=el;el.classList.add('arrastando');e.dataTransfer.effectAllowed='move';});
+    el.addEventListener('dragend',()=>{el.classList.remove('arrastando');g.querySelectorAll('.alvo').forEach(x=>x.classList.remove('alvo'));arr=null;window.__dirMarcaCapa();});
+    el.addEventListener('dragover',e=>{if(!arr||arr===el)return;e.preventDefault();el.classList.add('alvo');});
+    el.addEventListener('dragleave',()=>el.classList.remove('alvo'));
+    el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('alvo');if(!arr||arr===el)return;const r=el.getBoundingClientRect();const depois=(e.clientX-r.left)>r.width/2;el.parentNode.insertBefore(arr,depois?el.nextSibling:el);});
+  });window.__dirMarcaCapa();}
+window.__dirMarcaCapa=()=>{const g=document.getElementById('dirFotosGrid');if(!g)return;const capa=[...g.querySelectorAll('.dir-foto')].find(l=>l.querySelector('.dirShFoto')?.checked);g.querySelectorAll('.dir-foto').forEach(l=>l.classList.toggle('capa',l===capa));};
+window.__dirCapa=i=>{const g=document.getElementById('dirFotosGrid');const el=g?.querySelector(`.dir-foto[data-i="${i}"]`);if(!el)return;el.querySelector('.dirShFoto').checked=true;g.prepend(el);window.__dirMarcaCapa();};
+window.__dirSugTt=async()=>{const inp=document.getElementById('dirShTituloTt');if(!inp)return;const base=document.getElementById('dirShTitulo')?.value||window.__dirUltimo?.titulo||'';inp.placeholder='a IA está escrevendo...';
+  try{const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'tiktok',produto:base})}).then(x=>x.json());if(r.titulo)inp.value=String(r.titulo).slice(0,255);}catch(e){}inp.placeholder='vazio = a IA escreve na hora de criar';};
 function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
   const u=window.__dirUltimo;const el=document.getElementById(alvoId);if(!el||!u)return;
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&((c.shopeeErpShopId&&c.shopeeErpRefreshToken)||(c.mlUserId&&c.mlRefreshToken)||(c.tiktokShopCipher&&c.tiktokAccessToken))).sort((a,b)=>a.nome.localeCompare(b.nome));
@@ -10662,6 +10682,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
     <div id="dirShPrecoTxt" style="font-size:13px;color:var(--text-dim);margin:-4px 0 10px"></div>
     ${temSh?`<div class="field"><label>Título na Shopee (pode editar)</label><input type="text" id="dirShTitulo" maxlength="120" value="${esc(u.titulo)}"></div>`:`<input type="hidden" id="dirShTitulo" value="${esc(u.titulo)}">`}
     ${temMl?`<div class="field"><label>Título no Mercado Livre (regra do ML: até 60, termo principal primeiro, sem cor e tamanho — o ML acrescenta cor/tamanho em cada anúncio)</label><input type="text" id="dirShFamilia" maxlength="60" value="${esc(familiaSug)}"></div>`:''}
+    ${temTt?`<div class="field"><label>Título no TikTok (pode editar; vazio = a IA escreve na hora de criar)</label><div style="display:flex;gap:6px"><input type="text" id="dirShTituloTt" maxlength="255" placeholder="carregando sugestão..." style="flex:1"><button type="button" class="btn btn-ghost btn-sm" onclick="window.__dirSugTt()">Sugerir de novo</button></div></div>`:''}
     <div class="field"><label>Descrição (pode editar)</label><textarea id="dirShDesc" style="min-height:120px">${esc(u.descricao)}</textarea></div>
     <div class="form-row">
       <div class="field"><label>Estoque por variação (padrão LB: 50 — menos só se a cliente não tiver)</label><input type="number" id="dirShEst" value="50" min="0"></div>
@@ -10672,13 +10693,14 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
       <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
       <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" placeholder="25 x 35 x 5"></div>
     </div>
-    <div style="font-size:13px;margin:4px 0 6px"><b>Fotos do anúncio</b> <span style="color:var(--text-dim)">(até ${maxSel}${u.guia?' + a guia de tamanhos no fim':''}; desmarque as que não ficaram fiéis ao produto)</span></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">${cands.map((c,i)=>`<label style="cursor:pointer;font-size:10px;color:var(--text-dim);text-align:center"><img src="${c.img}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><br><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''}> ${esc(c.tipo)}</label>`).join('')}</div>
+    <div style="font-size:13px;margin:4px 0 6px"><b>Fotos do anúncio</b> <span style="color:var(--text-dim)">(até ${maxSel}${u.guia?' + a guia de tamanhos no fim':''}; <b>arraste pra mudar a ordem</b> — a 1ª marcada é a <b>capa</b>; ★ põe direto na capa; desmarque as que não ficaram fiéis)</span></div>
+    <div id="dirFotosGrid" class="dir-fotos">${cands.map((c,i)=>`<label class="dir-foto" draggable="true" data-i="${i}"><span class="dir-capa">CAPA</span><button type="button" class="dir-estrela" title="Usar como capa" onclick="event.preventDefault();window.__dirCapa(${i})">★</button><img src="${c.img}" draggable="false"><span class="dir-foto-rot"><input type="checkbox" class="dirShFoto" data-i="${i}" ${i<maxSel?'checked':''} onchange="window.__dirMarcaCapa()"> ${esc(c.tipo)}</span></label>`).join('')}</div>
     ${u.cores.length?`<div style="font-size:13px;margin:12px 0 6px"><b>Foto de cada opção de ${esc(u.nome1||'Cor')}</b> (variação 1 = ${esc(u.nome1||'Cor')}${u.tamanhos.length?`, variação 2 = ${esc(u.nome2||'Tamanho')}`:''})</div><div class="form-row">${u.cores.map((cor,i)=>`<div class="field"><label>${esc(cor)}</label><select class="dirShCor" data-cor="${esc(cor)}" onchange="this.nextElementSibling.src=window.__dirUltimo?.reais?.[Number(this.value)]||''">${(()=>{const pc=(window.__cpCorFoto||{})[String(cor).toLowerCase()];const sel=pc!=null&&pc<u.reais.length?pc:Math.min(i,u.reais.length-1);return u.reais.map((r,j)=>`<option value="${j}" ${j===sel?'selected':''}>Foto real ${j+1}${j===pc?' (a cliente marcou)':''}</option>`).join('');})()}</select><img src="${(()=>{const pc=(window.__cpCorFoto||{})[String(cor).toLowerCase()];return u.reais[pc!=null&&pc<u.reais.length?pc:Math.min(i,u.reais.length-1)]||'';})()}" style="width:64px;height:85px;object-fit:cover;border-radius:8px;border:1px solid var(--border);margin-top:6px;display:block"></div>`).join('')}</div><div style="margin:6px 0 4px"><button type="button" class="btn btn-ghost btn-sm" id="dirShVarBtn" onclick="window.__cpGerarVar()">Gerar foto com IA pra cada ${esc(u.nome1||'opção')} (quando a foto da cliente é ruim)</button> <span id="dirShVarSt" style="font-size:12px;color:var(--text-dim)"></span></div><div id="dirShVarFotos" style="display:flex;gap:10px;flex-wrap:wrap"></div>`:'<div style="font-size:12px;color:var(--text-dim);margin-top:10px">Produto sem variação.</div>'}
     ${temSh?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__dirShCriar()">${temMl||temTt||temSe?`1. Criar na Shopee (oculto) — ${[temMl&&'ML',temTt&&'TikTok',temSe&&'SHEIN'].filter(Boolean).join(' e ')} entram no passo de publicar`:'Criar anúncio (oculto)'}</button>`:temMl?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarMl()">Criar no Mercado Livre${temTt?' e no TikTok':''}${temSe?' e na SHEIN':''}</button>`:temTt?`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarTt().then(()=>(window.__dirUltimo?.plataformas||[]).includes('shein')&&window.__cpCriarSh(true))">Criar no TikTok Shop${temSe?' e na SHEIN':''}</button>`:`<button class="btn btn-gold" id="dirShCriarBtn" style="margin-top:12px" onclick="window.__cpCriarSh()">Criar na SHEIN</button>`}
     ${temSe?`<div class="form-row" style="margin-top:10px"><div class="field"><label>Medidas da PEÇA pra SHEIN (opcional — 1 tamanho por linha)</label><textarea id="cpSheinMed" rows="4" placeholder="1 tamanho por linha:&#10;P: busto 100; comprimento 60&#10;M: busto 120; comprimento 62"></textarea></div><div class="field"><label>Categoria de reserva na SHEIN (se ela não achar sozinha)</label><input id="cpSheinCat" list="cpSheinCats" placeholder="comece a digitar: Vestido, Camiseta…" onfocus="window.__cpSheinCats()"><datalist id="cpSheinCats"></datalist></div></div>`:''}
     <div id="dirShStatus" style="margin-top:12px;font-size:13px"></div></div>`;
   cpPreencherDoPedido(lojaId);
+  dirFotosArrastar();if(temTt)window.__dirSugTt();
 }
 window.__dirShopeeRender=dirShopeeRender;
 // Pedido da cliente (link de produto) → já preenche valor, estoque, SKU, peso, embalagem, EAN e medidas da SHEIN (14/10/2026, Lincoln)
@@ -10977,7 +10999,7 @@ window.__cpCriarTt=async(depois=false)=>{
   if(u.tamanhos.length)vars.push({nome:u.nome2||'Tamanho',tam:/tamanho/i.test(u.nome2||'Tamanho'),opcoes:u.tamanhos.map(t=>({nome:t.tam,campos:t.campos||null}))});
   const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
   const skuBase=await cpSkuBase(c);
-  const P={titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
+  const P={tituloTiktok:document.getElementById('dirShTituloTt')?.value.trim()||'',titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
     skus:combos.map(op=>({op,liq,est,sku:lbSkuVar(skuBase,...op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
   if(!depois&&!await lbConfirmar(`Criar no TikTok Shop\nLoja: ${c.nome}\n${combos.length} SKU(s), ${est} un. cada · preço pelas taxas do TikTok (${fmtR(dirPrecosTT(liq)?.venda)})\nVai pra análise da TikTok e entra no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
   if(btn&&!depois)btn.disabled=true;
@@ -11006,7 +11028,7 @@ window.__cpCriarSh=async(depois=false)=>{
   if(u.tamanhos.length)vars.push({nome:u.nome2||'Tamanho',tam:/tamanho/i.test(u.nome2||'Tamanho'),opcoes:u.tamanhos.map(t=>({nome:t.tam,campos:t.campos||null,veste:t.campos?.Veste}))});
   const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
   const skuBase=await cpSkuBase(c);
-  const P={titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
+  const P={tituloTiktok:document.getElementById('dirShTituloTt')?.value.trim()||'',titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
     skus:combos.map(op=>({op,liq,est,sku:lbSkuVar(skuBase,...op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
   if(!depois&&!await lbConfirmar(`Criar na SHEIN\nLoja: ${c.nome}\n${combos.length} variação(ões), ${est} un. cada · 1 preço só (${fmtR(sheinPreco(liq))})\nVai pra análise da SHEIN.`,{okTxt:'Criar na SHEIN'}))return;
   if(btn&&!depois)btn.disabled=true;
@@ -12903,7 +12925,7 @@ const pxCriar={
       const guia=await dirGuiaIA(lista,await migJpg(P.fotos[0]),P.titulo);if(!guia)throw new Error('não consegui montar a guia de tamanhos');
       const r=await mig3Api(c,'produto_imagem',{base64:guia,uso:'SIZE_CHART_IMAGE'});if(!r.ok)throw new Error('guia: '+r.erro);guiaUri=r.uri;}
     linha('TikTok: título...');
-    const tt=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'tiktok',produto:`${P.titulo}${P.atributosTxt?`. ${P.atributosTxt}`:''}`})}).then(r=>r.json()).catch(()=>({}));
+    const tt=P.tituloTiktok?{titulo:P.tituloTiktok}:await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'tiktok',produto:`${P.titulo}${P.atributosTxt?`. ${P.atributosTxt}`:''}`})}).then(r=>r.json()).catch(()=>({}));
     const spec={titulo:String(tt.titulo||P.titulo).trim().slice(0,255),descricao:String(P.descricao).slice(0,9000),categoriaId:cat.categoriaId,imagens,guiaUri,peso:P.peso||0.5,
       dims:pxDimsOk(P.dims)?P.dims:{c:25,l:20,a:5},armazem:cat.armazem,variacoes,atributos,skus:skus.map(s=>({opcoes:s.opcoes,preco:s.preco,estoque:s.estoque,sku:s.sku}))};
     linha('TikTok: criando...');
