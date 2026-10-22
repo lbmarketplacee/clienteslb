@@ -929,6 +929,21 @@ textarea{resize:vertical;min-height:70px;}
 .crm-filters select,.crm-filters input{width:auto;flex:0 1 auto;max-width:200px}
 .crm-filters input{min-width:200px;max-width:260px;padding:7px 10px;font-size:12px}
 .crm-placar{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 12px}.crm-placar-item{flex:1;min-width:220px;display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card,rgba(255,255,255,.02));cursor:pointer;font-size:12.5px;color:var(--text-dim)}.crm-placar-item b{color:var(--text)}.crm-placar-item.on{border-color:var(--gold)}.crm-placar-item.sem{cursor:default;border-style:dashed}.crm-placar-item .btn{align-self:flex-start;margin-top:4px}.crm-comissao{margin-top:2px;color:var(--gold)}
+.crm-novos{display:flex;gap:8px;align-items:center}
+.crm-abas{display:flex;gap:6px;margin:0 0 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}.crm-abas button{background:none;border:0;border-bottom:2px solid transparent;color:var(--text-dim);padding:8px 12px;font:600 13px Inter,sans-serif;cursor:pointer;margin-bottom:-1px}.crm-abas button.on{color:var(--gold);border-bottom-color:var(--gold)}
+.crm-agenda{border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin:0 0 12px;background:var(--bg-card,rgba(255,255,255,.02))}.crm-ag-tit{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}.crm-ag-linha{display:flex;gap:10px;align-items:flex-start;padding:5px 0}.crm-ag-linha>b{flex:0 0 190px;font-size:12.5px;white-space:nowrap}.crm-ag-linha>b span{display:inline-block;min-width:20px;text-align:center;border-radius:99px;padding:0 6px;margin-left:4px;font-size:11px;background:var(--bg)}.crm-ag-linha.atrasado>b{color:var(--red)}.crm-ag-linha.hoje>b{color:var(--gold)}.crm-ag-linha.sem>b{color:var(--amber,#f59e0b)}
+.crm-ag-chips{display:flex;flex-wrap:wrap;gap:6px}.crm-ag-chip{background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--text);cursor:pointer}.crm-ag-chip:hover{border-color:var(--gold)}.crm-ag-chip em{font-style:normal;color:var(--text-dim);margin-left:6px;font-size:11px}.crm-ag-mais,.crm-ag-vazio{font-size:12px;color:var(--text-dim);align-self:center}
+@media(max-width:700px){.crm-ag-linha{flex-direction:column;gap:4px}.crm-ag-linha>b{flex:none}}
+.crm-info{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:10.5px;color:var(--text-dim)}.crm-resp{font-weight:600;padding:1px 6px;border-radius:5px}.crm-resp.ok{color:var(--green);background:rgba(16,185,129,.12)}.crm-resp.ruim{color:var(--red);background:rgba(239,68,68,.12)}.crm-fim{color:var(--red);font-weight:600}
+.crm-tent{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.crm-tent-b{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:5px 9px;font:600 12px Inter,sans-serif;cursor:pointer}.crm-tent.mini{gap:3px}.crm-tent.mini .crm-tent-b{padding:1px 5px;font-size:10px;border-radius:5px}.crm-tent-b:hover{border-color:var(--gold);color:var(--gold)}.crm-tent-b.respondeu{color:var(--green)}.crm-tent-b.sem_interesse{color:var(--red)}
+.crm-ficha-res{display:flex;flex-wrap:wrap;gap:8px 18px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--bg)}.crm-ficha-res>div{display:flex;flex-direction:column;gap:2px;font-size:12px}.crm-ficha-res span{color:var(--text-dim);font-size:11px}.crm-ficha-res b.ok{color:var(--green)}.crm-ficha-res b.ruim{color:var(--red)}.crm-ficha-res .crm-ficha-tent{flex-basis:100%}
+.crm-tl-wrap{margin-bottom:12px}.crm-tl-nova{display:flex;gap:8px;margin-bottom:8px}.crm-tl-nova input{flex:1}.crm-tl{max-height:320px;overflow:auto;border-left:2px solid var(--border);margin-left:6px;padding-left:12px}.crm-tl-item{position:relative;display:flex;gap:8px;padding:6px 0;font-size:13px}.crm-tl-item>i{position:absolute;left:-18px;top:11px;width:10px;height:10px;border-radius:50%;background:var(--border)}.crm-tl-item.t-etapa>i{background:#3fa8f5}.crm-tl-item.t-respondeu>i{background:var(--green)}.crm-tl-item.t-sem_interesse>i{background:var(--red)}.crm-tl-item.t-nota>i{background:var(--gold)}.crm-tl-q{display:block;font-size:11px;color:var(--text-dim)}.crm-tl-nota{margin-top:2px;padding:6px 8px;border-radius:8px;background:var(--bg);white-space:pre-wrap}.crm-tl-vazio{font-size:12px;color:var(--text-dim)}
+.crm-pv-lista{display:grid;gap:14px}.crm-pv{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:var(--bg-card,rgba(255,255,255,.02))}.crm-pv-top{display:flex;gap:14px;align-items:stretch;flex-wrap:wrap}.crm-pv-id{flex:1;min-width:240px}.crm-pv-nome{font-family:Oswald,sans-serif;font-size:20px}.crm-pv-nome span{font-family:Inter,sans-serif;font-size:12px;color:var(--text-dim);margin-left:8px}.crm-pv-meta{font-size:12.5px;color:var(--text-dim);margin-top:8px}.crm-pv-meta b{color:var(--text)}.crm-pv-barra{height:10px;border-radius:99px;background:var(--bg);border:1px solid var(--border);overflow:hidden;margin-bottom:6px}.crm-pv-barra i{display:block;height:100%;border-radius:99px}
+.crm-pv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}.crm-pv-card{border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:var(--bg);min-width:150px}.crm-pv-card span{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}.crm-pv-card b{font-family:Oswald,sans-serif;font-size:22px}.crm-pv-card em{font-style:normal;font-size:11px;color:var(--text-dim)}
+.crm-pv-funil{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:stretch}.crm-pv-ftit{flex-basis:100%;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}.crm-pv-funil>div{flex:1;min-width:150px;border:1px dashed var(--border);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;font-size:11.5px;color:var(--text-dim)}.crm-pv-funil b{font-size:18px;color:var(--text)}.crm-pv-funil em{font-style:normal;font-size:10.5px}
+.crm-lincoln{border:1px solid var(--border);border-radius:14px;padding:14px 16px}.crm-lincoln-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.crm-lincoln-top>div>b{font-family:Oswald,sans-serif;font-size:20px;display:block}.crm-lincoln-top span{font-size:12.5px;color:var(--text-dim)}.crm-lincoln-top span b{color:var(--text)}.crm-comp-wrap{overflow-x:auto}.crm-comp{max-width:820px}.crm-comp th em{display:block;font-style:normal;font-weight:400;font-size:11px;color:var(--text-dim)}.crm-comp td:not(:first-child),.crm-comp th:not(:first-child){text-align:right}.crm-comp tr.crm-comp-bloco td{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding-top:14px}.crm-lincoln-obs{font-size:11.5px;color:var(--text-dim);margin:10px 0 0}
+.crm-imp-tit{font-weight:700;font-size:15px;margin-bottom:4px}.crm-imp-dica{font-size:12.5px;color:var(--text-dim);margin:0 0 10px;line-height:1.5}.crm-imp textarea{width:100%;min-height:140px;font-family:ui-monospace,monospace;font-size:12px}.crm-imp-prev{font-size:13px;margin:10px 0}.crm-imp-lista{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.crm-imp-lista span{font-size:11.5px;border:1px solid var(--border);border-radius:99px;padding:2px 8px;color:var(--text-dim)}
+.crm-perg-campo{margin-top:12px}.crm-perg-campo input,.crm-perg-campo select{width:100%;box-sizing:border-box;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit}.crm-perg-campo .crm-perg-erro{border-color:var(--red)}
 .crm-resumo{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .crm-resumo-item{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dim);font-size:12px;cursor:pointer}
 .crm-resumo-item b{font-size:14px;color:var(--text)}
@@ -10260,7 +10275,7 @@ const CRM_STAGES = [
   {key:'fechado', label:'Fechado', color:'var(--green)'},
   {key:'perdido', label:'Perdido', color:'var(--red)'}
 ];
-const CRM_ORIGENS = ['Instagram Ads','Facebook Ads','Google Ads','Indicação','Orgânico','WhatsApp','Typebot','Outro'];
+const CRM_ORIGENS = ['Instagram Ads','Facebook Ads','Google Ads','Indicação','Orgânico','Prospecção ativa','WhatsApp','Typebot','Outro'];
 const CRM_TIPOS_SERVICO = [
   {key:'marketplace', label:'Gestão de Marketplace', color:'#3fa8f5'},
   {key:'mentoria', label:'Mentoria', color:'var(--gold)'},
@@ -11449,7 +11464,7 @@ function crmPlacarHtml(){const mes=crmMes();
     const abertos=meus.filter(l=>['novo','contato'].includes(l.stage)).length;
     return `<div class="crm-placar-item ${crmFilter.dono===v.email?'on':''}" onclick="window.__crmFiltro('dono','${crmFilter.dono===v.email?'all':v.email}')"><b>${esc(v.nome)}</b><span>${doMes.length} leads no mês · ${abertos} em aberto</span><span>${agend} agendaram · <b style="color:var(--green)">${fech} fechados</b></span><span class="crm-comissao">Comissão do mês: <b>${fmtR(fech*CRM_COMISSAO)}</b></span></div>`;};
   const semDono=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu','negociacao'].includes(l.stage)).length;
-  return `<div class="crm-placar">${CRM_VENDEDORES.map(linha).join('')}${semDono&&isLincoln()?`<div class="crm-placar-item sem"><b>${semDono} lead(s) sem dono</b><span>novo/contato vão em rodízio; agendado/compareceu ficam com o Guilherme</span><button class="btn btn-gold btn-sm" onclick="event.stopPropagation();window.__crmDistribuir()">Distribuir agora</button></div>`:''}</div>`;}
+  return `<div class="crm-placar">${CRM_VENDEDORES.filter(v=>!crmSouVendedor()||v.email===crmEu()).map(linha).join('')}${semDono&&isLincoln()?`<div class="crm-placar-item sem"><b>${semDono} lead(s) sem dono</b><span>novo/contato vão em rodízio; agendado/compareceu ficam com o Guilherme</span><button class="btn btn-gold btn-sm" onclick="event.stopPropagation();window.__crmDistribuir()">Distribuir agora</button></div>`:''}</div>`;}
 window.__crmDistribuir=async()=>{const sem=crmLeads.filter(l=>!l.donoEmail&&['novo','contato','agendado','compareceu','negociacao'].includes(l.stage));if(!sem.length)return;
   if(!await lbConfirmar(`Distribuir ${sem.length} lead(s) sem dono?\nNovo/contato: rodízio entre ${CRM_VENDEDORES.map(v=>v.nome).join(' e ')}. Agendado/compareceu: Guilherme.`,{okTxt:'Distribuir'}))return;
   const novos=sem.filter(l=>['novo','contato'].includes(l.stage)).sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||''));let i=0,n=0;
@@ -11493,6 +11508,13 @@ function crmDevolverRascunho(r){
 }
 
 
+// 21/10/2026 (Lincoln): lead que compareceu (ou em negociação) passa pro Guilherme na hora — o servidor troca o dono
+const crmCloserPedidos=new Set();
+function crmPassarCloserAuto(){
+  const eu=String(currentEmail||'').toLowerCase();
+  crmLeads.filter(l=>['compareceu','negociacao'].includes(l.stage)&&(l.donoEmail||'').toLowerCase()!=='guilherme@lbmarketplace.com.br'&&l.manterDono!==true&&(isLincoln()||(l.donoEmail||'').toLowerCase()===eu)&&!crmCloserPedidos.has(l.id))
+    .forEach(async l=>{crmCloserPedidos.add(l.id);try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/push?acao=passar_closer&id='+encodeURIComponent(l.id),{headers:await authHeaders()})).json();if(r.passados)showToast(`${l.nome} passou pro Guilherme (compareceu)`);}catch(e){crmCloserPedidos.delete(l.id);}});
+}
 function crmIniciar(){
   if(crmUnsub)return;
   // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
@@ -11502,9 +11524,8 @@ function crmIniciar(){
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
     // 21/10/2026: com a ficha aberta, qualquer mudança em QUALQUER lead (lead novo, robô da IA, aviso no celular)
     // redesenhava a tela e apagava o que a pessoa estava digitando (Duda perdia as notas). Guarda e devolve o rascunho.
-    const rascunho=leadFormOpen?crmGuardarRascunho():null;
-    renderCRM();
-    if(rascunho)crmDevolverRascunho(rascunho);
+    crmPassarCloserAuto();
+    crmRedesenhar(); // guarda e devolve o rascunho da ficha e da importação
   });
 }
 
@@ -11547,8 +11568,14 @@ window.__crmSubmitForm=async()=>{
   const origem=document.getElementById('lead-origem').value;
   const valor=BRD_PARSE_EDIT(document.getElementById('lead-valor').value);
   const notas=document.getElementById('lead-notas').value.trim();
-  const proximoContato=document.getElementById('lead-proximo')?.value||'';
+  let proximoContato=document.getElementById('lead-proximo')?.value||'';
   const motivoEl=document.getElementById('lead-motivo-perda');
+  // 22/10/2026: lead aberto sempre com próxima atividade; perdido sempre com motivo
+  const leadAtual=editingLeadId?crmLeads.find(l=>l.id===editingLeadId):null;const etapaAtual=leadAtual?.stage||'novo';
+  if(etapaAtual==='perdido'&&motivoEl&&!motivoEl.value){motivoEl.focus();lbAvisar('Escolha o motivo da perda antes de salvar.');return;}
+  if(CRM_ATIVAS.includes(etapaAtual)&&!proximoContato){
+    const d=await crmPerguntar({titulo:`Próxima atividade com ${nome}`,texto:'Todo lead aberto precisa da data do próximo contato.',tipo:'data',valor:crmSomaDias(crmHojeISO(),1)});
+    if(!d)return;proximoContato=d;const el=document.getElementById('lead-proximo');if(el)el.value=d;}
   const donoSel=document.getElementById('lead-dono')?.value||'';const souVend=crmEhVendedor()&&!isLincoln();const eu=CRM_VENDEDORES.find(v=>v.email===String(currentEmail||'').toLowerCase());
   // lead criado à mão = orgânico/prospecção ativa → Duda (Lincoln 21/10/2026); vendedor cria sempre pra si e não troca dono
   const dono=souVend?(editingLeadId?null:eu):(CRM_VENDEDORES.find(v=>v.email===donoSel)||(editingLeadId?null:CRM_VENDEDORES.find(v=>v.nome==='Duda')));
@@ -11584,14 +11611,19 @@ window.__crmDeleteLead=async(id)=>{
 
 window.__crmMoveStage=async(id,stage)=>{
   const lead=crmLeads.find(l=>l.id===id);
-  if(!lead)return;
+  if(!lead||(lead.stage||'novo')===stage)return;
+  // 22/10/2026: perdido só com motivo; etapa aberta só com próxima atividade
+  let motivo=null;
+  if(stage==='perdido'){motivo=await crmPerguntar({titulo:`Por que perdeu ${lead.nome}?`,texto:'O motivo da perda é obrigatório.',tipo:'motivo',valor:lead.motivoPerda||'',okTxt:'Mover pra Perdido'});if(!motivo)return;}
+  const p=crmMudancaEtapa(lead,stage,{por:currentUser||crmEu()});
+  if(motivo){p.motivoPerda=motivo.motivo;p.atividades[p.atividades.length-1].nota=motivo.motivo+(motivo.nota?`: ${motivo.nota}`:'');}
+  if(CRM_ATIVAS.includes(stage)&&!lead.proximoContato){
+    const d=await crmPerguntar({titulo:`Próxima atividade com ${lead.nome}`,texto:`Indo pra "${crmStageInfo(stage).label}". Quando é o próximo contato?`,tipo:'data',valor:crmSomaDias(crmHojeISO(),1)});
+    if(!d)return;p.proximoContato=d;}
   try{
-    const stageAntiga=crmStageInfo(lead.stage).label;
-    const stageNova=crmStageInfo(stage).label;
-    await updateDoc(doc(db,"crmLeads",id),{stage,atualizadoEm:crmHojeISO(),...(stage==='fechado'&&lead.stage!=='fechado'?{fechadoEm:crmHojeISO(),fechadoPor:lead.donoNome||currentUser}:{})});
-    if(stage==='perdido'&&lead.stage!=='perdido'){editingLeadId=id;leadFormOpen=true;showToast('Marque o motivo da perda e salve.');}
-    await log(id,lead.nome,'mudança de etapa',`${currentUser} moveu de "${stageAntiga}" para "${stageNova}".`);
-    if(stage==='fechado' && lead.stage!=='fechado') showToast(`✓ ${lead.nome} fechado!`);
+    await updateDoc(doc(db,"crmLeads",id),p);
+    await log(id,lead.nome,'mudança de etapa',`${currentUser} moveu de "${crmStageInfo(lead.stage).label}" para "${crmStageInfo(stage).label}"${motivo?` (motivo: ${motivo.motivo})`:''}.`);
+    if(stage==='fechado') showToast(`✓ ${lead.nome} fechado!`);
   }catch(e){showToast('Erro ao mover lead.');console.error(e);}
 };
 
@@ -11635,11 +11667,13 @@ function crmLeadFormHtml(){
       </div>
       <div class="field"><label>Valor Estimado</label><input type="text" id="lead-valor" value="${lead?fmtR(lead.valor).replace('R$ ',''):''}" placeholder="0"></div>
       <div class="field"><label>Próximo contato (retorno)</label><input type="date" id="lead-proximo" value="${lead?esc(lead.proximoContato||''):''}"></div>
+      ${lead?crmFichaResumoHtml(lead):''}
       ${lead?crmIaBox(lead):''}
-      ${lead&&lead.stage==='perdido'?`<div class="field"><label>Motivo da perda</label><select id="lead-motivo-perda"><option value="">Selecione</option>${CRM_MOTIVOS_PERDA.map(m=>`<option value="${m}" ${lead.motivoPerda===m?'selected':''}>${m}</option>`).join('')}</select></div>`:''}
+      ${lead&&lead.stage==='perdido'?`<div class="field"><label>Motivo da perda (obrigatório)</label><select id="lead-motivo-perda"><option value="">Selecione</option>${CRM_MOTIVOS_PERDA.map(m=>`<option value="${m}" ${lead.motivoPerda===m?'selected':''}>${m}</option>`).join('')}</select></div>`:''}
     </div>
     ${lead && lead.respostasTypebot && Object.keys(lead.respostasTypebot).length ? crmTypebotHtml(lead) : ''}
     <div class="field" style="margin-bottom:12px;"><label>Notas</label><textarea id="lead-notas" placeholder="Observações...">${lead?esc(lead.notas||''):''}</textarea></div>
+    ${lead?crmLinhaTempoHtml(lead):''}
     <div class="lead-form-actions">
       ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
       ${lead?`<button class="btn-cancel" onclick="window.__hist('${lead.id}','${esc(lead.nome).replace(/'/g,"\\'")}')" style="margin-right:auto">Ver histórico</button>`:''}
@@ -11680,6 +11714,317 @@ function crmTypebotHtml(lead){
       ${origem.length?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:6px 12px;min-width:0"><div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.04em;padding:4px 0">DE ONDE VEIO</div>${origem.join('')}</div>`:''}
     </div></div>`;
 }
+/* ---------- CRM profissional (22/10/2026, Lincoln) — regras puras: prospecção ativa, cadência, tempo de resposta, chance, painéis ---------- */
+// Papéis: Guilherme = closer do tráfego (Meta/Typebot) + quem compareceu; Duda = SDR (prospecção ativa + orgânico). Meta 5 contratos/mês cada.
+const CRM_META_MES=5,CRM_RESPOSTA_META_MIN=5;
+const CRM_CHANCE={novo:.05,contato:.10,agendado:.30,compareceu:.50,negociacao:.70,fechado:1,perdido:0};
+const CRM_ORDEM=['novo','contato','agendado','compareceu','negociacao','fechado'];
+const CRM_CADENCIA=[1,3,7],CRM_REPESCAGEM=30;
+const CRM_TENTATIVAS={
+  nao_atendeu:{rot:'Liguei — não atendeu',curto:'Não atendeu',tentativa:true},
+  whatsapp:{rot:'WhatsApp enviado',curto:'WhatsApp',tentativa:true},
+  respondeu:{rot:'Respondeu',curto:'Respondeu'},
+  depois:{rot:'Pediu pra chamar depois',curto:'Depois'},
+  sem_interesse:{rot:'Sem interesse',curto:'Sem interesse'},
+};
+const CRM_ATIV_ROT={...Object.fromEntries(Object.entries(CRM_TENTATIVAS).map(([k,v])=>[k,v.rot])),nota:'Nota',etapa:'Mudou de etapa',importado:'Importado da lista',criado:'Lead criado'};
+const crmP2=n=>String(n).padStart(2,'0');
+function crmIsoDe(ms){const d=new Date(ms);return `${d.getFullYear()}-${crmP2(d.getMonth()+1)}-${crmP2(d.getDate())}`;}
+function crmSomaDias(iso,n){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return crmIsoDe(d.getTime());}
+const crmMs=v=>v?.toMillis?v.toMillis():v?.seconds?v.seconds*1000:v instanceof Date?v.getTime():typeof v==='number'?v:(v?Date.parse(v)||0:0);
+const crmSemAcento=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'');
+// telefone só com dígitos, sem o 55 (pra comparar duplicado)
+function crmTel(t){let d=String(t||'').replace(/\D/g,'');if(d.length>=12&&d.startsWith('55'))d=d.slice(2);return d.length>=10?d:'';}
+function crmCsvLinha(l,sep){const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];
+  if(q){if(ch==='"'&&l[i+1]==='"'){cur+='"';i++;}else if(ch==='"')q=false;else cur+=ch;}
+  else if(ch==='"')q=true;else if(ch===sep){out.push(cur);cur='';}else cur+=ch;}
+  out.push(cur);return out.map(s=>s.trim());}
+// planilha colada (Excel = tabulação) ou CSV (; ou ,). Com cabeçalho reconhece as colunas; sem cabeçalho usa a ordem do pedido.
+const CRM_COLUNAS=['nome','whatsapp','loja','segmento','cidade','observacao','origemLista'];
+const CRM_CAB=[['whatsapp',/whats|telefone|celular|fone|numero|contato tel/],['loja',/loja|empresa|marca/],['segmento',/segmento|nicho|ramo/],['cidade',/cidade|local|^uf$|estado/],['observacao',/obs/],['origemLista',/origem|lista|fonte/],['nome',/nome|respons|cliente/]];
+function crmLerLista(texto){
+  const linhas=String(texto||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());
+  if(!linhas.length)return [];
+  const sep=['\t',';',','].find(s=>linhas[0].includes(s))||'\t';
+  const cab=crmCsvLinha(linhas[0],sep).map(c=>crmSemAcento(c).toLowerCase());
+  const temCab=cab.some(c=>/nome|whats|telefone|celular|loja|segmento/.test(c))&&!cab.some(c=>c.replace(/\D/g,'').length>=8); // cabeçalho não tem telefone
+  const cols=temCab?cab.map(c=>(CRM_CAB.find(([,re])=>re.test(c))||[null])[0]):CRM_COLUNAS;
+  return linhas.slice(temCab?1:0).map(l=>{const v=crmCsvLinha(l,sep);const o={};cols.forEach((k,i)=>{if(k&&v[i]&&!o[k])o[k]=v[i];});return o;}).filter(o=>o.nome||o.whatsapp);
+}
+// tira duplicado por telefone (contra o CRM e dentro da própria lista); sem telefone válido fica de fora
+function crmDedupe(linhas,existentes){
+  const tem=new Set((existentes||[]).map(l=>crmTel(l.whatsapp)).filter(Boolean));
+  const novos=[],duplicados=[],semTelefone=[];
+  for(const r of linhas||[]){const t=crmTel(r.whatsapp);if(!t){semTelefone.push(r);continue;}if(tem.has(t)){duplicados.push(r);continue;}tem.add(t);novos.push({...r,tel:t});}
+  return {novos,duplicados,semTelefone};
+}
+// cadência das tentativas sem resposta: D+1, D+3, D+7 (a partir da 1ª tentativa) e repescagem em 30 dias; depois disso acabou
+function crmProximaCadencia(atividades,hoje){
+  const lista=atividades||[];let ini=0;
+  lista.forEach((a,i)=>{if(a.tipo==='respondeu'||a.tipo==='depois')ini=i+1;});
+  const tent=lista.slice(ini).filter(a=>CRM_TENTATIVAS[a.tipo]?.tentativa);
+  const n=tent.length;if(!n)return{data:null,etapa:null};
+  const prim=crmIsoDe(tent[0].quando),ult=crmIsoDe(tent[n-1].quando);
+  let data,etapa;
+  if(n<=CRM_CADENCIA.length){data=crmSomaDias(prim,CRM_CADENCIA[n-1]);etapa=`D+${CRM_CADENCIA[n-1]}`;}
+  else if(n===CRM_CADENCIA.length+1){data=crmSomaDias(ult,CRM_REPESCAGEM);etapa='repescagem';}
+  else return{data:null,etapa:'fim'};
+  if(data<=hoje)data=crmSomaDias(hoje,1);
+  return{data,etapa};
+}
+// registra uma tentativa/nota → o que gravar no lead (atividades, contador, próximo contato, etapa)
+function crmAplicarAtividade(lead,tipo,{nota='',data='',motivo='',por='',agora=Date.now()}={}){
+  const hoje=crmIsoDe(agora);
+  const at={tipo,quando:agora,por};if(nota)at.nota=nota;if(data)at.data=data;if(motivo)at.motivo=motivo;
+  const atividades=[...(lead.atividades||[]),at];
+  const p={atividades,atualizadoEm:hoje};
+  if(CRM_TENTATIVAS[tipo]?.tentativa){p.tentativas=(lead.tentativas||0)+1;const c=crmProximaCadencia(atividades,hoje);p.proximoContato=c.data||'';p.cadencia=c.etapa;}
+  if(tipo==='respondeu'){p.proximoContato=data||crmSomaDias(hoje,1);p.cadencia=null;if((lead.stage||'novo')==='novo')p.stage='contato';}
+  if(tipo==='depois'){p.proximoContato=data||crmSomaDias(hoje,1);p.cadencia=null;if((lead.stage||'novo')==='novo')p.stage='contato';}
+  if(tipo==='sem_interesse'){p.stage='perdido';p.motivoPerda=motivo||'Não é o momento';p.proximoContato='';p.cadencia=null;}
+  if(p.stage&&p.stage!==(lead.stage||'novo'))Object.assign(p,crmMudancaEtapa(lead,p.stage,{por,agora,atividades}));
+  if(!lead.primeiraRespostaEm&&tipo!=='nota')p.primeiraRespostaEm=agora;
+  return p;
+}
+// mudança de etapa: entra na linha do tempo + datas que os painéis usam
+function crmMudancaEtapa(lead,stage,{por='',agora=Date.now(),atividades=null}={}){
+  const de=lead.stage||'novo',hoje=crmIsoDe(agora);
+  const lista=atividades||[...(lead.atividades||[])];lista.push({tipo:'etapa',de,para:stage,quando:agora,por});
+  const p={stage,atividades:lista,atualizadoEm:hoje,etapaMax:Math.max(crmEtapaMax(lead),CRM_ORDEM.indexOf(stage))};
+  if(stage==='agendado'&&!lead.agendadoEm){p.agendadoEm=hoje;p.agendadoPor=por;}
+  if(stage==='compareceu'&&!lead.compareceuEm)p.compareceuEm=hoje;
+  if(stage==='fechado'&&de!=='fechado'){p.fechadoEm=hoje;p.fechadoPor=lead.donoNome||por;}
+  if(stage==='fechado'||stage==='perdido'){p.proximoContato='';p.cadencia=null;}
+  if(!lead.primeiraRespostaEm&&de==='novo')p.primeiraRespostaEm=agora;
+  return p;
+}
+function crmEtapaMax(l){let m=Math.max(CRM_ORDEM.indexOf(l.stage||'novo'),Number.isInteger(l.etapaMax)?l.etapaMax:-1);
+  for(const a of l.atividades||[])if(a.tipo==='etapa')m=Math.max(m,CRM_ORDEM.indexOf(a.para));return m;}
+const crmEhProspeccao=l=>/prospec/i.test(crmSemAcento(l.origem||''));
+const crmEhTrafego=l=>/ads|meta|typebot|trafego/i.test(crmSemAcento(l.origem||''))||!!(l.anuncio&&(l.anuncio.fonte||l.anuncio.campanha));
+// tempo até a 1ª resposta (ms). Prospecção ativa não conta (quem puxa o contato é a Duda).
+function crmTempoResposta(l,agora=Date.now()){
+  if(crmEhProspeccao(l))return null;
+  const criado=crmMs(l.criadoEm)||(l.createdDate?Date.parse(l.createdDate+'T12:00:00'):0);if(!criado)return null;
+  const prim=l.primeiraRespostaEm||(l.atividades||[]).filter(a=>!['nota','importado','criado'].includes(a.tipo)).map(a=>a.quando).sort((a,b)=>a-b)[0];
+  if(prim)return{ms:Math.max(0,prim-criado),esperando:false};
+  if((l.stage||'novo')!=='novo')return null; // lead antigo, já trabalhado antes deste controle
+  return{ms:Math.max(0,agora-criado),esperando:true};
+}
+function crmFmtDuracao(ms){const m=Math.round(ms/60000);if(m<60)return `${m} min`;const h=Math.round(m/6)/10;if(h<24)return `${String(h).replace('.',',')} h`;return `${Math.round(h/24)} dia(s)`;}
+// números do vendedor no mês (AAAA-MM)
+function crmStats(leads,email,mes,agora=Date.now()){
+  const meus=(leads||[]).filter(l=>l.donoEmail===email);
+  const doMes=meus.filter(l=>(l.createdDate||'').startsWith(mes));
+  const noMes=q=>crmIsoDe(q).startsWith(mes);
+  const contatos=meus.reduce((t,l)=>t+(l.atividades||[]).filter(a=>CRM_TENTATIVAS[a.tipo]&&noMes(a.quando)).length,0);
+  const marcou=(l,campo,idx)=>l[campo]?String(l[campo]).startsWith(mes):((l.createdDate||'').startsWith(mes)&&crmEtapaMax(l)>=idx);
+  const agendou=meus.filter(l=>marcou(l,'agendadoEm',2)).length,compareceu=meus.filter(l=>marcou(l,'compareceuEm',3)).length;
+  const fechados=meus.filter(l=>l.stage==='fechado'&&String(l.fechadoEm||l.atualizadoEm||'').startsWith(mes));
+  const funil=CRM_ORDEM.map((k,i)=>({k,n:doMes.filter(l=>crmEtapaMax(l)>=i).length}));
+  const conv=funil.slice(1).map((x,i)=>({de:funil[i].k,para:x.k,pct:funil[i].n?Math.round(x.n/funil[i].n*100):null}));
+  const tempos=doMes.map(l=>crmTempoResposta(l,agora)).filter(t=>t&&!t.esperando).map(t=>t.ms);
+  const abertos=meus.filter(l=>CRM_ATIVAS.includes(l.stage||'novo'));
+  const chance=abertos.reduce((t,l)=>t+(CRM_CHANCE[l.stage||'novo']||0),0);
+  return{leads:doMes.length,abertos:abertos.length,contatos,agendou,compareceu,fechou:fechados.length,fechados,
+    meta:CRM_META_MES,comissao:fechados.length*CRM_COMISSAO,funil,conv,conversao:doMes.length?Math.round(doMes.filter(l=>l.stage==='fechado').length/doMes.length*100):null,
+    tempoMedio:tempos.length?tempos.reduce((a,b)=>a+b,0)/tempos.length:null,naMeta:tempos.length?Math.round(tempos.filter(t=>t<=CRM_RESPOSTA_META_MIN*60000).length/tempos.length*100):null,
+    esperando:doMes.filter(l=>crmTempoResposta(l,agora)?.esperando).length,
+    previstoContratos:Math.round((fechados.length+chance)*10)/10,previstoValor:Math.round(abertos.reduce((t,l)=>t+(Number(l.valor)||0)*(CRM_CHANCE[l.stage||'novo']||0),0)*100)/100};
+}
+// painel do Lincoln: Duda × Guilherme + tráfego (gasto do Meta dividido pela parte dos leads de tráfego de cada um)
+function crmComparativo(leads,vendedores,mes,{gastoMeta=null,ticket=null}={}){
+  const doMes=(leads||[]).filter(l=>(l.createdDate||'').startsWith(mes));
+  const totalTrafego=doMes.filter(crmEhTrafego).length;
+  return vendedores.map(v=>{const s=crmStats(leads,v.email,mes);
+    const lt=doMes.filter(l=>l.donoEmail===v.email&&crmEhTrafego(l)).length;const ft=s.fechados.filter(crmEhTrafego).length;
+    const gasto=gastoMeta!=null&&totalTrafego?Math.round(gastoMeta*lt/totalTrafego*100)/100:null;
+    return{...v,...s,fechados:undefined,leadsTrafego:lt,fechadosTrafego:ft,gastoAtribuido:gasto,
+      custoLead:gasto!=null&&lt?Math.round(gasto/lt*100)/100:null,custoCliente:gasto!=null&&ft?Math.round(gasto/ft*100)/100:null,
+      receitaNova:ticket?Math.round(ft*ticket*100)/100:null,retorno:gasto&&ticket?Math.round(ft*ticket/gasto*10)/10:null};});
+}
+
+// ---------- CRM profissional — telas ----------
+const CRM_PAPEL={'guilherme@lbmarketplace.com.br':'Closer do tráfego','akemikimidesign@gmail.com':'SDR · prospecção ativa e orgânico'};
+const crmEu=()=>String(currentEmail||'').toLowerCase();
+const crmSouVendedor=()=>crmEhVendedor()&&!isLincoln();
+let crmAba='funil'; // funil | painel | lincoln
+let crmImportOpen=false,crmImportPrev=null,crmImpTexto='',crmImpOrigem='';
+const crmMeta={mes:null,gasto:null,carregando:false,erro:null};
+function crmRedesenhar(){const r=(leadFormOpen||crmImportOpen)?crmGuardarRascunho():null;renderCRM();if(r)crmDevolverRascunho(r);}
+window.__crmAba=a=>{crmAba=a;renderCRM();};
+
+// janela com campo (data / motivo da perda), no mesmo estilo do lbJanela
+function crmPerguntar({titulo,texto='',tipo='data',valor='',okTxt='Salvar'}){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');ov.className='modal-overlay lb-dialog-overlay';
+    const campo=tipo==='data'?`<input type="date" id="crmPergCampo" value="${esc(valor)}" min="${crmHojeISO()}">`
+      :`<select id="crmPergCampo"><option value="">Selecione o motivo</option>${CRM_MOTIVOS_PERDA.map(m=>`<option ${m===valor?'selected':''}>${m}</option>`).join('')}</select><input type="text" id="crmPergNota" placeholder="Detalhe (opcional)" style="margin-top:8px">`;
+    ov.innerHTML=`<div class="modal lb-dialog crm-perg" role="dialog" aria-modal="true"><div class="lb-dialog-tit">${esc(titulo)}</div>${texto?`<div class="lb-dialog-txt">${esc(texto)}</div>`:''}<div class="crm-perg-campo">${campo}</div><div class="lb-dialog-acoes"><button class="btn btn-ghost" data-r="0">Cancelar</button><button class="btn btn-gold" data-r="1">${esc(okTxt)}</button></div></div>`;
+    const c=()=>ov.querySelector('#crmPergCampo');
+    const fechar=r=>{document.removeEventListener('keydown',tecla,true);ov.remove();resolve(r);};
+    const ok=()=>{const v=c().value.trim();if(!v){c().classList.add('crm-perg-erro');c().focus();return;}fechar(tipo==='motivo'?{motivo:v,nota:ov.querySelector('#crmPergNota').value.trim()}:v);};
+    const tecla=e=>{if(e.key==='Escape'){e.preventDefault();fechar(null);}else if(e.key==='Enter'){e.preventDefault();ok();}};
+    ov.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b){b.dataset.r==='1'?ok():fechar(null);}else if(e.target===ov)fechar(null);});
+    document.addEventListener('keydown',tecla,true);document.body.appendChild(ov);c().focus();
+  });
+}
+
+// botões rápidos de tentativa (card e ficha)
+function crmBotoesTentativaHtml(l,compacto){
+  if(!CRM_ATIVAS.includes(l.stage||'novo'))return '';
+  return `<div class="crm-tent ${compacto?'mini':''}" onclick="event.stopPropagation()" ondragstart="event.preventDefault()">${Object.entries(CRM_TENTATIVAS).map(([k,v])=>`<button type="button" class="crm-tent-b ${k}" title="${esc(v.rot)}" onclick="window.__crmTentativa('${l.id}','${k}')">${compacto?v.curto:v.rot}</button>`).join('')}</div>`;
+}
+window.__crmTentativa=async(id,tipo)=>{
+  const lead=crmLeads.find(l=>l.id===id);if(!lead||!CRM_TENTATIVAS[tipo])return;
+  const o={por:currentUser||crmEu()};
+  if(tipo==='depois'){const d=await crmPerguntar({titulo:`Chamar ${lead.nome} quando?`,tipo:'data',valor:crmSomaDias(crmHojeISO(),7)});if(!d)return;o.data=d;}
+  if(tipo==='sem_interesse'){const m=await crmPerguntar({titulo:`${lead.nome}: sem interesse`,texto:'O lead vai pra Perdido.',tipo:'motivo',okTxt:'Marcar como perdido'});if(!m)return;o.motivo=m.motivo;o.nota=m.nota;}
+  try{
+    const p=crmAplicarAtividade(lead,tipo,o);await updateDoc(doc(db,'crmLeads',id),p);
+    log(id,lead.nome,'tentativa de contato',`${currentUser}: ${CRM_TENTATIVAS[tipo].rot}${o.data?' — '+o.data.split('-').reverse().join('/'):''}${o.motivo?' — '+o.motivo:''}`).catch(()=>{});
+    const br=d=>d.split('-').reverse().slice(0,2).join('/');
+    showToast(`${CRM_TENTATIVAS[tipo].curto} registrado${p.proximoContato?` · próximo contato ${br(p.proximoContato)}${p.cadencia?' ('+p.cadencia+')':''}`:''}${p.cadencia==='fim'?' · cadência acabou: marque sem interesse ou agende':''}.`);
+  }catch(e){showToast('Erro ao registrar a tentativa.');console.error(e);}
+};
+window.__crmNota=async id=>{
+  const el=document.getElementById('lead-nova-nota');const t=(el?.value||'').trim();if(!t){el?.focus();return;}
+  const lead=crmLeads.find(l=>l.id===id);if(!lead)return;el.value='';
+  try{await updateDoc(doc(db,'crmLeads',id),{atividades:[...(lead.atividades||[]),{tipo:'nota',quando:Date.now(),por:currentUser||crmEu(),nota:t.slice(0,1000)}],atualizadoEm:crmHojeISO()});showToast('Nota salva na linha do tempo.');}
+  catch(e){const n=document.getElementById('lead-nova-nota');if(n)n.value=t;showToast('Erro ao salvar a nota.');console.error(e);}
+};
+
+// informações do card: 1ª resposta, tentativas e cadência
+function crmCardInfoHtml(l){
+  const t=crmTempoResposta(l);const aberto=CRM_ATIVAS.includes(l.stage||'novo');
+  const tr=t&&(aberto||!t.esperando)?`<span class="crm-resp ${t.ms<=CRM_RESPOSTA_META_MIN*60000?'ok':'ruim'}" title="Tempo até a 1ª resposta (meta ${CRM_RESPOSTA_META_MIN} min)">${t.esperando?'sem resposta há ':'1ª resposta em '}${crmFmtDuracao(t.ms)}</span>`:'';
+  const tent=l.tentativas?`<span>${l.tentativas} tentativa(s)${l.cadencia&&l.cadencia!=='fim'?' · '+esc(l.cadencia):''}</span>`:'';
+  const fim=l.cadencia==='fim'&&aberto?'<span class="crm-fim">cadência acabou</span>':'';
+  return tr||tent||fim?`<div class="crm-info">${tr}${tent}${fim}</div>`:'';
+}
+const crmChanceTxt=l=>CRM_ATIVAS.includes(l.stage||'novo')?`chance ${Math.round((CRM_CHANCE[l.stage||'novo']||0)*100)}%`:'';
+
+// agenda do vendedor: atrasados, pra hoje e abertos sem próxima atividade
+function crmAgendaHtml(){
+  const hoje=crmHojeISO();
+  const base=crmLeads.filter(l=>crmFilter.dono==='all'||l.donoEmail===crmFilter.dono);
+  const atras=base.filter(l=>crmAcompanhamento(l,hoje).tipo==='atrasado').sort((a,b)=>a.proximoContato.localeCompare(b.proximoContato));
+  const hj=base.filter(l=>crmAcompanhamento(l,hoje).tipo==='hoje');
+  const sem=base.filter(l=>CRM_ATIVAS.includes(l.stage||'novo')&&!l.proximoContato);
+  const chip=(l,extra)=>`<button class="crm-ag-chip" onclick="window.__crmOpenEdit('${l.id}')">${esc(l.nome)}${extra?`<em>${esc(extra)}</em>`:''}</button>`;
+  const linha=(rot,cls,lista,fx)=>lista.length?`<div class="crm-ag-linha ${cls}"><b>${rot} <span>${lista.length}</span></b><div class="crm-ag-chips">${lista.slice(0,15).map(l=>chip(l,fx(l))).join('')}${lista.length>15?`<span class="crm-ag-mais">+${lista.length-15}</span>`:''}</div></div>`:'';
+  const quem=crmFilter.dono!=='all'?'Agenda de '+esc(CRM_VENDEDORES.find(v=>v.email===crmFilter.dono)?.nome||''):crmSouVendedor()?'Minha agenda':'Agenda de todos';
+  const corpo=linha('Atrasados','atrasado',atras,l=>`${crmDiasEntre(l.proximoContato,hoje)}d`)+linha('Pra hoje','hoje',hj,l=>l.cadencia&&l.cadencia!=='fim'?l.cadencia:crmStageInfo(l.stage).label)+linha('Sem próxima atividade','sem',sem,l=>crmStageInfo(l.stage).label);
+  return `<div class="crm-agenda"><div class="crm-ag-tit">${quem}</div>${corpo||'<div class="crm-ag-vazio">Nada atrasado nem pra hoje.</div>'}</div>`;
+}
+
+// painel do vendedor (meta, comissão, funil, tempo de resposta) — sem financeiro da LB
+function crmPainelVendedorHtml(v){
+  const s=crmStats(crmLeads,v.email,crmMes());const pct=Math.min(100,Math.round(s.fechou/s.meta*100));
+  const card=(rot,val,sub,cor)=>`<div class="crm-pv-card"><span>${rot}</span><b${cor?` style="color:${cor}"`:''}>${val}</b>${sub?`<em>${sub}</em>`:''}</div>`;
+  const tm=s.tempoMedio,okT=tm!=null&&tm<=CRM_RESPOSTA_META_MIN*60000;
+  return `<div class="crm-pv">
+    <div class="crm-pv-top"><div class="crm-pv-id"><div class="crm-pv-nome">${esc(v.nome)}<span>${esc(CRM_PAPEL[v.email]||'')}</span></div>
+      <div class="crm-pv-meta"><div class="crm-pv-barra"><i style="width:${pct}%;background:${s.fechou>=s.meta?'var(--green)':'var(--gold)'}"></i></div><b>${s.fechou} de ${s.meta}</b> contratos no mês${s.fechou>=s.meta?' · meta batida':` · faltam ${s.meta-s.fechou}`}</div></div>
+      ${card('Comissão do mês',fmtR(s.comissao),`${fmtR(CRM_COMISSAO)} por contrato`,'var(--green)')}</div>
+    <div class="crm-pv-cards">${card('Leads no mês',s.leads,`${s.abertos} em aberto`)}${card('Contatos feitos',s.contatos,'tentativas registradas no mês')}${card('Agendados',s.agendou,`${s.compareceu} compareceram`)}
+      ${card('Previsão do mês',`${String(s.previstoContratos).replace('.',',')} contrato(s)`,s.previstoValor?`${fmtR(s.previstoValor)} ponderado pela chance`:'pela chance de cada etapa')}
+      ${card('1ª resposta (média)',tm==null?'—':crmFmtDuracao(tm),`${tm==null?'':s.naMeta+'% em até '+CRM_RESPOSTA_META_MIN+' min · '}meta ${CRM_RESPOSTA_META_MIN} min${s.esperando?` · ${s.esperando} esperando`:''}`,tm==null?null:okT?'var(--green)':'var(--red)')}</div>
+    <div class="crm-pv-funil"><span class="crm-pv-ftit">Conversão por etapa (leads que entraram no mês)</span>${s.conv.map((c,i)=>`<div><span>${crmStageInfo(c.de).label} → ${crmStageInfo(c.para).label}</span><b>${c.pct==null?'—':c.pct+'%'}</b><em>${s.funil[i+1].n} de ${s.funil[i].n}</em></div>`).join('')}</div>
+  </div>`;
+}
+
+// painel do Lincoln (diretoria): Duda × Guilherme + tráfego do Meta
+function crmTicketMedio(){const v=(clientesCache||[]).filter(c=>c.ativo!==false).map(c=>typeof c.mensalidade==='number'?c.mensalidade:(typeof lbValorBR==='function'?lbValorBR(c.mensalidade):Number(c.mensalidade))).filter(n=>n>=100);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*100)/100:null;}
+async function crmCarregarMeta(forcar){
+  const mes=crmMes();if(!isLincoln()||crmMeta.carregando||(crmMeta.mes===mes&&!forcar))return;
+  crmMeta.carregando=true;crmMeta.erro=null;
+  try{const r=await (await fetch(META_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'painel',de:mes+'-01'})})).json();if(!r.ok)throw new Error(r.erro||'erro');crmMeta.gasto=r.total?.gasto??null;}
+  catch(e){crmMeta.erro=e.message;}
+  crmMeta.mes=mes;crmMeta.carregando=false;if(crmAba==='lincoln')crmRedesenhar();
+}
+window.__crmMetaAtualizar=()=>{crmCarregarMeta(true);crmRedesenhar();};
+function crmPainelLincolnHtml(){
+  if(!isLincoln())return '';
+  setTimeout(()=>crmCarregarMeta(false),0);
+  const mes=crmMes(),ticket=crmTicketMedio();
+  const L=crmComparativo(crmLeads,CRM_VENDEDORES,mes,{gastoMeta:crmMeta.mes===mes?crmMeta.gasto:null,ticket});
+  const N=v=>v==null?'—':v,R=v=>v==null?'—':fmtR(v),P=v=>v==null?'—':v+'%';
+  const blocos=[['Vendas',[['Leads no mês',x=>N(x.leads)],['Contatos feitos',x=>N(x.contatos)],['Agendou',x=>N(x.agendou)],['Compareceu',x=>N(x.compareceu)],['Fechou',x=>`<b style="color:${x.fechou>=x.meta?'var(--green)':'inherit'}">${x.fechou}</b> / ${x.meta}`],['Conversão lead → contrato',x=>P(x.conversao)],['1ª resposta (média)',x=>x.tempoMedio==null?'—':`<span style="color:${x.tempoMedio<=CRM_RESPOSTA_META_MIN*60000?'var(--green)':'var(--red)'}">${crmFmtDuracao(x.tempoMedio)}</span>`],['Comissão',x=>R(x.comissao)]]],
+    ['Tráfego (Meta / Typebot)',[['Leads de tráfego',x=>N(x.leadsTrafego)],['Contratos do tráfego',x=>N(x.fechadosTrafego)],['Gasto do Meta atribuído',x=>R(x.gastoAtribuido)],['Custo por lead',x=>R(x.custoLead)],['Custo por cliente',x=>R(x.custoCliente)],['Mensalidade nova (tráfego)',x=>R(x.receitaNova)],['Retorno (1 mensalidade ÷ gasto)',x=>x.retorno==null?'—':`<b style="color:${x.retorno>=1?'var(--green)':'var(--red)'}">${String(x.retorno).replace('.',',')}x</b>`]]]];
+  const st=crmMeta.carregando||crmMeta.mes!==mes?'lendo o gasto do Meta…':crmMeta.erro?`<span style="color:var(--red)">Meta: ${esc(crmMeta.erro)}</span>`:crmMeta.gasto!=null?`Gasto do Meta no mês: <b>${fmtR(crmMeta.gasto)}</b>`:'Sem gasto do Meta';
+  return `<div class="crm-lincoln"><div class="crm-lincoln-top"><div><b>Painel do Lincoln</b><span>${mes.split('-').reverse().join('/')} · ${st}${ticket?` · mensalidade média ${fmtR(ticket)}`:''}</span></div><button class="btn btn-ghost btn-sm" onclick="window.__crmMetaAtualizar()">Atualizar Meta</button></div>
+    <div class="crm-comp-wrap"><table class="crm-table crm-comp"><thead><tr><th></th>${L.map(x=>`<th>${esc(x.nome)}<em>${esc(CRM_PAPEL[x.email]||'')}</em></th>`).join('')}</tr></thead>
+    <tbody>${blocos.map(([tit,rows])=>`<tr class="crm-comp-bloco"><td colspan="${L.length+1}">${tit}</td></tr>${rows.map(([rot,f])=>`<tr><td>${rot}</td>${L.map(x=>`<td>${f(x)}</td>`).join('')}</tr>`).join('')}`).join('')}</tbody></table></div>
+    <p class="crm-lincoln-obs">Gasto do Meta do mês dividido pela parte dos leads de tráfego (origem Meta/Typebot/Ads) que caiu com cada um. Retorno = contratos do tráfego × mensalidade média dos clientes ativos ÷ gasto atribuído. Comissão: ${fmtR(CRM_COMISSAO)} por contrato.</p></div>`;
+}
+
+// importar lista de prospecção ativa (Duda)
+window.__crmImport=abrir=>{crmImportOpen=abrir;if(!abrir){crmImportPrev=null;crmImpTexto='';}if(abrir){leadFormOpen=false;editingLeadId=null;}renderCRM();};
+window.__crmImpOrigem=v=>{crmImpOrigem=v;};
+window.__crmImpPrevia=()=>{
+  crmImpTexto=document.getElementById('lead-imp-texto')?.value||'';
+  crmImportPrev=crmImpTexto.trim()?crmDedupe(crmLerLista(crmImpTexto),crmLeads):null;
+  const el=document.getElementById('lead-imp-prev');if(el)el.innerHTML=crmImpPreviaHtml();
+  const b=document.getElementById('lead-imp-btn');if(b){b.disabled=!crmImportPrev?.novos.length;b.textContent=`Importar ${crmImportPrev?.novos.length||''} lead(s)`;}
+};
+function crmImpPreviaHtml(){const p=crmImportPrev;if(!p)return 'Cole a lista pra ver a prévia.';
+  return `<b>${p.novos.length}</b> novo(s) · ${p.duplicados.length} repetido(s) · ${p.semTelefone.length} sem telefone válido${p.novos.length?`<div class="crm-imp-lista">${p.novos.slice(0,10).map(r=>`<span>${esc(r.nome||r.loja||r.tel)}${r.loja&&r.nome?` · ${esc(r.loja)}`:''}${r.segmento?` · ${esc(r.segmento)}`:''}</span>`).join('')}${p.novos.length>10?`<span>+${p.novos.length-10}</span>`:''}</div>`:''}`;}
+function crmImportHtml(){
+  const souV=crmSouVendedor(),n=crmImportPrev?.novos.length||0;
+  return `<div class="lead-form crm-imp"><div class="crm-imp-tit">Importar lista de prospecção ativa</div>
+    <p class="crm-imp-dica">Cole da planilha (selecione as linhas no Excel/Google Planilhas e Ctrl+C) ou um CSV. Colunas: <b>nome, whatsapp, loja, segmento, cidade, observação, origem da lista</b> — com cabeçalho em qualquer ordem, ou sem cabeçalho nessa ordem. Telefone que já está no CRM não entra. Entra como <b>Novo Lead</b>, origem <b>Prospecção ativa</b>, retorno pra hoje. Nenhuma mensagem automática é enviada.</p>
+    <textarea id="lead-imp-texto" placeholder="Nome&#9;WhatsApp&#9;Loja&#9;Segmento&#9;Cidade&#9;Observação&#9;Origem da lista" oninput="window.__crmImpPrevia()">${esc(crmImpTexto)}</textarea>
+    <div class="form-grid" style="margin-top:10px"><div class="field"><label>Origem da lista (quando a coluna vier vazia)</label><input type="text" id="lead-imp-origem" placeholder="Ex.: Feira do Brás, Instagram #modafeminina" value="${esc(crmImpOrigem)}" oninput="window.__crmImpOrigem(this.value)"></div>
+      ${souV?'':`<div class="field"><label>Pra quem</label><select id="lead-imp-dono">${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${v.nome==='Duda'?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>`}</div>
+    <div class="crm-imp-prev" id="lead-imp-prev">${crmImpPreviaHtml()}</div>
+    <div class="lead-form-actions"><button class="btn-cancel" onclick="window.__crmImport(false)">Cancelar</button><button class="btn-save" id="lead-imp-btn" ${n?'':'disabled'} onclick="window.__crmImportar()">Importar ${n||''} lead(s)</button></div></div>`;
+}
+window.__crmImportar=async()=>{
+  const p=crmImportPrev;if(!p?.novos.length)return;
+  const eu=CRM_VENDEDORES.find(v=>v.email===crmEu());
+  const dono=crmSouVendedor()?eu:(CRM_VENDEDORES.find(v=>v.email===document.getElementById('lead-imp-dono')?.value)||CRM_VENDEDORES.find(v=>v.nome==='Duda'));
+  if(!dono||(!isLincoln()&&!eu)){showToast('Só vendedor ou diretoria importa lista.');return;}
+  const origemPadrao=(document.getElementById('lead-imp-origem')?.value||'').trim();
+  if(!await lbConfirmar(`Importar ${p.novos.length} lead(s) pra ${dono.nome}?\nEntram em "Novo Lead", origem Prospecção ativa, com retorno pra hoje.`,{okTxt:'Importar'}))return;
+  const agora=Date.now(),hoje=crmHojeISO(),por=currentUser||crmEu();let ok=0,erro=0;
+  const btn=document.getElementById('lead-imp-btn');if(btn)btn.disabled=true;
+  for(const [i,r] of p.novos.entries()){
+    const b=document.getElementById('lead-imp-btn');if(b)b.textContent=`Importando ${i+1} de ${p.novos.length}…`;
+    const seg=String(r.segmento||'').slice(0,80);const nichoOk=CRM_NICHOS.find(x=>crmSemAcento(x).toLowerCase()===crmSemAcento(seg).toLowerCase());
+    const origemLista=String(r.origemLista||origemPadrao).slice(0,120);
+    try{await addDoc(collection(db,'crmLeads'),{nome:String(r.nome||r.loja||r.tel).slice(0,120),whatsapp:r.whatsapp,loja:String(r.loja||'').slice(0,120),segmento:seg,nicho:seg?(nichoOk||'Outros'):'',nichoOutro:seg&&!nichoOk?seg:'',
+      cidade:String(r.cidade||'').slice(0,80),notas:String(r.observacao||'').slice(0,2000),origem:'Prospecção ativa',origemLista,email:'',instagram:'',tipoServico:'',valor:0,
+      stage:'novo',donoEmail:dono.email,donoNome:dono.nome,proximoContato:hoje,tentativas:0,atividades:[{tipo:'importado',quando:agora,por,...(origemLista?{nota:origemLista}:{})}],
+      atualizadoEm:hoje,criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});ok++;}
+    catch(e){erro++;console.error('[importar lead]',e);}
+  }
+  log('crm','CRM','importação de prospecção',`${por} importou ${ok} lead(s) pra ${dono.nome}${origemPadrao?` (${origemPadrao})`:''}.`).catch(()=>{});
+  crmImportOpen=false;crmImportPrev=null;crmImpTexto='';renderCRM();
+  lbAvisar(`${ok} lead(s) importado(s) pra ${dono.nome}.${erro?`\n${erro} deram erro (ver o console).`:''}${p.duplicados.length?`\n${p.duplicados.length} repetido(s) ficaram de fora.`:''}`);
+};
+
+// linha do tempo da ficha: atividades + mudanças de etapa + notas
+function crmLinhaTempoHtml(lead){
+  const ev=(lead.atividades||[]).map(a=>({...a,q:Number(a.quando)||0}));
+  const criado=crmMs(lead.criadoEm)||(lead.createdDate?Date.parse(lead.createdDate+'T12:00:00'):0);
+  if(criado&&!ev.some(a=>a.tipo==='importado'))ev.push({tipo:'criado',q:criado,nota:lead.origem?`Origem: ${lead.origem}`:''});
+  ev.sort((a,b)=>b.q-a.q);
+  const br=d=>String(d||'').split('-').reverse().join('/');
+  const txt=a=>a.tipo==='etapa'?`${crmStageInfo(a.de).label} → <b>${crmStageInfo(a.para).label}</b>`:a.tipo==='depois'?`${CRM_ATIV_ROT.depois}: <b>${br(a.data)}</b>`:a.tipo==='sem_interesse'?`${CRM_ATIV_ROT.sem_interesse}: <b>${esc(a.motivo||'')}</b>`:esc(CRM_ATIV_ROT[a.tipo]||a.tipo);
+  return `<div class="field crm-tl-wrap"><label>Linha do tempo</label>
+    <div class="crm-tl-nova"><input type="text" id="lead-nova-nota" placeholder="Escrever uma nota (ex.: falou com o sócio, volta segunda)" onkeydown="if(event.key==='Enter'){event.preventDefault();window.__crmNota('${lead.id}')}"><button type="button" class="btn btn-ghost btn-sm" onclick="window.__crmNota('${lead.id}')">Adicionar nota</button></div>
+    <div class="crm-tl">${ev.map(a=>`<div class="crm-tl-item t-${a.tipo}"><i></i><div><span class="crm-tl-q">${a.q?new Date(a.q).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):''}${a.por?` · ${esc(a.por)}`:''}</span><div>${txt(a)}${a.nota?`<div class="crm-tl-nota">${esc(a.nota)}</div>`:''}</div></div></div>`).join('')||'<div class="crm-tl-vazio">Nada registrado ainda.</div>'}</div></div>`;
+}
+function crmFichaResumoHtml(lead){
+  const t=crmTempoResposta(lead);
+  return `<div class="field crm-ficha-res" style="grid-column:1/-1"><div><span>Chance</span><b>${CRM_ATIVAS.includes(lead.stage||'novo')?Math.round((CRM_CHANCE[lead.stage||'novo']||0)*100)+'%':lead.stage==='fechado'?'fechado':'—'}</b></div>
+    <div><span>Tentativas</span><b>${lead.tentativas||0}${lead.cadencia?` · ${esc(lead.cadencia==='fim'?'cadência acabou':lead.cadencia)}`:''}</b></div>
+    <div><span>1ª resposta</span><b class="${t?(t.ms<=CRM_RESPOSTA_META_MIN*60000?'ok':'ruim'):''}">${t?(t.esperando?'esperando há ':'')+crmFmtDuracao(t.ms):'—'}</b></div>
+    ${lead.origemLista?`<div><span>Lista</span><b>${esc(lead.origemLista)}</b></div>`:''}${lead.cidade?`<div><span>Cidade</span><b>${esc(lead.cidade)}</b></div>`:''}${lead.loja?`<div><span>Loja</span><b>${esc(lead.loja)}</b></div>`:''}
+    ${CRM_ATIVAS.includes(lead.stage||'novo')?`<div class="crm-ficha-tent"><span>Registrar tentativa</span>${crmBotoesTentativaHtml(lead,false)}</div>`:''}</div>`;
+}
+
 function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
@@ -11699,12 +12044,14 @@ function crmKanbanHtml(){
             <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}${l.donoNome?` · <b style="color:var(--gold)">${esc(l.donoNome)}</b>`:' · <span style="color:var(--amber)">sem dono</span>'}</div>
             ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
             ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
+            ${crmCardInfoHtml(l)}
             <div>
               ${crmPerfilTag(l)}
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
               ${nichoLabel?`<span class="ktag">${esc(nichoLabel)}</span>`:''}
             </div>
-            ${l.valor?`<div class="kmeta">${fmtR(l.valor)}</div>`:''}
+            ${l.valor||crmChanceTxt(l)?`<div class="kmeta">${[l.valor?fmtR(l.valor):'',crmChanceTxt(l)].filter(Boolean).join(' · ')}</div>`:''}
+            ${['novo','contato'].includes(l.stage||'novo')?crmBotoesTentativaHtml(l,true):''}
           </div>`;
         }).join('')}
         </div>
@@ -11717,7 +12064,7 @@ function crmListHtml(){
   const leads = crmFilteredLeads();
   if(!leads.length) return '<div class="empty-crm">Nenhum lead encontrado.</div>';
   return `<table class="crm-table">
-    <thead><tr><th>Nome</th><th>Dono</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Acompanhamento</th><th>Valor</th><th>Criado em</th></tr></thead>
+    <thead><tr><th>Nome</th><th>Dono</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Acompanhamento</th><th>Tentativas</th><th>Valor · chance</th><th>Criado em</th></tr></thead>
     <tbody>
       ${[...leads].sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||'')).map(l=>{
         const s = crmStageInfo(l.stage);
@@ -11732,7 +12079,8 @@ function crmListHtml(){
           <td>${tipo?`<span class="stage-pill" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:'—'}</td>
           <td><span class="stage-pill" style="color:${s.color};background:${s.color}22">${s.label}</span></td>
           <td>${(()=>{const a=crmAcompanhamento(l);return a.texto?`<span class="kfollow ${a.tipo}">${esc(a.texto)}</span>`:(l.stage==='perdido'&&l.motivoPerda?esc(l.motivoPerda):'—');})()}</td>
-          <td>${l.valor?fmtR(l.valor):'—'}</td>
+          <td>${l.tentativas||0}${l.cadencia?` <small style="color:var(--text-dim)">${esc(l.cadencia==='fim'?'fim':l.cadencia)}</small>`:''}</td>
+          <td>${l.valor?fmtR(l.valor):'—'}${crmChanceTxt(l)?` <small style="color:var(--text-dim)">${crmChanceTxt(l)}</small>`:''}</td>
           <td>${partes.length===3?partes[2]+'/'+partes[1]:'—'}</td>
         </tr>`;
       }).join('')}
@@ -11792,11 +12140,13 @@ function renderCRM(){
         <option value="30dias" ${crmFilter.periodo==='30dias'?'selected':''}>Últimos 30 dias</option>
       </select>
     </div>
-    <button class="btn-newlead" onclick="window.__crmToggleForm(true)">+ Novo Lead</button>
+    <div class="crm-novos">${crmEhVendedor()||isLincoln()?`<button class="btn btn-ghost btn-sm" onclick="window.__crmImport(${!crmImportOpen})">Importar lista</button>`:''}<button class="btn-newlead" onclick="window.__crmImport(false);window.__crmToggleForm(true)">+ Novo Lead</button></div>
   </div>
-  ${crmPlacarHtml()}
-  ${crmResumoHtml()}
-  ${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}
+  <div class="crm-abas"><button class="${crmAba==='funil'?'on':''}" onclick="window.__crmAba('funil')">Funil e agenda</button><button class="${crmAba==='painel'?'on':''}" onclick="window.__crmAba('painel')">${crmSouVendedor()?'Meu painel':'Painel dos vendedores'}</button>${isLincoln()?`<button class="${crmAba==='lincoln'?'on':''}" onclick="window.__crmAba('lincoln')">Painel do Lincoln</button>`:''}</div>
+  ${crmImportOpen ? crmImportHtml() : ''}
+  ${crmAba==='painel' ? `<div class="crm-pv-lista">${CRM_VENDEDORES.filter(v=>!crmSouVendedor()||v.email===crmEu()).map(crmPainelVendedorHtml).join('')}</div>`
+    : crmAba==='lincoln'&&isLincoln() ? crmPainelLincolnHtml()
+    : `${crmPlacarHtml()}${crmAgendaHtml()}${crmResumoHtml()}${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}`}
   ${leadFormOpen ? `<div class="crm-drawer-bg"></div><div class="crm-drawer"><div class="crm-drawer-top"><h3>${editingLeadId?esc(crmLeads.find(l=>l.id===editingLeadId)?.nome||'Lead'):'Novo lead'}</h3><button class="btn-cancel" onclick="window.__crmToggleForm(false)">Fechar ✕</button></div>${crmLeadFormHtml()}</div>` : ''}
   `;
   const kb=container.querySelector('.kanban');if(kb)kb.scrollLeft=rol.board;
