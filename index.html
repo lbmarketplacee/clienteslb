@@ -5108,7 +5108,7 @@ async function ljCarregarProdutos(){
   const err=e=>({erro:e.message||String(e)});
   const [sh,tt,ml,curva,mapa]=await Promise.all([
     c.shopeeErpShopId&&c.shopeeErpRefreshToken?(async()=>{const token=await shopeeGarantirTokenValido(c,'erp');return migLerShopeeAtivos(c,token,passo);})().catch(err):null,
-    ljTem(c,'tiktok')?mig3Api(c,'produtos').then(r=>r.ok?(r.produtos||[]).filter(p=>p.status==='ACTIVATE'):{erro:r.erro}).catch(err):null,
+    ljTem(c,'tiktok')?mig3Api(c,'produtos').then(r=>r.ok?(r.produtos||[]).filter(p=>p.status!=='DELETED'):{erro:r.erro}).catch(err):null, // 23/10: congelado/em análise também (SS Tendência) — a tela mostra o estado
     ljTem(c,'ml')?pxLer.ml.listar(c,()=>{}).catch(err):null,
     getDoc(doc(db,'curvaAbc',id)).then(d=>d.exists()?d.data():null).catch(()=>null),
     getDoc(doc(db,'mapaProdutos',id)).then(d=>d.exists()?d.data():null).catch(()=>null)]);
@@ -5144,7 +5144,7 @@ async function ljCarregarProdutos(){
     const cv=curvaPor[sid];
     linhas.push({k:'s'+sid,nome:it.nome,foto:it.foto,sh:it,tt:t,ml:m,classe:parados.has(sid)?'Parado':(cv?.classe||null),vendas30:cv?.qtd??null,mapa:mapaPor['shopee:'+sid]||null});
   }
-  for(const t of ttL)if(!usados.tt.has(t.id))linhas.push({k:'t'+t.id,nome:t.titulo,foto:null,sh:null,tt:t,ml:null,classe:null,mapa:mapaPor['tiktok:'+t.id]||null});
+  for(const t of ttL)if(!usados.tt.has(t.id)&&t.status==='ACTIVATE')linhas.push({k:'t'+t.id,nome:t.titulo,foto:null,sh:null,tt:t,ml:null,classe:null,mapa:mapaPor['tiktok:'+t.id]||null});
   for(const m of mlL)if(!usados.ml.has(m.id))linhas.push({k:'m'+m.id,nome:m.nome,foto:m.foto,sh:null,tt:null,ml:m,classe:null,mapa:mapaPor['ml:'+m.id]||null});
   const ordem={A:0,B:1,C:2,Parado:3};linhas.sort((a,b)=>(ordem[a.classe]??4)-(ordem[b.classe]??4)||(b.sh?.vendas||0)-(a.sh?.vendas||0));
   lj.prod={linhas,ttDesc,mapaQuando:mapa?.quando||null,erros:[['Shopee',sh],['TikTok',tt],['Mercado Livre',ml]].filter(([,x])=>x?.erro).map(([n,x])=>`${n}: ${x.erro}`),curvaQuando:curva?.quando?ljMs(curva.quando):null,
@@ -5161,8 +5161,8 @@ function ljProdutosHtml(c){
     return `<tr class="${lj.aj?.k===l.k?'sel':''}">
       <td><div class="lj-prod"><div class="lj-foto">${l.foto?`<img src="${esc(l.foto)}" loading="lazy" alt="">`:''}</div><div style="min-width:0"><b title="${esc(l.nome)}">${esc(l.nome)}</b><div class="lj-sub">${sub}</div></div></div></td>
       <td>${l.classe?`<span class="lj-cv ${cls[l.classe]}">${l.classe}</span>`:'<span class="lj-na">—</span>'}${l.vendas30?`<div class="lj-sub">${l.vendas30} vend./30d</div>`:''}</td>
-      <td>${s?`<b>${fmtR(s.precoMin)}${s.precoMax>s.precoMin?'+':''}</b><div class="lj-sub ${s.emPromocao?'ok':'at'}">${s.emPromocao?'no desconto':'fora do desconto'}</div>`:'<span class="lj-na">não tem</span>'}</td>
-      <td>${l.tt?(lj.prod.ttDesc[String(l.tt.id)]?`<b>${fmtR(lj.prod.ttDesc[String(l.tt.id)])}</b><div class="lj-sub ok">no desconto</div>`:`<b>${fmtR(l.tt.preco)}</b><div class="lj-sub at">fora do desconto</div>`):'<span class="lj-na">não tem</span>'}</td>
+      <td>${s?`<b>${fmtR(s.precoMin)}${s.precoMax>s.precoMin?'+':''}</b><div class="lj-sub ${s.emPromocao?'ok':'at'}">${s.emPromocao?'no desconto':'fora do desconto'}</div>`:l.mapa?.estado?.shopee==='oculto'?'<span class="lj-na at" title="O anúncio existe na Shopee, mas está oculto">oculto na Shopee</span>':'<span class="lj-na">não tem</span>'}</td>
+      <td>${l.tt&&l.tt.status&&l.tt.status!=='ACTIVATE'?`<b>${fmtR(lj.prod.ttDesc[String(l.tt.id)]||l.tt.preco)}</b><div class="lj-sub at">${{FREEZE:'congelado pela TikTok',PENDING:'em análise',FAILED:'reprovado',SELLER_DEACTIVATED:'desativado',PLATFORM_DEACTIVATED:'desativado pela TikTok',DRAFT:'rascunho'}[l.tt.status]||l.tt.status}</div>`:l.tt?(lj.prod.ttDesc[String(l.tt.id)]?`<b>${fmtR(lj.prod.ttDesc[String(l.tt.id)])}</b><div class="lj-sub ok">no desconto</div>`:`<b>${fmtR(l.tt.preco)}</b><div class="lj-sub at">fora do desconto</div>`):'<span class="lj-na">não tem</span>'}</td>
       <td>${ljCel(l.ml,l.ml?.preco,l.ml?`${l.ml.ids.length} anúncio(s)`:'')}</td>
       <td>${s?`<b class="${(s.estoque||0)<=0?'lj-ruim':''}">${s.estoque??'—'}</b>${s.variacoesZeradas?`<div class="lj-sub at">${s.variacoesZeradas} zerada(s)</div>`:''}`:(l.tt?l.tt.estoque:l.ml?.estoque??'—')}</td>
       <td><div style="display:flex;gap:6px;justify-content:flex-end">${rxBotao(l)}${s?`<button class="btn btn-sm ${lj.aj?.k===l.k?'btn-gold':'btn-ghost'}" onclick="window.__ljAjAbrir('${l.k}')">Ajustar</button>`:''}</div></td></tr>`;};
