@@ -10883,7 +10883,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   if(!genero&&attrs.some(a=>a.id==='GENDER'&&a.tags?.required))throw new Error('não consegui definir o gênero do produto');
   const textoReq=[];
   // tabela de medidas (moda): reaproveita a da LB se tiver todos os tamanhos; senão cria (medidas da cliente ou ABNT)
-  let gridId=null,linhas={};
+  let gridId=null,linhas={},tamNome={};
   let opTam=id1==='SIZE'?u.cores.map(o=>({tam:o,campos:u.medidas?.[o.toUpperCase()]||{}})):id2==='SIZE'?u.tamanhos:[];
   // moda sem variação de tamanho (só cor/estampa, Isabina 07/10/2026): o ML exige SIZE_GRID_ID → vai como tamanho "Único" (veste 36/42)
   let tamImplicito=null;
@@ -10892,10 +10892,24 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     linhaMl('ML: tabela de medidas...');
     const genVal=attrs.find(a=>a.id==='GENDER')?.values?.find(v=>String(v.id)===String(genero?.value_id));
     const busca=await dirMl('tabela_medidas_buscar',{access_token:token,domain_id:cat.domain_id,corpo:{domain_id:cat.domain_id.replace(/^MLB-/,''),site_id:'MLB',seller_id:Number(c.mlUserId),attributes:[{id:'GENDER',values:[{name:genVal?.name||'Feminino'}]},{id:'BRAND',values:[{name:c.nome}]}]}});
-    const tams=opTam.map(t=>t.tam.toUpperCase());
-    const temTodos=ch=>tams.every(t=>(ch.rows||[]).some(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t))));
-    const reuso=(busca.data?.charts||[]).find(ch=>/^LB /.test(ch.names?.MLB||'')&&temTodos(ch));
-    if(reuso){gridId=reuso.id;for(const t of opTam){const r=(reuso.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>String(v.name).toUpperCase()===t.tam.toUpperCase())));linhas[t.tam]=r?.id;}}
+    // calçado (23/10/2026, AQUARIOS sandália 34–39): tabela é por numeração BR ("38 BR") + comprimento do pé — reaproveita a tabela
+    // de calçado que a loja JÁ tem (qualquer nome) e o anúncio vai com o tamanho do jeito da tabela ("38 BR")
+    const calcado=/SHOE|SANDAL|SNEAKER|BOOT|SLIPPER|CLOG|FOOTWEAR|LOAFER|FLIP_FLOP|TENNIS/i.test(cat.domain_id)||(opTam.length&&opTam.every(t=>/^\d{2}$/.test(String(t.tam).trim())));
+    const nTam=v=>String(v||'').toUpperCase().replace(/\s*BR$/,'').trim();
+    const tams=opTam.map(t=>nTam(t.tam));
+    const linhaDe=(ch,t)=>(ch.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>nTam(v.name)===t)));
+    const temTodos=ch=>tams.every(t=>linhaDe(ch,t));
+    const reuso=(busca.data?.charts||[]).find(ch=>(calcado||/^LB /.test(ch.names?.MLB||''))&&temTodos(ch));
+    if(reuso){gridId=reuso.id;for(const t of opTam){const r=linhaDe(reuso,nTam(t.tam));linhas[t.tam]=r?.id;tamNome[t.tam]=(r?.attributes||[]).find(a=>a.id==='SIZE')?.values?.[0]?.name||t.tam;}}
+    else if(calcado){
+      // tabela de calçado nova: comprimento do pé pela numeração brasileira (mesmos valores da tabela "Bebecê" da AQUARIOS: 34 = 22,3–22,8 cm … 39 = 25,6–26,1)
+      const PE={33:[21.7,22.2],34:[22.3,22.8],35:[22.9,23.5],36:[23.6,24.2],37:[24.3,24.9],38:[25,25.5],39:[25.6,26.1],40:[26.2,26.8],41:[26.9,27.5],42:[27.6,28.1],43:[28.2,28.8],44:[28.9,29.5],45:[29.6,30.1]};
+      const fora=tams.filter(t=>!PE[t]);if(fora.length)throw new Error(`tabela de calçado: não conheço o comprimento do pé da numeração ${fora.join(', ')}`);
+      const nomeTab=`LB Calcados ${c.nome} ${tams.join(' ')}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
+      const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},calcado:true,obrigatorias:['FOOT_LENGTH'],linhas:opTam.map(t=>({tam:nTam(t.tam),medidas:{FOOT_LENGTH:PE[nTam(t.tam)][0],FOOT_LENGTH_TO:PE[nTam(t.tam)][1]}}))}},true);
+      if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);throw new Error('tabela de calçado: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
+      gridId=r.id;for(const t of opTam){linhas[t.tam]=r.linhas?.[nTam(t.tam)+' BR']||r.linhas?.[nTam(t.tam)];tamNome[t.tam]=nTam(t.tam)+' BR';}
+    }
     else{
       // cada domínio tem a sua ficha (vestido = CHEST_CIRCUMFERENCE; pijama = BUST_ + HIP_ obrigatórios — SS Tendência 07/10/2026).
       // Lê a ficha, troca CHEST→BUST quando for o caso e manda só medidas DO CORPO que o domínio aceita (GARMENT_* o ML recusa).
@@ -10933,9 +10947,11 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const extrasVar=vars.filter(v=>v[1]!=='COLOR'&&v[1]!=='SIZE').map(([nome,id,valor])=>id?{id,value_name:valor}:{name:nome,value_name:valor});
     const estC=typeof est==='object'?Number(est[`${cor}|${t.tam||''}`]??est[cor]??0):est;
     if(typeof est==='object'&&!(estC>0))continue; // migração: combinação sem estoque (ou fora das 30 com mais estoque) não vira anúncio
-    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:String(spec.marca||'').trim()||c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar,...((spec.skus?.[`${cor}|${t.tam||''}`]||skuMl)?[{id:'SELLER_SKU',value_name:String(spec.skus?.[`${cor}|${t.tam||''}`]||lbSkuVar(skuMl,cor,t.tam)).slice(0,60)}]:[])],descricao:descricao||''};
+    const item={familyName:familia,categoryId:cat.category_id,preco:pr.venda,estoque:estC,fotos:fotosDa[cor],marca:String(spec.marca||'').trim()||c.nome,modelo:familia,genero:genero?{value_id:String(genero.value_id)}:undefined,cor:vCor,tamanho:tamNome[vTam]||vTam,material:u.material||undefined,gridId:vTam?gridId:undefined,gridRowId:vTam?linhas[vTam]:undefined,pacote:{c:dim[0],l:dim[1],a:dim[2],pesoG:Math.round(peso*1000)},extras:[...extras.filter(e=>!idsVar.includes(e.id)),...extrasVar,...((spec.skus?.[`${cor}|${t.tam||''}`]||skuMl)?[{id:'SELLER_SKU',value_name:String(spec.skus?.[`${cor}|${t.tam||''}`]||lbSkuVar(skuMl,cor,t.tam)).slice(0,60)}]:[])],descricao:descricao||''};
     const r=await dirMl('ml_criar_item',{access_token:token,item},true);
     if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
+    // loja oficial (Yashop 23/10/2026): o ML exige o EAN de verdade — "não tem código cadastrado" não vale. Para e explica.
+    if(!r.ok&&/\[GTIN\] are required/i.test(r.erro||'')){erros.length=0;erros.push('o Mercado Livre exige o CÓDIGO DE BARRAS (EAN) desse produto — nessa conta não dá pra mandar "não tem código". Preencha o campo "Código de barras / EAN" com o número da etiqueta do produto e clique em "Tentar de novo só no Mercado Livre".');break;}
     if(!r.ok&&/unable_to_list/.test(r.erro||'')&&!criados.length){contaBloqueada=true;break;}
   }if(contaBloqueada)break;}
   // seller.unable_to_list = a CONTA não pode anunciar (Djan 05/10, VYM 14/10/2026) — lê o motivo no /users e para no 1º erro
