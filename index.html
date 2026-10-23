@@ -5503,7 +5503,27 @@ function ljAdsHtml(c){const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-
   const teo=`<div class="panel"><div class="panel-head"><h3>Téo (IA) — campanhas pra melhorar</h3><span class="p-sub">análise semanal do funil de cada campanha</span></div>
     ${T==null?'<div class="lj-vazio" style="padding:14px">Carregando…</div>':T.length?T.map(a=>`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>${esc(a.titulo||'')}</b><small>${esc(String(a.descricao||'').slice(0,160))}</small></span><button class="btn btn-ghost btn-sm" onclick="window.open('/escritorio.html','_blank')">Escritório</button></div>`).join(''):'<div class="lj-alerta"><span class="lj-dot ok"></span><span><b>Nenhuma campanha com problema</b><small>O Téo olha CTR, conversão e ROAS de 14 dias toda semana.</small></span></div>'}
     ${ml?`<div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="window.__irParaMarketing('mercadolivre','ads')">Campanhas do Mercado Ads</button> <span class="lj-sub">criar campanha no ML é manual (o ML não libera a API)</span></div>`:''}</div>`;
-  return cards+`<div class="lj-grid"><div style="min-width:0">${robo}</div><div style="min-width:0">${teo}</div></div>`+(ljTem(c,'tiktok')?ljAfHtml(c):'');}
+  return cards+`<div class="lj-grid"><div style="min-width:0">${robo}</div><div style="min-width:0">${teo}</div></div>`+(ml?ljMlAdsHtml(c):'')+(ljTem(c,'tiktok')?ljAfHtml(c):'');}
+/* ---------- Central da Loja → Anúncios: Mercado Ads — anúncios FORA de campanha (23/10/2026). A API do ML só deixa LER o Ads
+   (escrita só pra parceiro certificado) → o sistema mostra o que está fora e a equipe inclui no painel do ML.
+   Doc atual: GET /advertising/MLB/advertisers/{id}/product_ads/ad_groups/search?filters[item_ids]=… (api-version 2);
+   visto ao vivo na Toldos: fora de campanha = status IDLE e campaign_id 0. ---------- */
+window.__ljMlAds=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;const id=c.id;lj.mlAds={id,rodando:true};ljRender();
+  try{const token=await mlGarantirTokenValido(c);const ler=async cam=>{const r=await dirMl('ler_api',{access_token:token,caminho:cam});if(!r.ok)throw new Error(`${cam.split('?')[0]}: ${r.status} ${r.data?.message||''}`);return r.data;};
+    const adv=await dirMl('buscar_advertiser_id',{access_token:token});const aid=JSON.stringify(adv).match(/"advertiser_id":\s*(\d+)/)?.[1];
+    if(!aid)throw new Error('a loja não tem o Mercado Ads ativo (Meu perfil → Publicidade no ML)');
+    const ids=[];for(let off=0;off<1000;off+=50){const s=await ler(`/users/${c.mlUserId}/items/search?status=active&limit=50&offset=${off}`);ids.push(...(s.results||[]));if(off+50>=(s.paging?.total||0))break;}
+    const grupos=new Map();for(let i=0;i<ids.length;i+=40){const g=await ler(`/advertising/MLB/advertisers/${aid}/product_ads/ad_groups/search?filters[item_ids]=${ids.slice(i,i+40).join(',')}`);for(const x of g.results||[])grupos.set(x.id,x);}
+    const camps=(await ler(`/advertising/MLB/advertisers/${aid}/product_ads/campaigns/search?limit=50`).catch(()=>({results:[]}))).results||[];
+    const todos=[...grupos.values()];
+    if(lj.id!==id)return;lj.mlAds={id,ativos:ids.length,grupos:todos.length,fora:todos.filter(g=>g.status==='IDLE'||!Number(g.campaign_id)),camps:camps.filter(x=>x.status==='active')};
+  }catch(e){if(lj.id===id)lj.mlAds={id,erro:e.message};}if(lj.id===id)ljRender();};
+function ljMlAdsHtml(c){const M=lj.mlAds&&lj.mlAds.id===c.id?lj.mlAds:null;
+  return `<div class="panel"><div class="panel-head"><h3>${mpIco('ml',18)} Mercado Ads — anúncios fora de campanha</h3><span class="p-sub">o ML não deixa incluir pela API: a equipe inclui no painel do Mercado Ads</span></div>
+    ${!M?'<div class="lj-vazio" style="padding:14px">Clique em "Ver o que está fora" (lê os anúncios ativos e as campanhas — não muda nada).</div>':M.rodando?'<div class="lj-vazio" style="padding:14px">Lendo anúncios e campanhas do ML…</div>':M.erro?`<div class="lj-alerta ruim"><span class="lj-dot ruim"></span><span><b>Não deu pra ler</b><small>${esc(M.erro)}</small></span></div>`:`
+    <div class="lj-lin"><span class="lj-dot ${M.fora.length?'at':'ok'}"></span><span><b>${M.fora.length?`${M.fora.length} produto(s) fora de campanha`:'Todos os produtos estão em campanha'}</b><small>${M.ativos} anúncio(s) ativo(s) · ${M.grupos} produto(s) no Ads · campanhas ativas: ${M.camps.map(x=>`${esc(x.name)} (ROAS ${x.roas_target??'—'}, R$ ${x.budget??'—'}/dia)`).join(' · ')||'nenhuma — criar "LB ROAS 20" no painel'}</small></span></div>
+    ${M.fora.map(g=>`<div class="lj-lin">${g.thumbnail?`<img src="${esc(g.thumbnail)}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:8px">`:''}<span><b>${esc(g.title||g.ad_group_external_id)}</b><small>${g.ad_group_type==='ITEM'?esc(g.ad_group_external_id):g.ad_group_type==='CATALOG'?'anúncio de catálogo':'família (todas as cores/tamanhos)'} · desde ${g.date_created?new Date(g.date_created).toLocaleDateString('pt-BR'):'—'}</small></span></div>`).join('')}`}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="window.__ljMlAds()">${M&&!M.rodando?'Ler de novo':'Ver o que está fora'}</button><a class="btn btn-ghost btn-sm" href="https://www.mercadolivre.com.br/publicidade" target="_blank" rel="noopener">Abrir o Mercado Ads ↗</a></div></div>`;}
 /* ---------- Central da Loja → Anúncios: Afiliados do TikTok (app "LB MARKETPLACE Afiliados", 19/10/2026) ---------- */
 const LJ_AF_API='https://lb-shopee-gmv.vercel.app/api/tiktok-afiliados';
 function ljAf(c){if(!lj.af||lj.af.id!==c.id)lj.af={id:c.id};return lj.af;}
