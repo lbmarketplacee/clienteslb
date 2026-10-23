@@ -11079,9 +11079,17 @@ async function dirShAcharPorNome(c,token,titulo){
 // "Contains Bluetooth...". Faltou algum na resposta da IA → pergunta SÓ os que faltam (modo obrigatório: ids com prefixo O)
 // e, se ainda faltar, usa "No/Não" quando existir.
 async function shGarantirObrigatorios(arvore,atributos,produto){
-  const tem=new Set((atributos||[]).map(a=>String(a.attribute_id)));
+  // 23/10/2026 (Lincoln): "Contém Bluetooth/Wireless/RF" vai SEMPRE "Não" (Go Braz: cooler e aspirador recusados) — mesmo se a IA escolher outro valor
+  const NAO=/^(no|não|nao)$/i, BT=/bluetooth|wireless|\brf\b|radiofrequ|sem fio/i;
+  atributos=(atributos||[]).slice();
+  for(const a of (arvore||[]).filter(a=>BT.test(a.nome||''))){
+    const v=(a.valores||[]).find(x=>NAO.test(String(x.nome).trim()));if(!v)continue;
+    atributos=atributos.filter(x=>String(x.attribute_id)!==String(a.id));
+    atributos.push({attribute_id:Number(a.id),attribute_value_list:[{value_id:Number(v.id)}]});
+  }
+  const tem=new Set(atributos.map(a=>String(a.attribute_id)));
   const faltam=(arvore||[]).filter(a=>a.obrigatorio&&!tem.has(String(a.id))&&(a.valores||[]).length);
-  if(!faltam.length)return atributos||[];
+  if(!faltam.length)return atributos;
   let r={};try{r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto,arvore:faltam.map(a=>({id:'O'+a.id,nome:a.nome,valores:a.valores}))})}).then(x=>x.json());}catch(e){}
   const out=[...(atributos||[])];
   for(const a of faltam){
