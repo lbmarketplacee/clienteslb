@@ -10690,6 +10690,8 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
       ${temMl?`<div class="field"><label>Código de barras / EAN (opcional — sem ele o ML recebe "não tem código cadastrado")</label><input type="text" inputmode="numeric" id="dirShGtin" placeholder="7891234567890"></div>
       <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>
       <div class="field"><label>Registro Inmetro (opcional — eletroportáteis, vem no selo da caixa)</label><input type="text" id="dirShInmetro" placeholder="CE-EL-074/23-F05-ACERT"></div>`:''}
+      <div class="field"><label>NCM (opcional — só se a loja emite nota pela Shopee e ela pedir; 8 dígitos, confirme com a cliente/contador)</label><input type="text" inputmode="numeric" id="dirShNcm" placeholder="ex.: 83011000"></div>
+      <div class="field"><label>CEST (opcional — só se o NCM exigir; 7 dígitos)</label><input type="text" inputmode="numeric" id="dirShCest" placeholder="ex.: 1007700"></div>
       <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
       <div class="field"><label>Embalagem C × L × A (cm)</label><input type="text" id="dirShDim" placeholder="25 x 35 x 5"></div>
     </div>
@@ -11185,7 +11187,7 @@ window.__dirShCriar=async()=>{
     passo('Criando o anúncio (oculto)...');
     const dados={item_name:u.titulo,description:u.descricao+(u.cores.length?`\n\n${u.nome1||'Cor'}: ${u.cores.join(', ')}.`:'')+(u.tamanhos.length?`\n${u.nome2||'Tamanho'}: ${u.tamanhos.map(t=>t.tam+(t.campos?.Veste?` (veste ${t.campos.Veste})`:'')).join(', ')}.`:''),
       category_id:catId,imagens,ratio:'3:4',peso,dimensao:{c:dim[0],l:dim[1],a:dim[2]},logisticas,precoCheio:precos.cheio,estoqueTotal:est*nVar,
-      item_sku:await cpSkuBase(c),guiaTamanhos:guiaId,atributos,gtin:document.getElementById('dirShGtin')?.value||'',
+      item_sku:await cpSkuBase(c),guiaTamanhos:guiaId,atributos,gtin:document.getElementById('dirShGtin')?.value||'',ncm:document.getElementById('dirShNcm')?.value||'',cest:document.getElementById('dirShCest')?.value||'',
       cores:u.cores,tamanhos:u.tamanhos.map(t=>t.tam),nome1:u.nome1||'Cor',nome2:u.nome2||'Tamanho',fotosCor,estoque:cpEstoqueVar(u,est),skuBase:await cpSkuBase(c)};
     let r=await dirShApi('produto_criar',c,token,{dados});
     // categoria exige guia ("Size Chart is required…", visto 13/10/2026) e não tinha variação de tamanho → guia "Único" pela régua BR e tenta de novo
