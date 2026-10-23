@@ -10975,6 +10975,7 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     }
     const {criados,erros,venda,comissaoPct,cat,gridId,faltaReq,textoReq}=await mlCriarProduto(c,{familia,liq,peso,dim,est:cpEstoqueVar(u,est),u,sku:await cpSkuBase(c),descricao:document.getElementById('dirShDesc').value.trim(),fotosPorCor,gtin:document.getElementById('dirShGtin')?.value||'',marca:document.getElementById('dirShMarcaMl')?.value||'',inmetro:document.getElementById('dirShInmetro')?.value||''},linhaMl);
     const pr={venda,comissaoPct};
+    if(criados.length)cpPedidoPublicado(c.id,'ml');
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${erros.length&&!criados.length?`<button class="btn btn-gold btn-sm" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
   }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`);}
@@ -11005,7 +11006,7 @@ window.__cpCriarTt=async(depois=false)=>{
   if(btn&&!depois)btn.disabled=true;
   try{const r=await pxCriar.tiktok(c,P,t=>linha('TikTok: '+esc(t)),{simular:!!window.__pxSimular});if(!r.id){linha('TikTok: '+esc(r.msg));if(btn&&!depois)btn.disabled=false;return;}
     await log(c.id,c.nome,'anúncio criado no TikTok Shop',`Produto ${r.id} · ${r.msg}`);
-    linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>TikTok Shop ✓</b><span>Produto ${esc(r.id)} · ${esc(r.msg)}. Fica no ar quando a TikTok aprovar (Seller Center → Produtos).</span></div>`);
+    cpPedidoPublicado(c.id,'tiktok');linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>TikTok Shop ✓</b><span>Produto ${esc(r.id)} · ${esc(r.msg)}. Fica no ar quando a TikTok aprovar (Seller Center → Produtos).</span></div>`);
   }catch(e){linha(`<span style="color:var(--red)">TikTok não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarTt(true)">Tentar de novo só no TikTok</button>`);}
   if(btn&&!depois)btn.disabled=false;
 };
@@ -11036,7 +11037,7 @@ window.__cpCriarSh=async(depois=false)=>{
   try{const r=await pxCriar.shein(c,P,t=>linha(esc(t)),ctx);
     if(!r.id){linha('SHEIN: '+esc(r.msg));if(btn&&!depois)btn.disabled=false;return;}
     await log(c.id,c.nome,'anúncio criado na SHEIN',`SPU ${r.id} · ${r.msg}`);
-    linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>SHEIN ✓</b><span>${esc(r.msg)}. Fica no ar quando a SHEIN aprovar.</span></div>`);
+    cpPedidoPublicado(c.id,'shein');linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>SHEIN ✓</b><span>${esc(r.msg)}. Fica no ar quando a SHEIN aprovar.</span></div>`);
   }catch(e){linha(`<span style="color:var(--red)">SHEIN não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarSh(true)">Tentar de novo só na SHEIN</button>${/categoria/i.test(e.message)?'<div style="font-size:12px;color:var(--text-dim)">Preencha a "Categoria de reserva" acima e tente de novo.</div>':/medida|busto|comprimento/i.test(e.message)?'<div style="font-size:12px;color:var(--text-dim)">Preencha as "Medidas da PEÇA pra SHEIN" acima e tente de novo.</div>':''}`);}
   if(btn&&!depois)btn.disabled=false;
 };
@@ -11202,7 +11203,7 @@ window.__dirShPublicar=async()=>{
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');
     st.innerHTML='Publicando...';
-    const p=await dirShApi('produto_publicar',c,token,{item_id:it.itemId,gtin:document.getElementById('dirShGtin')?.value||''});if(!p.ok)throw new Error('publicar: '+p.erro);
+    const p=await dirShApi('produto_publicar',c,token,{item_id:it.itemId,gtin:document.getElementById('dirShGtin')?.value||''});if(!p.ok)throw new Error('publicar: '+p.erro);cpPedidoPublicado(c.id,'shopee');
     let descId=c.shopeeDescontoFixoId;
     if(!descId){const d=await dirShApi('desconto_fixo_criar',c,token);if(!d.ok)throw new Error('desconto fixo: '+d.erro);descId=String(d.discount_id);
       await updateDoc(doc(db,'clientes',c.id),{shopeeDescontoFixoId:descId,shopeeDescontoFixoNome:d.nome,descontoFixoFim:new Date((d.fim-3*3600)*1000).toISOString().slice(0,16)});}
@@ -13334,8 +13335,11 @@ window.__ppStatus=async(id,st)=>{const p=ppCache.find(x=>x.id===id);if(!p)return
   await updateDoc(doc(db,'pedidosProduto',id),{status:st,atualizadoPor:auth.currentUser?.email||currentUser,atualizadoEm:Date.now()});
   if(st==='feito'||st==='descartado'){const t=(todasTarefasCache||[]).find(x=>x.pedidoProdutoId===id&&x.coluna!=='feito');if(t)await updateDoc(doc(db,'tarefas',t.id),{coluna:'feito',concluidoEm:serverTimestamp(),concluidoPor:currentUser}).catch(()=>{});}
   showToast(PP_ST[st]);};
+// 23/10/2026 (Lincoln): publicou pelo Criar anúncio vindo de um pedido da cliente → o pedido sai da lista sozinho (marca "publicado" e fecha a tarefa)
+async function cpPedidoPublicado(lojaId,onde){const pa=window.__cpPedidoAtual;if(!pa?.id||pa.clienteId!==lojaId||pa.feito)return;pa.feito=true;
+  try{await window.__ppStatus(pa.id,'feito');await updateDoc(doc(db,'pedidosProduto',pa.id),{publicadoEm:Date.now(),publicadoOnde:onde});}catch(e){pa.feito=false;console.warn('pedido publicado',e);}}
 // Abre no Criar anúncio já com cliente, fotos (até 10; a IA usa as 5 primeiras de referência), descrição, variações e medidas; o resto (preço, estoque, SKU...) fica num quadro de referência
-window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;const x=p.produto||{};window.__cpPedidoAtual={clienteId:p.clienteId,x};
+window.__ppAbrir=async id=>{const p=ppCache.find(x=>x.id===id);if(!p)return;const x=p.produto||{};window.__cpPedidoAtual={id:p.id,clienteId:p.clienteId,x};
   if(p.status==='novo')window.__ppStatus(id,'andamento');
   window.__pxTab('criar');await new Promise(r=>setTimeout(r,200));
   const sel=document.getElementById('cpLoja');if(sel){sel.value=p.clienteId;window.__cpLojaPlat?.();}
