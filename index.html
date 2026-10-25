@@ -5602,12 +5602,19 @@ function ljRender(){
   // vendas do mês
   const h=c.gmvHistorico||{},m0=h[ljMes(0)]||{},m1=h[ljMes(-1)]||{};
   const tot=o=>['shopee','tiktok','ml'].reduce((t,k)=>t+(Number(o[k])||0),0);
-  const T0=tot(m0),T1=tot(m1);const varP=T1>0?Math.round((T0/T1-1)*100):null;
+  const T0=tot(m0),T1=tot(m1);
+  // comparativo (24/10/2026): mês passado ATÉ O MESMO DIA (gmvHistorico.{mês passado}.ateDia, o robô de vendas grava 1x por dia);
+  // sem isso, compara com o mês passado inteiro e mostra quanto já alcançou
+  const ate=m1.ateDia,diaHoje=Number(new Date(Date.now()-3*3600000).toISOString().slice(8,10)),ateOk=ate&&Math.abs(Number(ate.dia)-diaHoje)<=1;
+  const comp=(atual,k)=>{const base=ateOk?(k?Number(ate[k])||0:tot(ate)):0;const cheio=k?Number(m1[k])||0:T1;
+    if(base>0){const p=Math.round((atual/base-1)*100);return `<span class="${p>=0?'up':'down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span> vs ${fmtR(base)} de 1 a ${ate.dia} do mês passado`;}
+    if(cheio>0)return `${Math.round(atual/cheio*100)}% do mês passado inteiro (${fmtR(cheio)})`;
+    return 'mês passado sem registro';};
   const glow={shopee:'glow-coral',tiktok:'glow-teal',ml:'glow-gold'};
   const mps=LJ_MPS.filter(([k])=>ljTem(c,k)||(c.marketplaces||[]).includes(k));
   const cards=`<div class="summary-grid">
-    <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div><div><div class="sc-label">Vendas<br>no mês</div></div></div><div class="sc-value metric-value">${fmtR(T0)}</div><div class="sc-foot">${varP==null?'mês passado sem registro':`<span class="${varP>=0?'up':'down'}">${varP>=0?'▲':'▼'} ${Math.abs(varP)}%</span> vs ${fmtR(T1)} no mês passado (até o fim)`}</div></div>
-    ${mps.map(([k,n])=>{const v=Number(m0[k])||0;const ped=m0['pedidos_'+k];const con=ljTem(c,k);return `<div class="summary-card metric-card ${glow[k]}"><div class="sc-top"><div class="sc-icon gold metric-icon">${mpIco(k,22)}</div><div><div class="sc-label">${n}</div></div></div><div class="sc-value metric-value">${fmtR(v)}</div><div class="sc-foot">${con?`${ped?ped+' pedido(s)':'mês atual'}`:'<span class="down">não conectado</span>'}</div></div>`;}).join('')}
+    <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div><div><div class="sc-label">Vendas<br>no mês</div></div></div><div class="sc-value metric-value">${fmtR(T0)}</div><div class="sc-foot">${comp(T0,null)}</div></div>
+    ${mps.map(([k,n])=>{const v=Number(m0[k])||0;const ped=m0['pedidos_'+k];const con=ljTem(c,k);return `<div class="summary-card metric-card ${glow[k]}"><div class="sc-top"><div class="sc-icon gold metric-icon">${mpIco(k,22)}</div><div><div class="sc-label">${n}</div></div></div><div class="sc-value metric-value">${fmtR(v)}</div><div class="sc-foot">${con?`${ped?ped+' pedido(s) · ':''}${comp(v,k)}`:'<span class="down">não conectado</span>'}</div></div>`;}).join('')}
   </div>`;
   // estrutura
   const er=lj.estr||c.estruturaUltima;
