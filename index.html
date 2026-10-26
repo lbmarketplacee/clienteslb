@@ -11553,6 +11553,9 @@ let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:
 const CRM_VENDEDORES=[{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'isalbmarketplace@gmail.com',nome:'Isa'}];
 const CRM_COMISSAO=500;
 const crmEhVendedor=()=>CRM_VENDEDORES.some(v=>v.email===String(currentEmail||'').toLowerCase());
+// 26/10/2026 (Lincoln): a Isa (SDR) fala com TODOS os leads — vê e atualiza os de qualquer dono (não troca o dono)
+const CRM_VE_TODOS=['isalbmarketplace@gmail.com'];
+const crmVeTodos=()=>CRM_VE_TODOS.includes(String(currentEmail||'').toLowerCase());
 const crmMes=()=>crmHojeISO().slice(0,7);
 function crmDonoPorRodizio(){const mes=crmMes();const cont={};for(const l of crmLeads)if((l.createdDate||'').startsWith(mes)&&l.donoEmail)cont[l.donoEmail]=(cont[l.donoEmail]||0)+1;return [...CRM_VENDEDORES].sort((a,b)=>(cont[a.email]||0)-(cont[b.email]||0))[0];}
 function crmPlacarHtml(){const mes=crmMes();
@@ -11616,7 +11619,7 @@ function crmIniciar(){
   if(crmUnsub)return;
   // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
   // 21/10/2026: CRM separado por vendedor — Duda e Guilherme só recebem os leads deles (regra do banco garante); Lincoln/Carol veem tudo
-  const meu=String(currentEmail||'').toLowerCase();const fonte=(crmEhVendedor()&&!isLincoln())?query(collection(db,"crmLeads"),where('donoEmail','==',meu)):collection(db,"crmLeads");
+  const meu=String(currentEmail||'').toLowerCase();const fonte=(crmEhVendedor()&&!isLincoln()&&!crmVeTodos())?query(collection(db,"crmLeads"),where('donoEmail','==',meu)):collection(db,"crmLeads");
   crmUnsub = onSnapshot(fonte, snap=>{
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
     // 21/10/2026: com a ficha aberta, qualquer mudança em QUALQUER lead (lead novo, robô da IA, aviso no celular)

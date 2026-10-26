@@ -20,6 +20,10 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email in ['guilherme@lbmarketplace.com.br', 'akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com'];
     }
     function eu() { return request.auth.token.email; }
+    // SDR (26/10/2026): a Isa fala com todos os leads — lê e atualiza os de qualquer dono, sem trocar o dono
+    function sdrTodos() {
+      return request.auth != null && request.auth.token.email == 'isalbmarketplace@gmail.com';
+    }
     function comercialFreela() {
       return request.auth != null && request.auth.token.email in ['akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com'];
     }
@@ -38,9 +42,9 @@ service cloud.firestore {
     // CRM separado por vendedor (21/10/2026): Lincoln e Carol veem tudo; cada vendedor só lê/edita os leads em que é o dono
     // e não troca o dono (quem troca é a diretoria). Robôs/webhooks usam a conta de serviço (não passam por aqui).
     match /crmLeads/{id} {
-      allow read: if diretoria() || (vendedor() && resource.data.donoEmail == eu());
-      allow create: if diretoria() || (vendedor() && request.resource.data.donoEmail == eu());
-      allow update: if diretoria() || (vendedor() && resource.data.donoEmail == eu() && request.resource.data.donoEmail == eu());
+      allow read: if diretoria() || sdrTodos() || (vendedor() && resource.data.donoEmail == eu());
+      allow create: if diretoria() || sdrTodos() || (vendedor() && request.resource.data.donoEmail == eu());
+      allow update: if diretoria() || (sdrTodos() && request.resource.data.donoEmail == resource.data.donoEmail) || (vendedor() && resource.data.donoEmail == eu() && request.resource.data.donoEmail == eu());
       allow delete: if diretoria();
     }
     // Duda/Akemi (freela, fora da equipe): painel comercial e o histórico das ações dela no CRM
