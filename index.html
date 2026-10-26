@@ -11006,7 +11006,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     erros.length=0;erros.push(`CONTA DO ML BLOQUEADA PRA ANUNCIAR: ${mot}. Nada foi criado; depois de resolver, clique em "Tentar de novo só no Mercado Livre".`);}
   return{criados,erros,venda:pr.venda,comissaoPct:pr.comissaoPct,cat,gridId,faltaReq,textoReq,nItens};
 }
-window.__cpCriarMl=async(depoisDaShopee=false)=>{
+window.__cpCriarMl=async(depoisDaShopee=false,soMl=false)=>{ // soMl = botão "Tentar de novo só no ML" (não encadeia TikTok/SHEIN)
   const u=window.__dirUltimo;const st=document.getElementById('dirShStatus');const btn=document.getElementById('dirShCriarBtn');
   const c=(clientesCache||[]).find(x=>x.id===document.getElementById('dirShLoja').value);
   const liq=lbValorBR(document.getElementById('dirShLiq').value);const peso=lbValorBR(document.getElementById('dirShPeso').value);const dim=(document.getElementById('dirShDim').value.match(/\d+/g)||[]).map(Number);
@@ -11036,8 +11036,10 @@ window.__cpCriarMl=async(depoisDaShopee=false)=>{
     if(criados.length)cpPedidoPublicado(c.id,'ml');
     await log(c.id,c.nome,'anúncios criados no Mercado Livre',`"${familia}": ${criados.length} anúncio(s) Clássico a ${fmtR(pr.venda)} (${criados.map(x=>x.item_id).join(', ')})${erros.length?` · ${erros.length} erro(s)`:''}.`);
     linhaMl(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>Mercado Livre ${erros.length?'— parcial':'no ar ✓'}</b><span>${criados.length} de ${nItens} anúncio(s) a ${fmtR(pr.venda)} (comissão ${pr.comissaoPct}%) · categoria ${esc(cat.category_name)}${gridId?` · tabela de medidas ${gridId}`:''}</span>${criados.map(x=>`<a href="${esc(x.permalink||'#')}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold)">${esc(x.titulo)}</a>`).join('')}${erros.length?`<span style="color:var(--red);font-size:12px">${esc(erros.join(' · '))}</span>`:''}${erros.length&&!criados.length?`<button class="btn btn-gold btn-sm" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`:''}${faltaReq.length||textoReq.length?`<span style="font-size:12px;color:var(--text-dim)">Confira no ML: ${esc([...faltaReq,...textoReq].join(', '))}</span>`:''}<span style="font-size:12px;color:var(--text-dim)">Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML (o app não tem permissão de escrita em Ads).</span></div>`);
-  }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarMl(true)">Tentar de novo só no Mercado Livre</button>`);}
+  }catch(e){linhaMl(`<span style="color:var(--red)">Mercado Livre não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarMl(true,true)">Tentar de novo só no Mercado Livre</button>`);}
   if(btn)btn.disabled=false;
+  // 26/10/2026 (Mimos Mara: 4 colares e 2 babuches no TikTok): o "tentar de novo só no ML" encadeava o TikTok de novo a cada clique
+  if(soMl)return;
   if((u.plataformas||[]).includes('tiktok'))await window.__cpCriarTt(true);
   if((u.plataformas||[]).includes('shein'))await window.__cpCriarSh(true);
 };
@@ -11052,6 +11054,9 @@ window.__cpCriarTt=async(depois=false)=>{
   const linha=t=>{if(!box.isConnected)st.appendChild(box);box.innerHTML=t;};
   const falta=[!c&&'cliente',!(c?.tiktokShopCipher&&c?.tiktokAccessToken)&&'conexão do TikTok da loja',!(liq>0)&&'valor a receber',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
   if(falta.length){lbAvisar('TikTok — falta\n'+falta.join(', '));return;}
+  // trava: o mesmo produto desta tela nunca é criado 2x no TikTok (nem com 2 cliques seguidos)
+  if(u.criadoTt){linha(`TikTok: já criado nesta tela (produto ${esc(u.criadoTt)}) — não crio de novo.`);return;}
+  if(u.criandoTt){linha('TikTok: já está sendo criado — aguarde.');return;}
   const vars=[];
   if(u.cores.length){const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
     vars.push({nome:u.nome1||'Cor',tam:/tamanho/i.test(u.nome1||''),opcoes:u.cores.map(op=>({nome:op,foto:dirFotoVar(op)||fotoCor[op]||null,campos:u.medidas?.[String(op).toUpperCase()]||null}))});}
@@ -11062,10 +11067,13 @@ window.__cpCriarTt=async(depois=false)=>{
     skus:combos.map(op=>({op,liq,est,sku:lbSkuVar(skuBase,...op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
   if(!depois&&!await lbConfirmar(`Criar no TikTok Shop\nLoja: ${c.nome}\n${combos.length} SKU(s), ${est} un. cada · preço pelas taxas do TikTok (${fmtR(dirPrecosTT(liq)?.venda)})\nVai pra análise da TikTok e entra no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
   if(btn&&!depois)btn.disabled=true;
+  u.criandoTt=true;
   try{const r=await pxCriar.tiktok(c,P,t=>linha('TikTok: '+esc(t)),{simular:!!window.__pxSimular});if(!r.id){linha('TikTok: '+esc(r.msg));if(btn&&!depois)btn.disabled=false;return;}
+    if(!window.__pxSimular)u.criadoTt=r.id;
     await log(c.id,c.nome,'anúncio criado no TikTok Shop',`Produto ${r.id} · ${r.msg}`);
     cpPedidoPublicado(c.id,'tiktok');linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>TikTok Shop ✓</b><span>Produto ${esc(r.id)} · ${esc(r.msg)}. Fica no ar quando a TikTok aprovar (Seller Center → Produtos).</span></div>`);
   }catch(e){linha(`<span style="color:var(--red)">TikTok não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarTt(true)">Tentar de novo só no TikTok</button>`);}
+  finally{u.criandoTt=false;}
   if(btn&&!depois)btn.disabled=false;
 };
 window.__cpSheinCats=()=>{const dl=document.getElementById('cpSheinCats');if(!dl||dl.dataset.ok)return;dl.dataset.ok='1';const c=(clientesCache||[]).find(x=>x.id===document.getElementById('dirShLoja')?.value);
@@ -11081,6 +11089,8 @@ window.__cpCriarSh=async(depois=false)=>{
   const linha=t=>{if(!box.isConnected)st.appendChild(box);box.innerHTML=t;};
   const falta=[!c&&'cliente',!c?.sheinOpenKeyId&&'conexão da SHEIN da loja',!(liq>0)&&'valor a receber',!(peso>0)&&'peso',dim.length!==3&&'embalagem',!sel.length&&'fotos'].filter(Boolean);
   if(falta.length){lbAvisar('SHEIN — falta\n'+falta.join(', '));return;}
+  if(u.criadoSh){linha(`SHEIN: já criado nesta tela (SPU ${esc(u.criadoSh)}) — não crio de novo.`);return;}
+  if(u.criandoSh){linha('SHEIN: já está sendo criado — aguarde.');return;}
   const vars=[];
   if(u.cores.length){const fotoCor={};for(const s2 of document.querySelectorAll('.dirShCor'))fotoCor[s2.dataset.cor]=u.reais[Number(s2.value)];
     vars.push({nome:u.nome1||'Cor',tam:/tamanho/i.test(u.nome1||''),opcoes:u.cores.map(op=>({nome:op,foto:dirFotoVar(op)||fotoCor[op]||null,campos:u.medidas?.[String(op).toUpperCase()]||null}))});}
@@ -11092,11 +11102,14 @@ window.__cpCriarSh=async(depois=false)=>{
   if(!depois&&!await lbConfirmar(`Criar na SHEIN\nLoja: ${c.nome}\n${combos.length} variação(ões), ${est} un. cada · 1 preço só (${fmtR(sheinPreco(liq))})\nVai pra análise da SHEIN.`,{okTxt:'Criar na SHEIN'}))return;
   if(btn&&!depois)btn.disabled=true;
   const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('cpSheinMed')?.value||'',sheinCategoria:document.getElementById('cpSheinCat')?.value||''};
+  u.criandoSh=true;
   try{const r=await pxCriar.shein(c,P,t=>linha(esc(t)),ctx);
     if(!r.id){linha('SHEIN: '+esc(r.msg));if(btn&&!depois)btn.disabled=false;return;}
+    if(!ctx?.simular)u.criadoSh=r.id;
     await log(c.id,c.nome,'anúncio criado na SHEIN',`SPU ${r.id} · ${r.msg}`);
     cpPedidoPublicado(c.id,'shein');linha(`<div class="cob-box" style="flex-direction:column;align-items:flex-start;gap:4px"><b>SHEIN ✓</b><span>${esc(r.msg)}. Fica no ar quando a SHEIN aprovar.</span></div>`);
   }catch(e){linha(`<span style="color:var(--red)">SHEIN não deu certo: ${esc(e.message)}</span> <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="window.__cpCriarSh(true)">Tentar de novo só na SHEIN</button>${/categoria/i.test(e.message)?'<div style="font-size:12px;color:var(--text-dim)">Preencha a "Categoria de reserva" acima e tente de novo.</div>':/medida|busto|comprimento/i.test(e.message)?'<div style="font-size:12px;color:var(--text-dim)">Preencha as "Medidas da PEÇA pra SHEIN" acima e tente de novo.</div>':''}`);}
+  finally{u.criandoSh=false;}
   if(btn&&!depois)btn.disabled=false;
 };
 // Foto com IA por opção da variação 1 (cor/estampa): a partir da foto real escolhida pra ela (lb-diretor-criativo capa_variacao)
