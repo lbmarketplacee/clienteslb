@@ -12843,7 +12843,17 @@ function pxFotosFamilia(lista){const vistos=new Set(),out=[];
 const pxLer={
   shopee:{
     async listar(c,passo){const token=await shopeeGarantirTokenValido(c,'erp');const itens=await migLerShopeeAtivos(c,token,passo);
-      return itens.map(it=>({id:String(it.id),nome:it.nome,foto:it.foto,estoque:it.estoque||0,preco:it.precoMin,info:it.temVariacao?`${it.variacoes.length} variações`:'sem variação',titulos:[it.nome],ref:it}));},
+      const rows=itens.map(it=>({id:String(it.id),nome:it.nome,foto:it.foto,estoque:it.estoque||0,preco:it.precoMin,info:it.temVariacao?`${it.variacoes.length} variações`:'sem variação',titulos:[it.nome],ref:it}));
+      // anúncio recém-publicado demora a entrar na lista da Shopee (get_item_list) — Mimos Mara 26/10/2026: babuche ativo e fora da lista
+      const extras=String(document.getElementById('pxIdsExtra')?.value||'').split(/[^0-9]+/).filter(x=>x.length>=6&&!rows.some(r=>r.id===x));
+      for(const id of extras){passo(`Lendo o anúncio ${id} na Shopee...`);
+        const b=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:id}}))?.response?.item_list?.[0];
+        if(!b){showToast(`Anúncio ${id} não encontrado nessa loja da Shopee.`);continue;}
+        let estoque=(b.stock_info_v2?.seller_stock||[]).reduce((t,x)=>t+(Number(x.stock)||0),0),preco=Number(b.price_info?.[0]?.current_price)||0,nv=0;
+        if(b.has_model){const m=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_model_list',query:{item_id:id}}))?.response?.model||[];nv=m.length;
+          estoque=m.reduce((t,md)=>t+(md.stock_info_v2?.seller_stock||[]).reduce((u,x)=>u+(Number(x.stock)||0),0),0);preco=Math.min(...m.map(md=>Number(md.price_info?.[0]?.current_price)||Infinity));}
+        rows.unshift({id:String(b.item_id),nome:b.item_name,foto:b.image?.image_url_list?.[0]||null,estoque,preco:isFinite(preco)?preco:0,info:nv?`${nv} variações`:'sem variação',titulos:[b.item_name],ref:null});}
+      return rows;},
     async detalhar(c,row,linha){
       const token=await shopeeGarantirTokenValido(c,'erp');const id=row.id;
       linha('lendo na Shopee...');
@@ -13202,7 +13212,8 @@ function pxRender(){
       <div class="px-seta"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       <div class="px-rota-col"><span>Para</span><div class="mp-pick" id="pxDestinos"></div></div>
       <button class="btn btn-gold" style="margin-left:auto" onclick="window.__pxLer()">Ler produtos</button>
-    </div></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>Anúncio recém-publicado não aparece? Cole o ID da Shopee (opcional, vários separados por vírgula)</label><input id="pxIdsExtra" placeholder="ex.: 23595374625" inputmode="numeric"></div></div>
     <div id="pxSheinBox"></div>
     <div id="pxStatus" class="saude-vazio" style="margin-top:14px"></div><div id="pxLista" class="prod-lista"></div><div id="pxAcoes"></div>`;
 }
