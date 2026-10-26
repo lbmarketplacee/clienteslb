@@ -3458,7 +3458,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi","isalbmarketplace@gmail.com":"Isa"};
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 // Quem tem acesso total (tudo que era "só Lincoln"): Lincoln + Caroline (pedido do Lincoln, 07/10/2026)
 const ADMIN_EMAILS=[LINCOLN_EMAIL,"caroline@lbmarketplace.com.br"];
@@ -3590,7 +3590,7 @@ const PORTAL_CLIENTES={'roma@lbmarketplace.com.br':'X6EXAnrhX3J1MCKvt3Mw'};
 const portalClienteId=()=>PORTAL_CLIENTES[currentEmail]||null;
 // Freela do comercial (Akemi, 15/10/2026): só a tela Comercial & Marketing (Marketing, Comercial, Tráfego Meta, CRM de Leads).
 // Não carrega clientes/tarefas/robôs — as regras do Firestore também só liberam comercialBoard, comercialDiario e crmLeads.
-const COMERCIAL_FREELA=['akemikimidesign@gmail.com'];
+const COMERCIAL_FREELA=['akemikimidesign@gmail.com','isalbmarketplace@gmail.com'];
 const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase());
 function startListeners(){if(unsubC)return;
   if(ehFreelaComercial()){document.body.classList.add('modo-comercial');unsubC=()=>{};
@@ -3939,7 +3939,7 @@ initGoogle();
 const IA_ENDPOINT='https://lbiagerador.vercel.app/api/gerar';
 
 /* ================= COMERCIAL & MARKETING (restrito) ================= */
-const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com'];
+const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com','isalbmarketplace@gmail.com'];
 const isComercialAllowed=()=>COMERCIAL_EMAILS.includes(currentEmail);
 let comEntriesCache=[],comMetasCache=null,comMesAtual='';
 function comSetupAcesso(){
@@ -11550,7 +11550,7 @@ let crmLeads = [];
 let crmView = 'kanban';
 let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all'};
 // Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
-const CRM_VENDEDORES=[{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'}];
+const CRM_VENDEDORES=[{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'isalbmarketplace@gmail.com',nome:'Isa'}];
 const CRM_COMISSAO=500;
 const crmEhVendedor=()=>CRM_VENDEDORES.some(v=>v.email===String(currentEmail||'').toLowerCase());
 const crmMes=()=>crmHojeISO().slice(0,7);
@@ -11800,7 +11800,7 @@ function crmPerfilTag(l){const t=l.ia?.temperatura;const tt=t?`<span class="ktag
 // ===== Gravador de reunião (22/10/2026, Lincoln): grava o Meet pelo navegador em 2 trilhas (microfone = vendedor, áudio da aba = cliente),
 // em pedaços de 5 min transcritos pelo Gemini durante a reunião; no fim a Claude analisa contra o Roteiro da Reunião Comercial LB.
 // O andamento fica salvo no lead (reuniaoAndamento) — se a aba fechar, dá pra analisar o que já foi transcrito.
-const REU_EQUIPE=['lincoln@lbmarketplace.com.br','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com'];
+const REU_EQUIPE=['lincoln@lbmarketplace.com.br','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com','isalbmarketplace@gmail.com'];
 const REU_PEDACO_MS=5*60*1000;
 const REU_US_SEG=0.000035; // Gemini Flash: ~32 tokens/s de áudio (estimativa pro contador iaUso)
 let reu=null;
@@ -12073,7 +12073,7 @@ function crmComparativo(leads,vendedores,mes,{gastoMeta=null,ticket=null}={}){
 }
 
 // ---------- CRM profissional — telas ----------
-const CRM_PAPEL={'guilherme@lbmarketplace.com.br':'Closer do tráfego','akemikimidesign@gmail.com':'SDR · prospecção ativa e orgânico'};
+const CRM_PAPEL={'guilherme@lbmarketplace.com.br':'Closer do tráfego','akemikimidesign@gmail.com':'SDR · prospecção ativa e orgânico','isalbmarketplace@gmail.com':'SDR · todos os leads novos'};
 const crmEu=()=>String(currentEmail||'').toLowerCase();
 const crmSouVendedor=()=>crmEhVendedor()&&!isLincoln();
 let crmAba='funil'; // funil | painel | lincoln

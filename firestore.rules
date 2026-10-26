@@ -17,11 +17,11 @@ service cloud.firestore {
     }
     // Vendedores (21/10/2026): Guilherme (closer do tráfego) e Duda/Akemi (prospecção ativa + orgânico) — cada um só os próprios leads
     function vendedor() {
-      return request.auth != null && request.auth.token.email in ['guilherme@lbmarketplace.com.br', 'akemikimidesign@gmail.com'];
+      return request.auth != null && request.auth.token.email in ['guilherme@lbmarketplace.com.br', 'akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com'];
     }
     function eu() { return request.auth.token.email; }
     function comercialFreela() {
-      return request.auth != null && request.auth.token.email == 'akemikimidesign@gmail.com';
+      return request.auth != null && request.auth.token.email in ['akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com'];
     }
     function soLincoln() {
       return request.auth != null && request.auth.token.email == 'lincoln@lbmarketplace.com.br';
