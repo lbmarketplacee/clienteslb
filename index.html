@@ -10923,7 +10923,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const busca=await dirMl('tabela_medidas_buscar',{access_token:token,domain_id:cat.domain_id,corpo:{domain_id:cat.domain_id.replace(/^MLB-/,''),site_id:'MLB',seller_id:Number(c.mlUserId),attributes:[{id:'GENDER',values:[{name:genVal?.name||'Feminino'}]},{id:'BRAND',values:[{name:c.nome}]}]}});
     // calçado (23/10/2026, AQUARIOS sandália 34–39): tabela é por numeração BR ("38 BR") + comprimento do pé — reaproveita a tabela
     // de calçado que a loja JÁ tem (qualquer nome) e o anúncio vai com o tamanho do jeito da tabela ("38 BR")
-    const calcado=/SHOE|SANDAL|SNEAKER|BOOT|SLIPPER|CLOG|FOOTWEAR|LOAFER|FLIP_FLOP|TENNIS/i.test(cat.domain_id)||(opTam.length&&opTam.every(t=>/^\d{2}$/.test(String(t.tam).trim())));
+    const calcado=/SHOE|SANDAL|SNEAKER|BOOT|SLIPPER|CLOG|FOOTWEAR|LOAFER|FLIP_FLOP|TENNIS/i.test(cat.domain_id)||(opTam.length&&opTam.every(t=>/^\d{2}(\s*[\/-]\s*\d{2})?$/.test(String(t.tam).trim())));
     const nTam=v=>String(v||'').toUpperCase().replace(/\s*BR$/,'').trim();
     const tams=opTam.map(t=>nTam(t.tam));
     const linhaDe=(ch,t)=>(ch.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>nTam(v.name)===t)));
@@ -10933,6 +10933,9 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     else if(calcado){
       // tabela de calçado nova: comprimento do pé pela numeração brasileira (mesmos valores da tabela "Bebecê" da AQUARIOS: 34 = 22,3–22,8 cm … 39 = 25,6–26,1)
       const PE={33:[21.7,22.2],34:[22.3,22.8],35:[22.9,23.5],36:[23.6,24.2],37:[24.3,24.9],38:[25,25.5],39:[25.6,26.1],40:[26.2,26.8],41:[26.9,27.5],42:[27.6,28.1],43:[28.2,28.8],44:[28.9,29.5],45:[29.6,30.1]};
+      // numeração dupla "33/34" (Mimos Mara 26/10/2026, babuche): pé do menor ao maior número do par
+      const peDe=t=>{const m=String(t).match(/^(\d{2})\s*[\/-]\s*(\d{2})$/);return m&&PE[m[1]]&&PE[m[2]]?[PE[m[1]][0],PE[m[2]][1]]:PE[t];};
+      for(const t of tams)if(!PE[t]&&peDe(t))PE[t]=peDe(t);
       const fora=tams.filter(t=>!PE[t]);if(fora.length)throw new Error(`tabela de calçado: não conheço o comprimento do pé da numeração ${fora.join(', ')}`);
       const nomeTab=`LB Calcados ${c.nome} ${tams.join(' ')}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
       const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},calcado:true,obrigatorias:['FOOT_LENGTH'],linhas:opTam.map(t=>({tam:nTam(t.tam),medidas:{FOOT_LENGTH:PE[nTam(t.tam)][0],FOOT_LENGTH_TO:PE[nTam(t.tam)][1]}}))}},true);
