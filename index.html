@@ -10926,7 +10926,8 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const calcado=/SHOE|SANDAL|SNEAKER|BOOT|SLIPPER|CLOG|FOOTWEAR|LOAFER|FLIP_FLOP|TENNIS/i.test(cat.domain_id)||(opTam.length&&opTam.every(t=>/^\d{2}(\s*[\/-]\s*\d{2})?$/.test(String(t.tam).trim())));
     const nTam=v=>String(v||'').toUpperCase().replace(/\s*BR$/,'').trim();
     const tams=opTam.map(t=>nTam(t.tam));
-    const linhaDe=(ch,t)=>(ch.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id==='SIZE'&&(a.values||[]).some(v=>nTam(v.name)===t)));
+    // tabela de calçado sem SIZE nas linhas (SANDALS_AND_CLOGS, Mimos Mara 26/10/2026): acha pelo tamanho do fabricante ("33/34")
+    const linhaDe=(ch,t)=>['SIZE','MANUFACTURER_SIZE'].map(id=>(ch.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id===id&&(a.values||[]).some(v=>nTam(v.name)===t)))).find(Boolean);
     const temTodos=ch=>tams.every(t=>linhaDe(ch,t));
     const reuso=(busca.data?.charts||[]).find(ch=>(calcado||/^LB /.test(ch.names?.MLB||''))&&temTodos(ch));
     if(reuso){gridId=reuso.id;for(const t of opTam){const r=linhaDe(reuso,nTam(t.tam));linhas[t.tam]=r?.id;tamNome[t.tam]=(r?.attributes||[]).find(a=>a.id==='SIZE')?.values?.[0]?.name||t.tam;}}
