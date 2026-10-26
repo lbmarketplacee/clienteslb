@@ -474,6 +474,13 @@ async function processarCallback(){
   const clienteId =
     params.get('state');
 
+  // ERP LB (25/10/2026): state "erp.…" = conexão pedida pelo ERP → manda pro ERP sem gravar nada aqui
+  if(/^erp\.[a-f0-9]{32}$/.test(clienteId || '')){
+    const q = new URLSearchParams({ mp: 'tiktok', state: clienteId, code: code || '' });
+    location.replace('https://erp.lbmarketplace.com.br/conectar-retorno?' + q.toString());
+    return;
+  }
+
 
   /* -------------------------------------------------------
      VERIFICA CODE

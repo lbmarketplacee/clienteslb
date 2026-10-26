@@ -49,6 +49,8 @@ function mostrar(icone,titulo,texto,mostrarBotaoVoltar){
 
 (async()=>{
   const params=new URLSearchParams(window.location.search);
+  // ERP LB (25/10/2026): conexão pedida pelo ERP (cadastro próprio) volta com ?erp=estado → manda pro ERP sem gravar nada aqui
+  if(/^erp\.[a-f0-9]{32}$/.test(params.get('erp')||'')){const q=new URLSearchParams({mp:'shopee',state:params.get('erp'),code:params.get('code')||'',shop_id:params.get('shop_id')||''});location.replace('https://erp.lbmarketplace.com.br/conectar-retorno?'+q.toString());return;}
   const code=params.get('code');
   const shopId=params.get('shop_id');
   const clienteId=localStorage.getItem('shopee_auth_cliente_id');

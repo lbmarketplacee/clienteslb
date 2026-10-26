@@ -62,6 +62,13 @@ async function processarCallback() {
     location.replace('https://lbprecifica.lbmarketplace.com.br/?' + q.toString());
     return;
   }
+  // ERP LB (25/10/2026): state "erp.…" = conexão pedida pelo ERP → manda pro ERP sem gravar nada aqui
+  if (/^erp\.[a-f0-9]{32}$/.test(clienteId || '')) {
+    const q = new URLSearchParams({ mp: 'ml', state: clienteId, code: code || '' });
+    if (!code) q.set('erro', params.get('error') || 'cancelado');
+    location.replace('https://erp.lbmarketplace.com.br/conectar-retorno?' + q.toString());
+    return;
+  }
   if (!code) { mostrarErro('Código de autorização não encontrado na URL.'); return; }
   if (!clienteId) { mostrarErro('Não sei pra qual cliente é essa conexão (state ausente).'); return; }
 
