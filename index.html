@@ -1641,6 +1641,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <button class="nav-item sidebar-item" data-page="cadastros" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros<span class="nav-pend" id="cadNavBadge"></span></button>
       <button class="nav-item sidebar-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
       <button class="nav-item sidebar-item" data-page="checklisthub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist</button>
+      <button class="nav-item sidebar-item" data-page="reunioes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/></svg> Reuniões</button>
       <button class="nav-item sidebar-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
       
       <button class="nav-item sidebar-item locked" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
@@ -2153,6 +2154,13 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 
       </div>
 
+      <div class="page" id="page-reunioes">
+        <div class="page-head">
+          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/></svg></div>
+          <div class="page-head-text"><h2 class="page-title">Reuniões</h2><p class="page-sub">Grave qualquer reunião (Meet ou presencial). A IA entrega a ata: resumo, decisões, tarefas e pendências.</p></div>
+        </div>
+        <div id="rgBox"></div>
+      </div>
       <div class="page" id="page-links">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
@@ -3616,13 +3624,13 @@ function atualizarTopbar(pg){
   ver('openMigBtn',pg==='clientes'&&isLincoln());
   ver('importInitialBtn',pg==='clientes'&&isLincoln());
 }
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='perguntas')pqIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='perguntas')pqIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 
 // ===== Menu agrupado (15/10/2026, Lincoln: "muita coisa na esquerda") — só REAGRUPA os botões que já existem (cliques,
 // permissões e telas continuam iguais); grupo some se nenhum item dele estiver liberado pra pessoa. Estado aberto/fechado no localStorage.
 const NAV_GRUPOS=[
   {id:'clientes',rot:'Clientes',depois:'loja',ico:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',itens:[['clientes','Carteira'],['jornada','Jornada do cliente'],['cadastros','Cadastros recebidos'],['desempenho','Desempenho']]},
-  {id:'ferramentas',rot:'Ferramentas',depois:'whatsapp',ico:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',itens:[['calculadora','Calculadora'],['checklisthub','Checklist'],['links','Links Úteis']]},
+  {id:'ferramentas',rot:'Ferramentas',depois:'whatsapp',ico:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',itens:[['calculadora','Calculadora'],['checklisthub','Checklist'],['links','Links Úteis'],['reunioes','Reuniões']]},
   {id:'restrita',rot:'Área restrita',depois:null,ico:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',itens:[['comercial','Comercial & Marketing'],['rh','Financeiro RH'],['dre','Financeiro LB'],['lbmk','LB Marketing']]},
 ];
 function navMontarGrupos(){
@@ -11858,12 +11866,13 @@ async function reuEnviar(blob,quem,offset,duracao){
       if(!d?.ok)await new Promise(r=>setTimeout(r,3000*(t+1)));}
     if(!d?.ok){reu.erros++;console.error('reunião: pedaço não transcrito',quem,offset,d?.erro);return;}
     reu.falas.push(...(d.falas||[]));reu.segAudio+=duracao;reu.feitos++;
-    await updateDoc(doc(db,'crmLeads',reu.leadId),{reuniaoAndamento:{inicio:reu.inicio,vendedor:reu.vendedor,falas:reu.falas,segAudio:reu.segAudio,atualizadoEm:Date.now()}}).catch(e=>console.error(e));
+    const andamento={inicio:reu.inicio,vendedor:reu.vendedor,falas:reu.falas,segAudio:reu.segAudio,atualizadoEm:Date.now()};
+    await (reu.salvarAndamento?reu.salvarAndamento(andamento):updateDoc(doc(db,'crmLeads',reu.leadId),{reuniaoAndamento:andamento})).catch(e=>console.error(e));
   }finally{if(reu){reu.pendentes--;reuTick();}}
 }
 function reuNovoPedaco(){
   if(!reu)return;const ini=Date.now();const off=(ini-reu.inicio)/1000;
-  for(const [quem,stream] of [['vendedor',reu.micAudio],['cliente',reu.tabAudio]]){
+  for(const [quem,stream] of [['vendedor',reu.micAudio],['cliente',reu.tabAudio]].filter(([,st])=>st)){ // presencial = só microfone
     const tipo=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
     const rec=new MediaRecorder(stream,{mimeType:tipo,audioBitsPerSecond:32000});const partes=[];
     rec.ondataavailable=e=>{if(e.data?.size)partes.push(e.data);};
@@ -11905,10 +11914,12 @@ async function reuAnalisar(lead,{falas,inicio,vendedor,segAudio,duracaoSeg}){
 window.__reuParar=async()=>{
   if(!reu||reu.parando)return;reu.parando=true;clearInterval(reu.troca);
   Object.values(reu.recs).forEach(r=>{try{r.stop();}catch(e){}});
-  reu.tab.getTracks().forEach(t=>t.stop());reu.mic.getTracks().forEach(t=>t.stop());renderCRM();
+  reu.tab?.getTracks().forEach(t=>t.stop());reu.mic.getTracks().forEach(t=>t.stop());if(reu.tipo==='geral')rgRender();else renderCRM();
   await new Promise(r=>setTimeout(r,500));
   for(let i=0;i<600&&reu.pendentes>0;i++)await new Promise(r=>setTimeout(r,500)); // espera os últimos pedaços
-  reuTick();const g=reu;const lead=crmLeads.find(l=>l.id===g.leadId);
+  reuTick();const g=reu;
+  if(g.tipo==='geral'){try{await rgFinalizar(g);}finally{clearInterval(g.relogio);reu=null;window.removeEventListener('beforeunload',reuAvisoSair);rgRender();}return;}
+  const lead=crmLeads.find(l=>l.id===g.leadId);
   try{
     if(!g.falas.length)throw new Error(g.erros?`nenhum pedaço foi transcrito (${g.erros} erro(s))`:'nenhuma fala foi reconhecida (o áudio estava mudo?)');
     await reuAnalisar(lead,{falas:g.falas,inicio:g.inicio,vendedor:g.vendedor,segAudio:g.segAudio,duracaoSeg:(Date.now()-g.inicio)/1000});
@@ -11923,6 +11934,74 @@ window.__reuAnalisarSalvo=async(id)=>{
   catch(e){lbAvisar('Erro na análise: '+e.message);}
 };
 window.__reuDescartar=async(id)=>{if(!await lbConfirmar('Descartar a gravação interrompida? A transcrição salva será apagada.',{okTxt:'Descartar'}))return;await updateDoc(doc(db,'crmLeads',id),{reuniaoAndamento:deleteField()});};
+
+
+// ===== REUNIÕES (26/10/2026, Lincoln: "gravar uma reunião qualquer, sem ser com lead") =====
+// Mesmo gravador do CRM (pedaços de 5 min transcritos durante a reunião). Meet = aba + microfone; presencial = só o microfone.
+// Coleção `reunioes` {titulo, participantes, contexto, modo, inicio, por, porEmail, andamento?, analise?, transcricao, duracaoSeg}.
+let rgLista=[],rgUnsub=null;
+function rgIniciar(){if(!rgUnsub)rgUnsub=onSnapshot(query(collection(db,'reunioes'),orderBy('inicio','desc'),limit(60)),sn=>{rgLista=sn.docs.map(d=>({id:d.id,...d.data()}));rgRender();},e=>{console.error(e);document.getElementById('rgBox').innerHTML=`<div class="saude-vazio">Não deu pra ler as reuniões: ${esc(e.message)}</div>`;});rgRender();}
+const rgEmailDe=nome=>{const n=tfNorm(String(nome||'').split(' ')[0]);if(!n)return null;const e=Object.entries(USERS_MAP).find(([,v])=>tfNorm(v).startsWith(n)||n.startsWith(tfNorm(v).slice(0,4)));return e?{email:e[0],nome:e[1]}:null;};
+function rgAtaHtml(r){const a=r.analise;if(!a)return'';const li=(t,arr)=>arr?.length?`<div style="margin-top:10px"><b>${t}</b><ul style="margin:4px 0 0 18px">${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:'';
+  return `<div style="font-size:13.5px;line-height:1.55"><p style="margin:6px 0">${esc(a.resumo)}</p>${li('Decisões',a.decisoes)}
+  ${a.tarefas?.length?`<div style="margin-top:10px"><b>Tarefas</b>${a.tarefas.map((t,i)=>`<div style="display:flex;gap:8px;align-items:center;margin-top:6px;padding:6px 8px;border:1px solid var(--border);border-radius:8px"><span style="flex:1">${esc(t.oQue)}${t.quem?` — <b>${esc(t.quem)}</b>`:''}${t.prazo?` · até ${esc(t.prazo.split('-').reverse().join('/'))}`:''}</span>${(r.tarefasCriadas||[]).includes(i)?'<span style="color:#5cb88a;font-size:12px">✓ virou tarefa</span>':`<button class="btn-sm" onclick="window.__rgTarefa('${r.id}',${i})">Virar tarefa</button>`}</div>`).join('')}</div>`:''}
+  ${li('Pendências',a.pendencias)}${li('Pontos importantes',a.pontosImportantes)}${a.proximaReuniao?`<div style="margin-top:8px"><b>Próxima reunião:</b> ${esc(a.proximaReuniao.split('-').reverse().join('/'))}</div>`:''}
+  ${r.transcricao?.length?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--text-dim)">Transcrição (${r.transcricao.length} falas)</summary><div style="max-height:320px;overflow:auto;font-size:12.5px;margin-top:6px">${r.transcricao.map(x=>`<div><span style="color:var(--text-dim)">${reuRel(x.t)}</span> <b>${x.quem==='vendedor'?esc(r.por||'Eu'):'Outros'}:</b> ${esc(x.texto)}</div>`).join('')}</div></details>`:''}</div>`;}
+function rgRender(){const el=document.getElementById('rgBox');if(!el)return;
+  const gravando=reu&&reu.tipo==='geral';
+  const form=gravando?`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num" style="background:#e0525a">●</span><h3>Gravando: ${esc(reu.titulo)}</h3></div><p class="prod-nota" id="reuStatus">${esc(reuStatusTxt())}</p><button class="btn btn-gold" onclick="window.__reuParar()">Parar e fazer a ata</button> <span style="font-size:12px;color:var(--text-dim)">Não feche esta aba até terminar.</span></div>`
+  :reu?`<div class="saude-vazio">Já tem uma gravação de reunião de lead rolando no CRM.</div>`
+  :`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>Nova reunião</h3></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>Título</label><input id="rgTitulo" placeholder="ex.: Reunião da equipe — segunda"></div>
+      <div class="field"><label>Participantes (opcional)</label><input id="rgPart" placeholder="ex.: Lincoln, Carol, Isa"></div>
+      <div class="field" style="grid-column:1/-1"><label>Contexto (opcional — ajuda a IA)</label><input id="rgCtx" placeholder="ex.: alinhamento dos clientes da semana"></div>
+      <div class="field"><label>Onde é a reunião</label><select id="rgModo"><option value="meet">Google Meet / online (grava a aba + meu microfone)</option><option value="presencial">Presencial (só o microfone do computador)</option></select></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn btn-gold" onclick="window.__rgGravar()">● Gravar reunião</button></div>
+    </div></div>`;
+  const lista=rgLista.map(r=>`<div class="prod-box" style="margin-top:12px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><b style="font-size:15px">${esc(r.titulo||'Reunião')}</b><div style="font-size:12px;color:var(--text-dim)">${new Date(r.inicio).toLocaleString('pt-BR')} · ${esc(r.por||'')}${r.duracaoSeg?` · ${reuRel(r.duracaoSeg)}`:''}${r.participantes?` · ${esc(r.participantes)}`:''}</div></div>
+    <div style="display:flex;gap:6px">${!r.analise&&r.andamento?.falas?.length&&!(reu&&reu.rgId===r.id)?`<button class="btn-sm" onclick="window.__rgAnalisarSalvo('${r.id}')">Fazer a ata do que foi salvo</button>`:''}<button class="btn-sm" onclick="window.__rgApagar('${r.id}')">Apagar</button></div></div>
+    ${r.analise?rgAtaHtml(r):`<div style="font-size:12.5px;color:var(--text-dim);margin-top:6px">${reu&&reu.rgId===r.id?'Gravando…':'Sem ata ainda.'}</div>`}</div>`).join('');
+  el.innerHTML=form+(lista||'<div class="saude-vazio" style="margin-top:12px">Nenhuma reunião gravada ainda.</div>');}
+window.__rgGravar=async()=>{
+  if(reu)return lbAvisar('Já tem uma reunião sendo gravada.');
+  const titulo=document.getElementById('rgTitulo').value.trim()||'Reunião';const participantes=document.getElementById('rgPart').value.trim();const contexto=document.getElementById('rgCtx').value.trim();const modo=document.getElementById('rgModo').value;
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return lbAvisar('Esse navegador não grava. Use o Chrome no computador.');
+  const aviso=modo==='meet'?'Gravar a reunião do Meet\n\n1. Deixe o Meet aberto em OUTRA aba deste Chrome.\n2. Na próxima janela escolha "Guia do Chrome" → a aba do Meet e deixe LIGADO "Compartilhar áudio da guia".\n3. Permita o microfone.\n4. Avise quem está na reunião que vai gravar.\n\nNão feche esta aba do sistema até terminar.'
+    :'Gravar reunião presencial\n\nO computador grava pelo microfone dele — deixe-o no meio da mesa, perto de quem fala.\nAvise quem está na reunião que vai gravar.\n\nNão feche esta aba do sistema até terminar.';
+  if(!await lbConfirmar(aviso,{okTxt:'Começar'}))return;
+  let tab=null,mic=null;
+  try{
+    if(modo==='meet'){tab=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},preferCurrentTab:false,selfBrowserSurface:'exclude',surfaceSwitching:'exclude',systemAudio:'exclude'});
+      if(!tab.getAudioTracks().length){tab.getTracks().forEach(t=>t.stop());return lbAvisar('Veio sem o áudio da aba. Tente de novo escolhendo "Guia do Chrome" e deixando "Compartilhar áudio da guia" ligado.');}}
+    mic=await navigator.mediaDevices.getUserMedia({audio:modo==='meet'?{echoCancellation:true,noiseSuppression:true,autoGainControl:true}:{echoCancellation:false,noiseSuppression:true,autoGainControl:true}});
+  }catch(e){tab?.getTracks().forEach(t=>t.stop());mic?.getTracks().forEach(t=>t.stop());return lbAvisar(/Permission|NotAllowed/.test(e.name+e.message)?'Gravação cancelada (permissão negada).':'Não deu pra gravar: '+e.message);}
+  const inicio=Date.now();const ref=await addDoc(collection(db,'reunioes'),{titulo,participantes,contexto,modo,inicio,por:currentUser||'',porEmail:String(currentEmail||'').toLowerCase(),criadoEm:serverTimestamp()});
+  reu={tipo:'geral',rgId:ref.id,titulo,participantes,contexto,vendedor:currentUser||'Eu',inicio,tab,mic,tabAudio:tab?new MediaStream(tab.getAudioTracks()):null,micAudio:new MediaStream(mic.getAudioTracks()),recs:{},falas:[],segAudio:0,feitos:0,pendentes:0,erros:0,parando:false,
+    salvarAndamento:a=>updateDoc(doc(db,'reunioes',ref.id),{andamento:a})};
+  tab?.getTracks().forEach(t=>t.addEventListener('ended',()=>{if(reu&&!reu.parando){lbAvisar('O compartilhamento da aba parou — finalizando a gravação.');window.__reuParar();}}));
+  reuNovoPedaco();reu.troca=setInterval(reuTrocarPedaco,REU_PEDACO_MS);reu.relogio=setInterval(reuTick,1000);
+  window.addEventListener('beforeunload',reuAvisoSair);showToast('Gravando a reunião.');rgRender();
+};
+async function rgAnalisar(id,{falas,inicio,por,titulo,participantes,contexto,segAudio,duracaoSeg}){
+  const r=await (await fetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'reuniao_analisar',tipo:'geral',falas,vendedor:por,titulo,participantes,contexto,duracaoSeg})})).json();
+  if(!r.ok)throw new Error(r.erro||'falha na análise');
+  await updateDoc(doc(db,'reunioes',id),{analise:r.analise,transcricao:r.transcricao,duracaoSeg:Math.round(duracaoSeg),modelo:r.modelo||'',andamento:deleteField()});
+  const usd=Math.round((segAudio||0)*REU_US_SEG*10000)/10000;const cfg=await iaConfig().catch(()=>({cotacao:5.5}));const hoje=iaHoje();
+  addDoc(collection(db,'iaUso'),{dia:hoje,mes:hoje.slice(0,7),quando:serverTimestamp(),tipo:'reuniao',fotos:0,textos:1,videos:0,custoUSD:usd,custoBRL:Math.round(usd*(cfg.cotacao||5.5)*100)/100,usuario:currentUser||''}).catch(()=>{});
+}
+async function rgFinalizar(g){
+  try{if(!g.falas.length)throw new Error(g.erros?`nenhum pedaço foi transcrito (${g.erros} erro(s))`:'nenhuma fala foi reconhecida (o áudio estava mudo?)');
+    await rgAnalisar(g.rgId,{falas:g.falas,inicio:g.inicio,por:g.vendedor,titulo:g.titulo,participantes:g.participantes,contexto:g.contexto,segAudio:g.segAudio,duracaoSeg:(Date.now()-g.inicio)/1000});showToast('Ata pronta.');}
+  catch(e){lbAvisar('A gravação ficou salva, mas a ata falhou: '+e.message+'\nUse "Fazer a ata do que foi salvo" pra tentar de novo.');}
+}
+window.__rgAnalisarSalvo=async id=>{const r=rgLista.find(x=>x.id===id);const a=r?.andamento;if(!a?.falas?.length)return lbAvisar('Não tem fala salva.');lbAvisar('Fazendo a ata…');
+  try{const fim=Math.max(...a.falas.map(x=>x.f||x.t||0));await rgAnalisar(id,{falas:a.falas,inicio:a.inicio,por:a.vendedor||r.por,titulo:r.titulo,participantes:r.participantes,contexto:r.contexto,segAudio:a.segAudio||0,duracaoSeg:Math.max(fim,(a.atualizadoEm-a.inicio)/1000||0)});showToast('Ata pronta.');}catch(e){lbAvisar('Erro: '+e.message);}};
+window.__rgApagar=async id=>{if(reu&&reu.rgId===id)return lbAvisar('Pare a gravação antes.');if(!await lbConfirmar('Apagar essa reunião e a ata?',{okTxt:'Apagar'}))return;await deleteDoc(doc(db,'reunioes',id));};
+window.__rgTarefa=async(id,i)=>{const r=rgLista.find(x=>x.id===id);const t=r?.analise?.tarefas?.[i];if(!t)return;
+  const resp=rgEmailDe(t.quem)||{email:String(currentEmail||'').toLowerCase(),nome:currentUser||''};
+  await addDoc(collection(db,'tarefas'),{titulo:t.oQue.slice(0,140),descricao:`Da reunião "${r.titulo}" de ${new Date(r.inicio).toLocaleDateString('pt-BR')}.${t.quem?`\nResponsável dito na reunião: ${t.quem}.`:''}`,prazo:t.prazo||new Date(Date.now()+2*864e5-3*36e5).toISOString().slice(0,10),prioridade:'media',tipo:'interno',coluna:'afazer',responsavelEmail:resp.email,responsavel:resp.nome,criadoPor:`Reunião (${currentUser||''})`,timestamp:serverTimestamp(),clienteId:'',clienteNome:''});
+  await updateDoc(doc(db,'reunioes',id),{tarefasCriadas:[...(r.tarefasCriadas||[]),i]});showToast(`Tarefa criada pra ${resp.nome}.`);};
 
 // CRM pela IA (20/10/2026): a Claude lê a conversa do WhatsApp e sugere o próximo passo
 function crmIaBox(lead){const a=lead.ia;return `<div class="field" style="grid-column:1/-1;border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--bg)">
