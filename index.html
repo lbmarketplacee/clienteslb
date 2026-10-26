@@ -10842,7 +10842,7 @@ window.__cpGerar=async(semFotos)=>{ // semFotos=true: usa só as fotos enviadas,
     if(plataformas.includes('ml')){st.textContent='Gerando o título do Mercado Livre...';try{const t=await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'titulo',marketplace:'ml',produto:produtoIA})})).json();tituloMl=t.ok?t.titulo:'';}catch(e){}}
     window.__dirUltimo={tituloMl,titulo:d.titulo||'',descricao:d.descricao||'',produto,fotos,guia:varTam?await dirGuiaIA(varTam.op.map(o=>({tam:o,campos:medidas[o.toUpperCase()]||{}})),fotos[0]?.imagem||cpFotos[0]||null,produto):null,reais:cpFotos.slice(),cores,tamanhos,nome1,nome2,medidas,plataformas,material,lojaId};
     st.textContent=semFotos?`✓ Título e descrição prontos — o anúncio usa as ${cpFotos.length} foto(s) enviadas${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo (a foto por cor com IA continua opcional).`
-      :`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
+      :`✓ ${fotos.length} foto(s) geradas${(d.fotos||[]).length>fotos.length?` (${(d.fotos||[]).length-fotos.length} falharam: ${(d.fotos||[]).filter(f=>!f.imagem).map(f=>`${f.tipo}${f.motivo?` — ${f.motivo}`:''}`).join('; ')} — dá pra gerar de novo)`:''}${linhasGuia.length?' + guia de tamanhos':''}. Confira abaixo e desmarque o que não ficou fiel.`;
     dirShopeeRender('cpPasso2',lojaId);cpStep(3);
   }catch(e){st.innerHTML=`<span style="color:var(--red)">Não deu certo: ${esc(e.message)}</span>`;cpStep(1);}
   btn.disabled=false;if(btn2)btn2.disabled=false;
