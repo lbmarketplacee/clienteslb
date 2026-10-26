@@ -10930,7 +10930,7 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     const linhaDe=(ch,t)=>['SIZE','MANUFACTURER_SIZE'].map(id=>(ch.rows||[]).find(r=>(r.attributes||[]).some(a=>a.id===id&&(a.values||[]).some(v=>nTam(v.name)===t)))).find(Boolean);
     const temTodos=ch=>tams.every(t=>linhaDe(ch,t));
     const reuso=(busca.data?.charts||[]).find(ch=>(calcado||/^LB /.test(ch.names?.MLB||''))&&temTodos(ch));
-    if(reuso){gridId=reuso.id;for(const t of opTam){const r=linhaDe(reuso,nTam(t.tam));linhas[t.tam]=r?.id;tamNome[t.tam]=(r?.attributes||[]).find(a=>a.id==='SIZE')?.values?.[0]?.name||t.tam;}}
+    if(reuso){gridId=reuso.id;for(const t of opTam){const r=linhaDe(reuso,nTam(t.tam));linhas[t.tam]=r?.id;const at=id=>(r?.attributes||[]).find(a=>a.id===id)?.values?.[0]?.name;tamNome[t.tam]=at('SIZE')||at('BR_SIZE')||t.tam;}}
     else if(calcado){
       // tabela de calçado nova: comprimento do pé pela numeração brasileira (mesmos valores da tabela "Bebecê" da AQUARIOS: 34 = 22,3–22,8 cm … 39 = 25,6–26,1)
       const PE={33:[21.7,22.2],34:[22.3,22.8],35:[22.9,23.5],36:[23.6,24.2],37:[24.3,24.9],38:[25,25.5],39:[25.6,26.1],40:[26.2,26.8],41:[26.9,27.5],42:[27.6,28.1],43:[28.2,28.8],44:[28.9,29.5],45:[29.6,30.1]};
@@ -10941,7 +10941,8 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
       const nomeTab=`LB Calcados ${c.nome} ${tams.join(' ')}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
       const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},calcado:true,obrigatorias:['FOOT_LENGTH'],linhas:opTam.map(t=>({tam:nTam(t.tam),medidas:{FOOT_LENGTH:PE[nTam(t.tam)][0],FOOT_LENGTH_TO:PE[nTam(t.tam)][1]}}))}},true);
       if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);throw new Error('tabela de calçado: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
-      gridId=r.id;for(const t of opTam){linhas[t.tam]=r.linhas?.[nTam(t.tam)+' BR']||r.linhas?.[nTam(t.tam)];tamNome[t.tam]=nTam(t.tam)+' BR';}
+      // anúncio vai com a numeração BR da linha (dupla "33/34" → "33 BR"; o ML recusa "33/34 BR" no SIZE do anúncio)
+      gridId=r.id;for(const t of opTam){linhas[t.tam]=r.linhas?.[nTam(t.tam)+' BR']||r.linhas?.[nTam(t.tam)];tamNome[t.tam]=(nTam(t.tam).match(/\d+(?:\.\d+)?/)?.[0]||nTam(t.tam))+' BR';}
     }
     else{
       // cada domínio tem a sua ficha (vestido = CHEST_CIRCUMFERENCE; pijama = BUST_ + HIP_ obrigatórios — SS Tendência 07/10/2026).
