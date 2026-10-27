@@ -1380,6 +1380,16 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .lj-aj-est label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim);background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:7px}
 .lj-aj-est label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lj-aj-est input{width:100%;font:inherit;font-size:14px;padding:5px 7px;border-radius:7px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text)}.lj-aj-est input.zero{border-color:var(--red)}
 .lj-aj-passos{margin-top:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12.5px;display:flex;flex-direction:column;gap:7px;color:var(--text-dim)}
+.lj-aj-modo{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:3px;margin:4px 0 2px}
+.lj-aj-modo button{flex:1;border:0;background:transparent;color:var(--text-dim);font:inherit;font-size:12.5px;font-weight:600;padding:7px 8px;border-radius:8px;cursor:pointer}.lj-aj-modo button.on{background:var(--gold);color:#181712}
+.lj-aj-var{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}.lj-aj-var th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);text-align:left;font-weight:600;padding:4px 6px;border-bottom:1px solid var(--border)}
+.lj-aj-var td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:middle}.lj-aj-var td small{display:block;color:var(--text-dim);font-size:10.5px}.lj-aj-var td.n{font-family:'Oswald',sans-serif;font-size:14px;white-space:nowrap}
+.lj-aj-var input{width:84px;font:inherit;font-size:13px;padding:5px 7px;border-radius:7px;border:1px solid var(--gold-dim);background:var(--bg);color:var(--text)}.lj-aj-var tr.mud td.n{color:var(--gold)}
+.lj-aj-grupos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lj-aj-grupos label{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-dim);background:var(--bg-card2);border:1px solid var(--border);border-radius:9px;padding:4px 6px}
+.lj-aj-grupos input{width:64px;font:inherit;font-size:12px;padding:3px 5px;border-radius:6px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text)}
+.lj-aj-nova{margin-top:14px;border:1px dashed var(--gold-dim);border-radius:12px;padding:12px;background:var(--bg)}.lj-aj-nova h4{margin:0 0 8px;font-size:13px;color:var(--text)}
+.lj-aj-nova .lin{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}.lj-aj-nova .lin label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim);flex:1;min-width:110px}
+.lj-aj-nova input,.lj-aj-nova select{font:inherit;font-size:13px;padding:6px 8px;border-radius:8px;border:1px solid var(--border-strong);background:var(--bg-card2);color:var(--text)}
 .lj-aj-passos b{color:var(--text);font-size:13px}.lj-aj-passos div{display:flex;gap:9px}.lj-aj-passos div span{color:var(--gold);font-weight:700;flex:none}
 
 .prod-hero-ico{width:54px;height:54px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#181712;background:linear-gradient(145deg,var(--gold-bright),var(--gold) 55%,var(--gold-dim));box-shadow:0 8px 22px rgba(212,169,74,.22),inset 0 1px 0 rgba(255,255,255,.35)}
@@ -5279,11 +5289,36 @@ window.__ljMapaRefazer=async a=>{if(!lj.id)return;a.textContent='atualizando o m
   catch(e){a.textContent='atualizar mapa';a.style.pointerEvents='';showToast('Erro no mapa: '+e.message);}};
 // ---- Ajustar preço e estoque (painel) ----
 window.__ljAjAbrir=k=>{const l=lj.prod?.linhas.find(x=>x.k===k);if(!l?.sh)return;const s=l.sh;
-  lj.aj={k,liq:dirLiquido(s.precoMin||0),est:Object.fromEntries((s.temVariacao?s.variacoes:[{id:0,estoque:s.estoque}]).map(v=>[String(v.id),v.estoque??0])),res:null};ljRender();
+  lj.aj={k,liq:dirLiquido(s.precoMin||0),est:Object.fromEntries((s.temVariacao?s.variacoes:[{id:0,estoque:s.estoque}]).map(v=>[String(v.id),v.estoque??0])),res:null,
+    modo:s.temVariacao&&new Set(s.variacoes.map(v=>v.atual)).size>1?'variacao':'todas',liqVar:Object.fromEntries((s.variacoes||[]).map(v=>[String(v.id),dirLiquido(v.atual||s.precoMin||0)])),nova:null};ljRender();
   setTimeout(()=>document.querySelector('.lj-aj')?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);};
 window.__ljAjFechar=()=>{lj.aj=null;ljRender();};
 window.__ljAjLiq=v=>{if(!lj.aj)return;lj.aj.liq=lbValorBR(v)||0;const b=document.getElementById('ljAjPrecos');if(b)b.innerHTML=ljAjPrecos();};
 window.__ljAjEst=(id,v)=>{if(lj.aj)lj.aj.est[id]=Math.max(0,parseInt(v)||0);};
+// ---- preço por variação (27/10/2026, Lincoln: "no P é um valor, no G é outro") ----
+const ljNorm=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+br$/,'').replace(/\s+/g,' ').trim();
+const ljOpcoesVar=v=>String(v.nome||'').split(',').map(ljNorm).filter(Boolean);
+// acha a variação da Shopee que tem TODOS esses valores (cor/tamanho vindos do TikTok ou do ML)
+function ljCasaVar(vars,valores){const vs=[...new Set((valores||[]).map(ljNorm).filter(Boolean))];if(!vs.length)return null;
+  const cand=vars.filter(v=>{const o=ljOpcoesVar(v);return o.length&&o.every(x=>vs.includes(x));});return cand.length===1?cand[0]:null;}
+window.__ljAjModo=m=>{if(!lj.aj)return;lj.aj.modo=m;ljRender();};
+window.__ljAjLiqVar=(id,v)=>{if(!lj.aj)return;lj.aj.liqVar[id]=lbValorBR(v)||0;ljAjAtualizaLinha(id);};
+window.__ljAjGrupo=(pos,op,v)=>{if(!lj.aj)return;const n=lbValorBR(v);if(!(n>0))return;const s=ljAjLinha()?.sh;if(!s)return;
+  for(const x of s.variacoes)if(ljOpcoesVar(x)[pos]===op){lj.aj.liqVar[String(x.id)]=n;const i=document.getElementById('ljAjLv_'+x.id);if(i)i.value=String(n.toFixed(2)).replace('.',',');ljAjAtualizaLinha(String(x.id));}};
+function ljAjCelulas(v){const l=ljAjLinha();const liq=lj.aj.liqVar[String(v.id)]||0;const sh=dirPrecosLB(liq),tt=dirPrecosTT(liq);
+  return `<td class="n">${sh?fmtR(sh.venda):'—'}<small>cheio ${sh?fmtR(sh.cheio):'—'}</small></td><td class="n">${l.tt&&tt?fmtR(tt.venda):'—'}</td>`;}
+function ljAjAtualizaLinha(id){const v=ljAjLinha()?.sh?.variacoes?.find(x=>String(x.id)===String(id));const tr=document.getElementById('ljAjTr_'+id);if(!v||!tr)return;
+  const sh=dirPrecosLB(lj.aj.liqVar[String(id)]||0);tr.classList.toggle('mud',!!sh&&Math.abs(sh.venda-(v.atual||0))>=0.01);
+  tr.querySelectorAll('td.n').forEach(td=>td.remove());tr.insertAdjacentHTML('beforeend',ljAjCelulas(v));}
+function ljAjTabelaVar(){const l=ljAjLinha();const s=l.sh;const vars=s.variacoes||[];
+  const pos=[0,1].map(i=>({i,ops:[...new Set(vars.map(v=>ljOpcoesVar(v)[i]).filter(Boolean))]})).filter(g=>g.ops.length>1&&g.ops.length<=14);
+  const rot=o=>vars.map(v=>String(v.nome||'').split(',')).flat().map(x=>x.trim()).find(x=>ljNorm(x)===o)||o;
+  return `<small class="lj-sub">Digite quanto a cliente quer receber em cada variação. O preço de cada marketplace sai da regra LB.</small>
+    ${pos.length?`<div class="lj-aj-grupos" title="Preenche de uma vez todas as variações dessa opção">${pos.map(g=>g.ops.map(o=>`<label>${esc(rot(o))} <input placeholder="todas" inputmode="decimal" data-pos="${g.i}" data-op="${esc(o)}" onchange="window.__ljAjGrupo(+this.dataset.pos,this.dataset.op,this.value)"></label>`).join('')).join('')}</div>`:''}
+    <div style="overflow:auto;max-height:360px"><table class="lj-aj-var"><thead><tr><th>Variação</th><th>Hoje</th><th>Receber</th><th>Shopee</th><th>TikTok</th></tr></thead><tbody>
+    ${vars.map(v=>{const liq=lj.aj.liqVar[String(v.id)]||0;const sh=dirPrecosLB(liq);return `<tr id="ljAjTr_${v.id}" class="${sh&&Math.abs(sh.venda-(v.atual||0))>=0.01?'mud':''}"><td>${esc(v.nome||'')}</td><td>${fmtR(v.atual)}</td>
+      <td><input id="ljAjLv_${v.id}" value="${String(liq.toFixed(2)).replace('.',',')}" inputmode="decimal" oninput="window.__ljAjLiqVar('${v.id}',this.value)"></td>${ljAjCelulas(v)}</tr>`;}).join('')}
+    </tbody></table></div><small class="lj-sub">Mercado Livre: o preço de cada anúncio sai da comissão real, calculado ao aplicar.</small>`;}
 function ljAjLinha(){return lj.prod?.linhas.find(x=>x.k===lj.aj?.k);}
 function ljAjPrecos(){const l=ljAjLinha();const liq=lj.aj.liq;const sh=dirPrecosLB(liq),tt=dirPrecosTT(liq);
   return `<div class="lj-aj-mp"><span>${mpIco('shopee',16)} Shopee</span><b>${sh?fmtR(sh.venda):'—'}</b><small>cheio ${sh?fmtR(sh.cheio):'—'} · hoje ${fmtR(l.sh.precoMin)}</small></div>
@@ -5293,12 +5328,15 @@ function ljAjHtml(){const l=ljAjLinha();if(!l)return'';const s=l.sh;const vars=s
   const difer=s.temVariacao&&new Set(s.variacoes.map(v=>v.atual)).size>1;const r=lj.aj.res;
   return `<aside class="panel lj-aj"><div class="panel-head"><h3>Ajustar preço e estoque</h3><button class="btn btn-ghost btn-sm" onclick="window.__ljAjFechar()" aria-label="Fechar">✕</button></div>
     <div class="lj-aj-nome">${esc(l.nome)}</div>
+    ${s.temVariacao?`<div class="lj-aj-modo" role="tablist"><button class="${lj.aj.modo==='todas'?'on':''}" onclick="window.__ljAjModo('todas')">Mesmo valor pra todas</button><button class="${lj.aj.modo==='variacao'?'on':''}" onclick="window.__ljAjModo('variacao')">Valor por variação</button></div>`:''}
+    ${lj.aj.modo==='variacao'&&s.temVariacao?`<label class="lj-aj-lbl">Quanto a cliente quer receber em cada variação</label>${ljAjTabelaVar()}`:`
     <label class="lj-aj-lbl" for="ljAjLiq">Quanto a cliente quer receber por peça</label>
     <input id="ljAjLiq" class="lj-aj-liq" value="${String(lj.aj.liq.toFixed(2)).replace('.',',')}" oninput="window.__ljAjLiq(this.value)" inputmode="decimal">
-    <small class="lj-sub">Hoje ≈ ${fmtR(dirLiquido(s.precoMin||0))} na Shopee · o preço de cada marketplace sai da regra LB${difer?' · <span class="at">variações com preços diferentes: o novo vale pra todas</span>':''}</small>
-    <div id="ljAjPrecos" class="lj-aj-precos">${ljAjPrecos()}</div>
+    <small class="lj-sub">Hoje ≈ ${fmtR(dirLiquido(s.precoMin||0))} na Shopee · o preço de cada marketplace sai da regra LB${difer?' · <span class="at">variações com preços diferentes: o novo vale pra todas (use "Valor por variação" pra manter diferente)</span>':''}</small>
+    <div id="ljAjPrecos" class="lj-aj-precos">${ljAjPrecos()}</div>`}
     <div class="lj-aj-lbl">Estoque na Shopee${s.temVariacao?' por variação':''}</div>
     <div class="lj-aj-est">${vars.map(v=>`<label><span title="${esc(v.nome||'')}">${esc(v.nome||'Estoque')}</span><input type="number" min="0" value="${lj.aj.est[String(v.id)]??0}" oninput="window.__ljAjEst('${v.id}',this.value)" class="${(lj.aj.est[String(v.id)]??0)<=0?'zero':''}"></label>`).join('')}</div>
+    ${s.temVariacao?ljNovaHtml():''}
     <div class="lj-aj-passos"><b>O que o sistema vai fazer</b>
       <div><span>1</span>Shopee: tira só este produto das relâmpagos agendadas (as outras peças continuam)</div>
       <div><span>2</span>Shopee: novo preço no desconto fixo (cheio ×1,30) e o estoque novo</div>
@@ -5308,6 +5346,7 @@ function ljAjHtml(){const l=ljAjLinha();if(!l)return'';const s=l.sh;const vars=s
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" style="flex:1" id="ljAjBtn" onclick="window.__ljAjAplicar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Aplicar</button><button class="btn btn-ghost" onclick="window.__ljAjFechar()">Cancelar</button></div></aside>`;}
 window.__ljAjAplicar=async()=>{
   const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=ljAjLinha();if(!c||!l?.sh)return;const s=l.sh;
+  if(lj.aj.modo==='variacao'&&s.temVariacao)return ljAjAplicarVar(c,l);
   const liq=lj.aj.liq;const pSh=dirPrecosLB(liq),pTt=dirPrecosTT(liq);if(!pSh){lbAvisar('Valor a receber inválido.');return;}
   const est={};for(const v of (s.temVariacao?s.variacoes:[{id:0,estoque:s.estoque}])){const n=lj.aj.est[String(v.id)];if(n!=null&&n!==(v.estoque??0))est[String(v.id)]=n;}
   const mudaPreco=Math.abs(pSh.venda-(s.precoMin||0))>=0.01||(s.temVariacao&&new Set(s.variacoes.map(v=>v.atual)).size>1);
@@ -5342,6 +5381,103 @@ window.__ljAjAplicar=async()=>{
   lj.aj.res={ok:tudoOk,msg:res.join(' · ')};if(btn){btn.disabled=false;btn.textContent='Aplicar';}
   ljRender();if(tudoOk)showToast('Ajuste aplicado. Clique em Recarregar pra ver os números novos.');};
 
+// ---- Adicionar variação na Shopee (27/10/2026) — backend shopee.js?acao=variacao_adicionar (update_tier_variation + add_model + desconto) ----
+const ljNovasOps=()=>String(lj.aj?.nova?.opcoes||'').split(',').map(x=>x.trim()).filter(Boolean);
+function ljNovaHtml(){const n=lj.aj.nova;
+  if(!n)return `<button class="btn btn-ghost btn-sm" style="margin-top:12px;width:100%" onclick="window.__ljNovaAbrir()">+ Adicionar variação (cor, tamanho…)</button>`;
+  if(n.carregando)return `<div class="lj-aj-nova">Lendo as variações do anúncio…</div>`;
+  if(!n.tiers)return `<div class="lj-aj-nova"><span class="at">${esc(n.erro||'Não deu pra ler as variações.')}</span> <button class="btn btn-ghost btn-sm" onclick="window.__ljNovaCampo('fechar')">Fechar</button></div>`;
+  const t=n.tiers[n.tier];const p=dirPrecosLB(n.liq);const ops=ljNovasOps();
+  return `<div class="lj-aj-nova"><h4>Adicionar variação na Shopee</h4>
+    <div class="lin"><label>Em qual variação<select onchange="window.__ljNovaCampo('tier',+this.value,true)">${n.tiers.map((x,i)=>`<option value="${i}" ${n.tier===i?'selected':''}>${esc(x.nome)}</option>`).join('')}</select></label>
+      <label>Opções novas (separe por vírgula)<input value="${esc(n.opcoes)}" placeholder="ex.: Verde, Azul" oninput="window.__ljNovaCampo('opcoes',this.value)" onchange="window.__ljNovaCampo('opcoes',this.value,true)"></label></div>
+    <small class="lj-sub">Hoje em ${esc(t.nome)}: ${esc(t.opcoes.join(', '))}</small>
+    <div class="lin"><label>Receber por peça (R$)<input value="${String((n.liq||0).toFixed(2)).replace('.',',')}" inputmode="decimal" onchange="window.__ljNovaCampo('liq',lbValorBR(this.value)||0,true)"></label>
+      <label>Estoque de cada variação nova<input type="number" min="0" value="${n.est}" onchange="window.__ljNovaCampo('est',parseInt(this.value)||0,true)"></label></div>
+    ${n.tier===0&&t.comFoto?(ops.length?`<div class="lin">${ops.map(o=>`<label>Foto de ${esc(o)} ${n.fotos[o]?.id?'✓':n.fotos[o]?.subindo?'(subindo…)':''}<input type="file" accept="image/*" data-op="${esc(o)}" onchange="window.__ljNovaFoto(this.dataset.op,this.files[0])"></label>`).join('')}</div>`:''):''}
+    <small class="lj-sub">${ops.length?`Cria ${ops.length*(n.tiers.length>1?n.tiers[1-n.tier].opcoes.length:1)} variação(ões) a ${p?fmtR(p.venda):'—'} no desconto (cheio ${p?fmtR(p.cheio):'—'}), ${n.est} un. cada. Preço diferente por variação: ajuste depois em "Valor por variação".`:'Digite a opção nova.'}</small>
+    ${n.erro?`<div class="at" style="font-size:12px;margin:6px 0">${esc(n.erro)}</div>`:''}
+    ${n.res?`<div class="lj-alerta ${n.res.ok?'':'ruim'}" style="margin-top:8px"><span class="lj-dot ${n.res.ok?'ok':'ruim'}"></span><span><b>${n.res.ok?'Criado na Shopee':'Não deu certo'}</b><small>${esc(n.res.msg)}</small></span></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-gold btn-sm" id="ljNovaBtn" onclick="window.__ljNovaCriar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__ljNovaCampo('fechar',0,true)">Cancelar</button></div>
+    <small class="lj-sub" style="display:block;margin-top:6px">TikTok e Mercado Livre: a variação nova ainda é feita à mão nesses dois (a Shopee primeiro).</small></div>`;}
+window.__ljNovaCampo=(k,v,render)=>{const n=lj.aj?.nova;if(!n)return;if(k==='fechar'){lj.aj.nova=null;ljRender();return;}n[k]=v;n.erro=null;if(render)ljRender();};
+window.__ljNovaAbrir=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);const s=ljAjLinha()?.sh;if(!c||!s)return;
+  const liq=lj.aj.modo==='variacao'?Math.max(0,...Object.values(lj.aj.liqVar||{})):lj.aj.liq;
+  lj.aj.nova={carregando:true,opcoes:'',liq,est:50,tier:0,fotos:{}};ljRender();
+  try{const token=await shopeeGarantirTokenValido(c,'erp');const r=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_model_list',query:JSON.stringify({item_id:s.id})});
+    const std=r?.response?.standardise_tier_variation?.length?r.response.standardise_tier_variation.map(t=>({nome:t.variation_name,opcoes:t.variation_option_list.map(o=>o.variation_option_name),fotos:t.variation_option_list.map(o=>o.image_id)}))
+      :(r?.response?.tier_variation||[]).map(t=>({nome:t.name,opcoes:(t.option_list||[]).map(o=>o.option),fotos:(t.option_list||[]).map(o=>o.image?.image_id)}));
+    if(!std.length)throw new Error(r?.error?`${r.error} ${r.message||''}`:'Esse anúncio não tem variação.');
+    if(!lj.aj?.nova)return;Object.assign(lj.aj.nova,{carregando:false,tiers:std.map((t,i)=>({nome:t.nome,opcoes:t.opcoes,comFoto:i===0&&t.fotos.length&&t.fotos.every(Boolean)}))});
+  }catch(e){if(lj.aj)lj.aj.nova={erro:e.message};}ljRender();};
+window.__ljNovaFoto=async(o,f)=>{const n=lj.aj?.nova;const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!n||!f||!c)return;
+  n.fotos[o]={subindo:true};ljRender();const u=URL.createObjectURL(f);
+  try{const token=await shopeeGarantirTokenValido(c,'erp');const r=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await migJpg(u),ratio:'1:1'});
+    if(!r.ok||!r.image_id)throw new Error(r.erro||'sem id');n.fotos[o]={id:r.image_id};}catch(e){n.fotos[o]=null;n.erro='Foto de '+o+': '+e.message;}
+  URL.revokeObjectURL(u);ljRender();};
+window.__ljNovaCriar=async()=>{const n=lj.aj?.nova;const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=ljAjLinha();if(!n?.tiers||!c||!l?.sh)return;
+  const ops=ljNovasOps();const p=dirPrecosLB(n.liq);
+  if(!ops.length){n.erro='Digite a opção nova.';ljRender();return;}if(!p){n.erro='Valor a receber inválido.';ljRender();return;}
+  const pedido={tier:n.tier,opcoes:ops.map(o=>({nome:o,imageId:n.fotos[o]?.id||null})),modelos:Object.fromEntries(ops.map(o=>[o,{cheio:p.cheio,venda:p.venda,estoque:n.est}]))};
+  const btn=document.getElementById('ljNovaBtn');if(btn){btn.disabled=true;btn.textContent='Conferindo…';}
+  try{const token=await shopeeGarantirTokenValido(c,'erp');
+    const sim=await dirShApi('variacao_adicionar',c,token,{item_id:l.sh.id,pedido});
+    if(!sim.ok)throw new Error(sim.erro||'erro');
+    const lista=sim.plano.novosModelos.map(m=>m.nomes.join(' / '));
+    if(!await lbConfirmar(`Adicionar em ${c.nome}?\n${l.nome.slice(0,70)}\n\n${n.tiers[n.tier].nome}: ${ops.join(', ')}\n${lista.length} variação(ões) novas: ${lista.slice(0,12).join(', ')}${lista.length>12?'…':''}\nVenda ${fmtR(p.venda)} no desconto · cheio ${fmtR(p.cheio)} · ${n.est} un. cada`,{okTxt:'Criar na Shopee'})){if(btn){btn.disabled=false;btn.textContent='Criar na Shopee';}return;}
+    if(btn)btn.textContent='Criando…';
+    const r=await dirShApi('variacao_adicionar',c,token,{item_id:l.sh.id,pedido,executar:1});
+    const msg=(r.passos||[]).map(x=>(x.ok?'✓ ':'✗ ')+(x.ok?x.msg:x.erro)).join(' · ')||r.erro||'erro';
+    n.res={ok:!!r.ok,msg:r.ok||r.passos?.length?msg:r.erro};
+    await log(c.id,c.nome,'variação nova (Central da Loja)',`${l.nome.slice(0,60)} · ${n.tiers[n.tier].nome}: ${ops.join(', ')} · ${msg}`).catch(()=>{});
+    if(r.ok)showToast('Variação criada. Clique em Recarregar pra ver na lista.');
+  }catch(e){n.erro=e.message;}
+  ljRender();};
+// aplicar com valor POR VARIAÇÃO: Shopee (cheio + desconto por variação), TikTok (casa SKU pela cor/tamanho) e ML (casa anúncio/variação)
+async function ljAjAplicarVar(c,l){const s=l.sh;const vars=s.variacoes||[];
+  const alvo=vars.map(v=>{const liq=lj.aj.liqVar[String(v.id)]||0;return {v,liq,sh:dirPrecosLB(liq),tt:dirPrecosTT(liq)};});
+  if(alvo.some(a=>!a.sh)){lbAvisar('Tem variação com valor a receber inválido.');return;}
+  const est={};for(const v of vars){const n=lj.aj.est[String(v.id)];if(n!=null&&n!==(v.estoque??0))est[String(v.id)]=n;}
+  const mud=alvo.filter(a=>Math.abs(a.sh.venda-(a.v.atual||0))>=0.01);
+  if(!mud.length&&!Object.keys(est).length){lbAvisar('Nada mudou: os preços e o estoque são os mesmos de hoje.');return;}
+  const faixa=(xs)=>{const a=Math.min(...xs),b=Math.max(...xs);return a===b?fmtR(a):`${fmtR(a)} a ${fmtR(b)}`;};
+  const linhas=[mud.length&&`Shopee: ${mud.length} variação(ões) com preço novo (${faixa(alvo.map(a=>a.sh.venda))})`,mud.length&&l.tt&&`TikTok: preço de cada SKU pela cor/tamanho (${faixa(alvo.map(a=>a.tt?.venda||0))})`,mud.length&&l.ml&&`Mercado Livre: ${l.ml.ids.length} anúncio(s) pela comissão real, por variação`,Object.keys(est).length&&`Estoque Shopee: ${Object.keys(est).length} variação(ões)`].filter(Boolean);
+  if(!await lbConfirmar(`Aplicar em ${c.nome}?\n${l.nome.slice(0,70)}\n\n${linhas.join('\n')}\n\n${mud.slice(0,10).map(a=>`${a.v.nome}: ${fmtR(a.v.atual)} → ${fmtR(a.sh.venda)}`).join('\n')}${mud.length>10?'\n…':''}`,{okTxt:'Aplicar'}))return;
+  const btn=document.getElementById('ljAjBtn');if(btn){btn.disabled=true;btn.textContent='Aplicando…';}
+  const res=[];let tudoOk=true;const nota=(ok,t)=>{res.push((ok?'✓ ':'✗ ')+t);if(!ok)tudoOk=false;};
+  try{const token=await shopeeGarantirTokenValido(c,'erp');
+    const precos=mud.length?Object.fromEntries(alvo.map(a=>[String(a.v.id),{venda:a.sh.venda,cheio:a.sh.cheio,cheioAtual:a.v.cheio||null}])):{};
+    const r=await (await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ajustar_produto',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,item_id:s.id,precos,estoque:est})})).json();
+    if(!r.passos)nota(false,'Shopee: '+(r.erro||'erro'));else for(const p of r.passos)nota(p.ok,`Shopee ${p.etapa}: ${p.ok?p.msg:p.erro}`);
+  }catch(e){nota(false,'Shopee: '+e.message);}
+  if(mud.length&&l.tt){try{
+      const pr=await mig3Api(c,'produto_ler',{id:l.tt.id});const skus=pr.produto?.skus||[];const casados=[],sem=[];
+      for(const k of skus){const v=ljCasaVar(vars,(k.sales_attributes||[]).map(a=>a.value_name));const a=v&&alvo.find(x=>x.v===v);if(a?.tt)casados.push({id:k.id,a});else sem.push((k.sales_attributes||[]).map(x=>x.value_name).join('/')||k.seller_sku||k.id);}
+      if(casados.length){const r1=await mig3Api(c,'produto_preco',{id:l.tt.id,skus:casados.map(x=>({id:x.id,preco:x.a.tt.cheio}))});nota(r1.ok,`TikTok cheio: ${r1.ok?`${casados.length} SKU(s)`:r1.erro}`);}
+      if(sem.length)nota(false,`TikTok: não achei na Shopee a variação ${sem.slice(0,4).join(', ')}${sem.length>4?'…':''} (ficou como estava)`);
+      if(c.tiktokDescontoFixoId&&casados.length){const det=await mig3Api(c,'detalhe',{id:c.tiktokDescontoFixoId});
+        if(det.atividade?.nivel==='VARIATION'){const r2=await mig3Api(c,'precos',{id:c.tiktokDescontoFixoId,itens:[{id:l.tt.id,preco:Math.min(...casados.map(x=>x.a.tt.venda)),skus:casados.map(x=>({id:x.id,preco:x.a.tt.venda}))}]});nota(r2.ok,`TikTok desconto: ${r2.ok?'preço por variação':r2.erro}`);}
+        else nota(false,'TikTok desconto: o desconto fixo dessa loja é por PRODUTO (um preço só pra todas as variações) — o cheio mudou por variação, o preço no desconto ficou como estava');}
+      else if(!c.tiktokDescontoFixoId)nota(false,'TikTok: loja sem desconto fixo marcado');
+    }catch(e){nota(false,'TikTok: '+e.message);}}
+  if(mud.length&&l.ml){try{
+      const token=await mlGarantirTokenValido(c);const cache={};
+      const precoMl=async(cat,liq)=>{const k=cat+'|'+liq;if(!cache[k]){const pm=await dirMl('ml_preco',{access_token:token,categoria:cat,liquido:liq,peso:Number(s.peso)||0.5},true);if(!pm.ok)throw new Error(pm.erro);cache[k]=pm.venda;}return cache[k];};
+      let ok=0;const erros=[],sem=[];
+      for(const id of l.ml.ids){const it=(await dirMl('ler_api',{access_token:token,caminho:`/items/${id}?include_attributes=all`},true))?.data;if(!it){erros.push(id+': não li');continue;}
+        if(it.variations?.length){const pv={};for(const vr of it.variations){const v=ljCasaVar(vars,(vr.attribute_combinations||[]).map(a=>a.value_name));const a=v&&alvo.find(x=>x.v===v);if(a)pv[vr.id]=await precoMl(it.category_id,a.liq);else sem.push(id);}
+          if(Object.keys(pv).length){const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:id,mudancas:{precoVariacoes:pv}},true);if(r.ok)ok++;else erros.push(r.erro);}continue;}
+        const v=ljCasaVar(vars,(it.attributes||[]).filter(a=>/COLOR|SIZE|MODEL|VOLTAGE|FLAVOR|PATTERN/i.test(a.id)).map(a=>a.value_name));const a=v&&alvo.find(x=>x.v===v);
+        if(!a){sem.push(id);continue;}const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:id,mudancas:{price:await precoMl(it.category_id,a.liq)}},true);if(r.ok)ok++;else erros.push(r.erro);}
+      nota(!erros.length,`Mercado Livre: ${ok} de ${l.ml.ids.length} anúncio(s) com o preço da variação${erros.length?` (${erros[0]})`:''}`);
+      if(sem.length)nota(false,`Mercado Livre: ${[...new Set(sem)].length} anúncio(s) sem variação correspondente na Shopee (ficaram como estavam)`);
+    }catch(e){nota(false,'Mercado Livre: '+e.message);}}
+  await log(c.id,c.nome,'preço por variação (Central da Loja)',`${l.nome.slice(0,60)} · ${alvo.map(a=>`${a.v.nome} ${fmtR(a.liq)}`).join(', ').slice(0,300)} · ${res.join(' | ')}`).catch(()=>{});
+  if(res.some(x=>/^✓ Shopee desconto/.test(x)))for(const a of alvo){a.v.atual=a.sh.venda;a.v.cheio=a.sh.cheio;}
+  if(res.some(x=>/^✓ Shopee estoque/.test(x)))for(const [id,n] of Object.entries(est)){const v=vars.find(x=>String(x.id)===id);if(v)v.estoque=n;}
+  s.precoMin=Math.min(...vars.map(v=>v.atual||Infinity));s.precoMax=Math.max(...vars.map(v=>v.atual||0));
+  lj.aj.res={ok:tudoOk,msg:res.join(' · ')};if(btn){btn.disabled=false;btn.textContent='Aplicar';}
+  ljRender();if(tudoOk)showToast('Preços por variação aplicados.');}
 /* ---------- Central da Loja → Promoções (15/10/2026): desconto, cupom, relâmpago, campanhas e giro × marketplace, com os robôs ---------- */
 async function ljCarregarAgenda(){const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c||!(c.shopeeErpShopId&&c.shopeeErpRefreshToken)){lj.agenda={sem:true};ljRender();return;}
   const id=c.id;lj.agenda={carregando:true};ljRender();
