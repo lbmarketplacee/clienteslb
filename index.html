@@ -5388,15 +5388,17 @@ function ljNovaHtml(){const n=lj.aj.nova;
   if(!n)return `<button class="btn btn-ghost btn-sm" style="margin-top:12px;width:100%" onclick="window.__ljNovaAbrir()">+ Adicionar variação (cor, tamanho…)</button>`;
   if(n.carregando)return `<div class="lj-aj-nova">Lendo as variações do anúncio…</div>`;
   if(!n.tiers)return `<div class="lj-aj-nova"><span class="at">${esc(n.erro||'Não deu pra ler as variações.')}</span> <button class="btn btn-ghost btn-sm" onclick="window.__ljNovaCampo('fechar')">Fechar</button></div>`;
-  const t=n.tiers[n.tier];const p=dirPrecosLB(n.liq);const ops=ljNovasOps();
+  const dim=n.tiers.length===1&&n.tier===1;const t=dim?{nome:n.dimNome||'Cor',opcoes:[],comFoto:true}:n.tiers[n.tier];const p=dirPrecosLB(n.liq);const ops=ljNovasOps();
   return `<div class="lj-aj-nova"><h4>Adicionar variação na Shopee</h4>
-    <div class="lin"><label>Em qual variação<select onchange="window.__ljNovaCampo('tier',+this.value,true)">${n.tiers.map((x,i)=>`<option value="${i}" ${n.tier===i?'selected':''}>${esc(x.nome)}</option>`).join('')}</select></label>
+    <div class="lin"><label>Em qual variação<select onchange="window.__ljNovaCampo('tier',+this.value,true)">${n.tiers.map((x,i)=>`<option value="${i}" ${n.tier===i?'selected':''}>${esc(x.nome)} (opção nova)</option>`).join('')}${n.tiers.length===1?`<option value="1" ${dim?'selected':''}>Nova variação (ex.: Cor)</option>`:''}</select></label>
       <label>Opções novas (separe por vírgula)<input value="${esc(n.opcoes)}" placeholder="ex.: Verde, Azul" oninput="window.__ljNovaCampo('opcoes',this.value)" onchange="window.__ljNovaCampo('opcoes',this.value,true)"></label></div>
-    <small class="lj-sub">Hoje em ${esc(t.nome)}: ${esc(t.opcoes.join(', '))}</small>
+    ${dim?`<div class="lin"><label>Nome da variação nova<input value="${esc(n.dimNome||'Cor')}" onchange="window.__ljNovaCampo('dimNome',this.value,true)"></label><label>${esc(n.dimNome||'Cor')} dos anúncios de hoje<input value="${esc(n.dimAtual||'')}" placeholder="ex.: Preto" oninput="window.__ljNovaCampo('dimAtual',this.value)"></label></div>
+      <small class="lj-sub">O anúncio passa a ter ${esc(n.dimNome||'Cor')} × ${esc(n.tiers[0].nome)}. Os ${esc(n.tiers[0].nome.toLowerCase())}s de hoje viram "${esc(n.dimAtual||'…')}" com o mesmo preço, estoque e SKU; cada opção nova entra em todos os ${esc(n.tiers[0].nome.toLowerCase())}s (${esc(n.tiers[0].opcoes.join(', '))}). A Shopee recria as variações: o produto sai das relâmpagos agendadas e volta pro desconto fixo.</small>`
+      :`<small class="lj-sub">Hoje em ${esc(t.nome)}: ${esc(t.opcoes.join(', '))}</small>`}
     <div class="lin"><label>Receber por peça (R$)<input value="${String((n.liq||0).toFixed(2)).replace('.',',')}" inputmode="decimal" onchange="window.__ljNovaCampo('liq',lbValorBR(this.value)||0,true)"></label>
       <label>Estoque de cada variação nova<input type="number" min="0" value="${n.est}" onchange="window.__ljNovaCampo('est',parseInt(this.value)||0,true)"></label></div>
-    ${n.tier===0&&t.comFoto?(ops.length?`<div class="lin">${ops.map(o=>`<label>Foto de ${esc(o)} ${n.fotos[o]?.id?'✓':n.fotos[o]?.subindo?'(subindo…)':''}<input type="file" accept="image/*" data-op="${esc(o)}" onchange="window.__ljNovaFoto(this.dataset.op,this.files[0])"></label>`).join('')}</div>`:''):''}
-    <small class="lj-sub">${ops.length?`Cria ${ops.length*(n.tiers.length>1?n.tiers[1-n.tier].opcoes.length:1)} variação(ões) a ${p?fmtR(p.venda):'—'} no desconto (cheio ${p?fmtR(p.cheio):'—'}), ${n.est} un. cada. Preço diferente por variação: ajuste depois em "Valor por variação".`:'Digite a opção nova.'}</small>
+    ${(dim||n.tier===0&&t.comFoto)?(ops.length?`<div class="lin">${ops.map(o=>`<label>Foto de ${esc(o)} ${n.fotos[o]?.id?'✓':n.fotos[o]?.subindo?'(subindo…)':''}<input type="file" accept="image/*" data-op="${esc(o)}" onchange="window.__ljNovaFoto(this.dataset.op,this.files[0])"></label>`).join('')}</div>`:''):''}
+    <small class="lj-sub">${ops.length?`Cria ${ops.length*(dim?n.tiers[0].opcoes.length:n.tiers.length>1?n.tiers[1-n.tier].opcoes.length:1)} variação(ões) a ${p?fmtR(p.venda):'—'} no desconto (cheio ${p?fmtR(p.cheio):'—'}), ${n.est} un. cada. Preço diferente por variação: ajuste depois em "Valor por variação".`:'Digite a opção nova.'}</small>
     ${n.erro?`<div class="at" style="font-size:12px;margin:6px 0">${esc(n.erro)}</div>`:''}
     ${n.res?`<div class="lj-alerta ${n.res.ok?'':'ruim'}" style="margin-top:8px"><span class="lj-dot ${n.res.ok?'ok':'ruim'}"></span><span><b>${n.res.ok?'Criado na Shopee':'Não deu certo'}</b><small>${esc(n.res.msg)}</small></span></div>`:''}
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-gold btn-sm" id="ljNovaBtn" onclick="window.__ljNovaCriar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Criar na Shopee</button><button class="btn btn-ghost btn-sm" onclick="window.__ljNovaCampo('fechar',0,true)">Cancelar</button></div>
@@ -5419,7 +5421,11 @@ window.__ljNovaFoto=async(o,f)=>{const n=lj.aj?.nova;const c=(clientesCache||[])
 window.__ljNovaCriar=async()=>{const n=lj.aj?.nova;const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=ljAjLinha();if(!n?.tiers||!c||!l?.sh)return;
   const ops=ljNovasOps();const p=dirPrecosLB(n.liq);
   if(!ops.length){n.erro='Digite a opção nova.';ljRender();return;}if(!p){n.erro='Valor a receber inválido.';ljRender();return;}
-  const pedido={tier:n.tier,opcoes:ops.map(o=>({nome:o,imageId:n.fotos[o]?.id||null})),modelos:Object.fromEntries(ops.map(o=>[o,{cheio:p.cheio,venda:p.venda,estoque:n.est}]))};
+  const dim=n.tiers.length===1&&n.tier===1;
+  if(dim&&!String(n.dimAtual||'').trim()){n.erro=`Diga qual ${n.dimNome||'Cor'} é a dos anúncios de hoje (ex.: Preto).`;ljRender();return;}
+  const pedido=dim?{nome:n.dimNome||'Cor',atual:String(n.dimAtual).trim(),posicao:0,opcoes:ops.map(o=>({nome:o,imageId:n.fotos[o]?.id||null})),modelos:Object.fromEntries(ops.map(o=>[o,{cheio:p.cheio,venda:p.venda,estoque:n.est}]))}
+    :{tier:n.tier,opcoes:ops.map(o=>({nome:o,imageId:n.fotos[o]?.id||null})),modelos:Object.fromEntries(ops.map(o=>[o,{cheio:p.cheio,venda:p.venda,estoque:n.est}]))};
+  if(dim)return ljNovaCriarDim(c,l,n,pedido,p);
   const btn=document.getElementById('ljNovaBtn');if(btn){btn.disabled=true;btn.textContent='Conferindo…';}
   try{const token=await shopeeGarantirTokenValido(c,'erp');
     const sim=await dirShApi('variacao_adicionar',c,token,{item_id:l.sh.id,pedido});
@@ -5434,6 +5440,17 @@ window.__ljNovaCriar=async()=>{const n=lj.aj?.nova;const c=(clientesCache||[]).f
     if(r.ok)showToast('Variação criada. Clique em Recarregar pra ver na lista.');
   }catch(e){n.erro=e.message;}
   ljRender();};
+async function ljNovaCriarDim(c,l,n,pedido,p){const btn=document.getElementById('ljNovaBtn');if(btn){btn.disabled=true;btn.textContent='Conferindo…';}
+  try{const token=await shopeeGarantirTokenValido(c,'erp');
+    const sim=await dirShApi('variacao_dimensao',c,token,{item_id:l.sh.id,pedido});if(!sim.ok)throw new Error(sim.erro||'erro');const r0=sim.resumo;
+    if(!await lbConfirmar(`Criar a variação ${pedido.nome} em ${c.nome}?\n${l.nome.slice(0,70)}\n\nFica ${r0.tiers.join(' × ')} = ${r0.variacoes} variações\nHoje (${r0.atual}): mesmo preço, estoque e SKU\nNovas: ${r0.novas.join(', ')} a ${fmtR(p.venda)} no desconto (cheio ${fmtR(p.cheio)}), ${n.est} un. cada\n\nA Shopee recria as variações: sai de ${r0.relampagosAgendadas} relâmpago(s) agendada(s) (o robô recoloca) e volta pro desconto fixo.`,{okTxt:'Criar'})){if(btn){btn.disabled=false;btn.textContent='Criar na Shopee';}return;}
+    if(btn)btn.textContent='Criando…';
+    const r=await dirShApi('variacao_dimensao',c,token,{item_id:l.sh.id,pedido,executar:1});
+    const msg=(r.passos||[]).map(x=>(x.ok?'✓ ':'✗ ')+(x.ok?x.msg:x.erro)).join(' · ')||r.erro||'erro';
+    n.res={ok:!!r.ok,msg};await log(c.id,c.nome,'variação nova (Central da Loja)',`${l.nome.slice(0,60)} · ${pedido.nome}: ${pedido.atual} + ${pedido.opcoes.map(o=>o.nome).join(', ')} · ${msg}`).catch(()=>{});
+    if(r.ok)showToast('Variação criada. Clique em Recarregar pra ver na lista.');
+  }catch(e){n.erro=e.message;}
+  ljRender();}
 // aplicar com valor POR VARIAÇÃO: Shopee (cheio + desconto por variação), TikTok (casa SKU pela cor/tamanho) e ML (casa anúncio/variação)
 async function ljAjAplicarVar(c,l){const s=l.sh;const vars=s.variacoes||[];
   const alvo=vars.map(v=>{const liq=lj.aj.liqVar[String(v.id)]||0;return {v,liq,sh:dirPrecosLB(liq),tt:dirPrecosTT(liq)};});
