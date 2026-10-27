@@ -11958,7 +11958,7 @@ function crmLeadFormHtml(){
 }
 
 // Perfil do lead (Typebot, 19/10/2026): ouro = negócio grande vendendo pouco online; iniciante = recebeu a oferta do LB Precifica
-const CRM_PERFIL={ouro:{label:'★ Ouro',cor:'#d4a94a'},qualificado:{label:'Qualificado',cor:'#5cb88a'},iniciante:{label:'Iniciante',cor:'#9fb6ff'}};
+const CRM_PERFIL={ouro:{label:'★ Ouro',cor:'#d4a94a'},qualificado:{label:'Qualificado',cor:'#5cb88a'},iniciante:{label:'Iniciante',cor:'#9fb6ff'},ja_vende:{label:'Já vende',cor:'#5cb88a'},quer_entrar:{label:'Quer entrar',cor:'#d4a94a'}};
 function crmPerfilTag(l){const t=l.ia?.temperatura;const tt=t?`<span class="ktag" title="${esc(l.ia.proximoPasso||'')}" style="color:${t==='quente'?'#e0525a':t==='morno'?'#d4a94a':'#9fb6ff'};background:${t==='quente'?'#e0525a22':t==='morno'?'#d4a94a22':'#9fb6ff22'}">${t==='quente'?'🔥 quente':t==='morno'?'morno':'frio'}</span>`:'';const p=CRM_PERFIL[l.perfil];return tt+(p?`<span class="ktag" title="${esc(l.perfilMotivo||'')}" style="color:${p.cor};background:${p.cor}22;font-weight:700">${p.label}</span>`:'');}
 
 
