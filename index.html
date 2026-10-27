@@ -1388,6 +1388,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .lj-aj-var input{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:5px 7px;border-radius:7px;border:1px solid var(--gold-dim);background:var(--bg);color:var(--text)}.lj-aj-var tr.mud td.n{color:var(--gold)}
 .lj-aj-grupos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lj-aj-grupos label{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-dim);background:var(--bg-card2);border:1px solid var(--border);border-radius:9px;padding:4px 6px}
 .lj-aj-grupos input{width:64px;font:inherit;font-size:12px;padding:3px 5px;border-radius:6px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text)}
+.lj-nova-mps{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}.lj-nova-mps span,.lj-nova-mps label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text);background:var(--bg-card2);border:1px solid var(--border);border-radius:9px;padding:6px 9px;cursor:pointer;white-space:nowrap}.lj-nova-mps span.on{border-color:var(--gold-dim)}.lj-nova-mps input{margin:0}
 .lj-aj-nova{margin-top:14px;border:1px dashed var(--gold-dim);border-radius:12px;padding:12px;background:var(--bg)}.lj-aj-nova h4{margin:0 0 8px;font-size:13px;color:var(--text)}
 .lj-aj-nova .lin{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}.lj-aj-nova .lin label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim);flex:1;min-width:110px}
 .lj-aj-nova input,.lj-aj-nova select{font:inherit;font-size:13px;padding:6px 8px;border-radius:8px;border:1px solid var(--border-strong);background:var(--bg-card2);color:var(--text)}
@@ -5392,7 +5393,7 @@ function ljNovaHtml(){const n=lj.aj.nova;
   return `<div class="lj-aj-nova"><h4>Adicionar variação na Shopee</h4>
     <div class="lin"><label>Em qual variação<select onchange="window.__ljNovaCampo('tier',+this.value,true)">${n.tiers.map((x,i)=>`<option value="${i}" ${n.tier===i?'selected':''}>${esc(x.nome)} (opção nova)</option>`).join('')}${n.tiers.length===1?`<option value="1" ${dim?'selected':''}>Nova variação (ex.: Cor)</option>`:''}</select></label>
       <label>Opções novas (separe por vírgula)<input value="${esc(n.opcoes)}" placeholder="ex.: Verde, Azul" oninput="window.__ljNovaCampo('opcoes',this.value)" onchange="window.__ljNovaCampo('opcoes',this.value,true)"></label></div>
-    ${dim?`<div class="lin"><label>Nome da variação nova<input value="${esc(n.dimNome||'Cor')}" onchange="window.__ljNovaCampo('dimNome',this.value,true)"></label><label>${esc(n.dimNome||'Cor')} dos anúncios de hoje<input value="${esc(n.dimAtual||'')}" placeholder="ex.: Preto" oninput="window.__ljNovaCampo('dimAtual',this.value)"></label></div>
+    ${dim?`<div class="lin"><label>Nome da variação nova<input value="${esc(n.dimNome||'Cor')}" onchange="window.__ljNovaCampo('dimNome',this.value,true)"></label><label>${esc(n.dimNome||'Cor')} do produto de hoje${n.dimAtual?' (veio do Mercado Livre)':''}<input value="${esc(n.dimAtual||'')}" placeholder="ex.: Preto" oninput="window.__ljNovaCampo('dimAtual',this.value)"></label></div>
       <small class="lj-sub">O anúncio passa a ter ${esc(n.dimNome||'Cor')} × ${esc(n.tiers[0].nome)}. Os ${esc(n.tiers[0].nome.toLowerCase())}s de hoje viram "${esc(n.dimAtual||'…')}" com o mesmo preço, estoque e SKU; cada opção nova entra em todos os ${esc(n.tiers[0].nome.toLowerCase())}s (${esc(n.tiers[0].opcoes.join(', '))}). A Shopee recria as variações: o produto sai das relâmpagos agendadas e volta pro desconto fixo.</small>`
       :`<small class="lj-sub">Hoje em ${esc(t.nome)}: ${esc(t.opcoes.join(', '))}</small>`}
     <div class="lin"><label>Receber por peça (R$)<input value="${String((n.liq||0).toFixed(2)).replace('.',',')}" inputmode="decimal" onchange="window.__ljNovaCampo('liq',lbValorBR(this.value)||0,true)"></label>
@@ -5401,9 +5402,9 @@ function ljNovaHtml(){const n=lj.aj.nova;
     <small class="lj-sub">${ops.length?`Cria ${ops.length*(dim?n.tiers[0].opcoes.length:n.tiers.length>1?n.tiers[1-n.tier].opcoes.length:1)} variação(ões) a ${p?fmtR(p.venda):'—'} no desconto (cheio ${p?fmtR(p.cheio):'—'}), ${n.est} un. cada. Preço diferente por variação: ajuste depois em "Valor por variação".`:'Digite a opção nova.'}</small>
     ${n.erro?`<div class="at" style="font-size:12px;margin:6px 0">${esc(n.erro)}</div>`:''}
     ${n.res?`<div class="lj-alerta ${n.res.ok?'':'ruim'}" style="margin-top:8px"><span class="lj-dot ${n.res.ok?'ok':'ruim'}"></span><span><b>${n.res.ok?'Criado na Shopee':'Não deu certo'}</b><small>${esc(n.res.msg)}</small></span></div>`:''}
-    <div class="lin" style="gap:14px">${mpIco('shopee',16)} Shopee
-      ${ljAjLinha()?.tt?`<label style="flex-direction:row;align-items:center;gap:6px;min-width:0;flex:none"><input type="checkbox" ${n.tt!==false?'checked':''} onchange="window.__ljNovaCampo('tt',this.checked)"> ${mpIco('tiktok',16)} TikTok também</label>`:''}
-      ${ljAjLinha()?.ml?`<label style="flex-direction:row;align-items:center;gap:6px;min-width:0;flex:none"><input type="checkbox" ${n.ml!==false?'checked':''} onchange="window.__ljNovaCampo('ml',this.checked)"> ${mpIco('ml',16)} Mercado Livre também</label>`:''}</div>
+    <div class="lj-nova-mps"><span class="on">${mpIco('shopee',15)} Shopee</span>
+      ${ljAjLinha()?.tt?`<label><input type="checkbox" ${n.tt!==false?'checked':''} onchange="window.__ljNovaCampo('tt',this.checked)">${mpIco('tiktok',15)} TikTok</label>`:''}
+      ${ljAjLinha()?.ml?`<label><input type="checkbox" ${n.ml!==false?'checked':''} onchange="window.__ljNovaCampo('ml',this.checked)">${mpIco('ml',15)} Mercado Livre</label>`:''}</div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-gold btn-sm" id="ljNovaBtn" onclick="window.__ljNovaCriar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Criar</button><button class="btn btn-ghost btn-sm" onclick="window.__ljNovaCampo('fechar',0,true)">Cancelar</button></div>
     <small class="lj-sub" style="display:block;margin-top:6px">TikTok: os SKUs novos passam pela análise da TikTok (a versão de hoje continua à venda). Mercado Livre: 1 anúncio novo por tamanho, na mesma família, validado antes de publicar.</small></div>`;}
 window.__ljNovaCampo=(k,v,render)=>{const n=lj.aj?.nova;if(!n)return;if(k==='fechar'){lj.aj.nova=null;ljRender();return;}n[k]=v;n.erro=null;if(render)ljRender();};
@@ -5415,6 +5416,10 @@ window.__ljNovaAbrir=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id)
       :(r?.response?.tier_variation||[]).map(t=>({nome:t.name,opcoes:(t.option_list||[]).map(o=>o.option),fotos:(t.option_list||[]).map(o=>o.image?.image_id)}));
     if(!std.length)throw new Error(r?.error?`${r.error} ${r.message||''}`:'Esse anúncio não tem variação.');
     if(!lj.aj?.nova)return;Object.assign(lj.aj.nova,{carregando:false,tiers:std.map((t,i)=>({nome:t.nome,opcoes:t.opcoes,comFoto:i===0&&t.fotos.length&&t.fotos.every(Boolean)}))});
+    // só 1 variação (ex.: Tamanho) → o caminho é criar a Cor; a cor de hoje vem do anúncio do ML (COLOR) — Lincoln 27/10: "é necessário digitar?"
+    if(std.length===1&&!/^cor|colou?r/i.test(std[0].nome)){lj.aj.nova.tier=1;lj.aj.nova.dimNome='Cor';const l=ljAjLinha();
+      try{if(l?.ml?.ids?.length){const token=await mlGarantirTokenValido(c);const it=(await dirMl('ler_api',{access_token:token,caminho:`/items/${l.ml.ids[0]}?include_attributes=all`},true))?.data;
+        const cor=(it?.attributes||[]).find(a=>a.id==='COLOR')?.value_name;if(cor&&lj.aj?.nova)lj.aj.nova.dimAtual=cor;}}catch(e){}}
   }catch(e){if(lj.aj)lj.aj.nova={erro:e.message};}ljRender();};
 window.__ljNovaFoto=async(o,f)=>{const n=lj.aj?.nova;const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!n||!f||!c)return;
   n.fotos[o]={subindo:true};(n.arquivos=n.arquivos||{})[o]=f;ljRender();const u=URL.createObjectURL(f);
@@ -5451,23 +5456,25 @@ async function ljNovaOutros(c,l,n,{atributo,atual,opcoes,p}){const out=[];const 
       for(const o of opcoes){let imgUri=null;const f=n.arquivos?.[o];if(f){const u=URL.createObjectURL(f);try{const up=await mig3Api(c,'produto_imagem',{base64:await migJpg(u),uso:'ATTRIBUTE_IMAGE'});if(up.ok)imgUri=up.uri;}finally{URL.revokeObjectURL(u);}}ops.push({nome:o,imgUri});}
       const r=await mig3Api(c,'produto_sku_novos',{id:l.tt.id,pedido:{atributo,atual,opcoes:ops,preco:pt.cheio,estoque:n.est},executar:1});
       if(!r.ok)throw new Error(r.erro||'erro');
-      let msg=`TikTok: ${r.resumo.novos.length} SKU(s) novo(s) enviados (passam pela análise)`;
+      if(r.nada){out.push({ok:true,msg:`TikTok: já tinha ${r.resumo.jaTinha.join(', ')} — nada a criar`});}else{
+      let msg=`TikTok: ${r.resumo.novos.length} SKU(s) novo(s) enviados (passam pela análise)${r.resumo.jaTinha?.length?` · já tinha ${r.resumo.jaTinha.join(', ')}`:''}`;
       if(c.tiktokDescontoFixoId){const d=await mig3Api(c,'precos',{id:c.tiktokDescontoFixoId,itens:[{id:l.tt.id,preco:pt.venda}]});msg+=d.ok?` · desconto ${fmtR(pt.venda)}`:` · desconto: ${d.erro} (tente "Pôr pendentes no desconto" depois da análise)`;}
-      out.push({ok:true,msg});}catch(e){out.push({ok:false,msg:'TikTok: '+e.message});}}
+      out.push({ok:true,msg});}}catch(e){out.push({ok:false,msg:'TikTok: '+e.message});}}
   if(l.ml&&n.ml!==false){try{
       if(!/^cor|colou?r|estampa/i.test(atributo))throw new Error(`variação nova de ${atributo} no ML ainda é à mão (por enquanto só cor nova)`);
-      const token=await mlGarantirTokenValido(c);const porTam=new Map();let cat=null;
+      const token=await mlGarantirTokenValido(c);const porTam=new Map();const coresMl=new Set();let cat=null;
       for(const id of l.ml.ids){const it=(await dirMl('ler_api',{access_token:token,caminho:`/items/${id}?include_attributes=all`},true))?.data;if(!it||it.status!=='active'&&it.status!=='paused')continue;cat=cat||it.category_id;
-        const tam=(it.attributes||[]).find(a=>a.id==='SIZE')?.value_name||'_';if(!porTam.has(tam))porTam.set(tam,id);}
+        const tam=(it.attributes||[]).find(a=>a.id==='SIZE')?.value_name||'_';if(!porTam.has(tam))porTam.set(tam,id);
+        const cr=(it.attributes||[]).find(a=>a.id==='COLOR')?.value_name;if(cr)coresMl.add(cr.trim().toLowerCase());}
       if(!porTam.size)throw new Error('não achei os anúncios da família');
       const pm=await dirMl('ml_preco',{access_token:token,categoria:cat,liquido:liq,peso:Number(l.sh?.peso)||0.5},true);if(!pm.ok)throw new Error(pm.erro);
-      const criados=[];
-      for(const o of opcoes){const f=n.arquivos?.[o];if(!f)throw new Error(`falta a foto de ${o}`);const u=URL.createObjectURL(f);let pic;
+      const criados=[];const jaMl=opcoes.filter(o=>coresMl.has(o.trim().toLowerCase()));
+      for(const o of opcoes.filter(x=>!jaMl.includes(x))){const f=n.arquivos?.[o];if(!f)throw new Error(`falta a foto de ${o}`);const u=URL.createObjectURL(f);let pic;
         try{const up=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:await migJpg(u)},true);if(!up.ok)throw new Error('foto: '+up.erro);pic=up.id;}finally{URL.revokeObjectURL(u);}
         const r=await dirMl('ml_variacao_familia',{access_token:token,base_ids:[...porTam.values()],cor:o,picture_ids:[pic],preco:pm.venda,estoque:n.est,executar:1},true);
         if(!r.ok)throw new Error(`${o}: ${r.erro||(r.itens||[]).filter(i=>!i.valido).map(i=>`${i.tam} ${i.erro}`).join('; ')||(r.criados||[]).filter(x=>!x.ok).map(x=>`${x.tam} ${x.erro}`).join('; ')}`);
         criados.push(...r.criados);}
-      out.push({ok:true,msg:`Mercado Livre: ${criados.length} anúncio(s) novo(s) a ${fmtR(pm.venda)}`});}catch(e){out.push({ok:false,msg:'Mercado Livre: '+e.message});}}
+      out.push({ok:true,msg:`Mercado Livre: ${criados.length} anúncio(s) novo(s)${criados.length?` a ${fmtR(pm.venda)}`:''}${jaMl.length?` · já tinha ${jaMl.join(', ')}`:''}`});}catch(e){out.push({ok:false,msg:'Mercado Livre: '+e.message});}}
   return out;}
 async function ljNovaCriarDim(c,l,n,pedido,p){const btn=document.getElementById('ljNovaBtn');if(btn){btn.disabled=true;btn.textContent='Conferindo…';}
   try{const token=await shopeeGarantirTokenValido(c,'erp');
