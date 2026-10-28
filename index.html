@@ -11767,7 +11767,7 @@ let crmLeads = [];
 let crmView = 'kanban';
 let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all'};
 // Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
-const CRM_VENDEDORES=[{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'isalbmarketplace@gmail.com',nome:'Isa'}];
+const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'isalbmarketplace@gmail.com',nome:'Isa'}];
 const CRM_COMISSAO=500;
 const crmEhVendedor=()=>CRM_VENDEDORES.some(v=>v.email===String(currentEmail||'').toLowerCase());
 // 26/10/2026 (Lincoln): a Isa (SDR) fala com TODOS os leads — vê e atualiza os de qualquer dono (não troca o dono)
