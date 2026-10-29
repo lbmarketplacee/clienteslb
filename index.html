@@ -11430,9 +11430,10 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
       const fora=tams.filter(t=>!PE[t]);if(fora.length)throw new Error(`tabela de calçado: não conheço o comprimento do pé da numeração ${fora.join(', ')}`);
       const nomeTab=`LB Calcados ${c.nome} ${tams.join(' ')}`.replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);
       const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},calcado:true,obrigatorias:['FOOT_LENGTH'],linhas:opTam.map(t=>({tam:nTam(t.tam),medidas:{FOOT_LENGTH:PE[nTam(t.tam)][0],FOOT_LENGTH_TO:PE[nTam(t.tam)][1]}}))}},true);
-      if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);throw new Error('tabela de calçado: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
+      if(!r.ok&&/not active/i.test(JSON.stringify([r.erro,r.resposta]))){console.log('[ML tabela] domínio sem tabela de calçado — seguindo sem',cat.domain_id);}
+      else if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);throw new Error('tabela de calçado: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
       // anúncio vai com a numeração BR da linha (dupla "33/34" → "33 BR"; o ML recusa "33/34 BR" no SIZE do anúncio)
-      gridId=r.id;for(const t of opTam){linhas[t.tam]=r.linhas?.[nTam(t.tam)+' BR']||r.linhas?.[nTam(t.tam)];tamNome[t.tam]=(nTam(t.tam).match(/\d+(?:\.\d+)?/)?.[0]||nTam(t.tam))+' BR';}
+      else{gridId=r.id;for(const t of opTam){linhas[t.tam]=r.linhas?.[nTam(t.tam)+' BR']||r.linhas?.[nTam(t.tam)];tamNome[t.tam]=(nTam(t.tam).match(/\d+(?:\.\d+)?/)?.[0]||nTam(t.tam))+' BR';}}
     }
     else{
       // cada domínio tem a sua ficha (vestido = CHEST_CIRCUMFERENCE; pijama = BUST_ + HIP_ obrigatórios — SS Tendência 07/10/2026).
@@ -11453,8 +11454,10 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
         if(nomesUsados.has(nomeTab.toLowerCase()))nomeTab=limpa(`LB ${cat.category_name} ${c.nome} ${opTam.map(t=>t.tam).join(' ')}`).slice(0,60);
         for(let k=2;nomesUsados.has(nomeTab.toLowerCase())&&k<20;k++)nomeTab=limpa(`${nomeTab.slice(0,56)} ${k}`);
       const r=await dirMl('ml_criar_tabela',{access_token:token,tabela:{nome:nomeTab,dominio:cat.domain_id,marca:c.nome,genero:{id:String(genVal?.id||'339665'),name:genVal?.name||'Feminino'},obrigatorias:obrigTab,linhas:ls.map(x=>({tam:x.tam,medidas:x.m.medidas,veste:opTam.find(o=>o.tam===x.tam)?.campos?.Veste||''}))}},true);
-      if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
-      gridId=r.id;linhas=r.linhas;
+      // categoria em que o ML NÃO usa tabela de medidas (meias MLB-SOCKS, Carol 29/10/2026: "Domain MLB-SOCKS not active") → segue sem tabela
+      if(!r.ok&&/not active/i.test(JSON.stringify([r.erro,r.resposta]))){console.log('[ML tabela] domínio sem tabela de medidas — seguindo sem',cat.domain_id);if(tamImplicito)tamImplicito=null;}
+      else{if(!r.ok){const cs=[].concat(r.resposta?.causes||r.resposta?.cause||r.resposta?.errors||[]).map(x=>x?.message||x?.code||(typeof x==='string'?x:JSON.stringify(x))).filter(Boolean);console.log('[ML tabela]',r);throw new Error('tabela de medidas: '+r.erro+(cs.length?' — '+cs.slice(0,3).join(' | '):''));}
+      gridId=r.id;linhas=r.linhas;}
     }
   }
   linhaMl('ML: calculando o preço com a comissão real...');
