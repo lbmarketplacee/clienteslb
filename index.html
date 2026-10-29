@@ -12138,7 +12138,8 @@ function crmIniciar(){
   crmCfgIniciar();
   // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
   // 21/10/2026: CRM separado por vendedor — Duda e Guilherme só recebem os leads deles (regra do banco garante); Lincoln/Carol veem tudo
-  const meu=String(currentEmail||'').toLowerCase();const fonte=(crmEhVendedor()&&!isLincoln()&&!crmVeTodos())?query(collection(db,"crmLeads"),where('donoEmail','==',meu)):collection(db,"crmLeads");
+  // 29/10/2026 (Lincoln): TODO MUNDO do comercial vê todos os leads (a Isa é dona de Novo/Em contato até agendar); a regra do banco não deixa trocar o dono
+  const fonte=collection(db,"crmLeads");
   crmUnsub = onSnapshot(fonte, snap=>{
     crmLeads = snap.docs.map(d=>({id:d.id,...d.data()}));
     // 21/10/2026: com a ficha aberta, qualquer mudança em QUALQUER lead (lead novo, robô da IA, aviso no celular)

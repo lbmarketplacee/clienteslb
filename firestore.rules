@@ -43,9 +43,11 @@ service cloud.firestore {
     // CRM separado por vendedor (21/10/2026): Lincoln e Carol veem tudo; cada vendedor só lê/edita os leads em que é o dono
     // e não troca o dono (quem troca é a diretoria). Robôs/webhooks usam a conta de serviço (não passam por aqui).
     match /crmLeads/{id} {
-      allow read: if diretoria() || sdrTodos() || (vendedor() && resource.data.donoEmail == eu());
-      allow create: if diretoria() || sdrTodos() || (vendedor() && request.resource.data.donoEmail == eu());
-      allow update: if diretoria() || (sdrTodos() && request.resource.data.donoEmail == resource.data.donoEmail) || (vendedor() && resource.data.donoEmail == eu() && request.resource.data.donoEmail == eu());
+      // 29/10/2026: todo o comercial e a equipe VEEM e atualizam todos os leads (a Isa é dona de Novo/Em contato; quem faz a reunião
+      // marca Compareceu) — só não trocam o dono (troca de dono = servidor ou diretoria)
+      allow read: if diretoria() || sdrTodos() || vendedor() || equipe();
+      allow create: if diretoria() || sdrTodos() || vendedor() || equipe();
+      allow update: if diretoria() || ((sdrTodos() || vendedor() || equipe()) && request.resource.data.donoEmail == resource.data.donoEmail);
       allow delete: if diretoria();
     }
     // Duda/Akemi (freela, fora da equipe): painel comercial e o histórico das ações dela no CRM
