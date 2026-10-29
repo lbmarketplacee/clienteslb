@@ -12818,12 +12818,12 @@ function crmConfigHtml(){
     </div>
     <div class="lead-form-actions"><button class="btn-cancel" onclick="window.__crmRbCancelar()">Cancelar</button><button class="btn-save" onclick="window.__crmRbSalvar()">Salvar robô</button></div></div>`:'';
   return `<div class="crm-cfg">
-  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Robôs do CRM</b><span>Rodam sozinhos de hora em hora. Cada robô age 1 vez por vez que o lead entra na etapa.</span></div>
+  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Robôs do CRM</b><span>Rodam sozinhos de hora em hora. Cada robô age 1 vez por vez que o lead entra na etapa. "Simular" mostra também o que os desligados fariam.</span></div>
     <div class="crm-cfg-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__crmRbSimular(false)">Simular agora</button><button class="btn btn-gold btn-sm" onclick="window.__crmRbSimular(true)">Rodar agora</button><button class="btn btn-gold btn-sm" onclick="window.__crmRbNovo()">+ Novo robô</button></div></div>
     ${form}
     ${robos.length?robos.map(r=>`<div class="crm-rb ${r.ativo===false?'off':''}"><label class="crm-rb-chave"><input type="checkbox" ${r.ativo!==false?'checked':''} onchange="window.__crmRbAtivo('${r.id}',this.checked)"><span></span></label><div class="crm-rb-txt"><b>${esc(r.nome||r.id)}</b><div>${crmRoboTxt(r)}</div></div><button class="btn btn-ghost btn-sm" onclick="window.__crmRbEditar('${r.id}')">Editar</button><button class="btn btn-ghost btn-sm" onclick="window.__crmRbApagar('${r.id}')">Apagar</button></div>`).join(''):'<div class="crm-cfg-vazio">Nenhum robô ainda. Comece pelas sugestões abaixo.</div>'}
     ${sug.length?`<div class="crm-cfg-sub">Sugestões (1 clique liga)</div>${sug.map(r=>`<div class="crm-rb sug"><div class="crm-rb-txt"><b>${esc(r.nome)}</b><div>${crmRoboTxt(r)}</div></div><button class="btn btn-gold btn-sm" onclick="window.__crmRbSugerido('${r.id}')">Ligar</button></div>`).join('')}`:''}
-    ${crmRoboSim?`<div class="crm-rb-sim"><b>${crmRoboSim.simulado?'Simulação':'Rodou agora'}: ${crmRoboSim.rodou||0} ação(ões)</b>${(crmRoboSim.feitos||[]).map(f=>`<div>• ${esc(f.lead||'')} — ${esc(f.regra)} (${esc(CRM_ACAO_ROT[f.acao]||f.acao)})</div>`).join('')||'<div>Nada pra fazer agora.</div>'}</div>`:''}
+    ${crmRoboSim?`<div class="crm-rb-sim"><b>${crmRoboSim.simulado?'Simulação':'Rodou agora'}: ${crmRoboSim.rodou||0} ação(ões)</b>${(crmRoboSim.feitos||[]).map(f=>`<div>• ${esc(f.lead||'')} — ${esc(f.regra)} (${esc(CRM_ACAO_ROT[f.acao]||f.acao)})${f.ligado===false?' <em style="color:var(--text-dim)">· robô desligado, não faz</em>':''}</div>`).join('')||'<div>Nada pra fazer agora.</div>'}</div>`:''}
   </section>
   <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Meta de contratos por vendedor (mês)</b><span>Aparece no painel de cada um.</span></div></div>
     <div class="crm-cfg-metas">${vend.map(v=>`<label>${esc(v.nome)}<input type="number" min="0" id="meta-${btoa(v.email).replace(/=/g,'')}" value="${crmMetaDe(v.email)}"></label>`).join('')}<button class="btn btn-gold btn-sm" onclick="window.__crmMetasSalvar()">Salvar metas</button></div>
@@ -12878,7 +12878,8 @@ window.__crmCamposSalvar=()=>{const linhas=(document.getElementById('crmCamposTx
   crmCfgSalvar({campos},'✓ Campos salvos.');};
 window.__crmJuntar=async tel=>{const g=crmLeads.filter(l=>crmTel(l.whatsapp)===tel);if(g.length<2)return;
   const ms=l=>crmMs(l.criadoEm)||Date.parse((l.createdDate||'2100-01-01')+'T12:00:00');const ord=[...g].sort((a,b)=>ms(a)-ms(b));const fica=ord[0],sai=ord.slice(1);
-  const melhor=[...g].sort((a,b)=>crmEtapaMax(b)-crmEtapaMax(a))[0];
+  // etapa que fica: a mais avançada entre os ABERTOS (perdido/fechado só se todos estiverem assim)
+  const abertos=g.filter(l=>CRM_ATIVAS.includes(l.stage||'novo'));const melhor=(abertos.length?[...abertos].sort((a,b)=>CRM_ORDEM.indexOf(b.stage||'novo')-CRM_ORDEM.indexOf(a.stage||'novo')):[...g].sort((a,b)=>crmEtapaMax(b)-crmEtapaMax(a)))[0];
   if(!await lbConfirmar(`Juntar ${g.length} leads de ${fica.nome}?\nFica o mais antigo (${fica.createdDate||'—'}) na etapa ${crmStageInfo(melhor.stage).label}. Os outros ${sai.length} são apagados.`,{okTxt:'Juntar'}))return;
   const atividades=g.flatMap(l=>l.atividades||[]).sort((a,b)=>(Number(a.quando)||0)-(Number(b.quando)||0));
   const up={atividades,notas:g.map(l=>l.notas).filter(Boolean).join('\n---\n').slice(0,8000),etiquetas:[...new Set(g.flatMap(l=>l.etiquetas||[]))],reunioes:g.flatMap(l=>l.reunioes||[]),
