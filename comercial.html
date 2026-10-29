@@ -215,6 +215,19 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
   .tb td,.tb th{padding:8px 6px}
   input,select,textarea{font-size:16px!important}
   .topo .sub{display:none}
+  .btn{padding:10px 13px;font-size:14px;border-radius:11px}.btn.sm{padding:9px 12px;font-size:13.5px;border-radius:10px;min-height:40px}
+  .item{padding:14px}.item .ac .btn{flex:1;justify-content:center}
+  .item .inf b{font-size:15px}.item .inf em{white-space:normal}
+  .c-cab{flex-wrap:wrap;gap:6px;padding:8px 10px}.c-cab .inf{flex:1 1 60%}.c-cab .btn.sm{min-height:34px;padding:6px 9px;font-size:12.5px}
+  .c-env{padding:8px 10px calc(8px + env(safe-area-inset-bottom))}.c-env .chips .btn.sm{flex:1;justify-content:center}
+  .ci{padding:13px 12px}.ci .l1 b{font-size:14.5px}
+  .drawer{width:100%;padding:14px 14px 90px}
+  .ov{align-items:flex-end;padding:0}.modal{border-radius:18px 18px 0 0;max-height:90vh;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .etapas button{padding:9px 12px;font-size:13px}
+  .livres button,.livres .ocup{padding:10px 13px;font-size:14px}
+  .kc{padding:13px}.kc b{font-size:15px}
+  .painel{padding:14px}
+  .tabw{margin:0 -4px}
 }
 </style>
 </head>
@@ -251,13 +264,14 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, collection, doc, onSnapshot, updateDoc, addDoc, getDoc, getDocs, setDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import * as M from './comercial/metricas.js?v=2';
+import * as M from './comercial/metricas.js?v=3';
 
 const firebaseConfig = { apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", storageBucket: "lb-gestao-clientes.firebasestorage.app", messagingSenderId: "344033285587", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" };
 const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
 const WA_API = 'https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook';
 const META_API = 'https://lb-shopee-gmv.vercel.app/api/meta-ads';
 const PUSH_API = 'https://lb-shopee-gmv.vercel.app/api/push';
+const DIRETOR_API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
 const CAL_WEB = 'https://script.google.com/macros/s/AKfycbxXxKzT9U0EeD6zuTB-n2m-tinl5HhmhgC6DwItLvv2uhzdSCX8ufjpmQRuY-hWJuiLmw/exec';
 
 // ---------- quem é quem (29/10/2026, Lincoln) ----------
@@ -451,6 +465,7 @@ function rDash() {
     <div class="card painel"><h3>Funil da safra</h3><div class="ds">De cada lead que chegou no período, até onde foi. Vermelho = abaixo da meta.</div><div class="funil">${funilHtml}</div></div>
     <div class="card painel"><h3>Onde está o gargalo</h3><div class="ds">Leitura automática dos números contra as metas.</div><div class="diag">${diag.map((d) => `<div class="${d.nivel}">${d.gargalo ? '<b>Maior gargalo · </b>' : ''}${esc(d.texto)}${d.quem ? `<small>Responsável: ${esc(d.quem)}</small>` : ''}</div>`).join('')}</div></div>
   </div>
+  <div class="card painel" style="margin-top:14px;border-color:#ddd6fe;background:linear-gradient(180deg,#faf7ff,#fff)" id="iaBox">${iaHtml(p)}</div>
   <div class="sec">O que aconteceu no período</div>
   <div class="grid g7">
     ${kpi('c-az', 'tel', 'Contatos feitos', N(mv.contatos), 'ligações e WhatsApp')}
@@ -480,6 +495,43 @@ function rDash() {
     <div class="card painel"><h3>Mapa de calor</h3><div class="ds">Quando os leads chegam (dia × hora) — onde a SDR precisa estar online.</div>${mapaCalorHtml(M.mapaCalor(L, p))}</div>
   </div>`;
   $('#btnMetas').onclick = abrirMetas;
+  const bi = $('#iaGerar'); if (bi) bi.onclick = () => analisarIA(p);
+}
+// ---------- análise da IA (Claude) ----------
+function iaHtml(p) {
+  const chave = p.de + '|' + p.ate; const a = S.ia?.[chave];
+  const cab = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">✨ Análise da IA</h3><span style="color:var(--dim);font-size:12.5px">lê os números do período e as reuniões gravadas</span><button class="btn sm pri" id="iaGerar" style="margin-left:auto" ${S.iaCarregando ? 'disabled' : ''}>${S.iaCarregando ? 'Analisando…' : a ? 'Analisar de novo' : 'Analisar agora'}</button></div>`;
+  if (!a) return cab + `<div class="ds" style="margin:8px 0 0">${S.iaErro ? 'Não deu: ' + esc(S.iaErro) : 'Clique pra IA dizer onde está travando, o que cada pessoa precisa melhorar e as 3 ações da semana.'}</div>`;
+  const li = (arr) => arr.map((x) => `<li style="margin:4px 0">${esc(x)}</li>`).join('');
+  return cab + `<p style="font-size:14.5px;line-height:1.55;margin:12px 0">${esc(a.resumo)}</p>
+  ${a.gargalo?.etapa ? `<div class="diag"><div class="alto"><b>Gargalo: ${esc(a.gargalo.etapa)}.</b> ${esc(a.gargalo.explicacao)}</div></div>` : ''}
+  <div class="grid g3" style="margin-top:12px">
+    <div><b style="font-size:13px">Ações da semana</b><ol style="padding-left:18px;font-size:13.5px;line-height:1.45">${li(a.acoes)}</ol></div>
+    <div><b style="font-size:13px">Por pessoa</b>${a.pessoas.map((x) => `<div style="font-size:13px;margin:8px 0;line-height:1.45"><b>${esc(x.nome)}:</b> ${esc(x.diagnostico)} <span style="color:var(--roxo)">→ ${esc(x.acao)}</span></div>`).join('') || '<div class="ds">—</div>'}</div>
+    <div><b style="font-size:13px">Indo bem</b><ul style="padding-left:18px;font-size:13.5px;line-height:1.45">${li(a.bom)}</ul>${a.alertas.length ? `<b style="font-size:13px;color:var(--verm)">Atenção</b><ul style="padding-left:18px;font-size:13.5px;line-height:1.45">${li(a.alertas)}</ul>` : ''}</div>
+  </div><div style="color:var(--mut);font-size:11.5px;margin-top:6px">Gerada ${new Date(a.em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · ${esc(p.rot)}</div>`;
+}
+async function analisarIA(p) {
+  const L = vendas(), f = M.funil(L, p), ps = M.passos(f, S.metas);
+  const reunioes = [];
+  for (const l of L) for (const r of l.reunioes || []) { if (!M.dentro(M.diaBR(r.em), p.de, p.ate)) continue; const an = r.analise || {}; reunioes.push({ vendedor: r.vendedor || '', lead: l.nome, resultado: an.resultado || '', nota: an.nota ?? null, temperatura: an.temperatura || '', melhorar: (an.melhorar || []).slice(0, 3), objecoes: (an.objecoes || []).slice(0, 3).map((o) => (typeof o === 'string' ? o : o.objecao || o.texto || '')) }); }
+  const dados = {
+    periodo: p, metas: S.metas,
+    funil: { leads: f.leads, contatados: f.contatados, agendados: f.agendados, aindaVaoTerReuniao: f.aguardando, compareceram: f.compareceram, naoVieram: f.faltaram, qualificados: f.qualificados, fechados: f.fechados, perdidos: f.perdidos, taxas: f.taxas },
+    passos: ps.map((x) => ({ passo: x.rot, taxa: x.taxa, meta: x.meta, ficaram: x.perdidos, gargalo: !!x.gargalo, responsavel: x.quem })),
+    primeiroContato: M.tempoResposta(L, { ...p, limiteMin: S.metas.respostaMin }),
+    movimento: M.movimento(L, p),
+    whatsapp: (({ porPessoa, ...r }) => r)(M.conversasStats(S.convs.filter((c) => !ehCliente(c)), p)),
+    equipe: M.porPessoa(L, TIME, p).map((x) => ({ nome: x.nome, papel: x.papel, leads: x.leads, contatosFeitos: x.contatos, reunioesMarcadas: x.marcou, reunioes: x.reunioes, comparecimento: x.showRate, fechados: x.fechados, abertos: x.abertos, atrasados: x.atrasados, parados7d: x.parados, primeiroContatoMin: x.resposta.medianaMin })),
+    origens: M.porOrigem(L, p, nomesCampanhas()).slice(0, 10),
+    motivosPerda: M.motivosPerda(L, p).slice(0, 8),
+    meta: S.meta?.total ? { investido: S.meta.total.gasto, leadsMeta: S.meta.total.leadsMeta, custoLead: S.meta.total.custoLeadMeta } : null,
+    reunioesGravadas: reunioes.slice(-25),
+  };
+  S.iaCarregando = true; S.iaErro = null; render();
+  try { const r = await api(DIRETOR_API, { acao: 'comercial_analise', dados }); if (!r.ok) throw new Error(r.erro || 'sem resposta'); S.ia = { ...(S.ia || {}), [p.de + '|' + p.ate]: { ...r.analise, em: Date.now() } }; }
+  catch (e) { S.iaErro = e.message; }
+  S.iaCarregando = false; render();
 }
 function passoHtml(p) {
   if (p.taxa == null) return `<div class="passo">${esc(p.rot)}: sem base</div>`;
@@ -544,6 +596,8 @@ function rDia() {
     ${S.papel === 'sdr' ? kpi('c-ro', 'check', 'Marquei hoje', N(marcadasHoje), `${N(contatos)} contatos feitos hoje`) : kpi('c-ou', 'trofeu', 'Fechados no mês', N(fechMes), `${N(contatos)} contatos meus hoje`)}
   </div>
   ${S.agenda && reunHoje.length ? `<div class="card" style="margin-top:14px"><div class="bloco-cab"><b>Reuniões de hoje</b><span class="n">${reunHoje.length}</span></div>${reunHoje.map(eventoHtml).join('')}</div>` : ''}
+  ${(() => { const prox = meus.filter((l) => l.stage === 'agendado' && M.ms(l.reuniaoMarcada?.inicio) > Date.now() && M.ms(l.reuniaoMarcada.inicio) < Date.now() + 30 * 3600000).sort((a, b) => M.ms(a.reuniaoMarcada.inicio) - M.ms(b.reuniaoMarcada.inicio));
+    return prox.length ? bloco('Próximas reuniões — confirmação', 'o robô manda lembrete na véspera e 1h antes', prox, (l) => { const c = convDoLead(l); const r = l.reuniaoMarcada; const tel = String(l.whatsapp || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, ''); return `<div class="item"><div class="av" style="background:var(--azul2);color:var(--azul)">${hora(r.inicio)}</div><div class="inf"><b data-ficha="${l.id}">${esc(l.nome)}</b><em>${M.diaBR(r.inicio) === h ? 'hoje' : 'amanhã'} às ${hora(r.inicio)} · com ${esc(r.comNome || '—')}</em><div>${confirmacaoTag(l)}</div></div><div class="ac">${tel ? `<a class="btn sm" href="tel:+55${tel}">Ligar</a>` : ''}${c ? `<button class="btn sm zap" data-conv="${c.id}">WhatsApp</button>` : ''}</div></div>`; }, '') : ''; })()}
   ${bloco('Leads novos — chamar agora', `meta: 1º contato em até ${S.metas.respostaMin} min`, f.novos, (l) => linhaLead(l, `<span class="tag ${Date.now() - M.criadoMs(l) < 30 * 60000 ? 've' : 'vm'}">chegou ${quando(M.criadoMs(l))}</span>`), 'Nenhum lead novo esperando. 👏')}
   ${bloco('WhatsApp esperando resposta', 'quem escreveu e ninguém respondeu', esp, (c) => { const l = leadDaConv(c); const u = [...(c.mensagens || [])].reverse().find((m) => m.de === 'lead'); return `<div class="item"><div class="av" style="background:#dcfce7;color:#166534">${esc(iniciais(c.nome || c.telefone))}</div><div class="inf"><b data-conv="${c.id}">${esc(c.nome || l?.nome || c.telefone || c.id)}</b><em>"${esc(String(u?.texto || '[' + (u?.tipo || 'mídia') + ']').slice(0, 120))}" · ${quando(u?.em)}</em></div><div class="ac"><button class="btn sm zap" data-conv="${c.id}">Responder</button></div></div>`; }, 'Nenhuma conversa esperando.')}
   ${bloco('Retornos de hoje e atrasados', 'cadência e próximos contatos marcados', f.retornos, (l) => linhaLead(l, `<span class="tag ${l.proximoContato < h ? 'vm' : 'la'}">${l.proximoContato < h ? 'atrasado desde ' + brData(l.proximoContato) : 'hoje'}${l.cadencia && l.cadencia !== 'fim' ? ' · ' + esc(l.cadencia) : ''}</span>`), 'Nada atrasado.')}
@@ -688,7 +742,7 @@ function cartao(l) {
   const h = hoje(); const at = l.proximoContato && M.ATIVAS.includes(l.stage || 'novo') ? (l.proximoContato < h ? `<span class="tag vm">atrasado ${brData(l.proximoContato)}</span>` : l.proximoContato === h ? '<span class="tag la">hoje</span>' : `<span class="tag">${brData(l.proximoContato)}</span>`) : '';
   const r = l.reuniaoMarcada?.inicio && M.ms(l.reuniaoMarcada.inicio) > Date.now() - 3 * 3600000 ? `<span class="tag az">reunião ${brData(M.diaBR(l.reuniaoMarcada.inicio))} ${hora(l.reuniaoMarcada.inicio)}</span>` : '';
   const temp = l.ia?.temperatura ? `<span class="tag ${/quente/i.test(l.ia.temperatura) ? 'vm' : /morno/i.test(l.ia.temperatura) ? 'la' : ''}">${esc(l.ia.temperatura)}</span>` : '';
-  return `<div class="kc" draggable="true" data-ficha="${l.id}" data-drag="${l.id}"><b>${esc(l.nome || 'Lead')}</b><em>${esc(l.origem || '—')} · entrou ${quando(M.criadoMs(l))}</em><div class="rod">${r}${at}${temp}${l.perfil ? `<span class="tag ou">${esc(String(l.perfil).replace('_', ' '))}</span>` : ''}<span class="dono">${esc(l.donoNome || '')}</span></div></div>`;
+  return `<div class="kc" draggable="true" data-ficha="${l.id}" data-drag="${l.id}"><b>${esc(l.nome || 'Lead')}</b><em>${esc(l.origem || '—')} · entrou ${quando(M.criadoMs(l))}</em><div class="rod">${r}${r ? confirmacaoTag(l) : ''}${at}${temp}${l.perfil ? `<span class="tag ou">${esc(String(l.perfil).replace('_', ' '))}</span>` : ''}<span class="dono">${esc(l.donoNome || '')}</span></div></div>`;
 }
 function rFunil() {
   const el = $('#pg-funil'); if (!S.prontoLeads) { el.innerHTML = '<div class="carreg">Lendo o CRM…</div>'; return; }
@@ -768,7 +822,7 @@ function fichaHtml(l) {
   const rotAt = { criado: 'Lead criado', etapa: 'Mudou de etapa', nota: 'Nota', nao_atendeu: 'Ligou — não atendeu', whatsapp: 'WhatsApp enviado', respondeu: 'Respondeu', depois: 'Pediu pra chamar depois', sem_interesse: 'Sem interesse', importado: 'Importado' };
   return `<div class="fx"><p class="nome">${esc(l.nome || 'Lead')}</p><div class="lin" style="margin:6px 0 10px"><span class="tag" style="background:${etapaCor(st)}22;color:${etapaCor(st)}">${esc(etapaRot(st))}</span>${l.perfil ? `<span class="tag ou">${esc(String(l.perfil).replace('_', ' '))}</span>` : ''}${l.qualificado === true ? '<span class="tag ve">qualificado</span>' : l.qualificado === false ? '<span class="tag vm">não qualificado</span>' : ''}${l.ia?.temperatura ? `<span class="tag vm">${esc(l.ia.temperatura)}</span>` : ''}</div>
   <div class="lin">${tel ? `<a class="btn sm" href="tel:+55${tel}">Ligar</a>` : ''}${c ? `<button class="btn sm zap" data-conv="${c.id}">Abrir conversa</button>` : tel ? `<a class="btn sm zap" target="_blank" href="https://wa.me/55${tel}">WhatsApp</a>` : ''}<button class="btn sm ouro" data-marcar="${l.id}">${futura ? 'Remarcar' : 'Marcar reunião'}</button></div>
-  ${futura ? `<h4>Reunião</h4><div class="reuniao"><b>${new Date(r.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}</b>com ${esc(r.comNome || r.com || '')} · marcada por ${esc(r.por || '')}${r.meet ? `<div style="margin-top:6px"><a href="${esc(r.meet)}" target="_blank">Link do Meet</a></div>` : ''}<div class="lin" style="margin-top:8px"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button><button class="btn sm" data-acao="desmarcar">Desmarcar</button></div></div>` : ''}
+  ${futura ? `<h4>Reunião</h4><div class="reuniao"><b>${new Date(r.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}</b>com ${esc(r.comNome || r.com || '')} · marcada por ${esc(r.por || '')} <div style="margin-top:6px">${confirmacaoTag(l)}</div>${r.meet ? `<div style="margin-top:6px"><a href="${esc(r.meet)}" target="_blank">Link do Meet</a></div>` : ''}<div class="lin" style="margin-top:8px"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button><button class="btn sm" data-acao="desmarcar">Desmarcar</button></div></div>` : ''}
   ${!futura && r && ['agendado'].includes(st) ? `<h4>Reunião (${brData(M.diaBR(r.inicio))} ${hora(r.inicio)} com ${esc(r.comNome || '')})</h4><div class="lin"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button></div>` : ''}
   ${st === 'compareceu' || (st === 'negociacao' && l.qualificado == null) ? `<h4>Na reunião, o lead é qualificado?</h4><div class="lin"><button class="btn sm ve" data-acao="qualificado">Sim, tem perfil</button><button class="btn sm vm" data-acao="naoqualificado">Não tem perfil</button></div>` : ''}
   <h4>Etapa</h4><div class="etapas">${M.ETAPAS.map((e) => `<button data-etapa="${e.key}" class="${st === e.key ? 'on' : ''}" style="${st === e.key ? `background:${e.cor}` : ''}">${e.label}</button>`).join('')}</div>
@@ -813,7 +867,35 @@ async function carregarAgenda(forcar) {
   const de = hoje(), ate = M.somaDias(de, 13);
   try { const d = await calWeb('eventos', { de: calIso(de, '00:00'), ate: calIso(ate, '23:59') }); S.agenda = { eventos: (d.eventos || []).filter((e) => e.status !== 'cancelled' && e.start?.dateTime), em: Date.now() }; S.agendaErro = null; }
   catch (e) { S.agendaErro = e.message; }
-  S.agendaCarregando = false; render();
+  S.agendaCarregando = false; render(); sincronizarAgenda();
+}
+// reunião marcada direto pela página de agendamento do Google (link do Typebot) → grava no lead, pro robô mandar os lembretes
+let sincronizando = false;
+async function sincronizarAgenda() {
+  if (sincronizando || !S.agenda || !S.prontoLeads) return; sincronizando = true;
+  try {
+    for (const e of S.agenda.eventos) {
+      const ini = M.ms(e.start?.dateTime); if (ini < Date.now()) continue;
+      const l = leadDoEvento(e); if (!l || !['novo', 'contato', 'agendado'].includes(l.stage || 'novo')) continue;
+      const r = l.reuniaoMarcada; if (r?.eventoId === e.id && M.ms(r.inicio) === ini) continue;
+      if (r?.inicio && M.ms(r.inicio) > Date.now() && r.eventoId !== e.id) continue; // já tem outra reunião futura marcada pelo sistema
+      const cl = closersDoEvento(e); const com = cl.find((x) => x !== 'lincoln@lbmarketplace.com.br') || cl[0] || 'lincoln@lbmarketplace.com.br';
+      const p = ['novo', 'contato'].includes(l.stage || 'novo') ? mudancaEtapa(l, 'agendado') : { atividades: [...(l.atividades || [])] };
+      p.atividades.push({ tipo: 'nota', quando: Date.now(), por: 'Agenda', nota: `Reunião na agenda: ${new Date(ini).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` });
+      p.reuniaoMarcada = { inicio: new Date(ini).toISOString(), fim: e.end?.dateTime ? new Date(e.end.dateTime).toISOString() : new Date(ini + 30 * 60000).toISOString(), eventoId: e.id, meet: e.hangoutLink || '', com, comNome: CLOSERS.find((c) => c[0] === com)?.[1] || '', por: 'Agenda Google', em: r?.em || Date.now(), origem: 'agenda' };
+      if (!l.primeiraRespostaEm) p.primeiraRespostaEm = Date.now();
+      await updateDoc(doc(db, 'crmLeads', l.id), p).catch(() => { });
+    }
+  } finally { sincronizando = false; }
+}
+function confirmacaoTag(l) {
+  const r = l?.reuniaoMarcada; if (!r?.inicio || M.ms(r.inicio) < Date.now() - 3 * 3600000) return '';
+  if (r.confirmacao === 'confirmou') return '<span class="tag ve">confirmou</span>';
+  if (r.confirmacao === 'remarcar') return '<span class="tag vm">pediu pra remarcar</span>';
+  if (r.confirmacao === 'respondeu') return '<span class="tag la">respondeu o lembrete</span>';
+  if (r.lembreteErro) return `<span class="tag vm" title="${esc(r.lembreteErro)}">lembrete não foi</span>`;
+  if (r.lembreteDiaEm || r.lembrete1hEm) return '<span class="tag la">lembrete enviado · sem resposta</span>';
+  return '<span class="tag">lembrete ainda não saiu</span>';
 }
 function closersDoEvento(e) { const at = (e.attendees || []).map((a) => low(a.email)); return CLOSERS.filter(([em]) => at.includes(em)).map(([em]) => em); }
 function meuEvento(e) { if (!vendedor()) return true; return closersDoEvento(e).includes(S.email); }
@@ -826,7 +908,7 @@ function leadDoEvento(e) {
 function eventoHtml(e) {
   const l = leadDoEvento(e); const cl = closersDoEvento(e).map((em) => CLOSERS.find((c) => c[0] === em)?.[1]).filter(Boolean);
   const passou = M.ms(e.end?.dateTime) < Date.now(); const conv = l && convDoLead(l);
-  return `<div class="ev"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b><em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
+  return `<div class="ev"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b><em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) + ' ' + confirmacaoTag(l) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
 }
 function livresDoDia(dia, email, eventos, dur = 30) {
   const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === 'lincoln@lbmarketplace.com.br'; }).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
