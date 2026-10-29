@@ -57,7 +57,7 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
 .kpi{padding:16px 16px 14px;display:flex;gap:12px;align-items:flex-start}
 .kpi .ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .kpi .ic svg{width:20px;height:20px}
-.kpi span{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
+.g7 .kpi .ic{display:none}.g7 .kpi{padding:14px}.kpi>div:last-child{min-width:0}.kpi span{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
 .kpi b{display:block;font-size:26px;font-weight:800;line-height:1.15;margin:2px 0}
 .kpi em{display:block;font-style:normal;font-size:12px;color:var(--dim)}
 .kpi em.bom{color:var(--verde)}.kpi em.ruim{color:var(--verm)}
@@ -89,9 +89,9 @@ input:focus,select:focus,textarea:focus{border-color:#a5b4fc;box-shadow:0 0 0 3p
 .f-lin .rot{font-weight:600;font-size:13px}.f-lin .rot em{display:block;font-style:normal;color:var(--dim);font-weight:500;font-size:11.5px}
 .f-bar{height:34px;background:#f3f4f6;border-radius:9px;overflow:hidden;position:relative}
 .f-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;transition:width .6s}
-.f-bar span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.f-bar span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;font-size:12.5px;color:#374151}
 .f-lin .n{text-align:right;font-weight:800;font-size:16px}
-.passo{display:flex;align-items:center;gap:10px;margin:-2px 0 -2px 162px;font-size:12px;color:var(--dim)}
+.passo{display:block;margin:-2px 0 2px 162px;font-size:12px;color:var(--dim);line-height:1.5}
 .passo b{color:var(--txt)}.passo .gap{color:var(--verm);font-weight:700}.passo .okk{color:var(--verde);font-weight:700}
 .passo .garg{background:var(--verm);color:#fff;border-radius:6px;padding:1px 7px;font-weight:700;font-size:11px}
 .diag{display:flex;flex-direction:column;gap:8px}
@@ -250,7 +250,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, collection, doc, onSnapshot, updateDoc, addDoc, getDoc, getDocs, setDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import * as M from './comercial/metricas.js?v=1';
+import * as M from './comercial/metricas.js?v=2';
 
 const firebaseConfig = { apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", storageBucket: "lb-gestao-clientes.firebasestorage.app", messagingSenderId: "344033285587", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" };
 const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
@@ -441,7 +441,7 @@ function rDash() {
     ${kpi('c-ou', 'users', 'Leads', N(f.leads), ...v(f.leads, fa.leads))}
     ${kpi('c-az', 'tel', 'Contatados', P(f.taxas.contato), `${N(f.contatados)} chamados`)}
     ${kpi('c-ro', 'agenda', 'Agendamento', P(f.taxas.agendamento), `${N(f.agendados)} agendaram`)}
-    ${kpi('c-ve', 'check', 'Comparecimento', P(f.taxas.comparecimento), `no-show ${P(f.taxas.noShow)}`)}
+    ${kpi('c-ve', 'check', 'Comparecimento', P(f.taxas.comparecimento), `${N(f.compareceram)} vieram${f.aguardando ? ` · ${N(f.aguardando)} ainda vão ter reunião` : ''}`)}
     ${kpi('c-la', 'alvo', 'Qualificação', P(f.taxas.qualificacao), `${N(f.qualificados)} com perfil`)}
     ${kpi('c-ve', 'trofeu', 'Fechamento', P(f.taxas.fechamento), `${N(f.fechados)} contratos`)}
     ${kpi('c-ou', 'grafico', 'Conversão total', P(f.taxas.total), ...v(f.taxas.total, fa.taxas.total))}

@@ -48,7 +48,7 @@ const pct = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
 export const dentro = (dia, de, ate) => !!dia && (!de || dia >= de) && (!ate || dia <= ate);
 
 // funil por safra: leads que ENTRARAM no período e até onde chegaram
-export function funil(leads, { de, ate } = {}) {
+export function funil(leads, { de, ate, agora = Date.now() } = {}) {
   const base = (leads || []).filter((l) => dentro(criadoDia(l), de, ate));
   const n = {
     leads: base.length,
@@ -59,12 +59,13 @@ export function funil(leads, { de, ate } = {}) {
     fechados: base.filter(fechou).length,
     perdidos: base.filter(perdeu).length,
     faltaram: base.filter((l) => faltou(l) && !compareceu(l)).length,
+    aguardando: base.filter((l) => aguardandoReuniao(l, agora)).length,
     abertos: base.filter((l) => ATIVAS.includes(l.stage || 'novo')).length,
   };
   const taxas = {
     contato: pct(n.contatados, n.leads),
     agendamento: pct(n.agendados, n.contatados),
-    comparecimento: pct(n.compareceram, n.agendados),
+    comparecimento: pct(n.compareceram, n.agendados - n.aguardando), // só conta reunião que já devia ter acontecido
     qualificacao: pct(n.qualificados, n.compareceram),
     fechamento: pct(n.fechados, n.qualificados),
     total: pct(n.fechados, n.leads),
@@ -73,12 +74,19 @@ export function funil(leads, { de, ate } = {}) {
   return { ...n, taxas, base };
 }
 
+// agendado com reunião ainda por vir (não entra na taxa de comparecimento)
+export function aguardandoReuniao(l, agora = Date.now()) {
+  if ((l?.stage || 'novo') !== 'agendado') return false;
+  const ini = ms(l?.reuniaoMarcada?.inicio);
+  if (ini) return ini > agora - 2 * 3600000;
+  return !!l?.agendadoEm && l.agendadoEm >= diaBR(agora - 3 * 86400000); // marcou pelo link da agenda nos últimos 3 dias
+}
 // passos do funil com a queda de cada um (o maior buraco = gargalo)
 export function passos(f, metas = METAS_PADRAO) {
   const lista = [
     { k: 'contato', rot: 'Chegou → contato', de: f.leads, para: f.contatados, taxa: f.taxas.contato, meta: metas.contato, quem: 'SDR' },
     { k: 'agendamento', rot: 'Contato → agendou', de: f.contatados, para: f.agendados, taxa: f.taxas.agendamento, meta: metas.agendamento, quem: 'SDR' },
-    { k: 'comparecimento', rot: 'Agendou → compareceu', de: f.agendados, para: f.compareceram, taxa: f.taxas.comparecimento, meta: metas.comparecimento, quem: 'SDR (confirmação)' },
+    { k: 'comparecimento', rot: 'Agendou → compareceu', de: f.agendados - (f.aguardando || 0), para: f.compareceram, taxa: f.taxas.comparecimento, meta: metas.comparecimento, quem: 'SDR (confirmação)' },
     { k: 'qualificacao', rot: 'Compareceu → qualificado', de: f.compareceram, para: f.qualificados, taxa: f.taxas.qualificacao, meta: metas.qualificacao, quem: 'Marketing / SDR (perfil do lead)' },
     { k: 'fechamento', rot: 'Qualificado → fechou', de: f.qualificados, para: f.fechados, taxa: f.taxas.fechamento, meta: metas.fechamento, quem: 'Vendedor' },
   ];
