@@ -1329,6 +1329,8 @@ textarea{resize:vertical;min-height:70px;}
 body.modo-portal .nav-item:not([data-page="marketing"]){display:none!important}
 body.modo-comercial .nav-item:not([data-page="centralcom"]),body.modo-comercial .nav-grupo-cab,body.modo-comercial #notifBtn,body.modo-comercial .topbar-actions{display:none!important}
 body.modo-comercial .nav-grupo-itens{display:flex!important;flex-direction:column}
+/* 29/10/2026 (Lincoln): Conversas WhatsApp e Comercial & Marketing moram na Central Comercial (/comercial.html) */
+.nav-item[data-page="whatsapp"],.nav-item[data-page="comercial"]{display:none!important}
 body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
 body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):not([data-mlsub="qualidade"]){display:none!important}
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
@@ -12991,7 +12993,7 @@ window.__crmDesmarcar=async id=>{const lead=crmLeads.find(l=>l.id===id);const r=
     await updateDoc(doc(db,'crmLeads',id),{reuniaoMarcada:deleteField(),atividades:[...(lead.atividades||[]),{tipo:'nota',quando:Date.now(),por:currentUser||'',nota:'Reunião desmarcada.'}],atualizadoEm:crmHojeISO()});calCarregarHoje(true);showToast('Reunião desmarcada.');}
   catch(e){lbAvisar('Não desmarcou: '+e.message);}};
 // link direto pra ficha (?lead=ID, vem na descrição do evento)
-window.__abrirLeadUrl=()=>{const id=new URLSearchParams(location.search).get('lead');if(!id)return;let n=0;const t=setInterval(()=>{n++;if(crmLeads.some(l=>l.id===id)){clearInterval(t);try{document.querySelector('.nav-item[data-page="comercial"]')?.click();setTimeout(()=>{window.brdSwitchBoard('crm');window.__crmOpenEdit(id);},300);}catch(e){}}else if(n>40)clearInterval(t);},500);try{crmIniciar();}catch(e){}};
+window.__abrirLeadUrl=()=>{const id=new URLSearchParams(location.search).get('lead');if(!id)return;location.replace('/comercial.html?lead='+encodeURIComponent(id)+'#funil');return;let n=0;const t=setInterval(()=>{n++;if(crmLeads.some(l=>l.id===id)){clearInterval(t);try{document.querySelector('.nav-item[data-page="comercial"]')?.click();setTimeout(()=>{window.brdSwitchBoard('crm');window.__crmOpenEdit(id);},300);}catch(e){}}else if(n>40)clearInterval(t);},500);try{crmIniciar();}catch(e){}};
 setTimeout(()=>{try{window.__abrirLeadUrl();}catch(e){}},2500);
 function crmAgendaHtml(){
   const hoje=crmHojeISO();

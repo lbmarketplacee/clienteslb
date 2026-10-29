@@ -607,8 +607,9 @@ function rDia() {
 }
 
 // ================= ATENDIMENTOS =================
-function convsVisiveis() { return S.convs.filter((c) => (c.mensagens || []).length && !ehCliente(c) && minhaConv(c)); }
+function convsVisiveis(clientes = false) { return S.convs.filter((c) => (c.mensagens || []).length && (clientes ? ehCliente(c) : !ehCliente(c)) && minhaConv(c)); }
 function convsDaFila(fil) {
+  if (fil === 'clientes') return convsVisiveis(true).filter((c) => M.statusConversa(c).status !== 'resolvida');
   const base = convsVisiveis();
   return base.filter((c) => { const st = M.statusConversa(c).status; if (fil === 'responder') return st === 'responder' && c.modo !== 'auto'; if (fil === 'abertas') return st !== 'resolvida'; if (fil === 'minhas') return low(c.donoEmail || leadDaConv(c)?.donoEmail) === S.email && st !== 'resolvida'; if (fil === 'semdono') return !c.donoEmail && !leadDaConv(c)?.donoEmail && st !== 'resolvida'; if (fil === 'ia') return c.modo === 'auto' && st !== 'resolvida'; if (fil === 'resolvidas') return st === 'resolvida'; return true; });
 }
@@ -623,17 +624,17 @@ function rChat() {
   listaChat(); convChat();
 }
 function listaChat() {
-  const fs = [['responder', 'Responder'], ['abertas', 'Abertas'], ['minhas', 'Minhas'], ['semdono', 'Sem dono'], ['ia', 'Com a IA'], ['resolvidas', 'Resolvidas']];
+  const fs = [['responder', 'Responder'], ['abertas', 'Abertas'], ['minhas', 'Minhas'], ['semdono', 'Sem dono'], ['ia', 'Com a IA'], ['resolvidas', 'Resolvidas'], ...(gestor() ? [['clientes', 'Clientes LB']] : [])];
   $('#chatFiltros').innerHTML = fs.map(([k, r]) => { const n = convsDaFila(k).length; return `<button class="${S.chatFiltro === k ? 'on' : ''}" data-cf="${k}">${r}${k !== 'resolvidas' && n ? ' ' + n : ''}</button>`; }).join('');
   document.querySelectorAll('[data-cf]').forEach((b) => (b.onclick = () => { S.chatFiltro = b.dataset.cf; listaChat(); }));
   const q = low(S.chatBusca).normalize('NFD').replace(/[̀-ͯ]/g, '');
-  let lista = q ? convsVisiveis() : convsDaFila(S.chatFiltro);
+  let lista = q ? [...convsVisiveis(), ...(gestor() ? convsVisiveis(true) : [])] : convsDaFila(S.chatFiltro);
   if (q) lista = lista.filter((c) => { const l = leadDaConv(c); const tx = [c.nome, c.telefone, c.id, l?.nome, ...(c.mensagens || []).slice(-30).map((m) => m.texto)].join(' '); return low(tx).normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q); });
   lista.sort((a, b) => ultimaEm(b) - ultimaEm(a));
   $('#chatItens').innerHTML = lista.length ? lista.slice(0, 200).map((c) => { const l = leadDaConv(c); const u = (c.mensagens || []).at(-1); const st = M.statusConversa(c); const nl = naoLidas(c); const dono = c.donoNome || l?.donoNome;
     const espera = st.status === 'responder' ? Math.round((Date.now() - st.desde) / 60000) : null;
     return `<div class="ci ${S.chatAberta === c.id ? 'on' : ''}" data-abrir="${c.id}"><div class="av" style="background:#dcfce7;color:#166534">${esc(iniciais(c.nome || l?.nome || c.telefone))}</div><div class="inf"><div class="l1"><b>${esc(l?.nome || c.nome || c.telefone || c.id)}</b>${nl ? `<span class="naolida">${nl}</span>` : ''}<span>${quando(u?.em)}</span></div><div class="pv">${u?.de !== 'lead' ? '↗ ' : ''}${esc(String(u?.texto || '[' + (u?.tipo || 'mídia') + ']').slice(0, 90))}</div>
-      <div>${espera != null && c.modo !== 'auto' ? `<span class="tag ${espera < 10 ? 've' : espera < 30 ? 'la' : 'vm'}">⏱ ${M.fmtMin(espera)}</span>` : ''}${c.modo === 'auto' ? '<span class="tag ro">IA</span>' : ''}${l ? `<span class="tag">${esc(etapaRot(l.stage))}</span>` : '<span class="tag la">sem ficha</span>'}${dono ? `<span class="tag az">${esc(dono)}</span>` : ''}</div></div></div>`; }).join('') : '<div class="vazio">Nenhuma conversa aqui.</div>';
+      <div>${espera != null && c.modo !== 'auto' ? `<span class="tag ${espera < 10 ? 've' : espera < 30 ? 'la' : 'vm'}">⏱ ${M.fmtMin(espera)}</span>` : ''}${c.modo === 'auto' ? '<span class="tag ro">IA</span>' : ''}${ehCliente(c) ? `<span class="tag az">Cliente · ${esc(S.clientesTel[chaveTel(c.telefone || c.id)] || 'LB')}</span>` : l ? `<span class="tag">${esc(etapaRot(l.stage))}</span>` : '<span class="tag la">sem ficha</span>'}${dono ? `<span class="tag az">${esc(dono)}</span>` : ''}</div></div></div>`; }).join('') : '<div class="vazio">Nenhuma conversa aqui.</div>';
   document.querySelectorAll('[data-abrir]').forEach((d) => (d.onclick = () => abrirConversa(d.dataset.abrir)));
 }
 function abrirConversa(id) {
@@ -678,8 +679,8 @@ function convChat(rolar) {
   box.querySelectorAll('[data-midia]').forEach((b) => (b.onclick = () => verMidia(b.dataset.midia, b.dataset.tipo)));
   const msgsEl = $('#cMsgs'); if (rolar || msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 200) msgsEl.scrollTop = msgsEl.scrollHeight;
   // ficha ao lado
-  $('#chatFicha').innerHTML = `<button class="btn sm" style="float:right" onclick="document.getElementById('chatBox').classList.remove('ficha-on')">Fechar</button>` + (l ? fichaHtml(l) : `<div class="fx"><p class="nome">${esc(c.nome || c.telefone)}</p><p style="color:var(--dim)">Esse contato ainda não tem ficha no CRM.</p><button class="btn ouro" id="cCriarLead">Criar lead no CRM</button></div>`);
-  if (l) ligarFicha($('#chatFicha'), l); else $('#cCriarLead').onclick = () => criarLeadDaConv(c);
+  $('#chatFicha').innerHTML = `<button class="btn sm" style="float:right" onclick="document.getElementById('chatBox').classList.remove('ficha-on')">Fechar</button>` + (ehCliente(c) ? `<div class="fx"><p class="nome">${esc(c.nome || c.telefone)}</p><div class="lin" style="margin:6px 0"><span class="tag az">Cliente LB · ${esc(S.clientesTel[chaveTel(c.telefone || c.id)] || '')}</span></div><p style="color:var(--dim);font-size:13px">Conversa de suporte de cliente. A ficha da loja fica no sistema LB.</p><a class="btn" href="/#loja" target="_blank">Abrir a Central da Loja</a></div>` : l ? fichaHtml(l) : `<div class="fx"><p class="nome">${esc(c.nome || c.telefone)}</p><p style="color:var(--dim)">Esse contato ainda não tem ficha no CRM.</p><button class="btn ouro" id="cCriarLead">Criar lead no CRM</button></div>`);
+  if (ehCliente(c)) { } else if (l) ligarFicha($('#chatFicha'), l); else $('#cCriarLead').onclick = () => criarLeadDaConv(c);
 }
 async function enviar() {
   const c = S.convs.find((x) => x.id === S.chatAberta); const ta = $('#envTexto'); const texto = ta.value.trim(); if (!c || !texto) return;
