@@ -9,7 +9,8 @@ service cloud.firestore {
         'guilherme@lbmarketplace.com.br',
         'caroline@lbmarketplace.com.br',
         'mirela@lbmarketplace.com.br',
-        'felipesoares@potencialmidia.com'
+        'felipesoares@potencialmidia.com',
+        'suporte@lbmarketplace.com.br'
       ];
     }
     function diretoria() {
@@ -17,12 +18,12 @@ service cloud.firestore {
     }
     // Vendedores (21/10/2026): Guilherme (closer do tráfego) e Duda/Akemi (prospecção ativa + orgânico) — cada um só os próprios leads
     function vendedor() {
-      return request.auth != null && request.auth.token.email in ['guilherme@lbmarketplace.com.br', 'akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com'];
+      return request.auth != null && request.auth.token.email in ['guilherme@lbmarketplace.com.br', 'akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com', 'suporte@lbmarketplace.com.br'];
     }
     function eu() { return request.auth.token.email; }
     // SDR (26/10/2026): a Isa fala com todos os leads — lê e atualiza os de qualquer dono, sem trocar o dono
     function sdrTodos() {
-      return request.auth != null && request.auth.token.email == 'isalbmarketplace@gmail.com';
+      return request.auth != null && request.auth.token.email in ['isalbmarketplace@gmail.com', 'suporte@lbmarketplace.com.br'];
     }
     function comercialFreela() {
       return request.auth != null && request.auth.token.email in ['akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com'];
