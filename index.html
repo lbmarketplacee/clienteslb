@@ -12038,7 +12038,7 @@ function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) 
 
 let crmLeads = [];
 let crmView = 'kanban';
-let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all', etiqueta:'all'};
+let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all', etiqueta:'all', ordem:(()=>{try{return localStorage.getItem('crmOrdem')||'novos';}catch(e){return 'novos';}})()};
 // Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
 const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'isalbmarketplace@gmail.com',nome:'Isa'}];
 const CRM_COMISSAO=500;
@@ -12954,11 +12954,18 @@ function crmFichaResumoHtml(lead){
     ${CRM_ATIVAS.includes(lead.stage||'novo')?`<div class="crm-ficha-tent"><span>Registrar tentativa</span>${crmBotoesTentativaHtml(lead,false)}</div>`:''}</div>`;
 }
 
+// ordem dos cartões (29/10/2026, Lincoln: "lead novo tem que aparecer primeiro"): mais novos (padrão) · mais antigos · retorno (atrasado/hoje primeiro)
+function crmQuandoEntrou(l){return crmMs(l.criadoEm)||(l.createdDate?Date.parse(l.createdDate+'T12:00:00'):0);}
+function crmOrdenar(lista){const o=crmFilter.ordem||'novos';const arr=[...lista];
+  if(o==='antigos')return arr.sort((a,b)=>crmQuandoEntrou(a)-crmQuandoEntrou(b));
+  if(o==='retorno')return arr.sort((a,b)=>(CRM_PRIORIDADE[crmAcompanhamento(a).tipo]-CRM_PRIORIDADE[crmAcompanhamento(b).tipo])||String(a.proximoContato||'9').localeCompare(String(b.proximoContato||'9'))||crmQuandoEntrou(b)-crmQuandoEntrou(a));
+  return arr.sort((a,b)=>crmQuandoEntrou(b)-crmQuandoEntrou(a));}
+window.__crmOrdem=v=>{crmFilter.ordem=v;try{localStorage.setItem('crmOrdem',v);}catch(e){}renderCRM();};
 function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
     ${crmEtapasDoFunil().map(s=>{
-      const inStage = leads.filter(l=>l.stage===s.key).sort((a,b)=>(CRM_PRIORIDADE[crmAcompanhamento(a).tipo]-CRM_PRIORIDADE[crmAcompanhamento(b).tipo])||(a.createdDate||'').localeCompare(b.createdDate||''));
+      const inStage = crmOrdenar(leads.filter(l=>l.stage===s.key));
       const min=!!crmColMin[s.key];
       return `<div class="kcol ${min?'min':''}" data-stage="${s.key}" ${min?`onclick="window.__crmColMin('${s.key}')" title="Abrir ${s.label}"`:''} ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
         ondragleave="event.currentTarget.classList.remove('dragover')" ondrop="window.__crmDropStage('${s.key}', event)">
@@ -12996,7 +13003,7 @@ function crmListHtml(){
   return `<table class="crm-table">
     <thead><tr><th>Nome</th><th>Dono</th><th>WhatsApp</th><th>Nicho</th><th>Tipo de Serviço</th><th>Etapa</th><th>Acompanhamento</th><th>Tentativas</th><th>Valor · chance</th><th>Criado em</th></tr></thead>
     <tbody>
-      ${[...leads].sort((a,b)=>(b.createdDate||'').localeCompare(a.createdDate||'')).map(l=>{
+      ${crmOrdenar(leads).map(l=>{
         const s = crmStageInfo(l.stage);
         const tipo = l.tipoServico ? crmTipoServicoInfo(l.tipoServico) : null;
         const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
@@ -13042,6 +13049,7 @@ function renderCRM(){
     </div>
     <div class="crm-filters">
       ${crmCfg.funis.length?`<select class="crm-funil-sel" onchange="window.__crmFunil(this.value)">${crmFunisTodos().map(f=>`<option value="${f.id}" ${crmFunilAtual===f.id?'selected':''}>Funil: ${esc(f.nome)}</option>`).join('')}</select>`:''}
+      <select class="crm-ordem-sel" title="Ordem dos leads" onchange="window.__crmOrdem(this.value)"><option value="novos" ${crmFilter.ordem==='novos'?'selected':''}>Mais novos primeiro</option><option value="antigos" ${crmFilter.ordem==='antigos'?'selected':''}>Mais antigos primeiro</option><option value="retorno" ${crmFilter.ordem==='retorno'?'selected':''}>Retorno (atrasado e hoje primeiro)</option></select>
       <input type="text" id="crmBusca" placeholder="Buscar nome ou contato" value="${esc(crmFilter.search)}" oninput="window.__crmFiltro('search',this.value)">
       <select onchange="window.__crmFiltro('dono',this.value)">
         <option value="all" ${crmFilter.dono==='all'?'selected':''}>Todos os donos</option>
