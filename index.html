@@ -1147,6 +1147,29 @@ textarea{resize:vertical;min-height:70px;}
 .wa-crm-chat-input input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13.5px}
 .wa-crm-send-btn{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#1a1a1a;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0}
 .wa-crm-send-btn:disabled{opacity:.5;cursor:default}
+/* CRM config / funis / etiquetas (29/10/2026) */
+.crm-etqs{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.crm-etqs span{font-size:10.5px;background:#b48cff22;color:#c7a8ff;border-radius:8px;padding:1px 7px}
+.crm-funil-sel{font-weight:600;border-color:var(--gold)!important;color:var(--gold)!important}
+.crm-cfg{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.crm-cfg-box{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--bg-card)}
+.crm-cfg-cab{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.crm-cfg-cab b{display:block;font-size:14px}.crm-cfg-cab span{font-size:12px;color:var(--text-dim)}.crm-cfg-cab code{font-size:11.5px;color:var(--gold)}
+.crm-cfg-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.crm-cfg-sub{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);margin:12px 0 6px}
+.crm-cfg-vazio{font-size:12.5px;color:var(--text-dim);padding:6px 0}
+.crm-cfg textarea{width:100%;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;font-size:13px}
+.crm-rb{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:var(--bg)}
+.crm-rb.off{opacity:.55}.crm-rb.sug{border-style:dashed}
+.crm-rb-txt{flex:1;font-size:12.5px;line-height:1.45}.crm-rb-txt b{font-size:13px}
+.crm-rb-fun{font-size:10.5px;background:var(--gold-soft);color:var(--gold);border-radius:8px;padding:1px 6px}
+.crm-rb-chave{position:relative;width:34px;height:20px;flex:0 0 34px}.crm-rb-chave input{opacity:0;width:0;height:0}
+.crm-rb-chave span{position:absolute;inset:0;background:#555;border-radius:20px;cursor:pointer;transition:.2s}.crm-rb-chave span:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.crm-rb-chave input:checked+span{background:var(--green)}.crm-rb-chave input:checked+span:before{transform:translateX(14px)}
+.crm-rb-form{border:1px solid var(--gold);border-radius:10px;padding:12px;margin-bottom:10px}
+.crm-rb-sim{margin-top:10px;padding:10px;border-radius:10px;background:var(--bg);font-size:12.5px;line-height:1.6}
+.crm-cfg-metas{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}.crm-cfg-metas label{display:flex;flex-direction:column;font-size:12px;color:var(--text-dim);gap:4px}
+.crm-cfg-metas input{width:90px;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+.crm-dup{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:12.5px}.crm-dup>div{display:flex;flex-direction:column;gap:2px}
 /* caixa de entrada do WhatsApp (29/10/2026) */
 .wa-fila{display:flex;gap:4px;flex-wrap:wrap}
 .wa-fila button{font-size:11.5px;padding:5px 9px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer}
@@ -11982,7 +12005,7 @@ document.getElementById('videoGerarBtn')?.addEventListener('click', async ()=>{
   btn.disabled = false; btn.textContent = '🎬 Gerar Vídeo (8 segundos)';
 });
 
-function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || CRM_STAGES[0]; }
+function crmStageInfo(key){ return CRM_STAGES.find(s=>s.key===key) || crmTodasEtapasExtras().find(s=>s.key===key) || CRM_STAGES[0]; }
 // ---- Acompanhamento (follow-up): quem precisa de retorno e quem está esquecido ----
 const CRM_ATIVAS=['novo','contato','agendado','compareceu','negociacao'];
 const CRM_DIAS_PARADO=7;
@@ -12015,7 +12038,7 @@ function crmTipoServicoInfo(key){ return CRM_TIPOS_SERVICO.find(s=>s.key===key) 
 
 let crmLeads = [];
 let crmView = 'kanban';
-let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all'};
+let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all', etiqueta:'all'};
 // Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
 const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'isalbmarketplace@gmail.com',nome:'Isa'}];
 const CRM_COMISSAO=500;
@@ -12026,7 +12049,7 @@ const crmVeTodos=()=>CRM_VE_TODOS.includes(String(currentEmail||'').toLowerCase(
 const crmMes=()=>crmHojeISO().slice(0,7);
 function crmDonoPorRodizio(){const mes=crmMes();const cont={};for(const l of crmLeads)if((l.createdDate||'').startsWith(mes)&&l.donoEmail)cont[l.donoEmail]=(cont[l.donoEmail]||0)+1;return [...CRM_VENDEDORES].sort((a,b)=>(cont[a.email]||0)-(cont[b.email]||0))[0];}
 function crmPlacarHtml(){const mes=crmMes();
-  const linha=v=>{const meus=crmLeads.filter(l=>l.donoEmail===v.email);const doMes=meus.filter(l=>(l.createdDate||'').startsWith(mes));
+  const linha=v=>{const meus=crmLeads.filter(l=>l.donoEmail===v.email&&crmFunilDe(l)==='vendas');const doMes=meus.filter(l=>(l.createdDate||'').startsWith(mes));
     const agend=doMes.filter(l=>['agendado','compareceu','negociacao','fechado'].includes(l.stage)).length;const fech=meus.filter(l=>l.stage==='fechado'&&(l.fechadoEm||l.atualizadoEm||'').startsWith(mes)).length;
     const abertos=meus.filter(l=>['novo','contato'].includes(l.stage)).length;
     return `<div class="crm-placar-item ${crmFilter.dono===v.email?'on':''}" onclick="window.__crmFiltro('dono','${crmFilter.dono===v.email?'all':v.email}')"><b>${esc(v.nome)}</b><span>${doMes.length} leads no mês · ${abertos} em aberto</span><span>${agend} agendaram · <b style="color:var(--green)">${fech} fechados</b></span><span class="crm-comissao">Comissão do mês: <b>${fmtR(fech*CRM_COMISSAO)}</b></span></div>`;};
@@ -12084,6 +12107,7 @@ function crmPassarCloserAuto(){
 }
 function crmIniciar(){
   if(crmUnsub)return;
+  crmCfgIniciar();
   // 19/10/2026 (Lincoln): vendedor vê TODOS os leads ao abrir; "Meus leads" continua no filtro
   // 21/10/2026: CRM separado por vendedor — Duda e Guilherme só recebem os leads deles (regra do banco garante); Lincoln/Carol veem tudo
   const meu=String(currentEmail||'').toLowerCase();const fonte=(crmEhVendedor()&&!isLincoln()&&!crmVeTodos())?query(collection(db,"crmLeads"),where('donoEmail','==',meu)):collection(db,"crmLeads");
@@ -12099,6 +12123,8 @@ function crmIniciar(){
 
 function crmFilteredLeads(){
   return crmLeads.filter(l=>{
+    if(crmFunilDe(l)!==crmFunilAtual) return false;
+    if(crmFilter.etiqueta&&crmFilter.etiqueta!=='all'&&!(l.etiquetas||[]).includes(crmFilter.etiqueta)) return false;
     if(crmFilter.dono!=='all' && (l.donoEmail||'')!==crmFilter.dono) return false;
     if(crmFilter.stage!=='all' && l.stage!==crmFilter.stage) return false;
     if(crmFilter.origem!=='all' && l.origem!==crmFilter.origem) return false;
@@ -12108,7 +12134,7 @@ function crmFilteredLeads(){
     if(crmFilter.acomp!=='all' && crmAcompanhamento(l).tipo!==crmFilter.acomp) return false;
     if(crmFilter.search){
       const q = crmFilter.search.toLowerCase();
-      const hay = [l.nome,l.whatsapp,l.email,l.instagram].filter(Boolean).join(' ').toLowerCase();
+      const hay = [l.nome,l.whatsapp,l.email,l.instagram,l.loja,...(l.etiquetas||[]),...Object.values(l.campos||{})].filter(Boolean).join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
@@ -12155,7 +12181,13 @@ window.__crmSubmitForm=async()=>{
   const dono=souVend?(idEdit?null:eu):(CRM_VENDEDORES.find(v=>v.email===donoSel)||(idEdit?null:CRM_VENDEDORES.find(v=>v.nome==='Duda')));
   // vendedor passando o próprio lead pro outro vendedor → servidor troca o dono
   const transferirPara=souVend&&idEdit&&donoSel&&leadAtual&&donoSel!==String(leadAtual.donoEmail||'').toLowerCase()?donoSel:null;
-  const extras={proximoContato,atualizadoEm:crmHojeISO(),...(motivoEl?{motivoPerda:motivoEl.value}:{}),...(dono?{donoEmail:dono.email,donoNome:dono.nome}:{})};
+  const etiquetas=[...new Set((document.getElementById('lead-etiquetas')?.value||'').split(',').map(x=>x.trim()).filter(Boolean))].slice(0,12);
+  const campos=crmLerCampos(leadAtual);
+  const funilSel=document.getElementById('lead-funil')?.value||(leadAtual?crmFunilDe(leadAtual):crmFunilAtual);
+  const trocaFunil=leadAtual&&funilSel!==crmFunilDe(leadAtual);
+  if(!idEdit){const dup=crmAcharDuplicado({whatsapp,email});if(dup&&!await lbConfirmar(`Já existe um lead com esse ${dup.por}: ${dup.lead.nome} (${crmStageInfo(dup.lead.stage).label}, dono ${dup.lead.donoNome||'—'}).\nCriar outro mesmo assim? (Cancelar abre o que já existe.)`,{okTxt:'Criar mesmo assim'})){window.__crmOpenEdit(dup.lead.id);return;}}
+  const extras={proximoContato,atualizadoEm:crmHojeISO(),etiquetas,...(Object.keys(campos).length?{campos}:{}),...(motivoEl?{motivoPerda:motivoEl.value}:{}),...(dono?{donoEmail:dono.email,donoNome:dono.nome}:{}),
+    ...(crmCfg.funis.length?{funil:funilSel}:{}),...(trocaFunil?{stage:crmEtapasDoFunil(funilSel)[0].key,atividades:[...(leadAtual.atividades||[]),{tipo:'nota',quando:Date.now(),por:currentUser||'',nota:`Mudou pro funil ${crmFunisTodos().find(f=>f.id===funilSel)?.nome||funilSel}`}]}:{})};
   crmSalvando=true;
   try{
     if(idEdit){
@@ -12163,7 +12195,7 @@ window.__crmSubmitForm=async()=>{
       await log(idEdit,nome,'edição de lead',`Dados do lead atualizados por ${currentUser}.`);
       if(transferirPara){const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/push?acao=transferir_lead&id='+encodeURIComponent(idEdit)+'&para='+encodeURIComponent(transferirPara),{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro||'não transferiu');showToast('Lead transferido.');}
     }else{
-      const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras,stage:'novo',criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
+      const ref=await addDoc(collection(db,"crmLeads"),{nome,whatsapp,email,instagram,nicho,nichoOutro,tipoServico,origem,valor,notas,...extras,stage:crmEtapasDoFunil(funilSel)[0].key,criadoEm:serverTimestamp(),createdDate:new Date().toISOString().slice(0,10)});
       await log(ref.id,nome,'lead criado',`Lead criado por ${currentUser}, origem: ${origem||'—'}.`);
       // Dispara a mensagem de qualificação automática via WhatsApp (não trava o salvamento se falhar)
       if(whatsapp){
@@ -12246,6 +12278,9 @@ function crmLeadFormHtml(){
       </div>
       <div class="field"><label>Valor Estimado</label><input type="text" id="lead-valor" value="${lead?fmtR(lead.valor).replace('R$ ',''):''}" placeholder="0"></div>
       <div class="field"><label>Próximo contato (retorno)</label><input type="date" id="lead-proximo" value="${lead?esc(lead.proximoContato||''):''}"></div>
+      ${crmCfg.funis.length?`<div class="field"><label>Funil</label><select id="lead-funil">${crmFunisTodos().map(f=>`<option value="${f.id}" ${(lead?crmFunilDe(lead):crmFunilAtual)===f.id?'selected':''}>${esc(f.nome)}</option>`).join('')}</select></div>`:''}
+      <div class="field"><label>Etiquetas (separe por vírgula)</label><input type="text" id="lead-etiquetas" list="crmEtqLista" value="${lead?esc((lead.etiquetas||[]).join(', ')):''}" placeholder="ex.: feirinha, indicação, quente"><datalist id="crmEtqLista">${crmEtiquetasUsadas().map(e=>`<option value="${esc(e)}">`).join('')}</datalist></div>
+      ${crmCamposHtml(lead)}
       ${lead?crmFichaResumoHtml(lead):''}
       ${lead?crmIaBox(lead):''}
       ${lead?crmReuniaoBox(lead):''}
@@ -12584,7 +12619,7 @@ function crmTempoResposta(l,agora=Date.now()){
 function crmFmtDuracao(ms){const m=Math.round(ms/60000);if(m<60)return `${m} min`;const h=Math.round(m/6)/10;if(h<24)return `${String(h).replace('.',',')} h`;return `${Math.round(h/24)} dia(s)`;}
 // números do vendedor no mês (AAAA-MM)
 function crmStats(leads,email,mes,agora=Date.now()){
-  const meus=(leads||[]).filter(l=>l.donoEmail===email);
+  const meus=(leads||[]).filter(l=>l.donoEmail===email&&crmFunilDe(l)==='vendas');
   const doMes=meus.filter(l=>(l.createdDate||'').startsWith(mes));
   const noMes=q=>crmIsoDe(q).startsWith(mes);
   const contatos=meus.reduce((t,l)=>t+(l.atividades||[]).filter(a=>CRM_TENTATIVAS[a.tipo]&&noMes(a.quando)).length,0);
@@ -12597,7 +12632,7 @@ function crmStats(leads,email,mes,agora=Date.now()){
   const abertos=meus.filter(l=>CRM_ATIVAS.includes(l.stage||'novo'));
   const chance=abertos.reduce((t,l)=>t+(CRM_CHANCE[l.stage||'novo']||0),0);
   return{leads:doMes.length,abertos:abertos.length,contatos,agendou,compareceu,fechou:fechados.length,fechados,
-    meta:CRM_META_MES,comissao:fechados.length*CRM_COMISSAO,funil,conv,conversao:doMes.length?Math.round(doMes.filter(l=>l.stage==='fechado').length/doMes.length*100):null,
+    meta:crmMetaDe(email),comissao:fechados.length*CRM_COMISSAO,funil,conv,conversao:doMes.length?Math.round(doMes.filter(l=>l.stage==='fechado').length/doMes.length*100):null,
     tempoMedio:tempos.length?tempos.reduce((a,b)=>a+b,0)/tempos.length:null,naMeta:tempos.length?Math.round(tempos.filter(t=>t<=CRM_RESPOSTA_META_MIN*60000).length/tempos.length*100):null,
     esperando:doMes.filter(l=>crmTempoResposta(l,agora)?.esperando).length,
     previstoContratos:Math.round((fechados.length+chance)*10)/10,previstoValor:Math.round(abertos.reduce((t,l)=>t+(Number(l.valor)||0)*(CRM_CHANCE[l.stage||'novo']||0),0)*100)/100};
@@ -12729,6 +12764,129 @@ function crmPainelLincolnHtml(){
     <p class="crm-lincoln-obs">Gasto do Meta do mês dividido pela parte dos leads de tráfego (origem Meta/Typebot/Ads) que caiu com cada um. Retorno = contratos do tráfego × mensalidade média dos clientes ativos ÷ gasto atribuído. Comissão: ${fmtR(CRM_COMISSAO)} por contrato.</p></div>`;
 }
 
+// ===== CRM "igual Bitrix" (29/10/2026, Lincoln): vários funis, campos personalizados, etiquetas, meta por vendedor, robôs por etapa e duplicados.
+// Config em configuracoes/crm {funis:[{id,nome,etapas:[{key,label,color}]}], campos:[{id,nome,tipo,opcoes}], metas:{email:n}, robos:[...]}.
+// Os robôs rodam no servidor (lb-shopee-gmv/api/push?modo=crm_robos, de hora em hora; regras puras em lib/crm-robos.js).
+let crmCfg={funis:[],campos:[],metas:{},robos:[]},crmCfgUnsub=null,crmFunilAtual='vendas',crmCfgMsg='';
+const CRM_CORES_EXTRA=['#d4a94a','#9fb6ff','#3fa8f5','#4dd6c0','#f0a35e','#5cb88a','#e0525a','#c7a8ff'];
+function crmCfgIniciar(){if(crmCfgUnsub)return;try{crmCfgUnsub=onSnapshot(doc(db,'configuracoes','crm'),sn=>{const d=sn.data()||{};crmCfg={funis:d.funis||[],campos:d.campos||[],metas:d.metas||{},robos:d.robos||[]};if(!crmFunisTodos().some(f=>f.id===crmFunilAtual))crmFunilAtual='vendas';crmRedesenhar();},()=>{});}catch(e){}}
+const crmFunilDe=l=>l?.funil||'vendas';
+function crmFunisTodos(){return [{id:'vendas',nome:'Vendas (assessoria)',etapas:CRM_STAGES},...(crmCfg.funis||[])];}
+function crmEtapasDoFunil(id=crmFunilAtual){const f=crmFunisTodos().find(x=>x.id===id)||crmFunisTodos()[0];return (f.etapas&&f.etapas.length?f.etapas:CRM_STAGES).map((e,i)=>({...e,color:e.color||CRM_CORES_EXTRA[i%CRM_CORES_EXTRA.length]}));}
+function crmTodasEtapasExtras(){return (crmCfg.funis||[]).flatMap(f=>(f.etapas||[]).map((e,i)=>({...e,color:e.color||CRM_CORES_EXTRA[i%CRM_CORES_EXTRA.length]})));}
+window.__crmFunil=id=>{crmFunilAtual=id;crmFilter.stage='all';renderCRM();};
+const crmMetaDe=email=>{const n=Number(crmCfg.metas?.[email]);return n>0?n:CRM_META_MES;};
+function crmEtiquetasUsadas(){return [...new Set((crmLeads||[]).flatMap(l=>l.etiquetas||[]))].sort((a,b)=>a.localeCompare(b));}
+function crmCamposHtml(lead){return (crmCfg.campos||[]).map(c=>{const v=lead?.campos?.[c.id]??'';const id=`lead-campo-${c.id}`;
+  const campo=c.tipo==='lista'?`<select id="${id}"><option value="">—</option>${(c.opcoes||[]).map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>`
+    :`<input id="${id}" type="${c.tipo==='numero'?'number':c.tipo==='data'?'date':'text'}" value="${esc(v)}">`;
+  return `<div class="field"><label>${esc(c.nome)}</label>${campo}</div>`;}).join('');}
+function crmLerCampos(lead){const out={...(lead?.campos||{})};for(const c of crmCfg.campos||[]){const el=document.getElementById(`lead-campo-${c.id}`);if(!el)continue;const v=el.value.trim();if(v)out[c.id]=c.tipo==='numero'?Number(v):v;else delete out[c.id];}return out;}
+function crmAcharDuplicado({whatsapp,email}){const t=crmTel(whatsapp),e=String(email||'').trim().toLowerCase();
+  for(const l of crmLeads){if(t&&crmTel(l.whatsapp)===t)return{lead:l,por:'telefone'};if(e&&String(l.email||'').trim().toLowerCase()===e)return{lead:l,por:'e-mail'};}return null;}
+function crmGruposDuplicados(){const g={};for(const l of crmLeads){const t=crmTel(l.whatsapp);if(t)(g[t]=g[t]||[]).push(l);}return Object.values(g).filter(x=>x.length>1);}
+async function crmCfgSalvar(parcial,msg){try{await setDoc(doc(db,'configuracoes','crm'),parcial,{merge:true});showToast(msg||'✓ Salvo.');}catch(e){showToast('Erro ao salvar: '+e.message);}}
+
+const CRM_ACAO_ROT={tarefa:'Criar tarefa',push:'Avisar o dono no celular',mover:'Mudar de etapa',dono:'Trocar o responsável',nota:'Escrever nota'};
+function crmRoboTxt(r){const etapa=crmStageInfo(r.etapa).label;const fun=crmFunisTodos().find(f=>f.id===(r.funil||'vendas'))?.nome||'';
+  const quando=r.gatilho==='entrar'?`Quando entrar em <b>${esc(etapa)}</b>`:`Quando ficar <b>${String(r.dias).replace('.',',')} dia(s)</b> parado em <b>${esc(etapa)}</b>`;
+  const faz=r.acao==='mover'?`mover pra <b>${esc(crmStageInfo(r.etapaDestino).label)}</b>`:r.acao==='dono'?`passar pra <b>${esc(r.donoNome||r.donoEmail)}</b>`:r.acao==='tarefa'?`tarefa "${esc(r.titulo)}" pra <b>${esc(r.paraQuem==='dono'||!r.paraQuem?'o dono':(USERS_MAP[r.paraQuem]||r.paraQuem))}</b>`:`${CRM_ACAO_ROT[r.acao].toLowerCase()}: "${esc(r.titulo)}"`;
+  return `${quando}${crmCfg.funis.length?` <span class="crm-rb-fun">${esc(fun)}</span>`:''} → ${faz}`;}
+let crmRoboEdit=null,crmRoboSim=null;
+const CRM_SUGERIDOS=[
+  {id:'novo_1d',nome:'Lead novo sem contato em 1 dia',funil:'vendas',etapa:'novo',gatilho:'parado',dias:1,acao:'tarefa',titulo:'Chamar {nome} (lead novo parado há {dias} dia)',paraQuem:'dono',prazoDias:0},
+  {id:'negoc_3d',nome:'Negociação parada 3 dias',funil:'vendas',etapa:'negociacao',gatilho:'parado',dias:3,acao:'tarefa',titulo:'Follow-up da proposta: {nome}',paraQuem:'dono',prazoDias:0},
+  {id:'agendado_push',nome:'Agendou → avisar o dono',funil:'vendas',etapa:'agendado',gatilho:'entrar',acao:'push',titulo:'{nome} agendou a reunião — confirme no dia'},
+  {id:'fechado_onb',nome:'Fechou → tarefa de onboarding pra Carol',funil:'vendas',etapa:'fechado',gatilho:'entrar',acao:'tarefa',titulo:'Novo cliente: {nome} — contrato, Asaas e jornada',paraQuem:'caroline@lbmarketplace.com.br',paraNome:'Caroline',prazoDias:1},
+  {id:'contato_15d',nome:'Em contato 15 dias sem movimento → Perdido',funil:'vendas',etapa:'contato',gatilho:'parado',dias:15,acao:'mover',etapaDestino:'perdido',motivoPerda:'Não respondeu mais'}];
+function crmConfigHtml(){
+  const robos=crmCfg.robos||[];const sug=CRM_SUGERIDOS.filter(x=>!robos.some(r=>r.id===x.id));
+  const vend=CRM_VENDEDORES;const dups=crmGruposDuplicados();
+  const ed=crmRoboEdit;const etapasOpt=(sel,fun)=>crmEtapasDoFunil(fun||'vendas').map(e=>`<option value="${e.key}" ${sel===e.key?'selected':''}>${esc(e.label)}</option>`).join('');
+  const form=ed?`<div class="crm-rb-form">
+    <div class="form-grid">
+      <div class="field"><label>Nome do robô</label><input id="rb-nome" value="${esc(ed.nome||'')}" placeholder="ex.: Negociação parada"></div>
+      ${crmCfg.funis.length?`<div class="field"><label>Funil</label><select id="rb-funil" onchange="window.__crmRbCampo('funil',this.value)">${crmFunisTodos().map(f=>`<option value="${f.id}" ${(ed.funil||'vendas')===f.id?'selected':''}>${esc(f.nome)}</option>`).join('')}</select></div>`:''}
+      <div class="field"><label>Etapa</label><select id="rb-etapa">${etapasOpt(ed.etapa,ed.funil)}</select></div>
+      <div class="field"><label>Quando</label><select id="rb-gatilho" onchange="window.__crmRbCampo('gatilho',this.value)"><option value="entrar" ${ed.gatilho==='entrar'?'selected':''}>Assim que entrar na etapa</option><option value="parado" ${ed.gatilho!=='entrar'?'selected':''}>Parado na etapa por X dias</option></select></div>
+      ${ed.gatilho!=='entrar'?`<div class="field"><label>Dias parado (sem nenhuma atividade)</label><input id="rb-dias" type="number" min="0.5" step="0.5" value="${esc(ed.dias||1)}"></div>`:''}
+      <div class="field"><label>O que o robô faz</label><select id="rb-acao" onchange="window.__crmRbCampo('acao',this.value)">${Object.entries(CRM_ACAO_ROT).filter(([k])=>k!=='mover'||ed.gatilho!=='entrar').map(([k,v])=>`<option value="${k}" ${ed.acao===k?'selected':''}>${v}</option>`).join('')}</select></div>
+      ${['tarefa','push','nota'].includes(ed.acao)?`<div class="field" style="grid-column:1/-1"><label>Texto (use {nome}, {dono}, {dias})</label><input id="rb-titulo" value="${esc(ed.titulo||'')}"></div>`:''}
+      ${ed.acao==='tarefa'?`<div class="field"><label>Tarefa pra quem</label><select id="rb-para"><option value="dono">Dono do lead</option>${Object.entries(USERS_MAP).filter(([e])=>!/roma@/.test(e)).map(([e,n])=>`<option value="${e}" ${ed.paraQuem===e?'selected':''}>${esc(n)}</option>`).join('')}</select></div><div class="field"><label>Prazo (dias)</label><input id="rb-prazo" type="number" min="0" value="${esc(ed.prazoDias??0)}"></div>`:''}
+      ${ed.acao==='mover'?`<div class="field"><label>Mover pra</label><select id="rb-destino">${etapasOpt(ed.etapaDestino,ed.funil)}</select></div>`:''}
+      ${ed.acao==='dono'?`<div class="field"><label>Novo responsável</label><select id="rb-dono">${vend.map(v=>`<option value="${v.email}" ${ed.donoEmail===v.email?'selected':''}>${esc(v.nome)}</option>`).join('')}</select></div>`:''}
+    </div>
+    <div class="lead-form-actions"><button class="btn-cancel" onclick="window.__crmRbCancelar()">Cancelar</button><button class="btn-save" onclick="window.__crmRbSalvar()">Salvar robô</button></div></div>`:'';
+  return `<div class="crm-cfg">
+  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Robôs do CRM</b><span>Rodam sozinhos de hora em hora. Cada robô age 1 vez por vez que o lead entra na etapa.</span></div>
+    <div class="crm-cfg-acoes"><button class="btn btn-ghost btn-sm" onclick="window.__crmRbSimular(false)">Simular agora</button><button class="btn btn-gold btn-sm" onclick="window.__crmRbSimular(true)">Rodar agora</button><button class="btn btn-gold btn-sm" onclick="window.__crmRbNovo()">+ Novo robô</button></div></div>
+    ${form}
+    ${robos.length?robos.map(r=>`<div class="crm-rb ${r.ativo===false?'off':''}"><label class="crm-rb-chave"><input type="checkbox" ${r.ativo!==false?'checked':''} onchange="window.__crmRbAtivo('${r.id}',this.checked)"><span></span></label><div class="crm-rb-txt"><b>${esc(r.nome||r.id)}</b><div>${crmRoboTxt(r)}</div></div><button class="btn btn-ghost btn-sm" onclick="window.__crmRbEditar('${r.id}')">Editar</button><button class="btn btn-ghost btn-sm" onclick="window.__crmRbApagar('${r.id}')">Apagar</button></div>`).join(''):'<div class="crm-cfg-vazio">Nenhum robô ainda. Comece pelas sugestões abaixo.</div>'}
+    ${sug.length?`<div class="crm-cfg-sub">Sugestões (1 clique liga)</div>${sug.map(r=>`<div class="crm-rb sug"><div class="crm-rb-txt"><b>${esc(r.nome)}</b><div>${crmRoboTxt(r)}</div></div><button class="btn btn-gold btn-sm" onclick="window.__crmRbSugerido('${r.id}')">Ligar</button></div>`).join('')}`:''}
+    ${crmRoboSim?`<div class="crm-rb-sim"><b>${crmRoboSim.simulado?'Simulação':'Rodou agora'}: ${crmRoboSim.rodou||0} ação(ões)</b>${(crmRoboSim.feitos||[]).map(f=>`<div>• ${esc(f.lead||'')} — ${esc(f.regra)} (${esc(CRM_ACAO_ROT[f.acao]||f.acao)})</div>`).join('')||'<div>Nada pra fazer agora.</div>'}</div>`:''}
+  </section>
+  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Meta de contratos por vendedor (mês)</b><span>Aparece no painel de cada um.</span></div></div>
+    <div class="crm-cfg-metas">${vend.map(v=>`<label>${esc(v.nome)}<input type="number" min="0" id="meta-${btoa(v.email).replace(/=/g,'')}" value="${crmMetaDe(v.email)}"></label>`).join('')}<button class="btn btn-gold btn-sm" onclick="window.__crmMetasSalvar()">Salvar metas</button></div>
+  </section>
+  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Funis extras</b><span>Além do funil de Vendas. Ex.: Upsell (ERP, LB Precifica, LB Marketing), Indicações, Parcerias. Uma linha por funil: <code>Nome: Etapa 1, Etapa 2, Etapa 3</code></span></div></div>
+    <textarea id="crmFunisTxt" rows="4" placeholder="Upsell: Oportunidade, Proposta enviada, Fechou, Não quis">${esc((crmCfg.funis||[]).map(f=>`${f.nome}: ${(f.etapas||[]).map(e=>e.label).join(', ')}`).join('\n'))}</textarea>
+    <div class="crm-cfg-acoes" style="margin-top:8px"><button class="btn btn-gold btn-sm" onclick="window.__crmFunisSalvar()">Salvar funis</button></div>
+  </section>
+  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Campos personalizados</b><span>Aparecem na ficha de todo lead. Uma linha por campo: <code>Nome | texto/numero/data/lista | opção 1, opção 2</code></span></div></div>
+    <textarea id="crmCamposTxt" rows="4" placeholder="Faturamento mensal | numero&#10;Tem CNPJ? | lista | Sim, Não&#10;Cidade | texto">${esc((crmCfg.campos||[]).map(c=>`${c.nome} | ${c.tipo}${c.opcoes?.length?' | '+c.opcoes.join(', '):''}`).join('\n'))}</textarea>
+    <div class="crm-cfg-acoes" style="margin-top:8px"><button class="btn btn-gold btn-sm" onclick="window.__crmCamposSalvar()">Salvar campos</button></div>
+  </section>
+  <section class="crm-cfg-box"><div class="crm-cfg-cab"><div><b>Leads repetidos (mesmo telefone)</b><span>Juntar = fica o mais antigo, com a linha do tempo, notas, etiquetas e reuniões de todos; os outros são apagados.</span></div></div>
+    ${dups.length?dups.slice(0,30).map(g=>`<div class="crm-dup"><div>${g.map(l=>`<span><b>${esc(l.nome)}</b> · ${esc(crmStageInfo(l.stage).label)} · ${esc(l.donoNome||'sem dono')} · ${esc(l.createdDate||'')}</span>`).join('')}</div><button class="btn btn-gold btn-sm" onclick="window.__crmJuntar('${crmTel(g[0].whatsapp)}')">Juntar ${g.length}</button></div>`).join(''):'<div class="crm-cfg-vazio">Nenhum lead repetido.</div>'}
+  </section></div>`;
+}
+window.__crmRbNovo=()=>{crmRoboEdit={id:'r'+Date.now().toString(36),nome:'',funil:crmFunilAtual,etapa:crmEtapasDoFunil(crmFunilAtual)[0].key,gatilho:'parado',dias:2,acao:'tarefa',titulo:'Chamar {nome}',paraQuem:'dono',prazoDias:0,novo:true};renderCRM();};
+window.__crmRbEditar=id=>{const r=(crmCfg.robos||[]).find(x=>x.id===id);if(r){crmRoboEdit={...r};renderCRM();}};
+window.__crmRbCancelar=()=>{crmRoboEdit=null;renderCRM();};
+function crmRbLerForm(){const e=crmRoboEdit;const v=id=>document.getElementById(id)?.value;
+  Object.assign(e,{nome:v('rb-nome')?.trim()||e.nome,funil:v('rb-funil')||e.funil||'vendas',etapa:v('rb-etapa')||e.etapa,gatilho:v('rb-gatilho')||e.gatilho,acao:v('rb-acao')||e.acao});
+  if(v('rb-dias')!=null)e.dias=Number(v('rb-dias'))||1;if(v('rb-titulo')!=null)e.titulo=v('rb-titulo').trim();
+  if(v('rb-para')!=null){e.paraQuem=v('rb-para');e.paraNome=USERS_MAP[e.paraQuem]||'';}if(v('rb-prazo')!=null)e.prazoDias=Number(v('rb-prazo'))||0;
+  if(v('rb-destino')!=null)e.etapaDestino=v('rb-destino');if(v('rb-dono')!=null){e.donoEmail=v('rb-dono');e.donoNome=CRM_VENDEDORES.find(x=>x.email===e.donoEmail)?.nome||'';}}
+window.__crmRbCampo=(k,val)=>{crmRbLerForm();crmRoboEdit[k]=val;if(k==='funil')crmRoboEdit.etapa=crmEtapasDoFunil(val)[0].key;if(k==='gatilho'&&val==='entrar'&&crmRoboEdit.acao==='mover')crmRoboEdit.acao='tarefa';renderCRM();};
+window.__crmRbSalvar=async()=>{crmRbLerForm();const r=crmRoboEdit;
+  if(!r.nome){showToast('Dê um nome pro robô.');return;}
+  if(['tarefa','push','nota'].includes(r.acao)&&!r.titulo){showToast('Escreva o texto.');return;}
+  if(r.acao==='mover'&&r.etapaDestino===r.etapa){showToast('Escolha outra etapa de destino.');return;}
+  const {novo,...limpo}=r;if(!limpo.criadoEm)limpo.criadoEm=Date.now();
+  const lista=[...(crmCfg.robos||[]).filter(x=>x.id!==r.id),{ativo:true,...limpo}];crmRoboEdit=null;await crmCfgSalvar({robos:lista},'✓ Robô salvo — roda na próxima hora.');};
+window.__crmRbSugerido=async id=>{const s=CRM_SUGERIDOS.find(x=>x.id===id);if(!s)return;await crmCfgSalvar({robos:[...(crmCfg.robos||[]),{...s,ativo:true,criadoEm:Date.now()}]},'✓ Robô ligado.');};
+window.__crmRbAtivo=async(id,on)=>crmCfgSalvar({robos:(crmCfg.robos||[]).map(r=>r.id===id?{...r,ativo:on}:r)},on?'Robô ligado.':'Robô desligado.');
+window.__crmRbApagar=async id=>{if(!await lbConfirmar('Apagar esse robô?'))return;await crmCfgSalvar({robos:(crmCfg.robos||[]).filter(r=>r.id!==id)},'Robô apagado.');};
+window.__crmRbSimular=async executar=>{if(executar&&!await lbConfirmar('Rodar os robôs agora? Eles criam tarefas, mudam etapas e avisam no celular de verdade.',{okTxt:'Rodar'}))return;
+  crmRoboSim={simulado:!executar,rodou:'…',feitos:[]};renderCRM();
+  try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/push?acao=crm_robos'+(executar?'&executar=1':''),{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);crmRoboSim=r;}catch(e){crmRoboSim=null;showToast('Erro: '+e.message);}
+  renderCRM();};
+window.__crmMetasSalvar=()=>{const m={...(crmCfg.metas||{})};for(const v of CRM_VENDEDORES){const el=document.getElementById('meta-'+btoa(v.email).replace(/=/g,''));if(el)m[v.email]=Math.max(0,Number(el.value)||0);}crmCfgSalvar({metas:m},'✓ Metas salvas.');};
+const crmSlug=t=>crmSemAcento(String(t||'')).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'x';
+window.__crmFunisSalvar=()=>{const linhas=(document.getElementById('crmFunisTxt').value||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const funis=[];for(const ln of linhas){const [nome,resto]=[ln.split(':')[0].trim(),ln.split(':').slice(1).join(':')];const labels=(resto||'').split(',').map(x=>x.trim()).filter(Boolean);
+    if(!nome||labels.length<2){lbAvisar(`Linha "${ln}" precisa de nome e pelo menos 2 etapas (Nome: Etapa 1, Etapa 2).`);return;}
+    const id=(crmCfg.funis||[]).find(f=>f.nome===nome)?.id||('f_'+crmSlug(nome));const antigo=(crmCfg.funis||[]).find(f=>f.id===id);
+    if(id==='vendas'||funis.some(f=>f.id===id)){lbAvisar(`Nome de funil repetido: ${nome}`);return;}
+    funis.push({id,nome,etapas:labels.map((label,i)=>({key:antigo?.etapas?.find(e=>e.label===label)?.key||`${id}_${crmSlug(label)}`,label}))});}
+  crmCfgSalvar({funis},'✓ Funis salvos.');};
+window.__crmCamposSalvar=()=>{const linhas=(document.getElementById('crmCamposTxt').value||'').split('\n').map(x=>x.trim()).filter(Boolean);const campos=[];
+  for(const ln of linhas){const [nome,tipo='texto',ops='']=ln.split('|').map(x=>x.trim());const t=crmSemAcento(tipo).toLowerCase();const tp=['texto','numero','data','lista'].includes(t)?t:'texto';
+    if(!nome)continue;const id=(crmCfg.campos||[]).find(c=>c.nome===nome)?.id||crmSlug(nome);if(campos.some(c=>c.id===id))continue;
+    campos.push({id,nome,tipo:tp,...(tp==='lista'?{opcoes:ops.split(',').map(x=>x.trim()).filter(Boolean)}:{})});}
+  crmCfgSalvar({campos},'✓ Campos salvos.');};
+window.__crmJuntar=async tel=>{const g=crmLeads.filter(l=>crmTel(l.whatsapp)===tel);if(g.length<2)return;
+  const ms=l=>crmMs(l.criadoEm)||Date.parse((l.createdDate||'2100-01-01')+'T12:00:00');const ord=[...g].sort((a,b)=>ms(a)-ms(b));const fica=ord[0],sai=ord.slice(1);
+  const melhor=[...g].sort((a,b)=>crmEtapaMax(b)-crmEtapaMax(a))[0];
+  if(!await lbConfirmar(`Juntar ${g.length} leads de ${fica.nome}?\nFica o mais antigo (${fica.createdDate||'—'}) na etapa ${crmStageInfo(melhor.stage).label}. Os outros ${sai.length} são apagados.`,{okTxt:'Juntar'}))return;
+  const atividades=g.flatMap(l=>l.atividades||[]).sort((a,b)=>(Number(a.quando)||0)-(Number(b.quando)||0));
+  const up={atividades,notas:g.map(l=>l.notas).filter(Boolean).join('\n---\n').slice(0,8000),etiquetas:[...new Set(g.flatMap(l=>l.etiquetas||[]))],reunioes:g.flatMap(l=>l.reunioes||[]),
+    stage:melhor.stage||'novo',tentativas:g.reduce((t,l)=>t+(l.tentativas||0),0),email:fica.email||g.find(l=>l.email)?.email||'',instagram:fica.instagram||g.find(l=>l.instagram)?.instagram||'',
+    respostasTypebot:Object.assign({},...g.map(l=>l.respostasTypebot||{})),atualizadoEm:crmHojeISO(),juntadoDe:sai.map(l=>l.id)};
+  if(melhor.donoEmail){up.donoEmail=melhor.donoEmail;up.donoNome=melhor.donoNome||'';}
+  try{await updateDoc(doc(db,'crmLeads',fica.id),up);for(const l of sai)await deleteDoc(doc(db,'crmLeads',l.id));log(fica.id,fica.nome,'leads juntados',`${currentUser} juntou ${g.length} leads repetidos (${sai.map(l=>l.nome).join(', ')}).`).catch(()=>{});showToast('✓ Leads juntados.');}
+  catch(e){showToast('Erro ao juntar: '+e.message);}};
 // importar lista de prospecção ativa (Duda)
 window.__crmImport=abrir=>{crmImportOpen=abrir;if(!abrir){crmImportPrev=null;crmImpTexto='';}if(abrir){leadFormOpen=false;editingLeadId=null;}renderCRM();};
 window.__crmImpOrigem=v=>{crmImpOrigem=v;};
@@ -12798,7 +12956,7 @@ function crmFichaResumoHtml(lead){
 function crmKanbanHtml(){
   const leads = crmFilteredLeads();
   return `<div class="kanban">
-    ${CRM_STAGES.map(s=>{
+    ${crmEtapasDoFunil().map(s=>{
       const inStage = leads.filter(l=>l.stage===s.key).sort((a,b)=>(CRM_PRIORIDADE[crmAcompanhamento(a).tipo]-CRM_PRIORIDADE[crmAcompanhamento(b).tipo])||(a.createdDate||'').localeCompare(b.createdDate||''));
       const min=!!crmColMin[s.key];
       return `<div class="kcol ${min?'min':''}" data-stage="${s.key}" ${min?`onclick="window.__crmColMin('${s.key}')" title="Abrir ${s.label}"`:''} ondragover="event.preventDefault();event.currentTarget.classList.add('dragover')"
@@ -12815,6 +12973,7 @@ function crmKanbanHtml(){
             ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
             ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
             ${crmCardInfoHtml(l)}
+            ${(l.etiquetas||[]).length?`<div class="crm-etqs">${l.etiquetas.slice(0,4).map(e=>`<span>${esc(e)}</span>`).join('')}</div>`:''}
             <div>
               ${crmPerfilTag(l)}
               ${tipo?`<span class="ktag" style="color:${tipo.color};background:${tipo.color}22">${tipo.label}</span>`:''}
@@ -12881,14 +13040,16 @@ function renderCRM(){
       <button class="crm-view-btn ${crmView==='lista'?'on':''}" onclick="window.__crmSetView('lista')">Lista</button>
     </div>
     <div class="crm-filters">
+      ${crmCfg.funis.length?`<select class="crm-funil-sel" onchange="window.__crmFunil(this.value)">${crmFunisTodos().map(f=>`<option value="${f.id}" ${crmFunilAtual===f.id?'selected':''}>Funil: ${esc(f.nome)}</option>`).join('')}</select>`:''}
       <input type="text" id="crmBusca" placeholder="Buscar nome ou contato" value="${esc(crmFilter.search)}" oninput="window.__crmFiltro('search',this.value)">
       <select onchange="window.__crmFiltro('dono',this.value)">
         <option value="all" ${crmFilter.dono==='all'?'selected':''}>Todos os donos</option>
         ${CRM_VENDEDORES.map(v=>`<option value="${v.email}" ${crmFilter.dono===v.email?'selected':''}>${v.email===String(currentEmail||'').toLowerCase()?'Meus leads':'Leads de '+esc(v.nome)}</option>`).join('')}
       </select>
+      ${crmEtiquetasUsadas().length?`<select onchange="window.__crmFiltro('etiqueta',this.value)"><option value="all">Todas as etiquetas</option>${crmEtiquetasUsadas().map(e=>`<option value="${esc(e)}" ${crmFilter.etiqueta===e?'selected':''}>${esc(e)}</option>`).join('')}</select>`:''}
       <select onchange="window.__crmFiltro('stage',this.value)">
         <option value="all">Todas as etapas</option>
-        ${CRM_STAGES.map(s=>`<option value="${s.key}" ${crmFilter.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
+        ${crmEtapasDoFunil().map(s=>`<option value="${s.key}" ${crmFilter.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
       </select>
       <select onchange="window.__crmFiltro('origem',this.value)">
         <option value="all">Todas as origens</option>
@@ -12912,10 +13073,11 @@ function renderCRM(){
     </div>
     <div class="crm-novos">${crmEhVendedor()||isLincoln()?`<button class="btn btn-ghost btn-sm" onclick="window.__crmImport(${!crmImportOpen})">Importar lista</button>`:''}<button class="btn-newlead" onclick="window.__crmImport(false);window.__crmToggleForm(true)">+ Novo Lead</button></div>
   </div>
-  <div class="crm-abas"><button class="${crmAba==='funil'?'on':''}" onclick="window.__crmAba('funil')">Funil e agenda</button><button class="${crmAba==='painel'?'on':''}" onclick="window.__crmAba('painel')">${crmSouVendedor()?'Meu painel':'Painel dos vendedores'}</button>${isLincoln()?`<button class="${crmAba==='lincoln'?'on':''}" onclick="window.__crmAba('lincoln')">Painel do Lincoln</button>`:''}</div>
+  <div class="crm-abas"><button class="${crmAba==='funil'?'on':''}" onclick="window.__crmAba('funil')">Funil e agenda</button><button class="${crmAba==='painel'?'on':''}" onclick="window.__crmAba('painel')">${crmSouVendedor()?'Meu painel':'Painel dos vendedores'}</button>${isLincoln()?`<button class="${crmAba==='lincoln'?'on':''}" onclick="window.__crmAba('lincoln')">Painel do Lincoln</button><button class="${crmAba==='config'?'on':''}" onclick="window.__crmAba('config')">Robôs e configurações</button>`:''}</div>
   ${crmImportOpen ? crmImportHtml() : ''}
   ${crmAba==='painel' ? `<div class="crm-pv-lista">${CRM_VENDEDORES.filter(v=>!crmSouVendedor()||v.email===crmEu()).map(crmPainelVendedorHtml).join('')}</div>`
     : crmAba==='lincoln'&&isLincoln() ? crmPainelLincolnHtml()
+    : crmAba==='config'&&isLincoln() ? crmConfigHtml()
     : `${crmPlacarHtml()}${crmAgendaHtml()}${crmResumoHtml()}${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}`}
   ${leadFormOpen ? `<div class="crm-drawer-bg"></div><div class="crm-drawer"><div class="crm-drawer-top"><h3>${editingLeadId?esc(crmLeads.find(l=>l.id===editingLeadId)?.nome||'Lead'):'Novo lead'}</h3><button class="btn-cancel" onclick="window.__crmToggleForm(false)">Fechar ✕</button></div>${crmLeadFormHtml()}</div>` : ''}
   `;
