@@ -924,7 +924,7 @@ function rAgenda() {
   const nomeDia = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' });
   const quemFaz = vendedor() ? CLOSERS.filter(([e]) => e === S.email) : CLOSERS;
   el.innerHTML = `<div class="grid" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px" id="agGrid">
-    <div><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><b style="font-size:15px">Próximas reuniões</b><button class="btn sm" id="agRec" style="margin-left:auto">Atualizar</button></div>
+    <div><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><b style="font-size:15px">Próximas reuniões</b>${gestor() ? '<button class="btn sm" id="agLemb" style="margin-left:auto">Lembretes automáticos</button>' : ''}<button class="btn sm" id="agRec" style="${gestor() ? '' : 'margin-left:auto'}">Atualizar</button></div>
       ${dias.map((d) => { const ev = evs.filter((e) => M.diaBR(e.start.dateTime) === d).sort((a, b) => M.ms(a.start.dateTime) - M.ms(b.start.dateTime)); return ev.length ? `<div class="ag-dia"><b>${d === hoje() ? 'Hoje · ' : ''}${nomeDia(d)}</b><div class="card">${ev.map(eventoHtml).join('')}</div></div>` : ''; }).join('') || '<div class="card vazio">Nenhuma reunião nos próximos 14 dias.</div>'}</div>
     <div><div class="card painel" style="position:sticky;top:0"><h3>Horários livres</h3><div class="ds">${vendedor() ? 'Seus horários livres no dia.' : 'Toque num horário livre pra marcar um lead direto.'}</div>
       <div class="c-filtros" style="margin-bottom:12px">${dias.slice(0, 10).map((d) => `<button class="${d === dia ? 'on' : ''}" data-agdia="${d}">${d === hoje() ? 'Hoje' : nomeDia(d)}</button>`).join('')}</div>
@@ -932,9 +932,19 @@ function rAgenda() {
     </div></div></div>`;
   if (matchMedia('(max-width:900px)').matches) $('#agGrid').style.gridTemplateColumns = '1fr';
   $('#agRec').onclick = () => carregarAgenda(true);
+  if ($('#agLemb')) $('#agLemb').onclick = abrirLembretes;
   el.querySelectorAll('[data-agdia]').forEach((b) => (b.onclick = () => { S.agendaDia = b.dataset.agdia; rAgenda(); }));
   el.querySelectorAll('[data-slot]').forEach((b) => (b.onclick = () => { const [d, h, em] = b.dataset.slot.split('|'); escolherLeadPraSlot(d, h, em); }));
   el.querySelectorAll('[data-evacao]').forEach((b) => (b.onclick = () => { const l = S.leads.find((x) => x.id === b.dataset.lead); if (l) acaoReuniao(l, b.dataset.evacao); }));
+}
+async function abrirLembretes() {
+  const ov = modal(`<h3>Lembretes automáticos de reunião</h3><p class="ds">O robô manda no WhatsApp da LB: na véspera (pede pra responder SIM) e 1h antes (com o link do Meet). Sem resposta 3h antes, avisa a Isa e quem faz a reunião no celular. Quando o lead não escreveu nas últimas 24h, vai pelo template aprovado pela Meta.</p><div id="lbPlano" class="carreg">Simulando…</div><div class="acoes"><button class="btn" id="lbTpl">Criar template na Meta</button><button class="btn" data-fechar>Fechar</button></div>`);
+  ov.querySelector('#lbTpl').onclick = async (e) => { e.target.disabled = true; const r = await api(PUSH_API + '?acao=lembretes_reuniao&criar_template=1', null, 'GET'); toast(r.ok ? 'Template enviado pra aprovação da Meta.' : 'Meta: ' + (r.resposta?.error?.error_user_msg || r.resposta?.error?.message || r.erro || 'erro')); };
+  const r = await api(PUSH_API + '?acao=lembretes_reuniao', null, 'GET');
+  const el = ov.querySelector('#lbPlano'); el.className = '';
+  if (!r.ok) { el.textContent = 'Não simulou: ' + (r.erro || ''); return; }
+  const rot = { dia: 'lembrete da véspera', '1h': 'lembrete 1h antes', aviso: 'avisar a Isa (sem resposta)', confirmacao: 'registrar resposta' };
+  el.innerHTML = r.plano.length ? `<p style="font-size:13px;margin:0 0 8px">Nos próximos 5 minutos o robô faria:</p>` + r.plano.map((x) => `<div class="item"><div class="inf"><b>${esc(x.lead)}</b><em>${new Date(x.inicio).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · ${x.acoes.map((a) => esc(rot[a.tipo] + (a.valor ? ': ' + a.valor : ''))).join(', ')}</em></div></div>`).join('') : '<div class="vazio">Nada pra mandar agora — as próximas reuniões já receberam o lembrete ou ainda está cedo.</div>';
 }
 function escolherLeadPraSlot(dia, h, em) {
   const nm = CLOSERS.find((c) => c[0] === em)?.[1];
