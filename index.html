@@ -1147,6 +1147,20 @@ textarea{resize:vertical;min-height:70px;}
 .wa-crm-chat-input input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13.5px}
 .wa-crm-send-btn{width:38px;height:38px;border-radius:50%;background:var(--gold);color:#1a1a1a;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0}
 .wa-crm-send-btn:disabled{opacity:.5;cursor:default}
+/* reuniões (agenda da LB no CRM, 29/10/2026) */
+.crm-rh{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin:10px 0;background:var(--bg-card)}
+.crm-rh-tit{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.crm-rh-at{border:none;background:none;color:var(--gold);cursor:pointer;font-size:14px}
+.crm-rh-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--border)}.crm-rh-item:first-of-type{border-top:none}
+.crm-rh-item>b{font-family:Oswald,sans-serif;font-size:17px;color:var(--gold);min-width:52px}.crm-rh-item.passou{opacity:.5}
+.crm-rh-txt{flex:1;display:flex;flex-direction:column;font-size:13px}.crm-rh-txt em{font-size:11.5px;color:var(--text-dim);font-style:normal}.crm-rh-txt em.sem{color:#d4a94a}
+.crm-rh-acoes{display:flex;gap:5px;flex-wrap:wrap}
+.crm-rh-vazio{font-size:12.5px;color:var(--text-dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0}
+.kfollow.reuniao{background:#3fa8f522;color:#7dbcf0}
+.crm-mr-atual{font-size:13px;margin-bottom:8px}.crm-mr-atual.passou{opacity:.6}
+.crm-mr-grade{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.crm-mr-grade label{display:flex;flex-direction:column;font-size:12px;color:var(--text-dim);gap:4px}
+.crm-mr-grade input,.crm-mr-grade select,#mrEmail{padding:7px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);width:100%}
+.crm-mr-ocup{display:flex;flex-direction:column;gap:3px;font-size:12.5px;max-height:150px;overflow:auto;padding:6px;border:1px dashed var(--border);border-radius:8px}.crm-mr-ocup .livre{color:var(--green)}
 /* CRM config / funis / etiquetas (29/10/2026) */
 .crm-etqs{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.crm-etqs span{font-size:10.5px;background:#b48cff22;color:#c7a8ff;border-radius:8px;padding:1px 7px}
 .crm-funil-sel{font-weight:600;border-color:var(--gold)!important;color:var(--gold)!important}
@@ -12283,6 +12297,7 @@ function crmLeadFormHtml(){
       ${crmCamposHtml(lead)}
       ${lead?crmFichaResumoHtml(lead):''}
       ${lead?crmIaBox(lead):''}
+      ${lead?crmMarcarBox(lead):''}
       ${lead?crmReuniaoBox(lead):''}
       ${lead&&lead.stage==='perdido'?`<div class="field"><label>Motivo da perda (obrigatório)</label><select id="lead-motivo-perda"><option value="">Selecione</option>${CRM_MOTIVOS_PERDA.map(m=>`<option value="${m}" ${lead.motivoPerda===m?'selected':''}>${m}</option>`).join('')}</select></div>`:''}
     </div>
@@ -12710,6 +12725,137 @@ function crmCardInfoHtml(l){
 const crmChanceTxt=l=>CRM_ATIVAS.includes(l.stage||'novo')?`chance ${Math.round((CRM_CHANCE[l.stage||'novo']||0)*100)}%`:'';
 
 // agenda do vendedor: atrasados, pra hoje e abertos sem próxima atividade
+// ===== Agenda da LB no CRM (29/10/2026, Lincoln): marcar reunião pela ficha do lead e ver as reuniões do dia já ligadas ao lead.
+// Agenda = principal do lincoln@lbmarketplace.com.br ("LB MARKETPLACE"), compartilhada pra editar com Carol, Guilherme e Isa.
+// Login do Google no navegador (escopo calendar.events, token de 1 h guardado na sessão); a página de agendamento continua igual.
+const CAL_ID='lincoln@lbmarketplace.com.br';
+const CAL_SCOPE='https://www.googleapis.com/auth/calendar.events';
+const CAL_API='https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(CAL_ID);
+const CAL_CLOSERS=[['guilherme@lbmarketplace.com.br','Guilherme'],['lincoln@lbmarketplace.com.br','Lincoln'],['caroline@lbmarketplace.com.br','Caroline']];
+let calToken=(()=>{try{const t=JSON.parse(sessionStorage.getItem('lb_caltoken')||'null');return t&&t.ate>Date.now()?t.v:null;}catch(e){return null;}})();
+let calClient=null,calEspera=null,calHoje={dia:null,eventos:null,erro:null,carregando:false};
+function calPegarToken(forcar){
+  if(calToken&&!forcar)return Promise.resolve(calToken);
+  if(!window.google?.accounts?.oauth2)return Promise.reject(new Error('O login do Google ainda está carregando — tente de novo em 2 segundos.'));
+  return new Promise((ok,er)=>{
+    calEspera={ok,er};
+    if(!calClient)calClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:CAL_SCOPE,callback:r=>{const p=calEspera;calEspera=null;
+      if(r.error||!r.access_token){p?.er(new Error('Não deu pra conectar a agenda ('+(r.error||'sem token')+').'));return;}
+      calToken=r.access_token;try{sessionStorage.setItem('lb_caltoken',JSON.stringify({v:calToken,ate:Date.now()+(Number(r.expires_in)||3500)*1000-60000}));}catch(e){}p?.ok(calToken);}});
+    calClient.requestAccessToken({prompt:forcar?'consent':''});
+  });
+}
+async function calFetch(caminho,opts={},tentou){
+  const tk=await calPegarToken();
+  const r=await fetch(CAL_API+caminho,{...opts,headers:{...(opts.headers||{}),Authorization:'Bearer '+tk,'Content-Type':'application/json'}});
+  if(r.status===401&&!tentou){calToken=null;try{sessionStorage.removeItem('lb_caltoken');}catch(e){}return calFetch(caminho,opts,true);}
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){const m=d?.error?.message||('erro '+r.status);if(/has not been used|is disabled/i.test(m))throw new Error('A API do Google Agenda não está ligada no projeto do login. '+m);if(r.status===403||r.status===404)throw new Error('Sua conta não tem permissão de editar a agenda da LB. Peça pra compartilharem com você. ('+m+')');throw new Error(m);}
+  return d;
+}
+const calIso=(dia,hora)=>`${dia}T${hora}:00-03:00`;
+const calHora=iso=>new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+async function calEventosDoDia(dia){
+  const d=await calFetch(`/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(calIso(dia,'00:00'))}&timeMax=${encodeURIComponent(calIso(dia,'23:59'))}&maxResults=100`);
+  return (d.items||[]).filter(e=>e.status!=='cancelled'&&e.start?.dateTime);
+}
+// evento ↔ lead: id do lead gravado no evento → e-mail de convidado → telefone na descrição → nome no título
+function calLeadDoEvento(e){
+  const idProp=e.extendedProperties?.private?.leadId;if(idProp){const l=crmLeads.find(x=>x.id===idProp);if(l)return l;}
+  const mails=(e.attendees||[]).map(a=>String(a.email||'').toLowerCase()).filter(m=>m&&!/@lbmarketplace\.com\.br$/.test(m));
+  let l=crmLeads.find(x=>x.email&&mails.includes(String(x.email).trim().toLowerCase()));if(l)return l;
+  const txt=`${e.summary||''} ${e.description||''}`;const tels=(txt.match(/\+?\d[\d\s().-]{8,}\d/g)||[]).map(t=>crmTel(t)).filter(Boolean);
+  l=crmLeads.find(x=>crmTel(x.whatsapp)&&tels.some(t=>t.slice(-8)===crmTel(x.whatsapp).slice(-8)));if(l)return l;
+  const nomes=(e.attendees||[]).map(a=>a.displayName).filter(Boolean);const base=crmSemAcento(`${e.summary||''} ${nomes.join(' ')}`).toLowerCase();
+  const cands=crmLeads.filter(x=>{const n=crmSemAcento(String(x.nome||'')).toLowerCase().trim();return n.length>=4&&base.includes(n);});
+  return cands.length===1?cands[0]:null;
+}
+async function calCarregarHoje(forcar){
+  const dia=crmHojeISO();if(calHoje.carregando||(!forcar&&calHoje.dia===dia&&calHoje.eventos))return;
+  calHoje={dia,eventos:calHoje.eventos,erro:null,carregando:true};crmRedesenhar();
+  try{calHoje.eventos=await calEventosDoDia(dia);}catch(e){calHoje.erro=e.message;}
+  calHoje.carregando=false;crmRedesenhar();
+}
+window.__calConectar=async()=>{try{await calPegarToken(true);calCarregarHoje(true);}catch(e){lbAvisar(e.message);}};
+window.__calAtualizar=()=>calCarregarHoje(true);
+function crmReunioesHojeHtml(){
+  if(crmFunilAtual!=='vendas')return '';
+  if(calToken&&calHoje.dia!==crmHojeISO()&&!calHoje.carregando)setTimeout(()=>calCarregarHoje(false),0);
+  const marcadas=crmLeads.filter(l=>l.reuniaoMarcada?.inicio&&String(l.reuniaoMarcada.inicio).slice(0,10)===crmHojeISO());
+  let corpo='';
+  if(!calToken)corpo=`<div class="crm-rh-vazio">Conecte a agenda da LB pra ver as reuniões de hoje ligadas aos leads. <button class="btn btn-gold btn-sm" onclick="window.__calConectar()">Conectar agenda</button></div>`;
+  else if(calHoje.carregando&&!calHoje.eventos)corpo='<div class="crm-rh-vazio">Lendo a agenda…</div>';
+  else if(calHoje.erro)corpo=`<div class="crm-rh-vazio" style="color:var(--red)">${esc(calHoje.erro)} <button class="btn btn-ghost btn-sm" onclick="window.__calConectar()">Conectar de novo</button></div>`;
+  else{
+    const evs=(calHoje.eventos||[]);
+    corpo=evs.length?evs.map(e=>{const l=calLeadDoEvento(e);const passou=new Date(e.end?.dateTime||e.start.dateTime)<new Date();const meet=e.hangoutLink||e.conferenceData?.entryPoints?.find(p=>p.entryPointType==='video')?.uri;
+      return `<div class="crm-rh-item ${passou?'passou':''}"><b>${calHora(e.start.dateTime)}</b><div class="crm-rh-txt"><span>${esc(e.summary||'(sem título)')}</span>${l?`<em>Lead: <a href="#" onclick="event.preventDefault();window.__crmOpenEdit('${l.id}')">${esc(l.nome)}</a> · ${esc(crmStageInfo(l.stage).label)} · ${esc(l.donoNome||'sem dono')}</em>`:'<em class="sem">sem lead ligado</em>'}</div>
+        <div class="crm-rh-acoes">${l?.whatsapp?`<a class="btn btn-ghost btn-sm" href="${crmWhatsLink(l.whatsapp)}" target="_blank">WhatsApp</a>`:''}${meet?`<a class="btn btn-ghost btn-sm" href="${esc(meet)}" target="_blank">Meet</a>`:''}${l?`<button class="btn btn-gold btn-sm" onclick="window.__crmOpenEdit('${l.id}')">Ficha</button>`:''}</div></div>`;}).join(''):'<div class="crm-rh-vazio">Nenhuma reunião na agenda hoje.</div>';
+  }
+  const naoNaAgenda=marcadas.filter(l=>!(calHoje.eventos||[]).some(e=>e.id===l.reuniaoMarcada.eventoId));
+  return `<div class="crm-rh"><div class="crm-rh-tit">Reuniões de hoje${calToken?` <button class="crm-rh-at" onclick="window.__calAtualizar()" title="Ler a agenda de novo">↻</button>`:''}</div>${corpo}${calHoje.eventos&&naoNaAgenda.length?`<div class="crm-rh-vazio">Marcadas no CRM e não achadas na agenda: ${naoNaAgenda.map(l=>esc(l.nome)).join(', ')}</div>`:''}</div>`;
+}
+// caixa na ficha do lead
+function crmMarcarBox(lead){
+  const r=lead.reuniaoMarcada;const fut=r?.inicio&&new Date(r.fim||r.inicio)>new Date();
+  return `<div class="field" style="grid-column:1/-1;border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--bg)"><label>Reunião na agenda da LB</label>
+    ${r?.inicio?`<div class="crm-mr-atual ${fut?'':'passou'}"><b>${new Date(r.inicio).toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}</b> com ${esc(r.comNome||'—')} · marcada por ${esc(r.por||'—')}${r.meet?` · <a href="${esc(r.meet)}" target="_blank">Meet</a>`:''}${fut?` · <a href="#" onclick="event.preventDefault();window.__crmDesmarcar('${lead.id}')">desmarcar</a>`:''}</div>`:''}
+    <button type="button" class="btn btn-gold btn-sm" onclick="window.__crmMarcar('${lead.id}')">${r?.inicio&&fut?'Remarcar reunião':'Marcar reunião'}</button>
+    <span style="font-size:11px;color:var(--text-dim);margin-left:6px">cria o evento com Meet na agenda da LB, convida o lead por e-mail e move pra Agendado</span></div>`;
+}
+window.__crmMarcar=async id=>{
+  const lead=crmLeads.find(l=>l.id===id);if(!lead)return;
+  try{await calPegarToken();}catch(e){lbAvisar(e.message);return;}
+  const amanha=crmSomaDias(crmHojeISO(),1);
+  const ov=document.createElement('div');ov.className='modal-overlay lb-dialog-overlay';
+  ov.innerHTML=`<div class="modal lb-dialog" role="dialog" aria-modal="true" style="max-width:520px"><div class="lb-dialog-tit">Marcar reunião com ${esc(lead.nome)}</div>
+    <div class="crm-mr-grade"><label>Dia<input type="date" id="mrDia" value="${amanha}" min="${crmHojeISO()}"></label><label>Hora<input type="time" id="mrHora" value="10:00" step="900"></label>
+      <label>Duração<select id="mrDur"><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
+      <label>Com quem<select id="mrCom">${CAL_CLOSERS.map(([e,n])=>`<option value="${e}">${n}</option>`).join('')}</select></label></div>
+    <label class="wa-tpl-lbl">E-mail do lead (recebe o convite com o Meet)</label><input type="email" id="mrEmail" value="${esc(lead.email||'')}" placeholder="email@cliente.com">
+    <label class="wa-tpl-lbl">Ocupado nesse dia (agenda da LB)</label><div id="mrOcupado" class="crm-mr-ocup">Lendo a agenda…</div>
+    <div class="lb-dialog-acoes"><button class="btn btn-ghost" data-r="0">Cancelar</button><button class="btn btn-gold" data-r="1">Marcar</button></div></div>`;
+  document.body.appendChild(ov);
+  const ocup=async()=>{const dia=ov.querySelector('#mrDia').value;const el=ov.querySelector('#mrOcupado');if(!dia)return;el.textContent='Lendo a agenda…';
+    try{const evs=await calEventosDoDia(dia);el.innerHTML=evs.length?evs.map(e=>`<span>${calHora(e.start.dateTime)}–${calHora(e.end.dateTime)} ${esc(e.summary||'ocupado')}</span>`).join(''):'<span class="livre">Dia livre</span>';}catch(e){el.textContent=e.message;}};
+  ov.querySelector('#mrDia').addEventListener('change',ocup);ocup();
+  ov.addEventListener('click',async e=>{const b=e.target.closest('[data-r]');if(!b&&e.target!==ov)return;if(!b||b.dataset.r==='0'){ov.remove();return;}
+    const dia=ov.querySelector('#mrDia').value,hora=ov.querySelector('#mrHora').value,dur=Number(ov.querySelector('#mrDur').value)||30,com=ov.querySelector('#mrCom').value,email=ov.querySelector('#mrEmail').value.trim();
+    if(!dia||!hora){showToast('Escolha dia e hora.');return;}
+    const ini=new Date(calIso(dia,hora));if(ini.getTime()<Date.now()){showToast('Esse horário já passou.');return;}
+    if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){showToast('E-mail do lead inválido.');return;}
+    const fim=new Date(ini.getTime()+dur*60000);const comNome=CAL_CLOSERS.find(x=>x[0]===com)?.[1]||'';
+    b.disabled=true;b.textContent='Marcando…';
+    try{
+      const antigo=lead.reuniaoMarcada?.eventoId;
+      const corpo={summary:`Sessão Estratégica — ${lead.nome} (LB Marketplace)`,
+        description:`Lead: ${lead.nome}\nWhatsApp: ${lead.whatsapp||'—'}\nCom: ${comNome}\nMarcado por ${currentUser||''} pelo sistema LB.\nFicha: https://sistema.lbmarketplace.com.br/?lead=${lead.id}#comercial`,
+        start:{dateTime:ini.toISOString(),timeZone:'America/Sao_Paulo'},end:{dateTime:fim.toISOString(),timeZone:'America/Sao_Paulo'},
+        attendees:[{email:com},...(email?[{email}]:[])],
+        conferenceData:{createRequest:{requestId:'lb'+Date.now().toString(36),conferenceSolutionKey:{type:'hangoutsMeet'}}},
+        extendedProperties:{private:{leadId:lead.id}},reminders:{useDefault:true}};
+      const ev=await calFetch('/events?conferenceDataVersion=1&sendUpdates=all',{method:'POST',body:JSON.stringify(corpo)});
+      if(antigo&&antigo!==ev.id)await calFetch('/events/'+encodeURIComponent(antigo)+'?sendUpdates=all',{method:'DELETE'}).catch(()=>{});
+      const meet=ev.hangoutLink||'';
+      const p=['novo','contato'].includes(lead.stage||'novo')?crmMudancaEtapa(lead,'agendado',{por:currentUser||crmEu()}):{atividades:[...(lead.atividades||[])]};
+      p.atividades.push({tipo:'nota',quando:Date.now(),por:currentUser||'',nota:`Reunião marcada: ${ini.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} com ${comNome}${meet?' · '+meet:''}`});
+      Object.assign(p,{reuniaoMarcada:{inicio:ini.toISOString(),fim:fim.toISOString(),eventoId:ev.id,meet,com,comNome,por:currentUser||'',em:Date.now()},proximoContato:dia,atualizadoEm:crmHojeISO(),...(email&&!lead.email?{email}:{})});
+      await updateDoc(doc(db,'crmLeads',lead.id),p);
+      ov.remove();calCarregarHoje(true);
+      const txt=`Oi ${String(lead.nome||'').split(' ')[0]}! Sua reunião com a LB Marketplace está marcada pra ${ini.toLocaleString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}.${meet?` Link da chamada: ${meet}`:''} Qualquer coisa é só chamar aqui.`;
+      if(lead.whatsapp&&await lbConfirmar(`✓ Reunião marcada${email?' e convite mandado pro e-mail do lead':''}.\n\nMandar a confirmação no WhatsApp?\n\n"${txt}"`,{okTxt:'Abrir WhatsApp'}))window.open(crmWhatsLink(lead.whatsapp)+'?text='+encodeURIComponent(txt),'_blank');
+      else showToast('✓ Reunião marcada.');
+    }catch(err){b.disabled=false;b.textContent='Marcar';lbAvisar('Não marcou: '+err.message);}
+  });
+};
+window.__crmDesmarcar=async id=>{const lead=crmLeads.find(l=>l.id===id);const r=lead?.reuniaoMarcada;if(!r)return;
+  if(!await lbConfirmar(`Desmarcar a reunião de ${lead.nome}? O evento sai da agenda e o lead recebe o cancelamento por e-mail.`,{okTxt:'Desmarcar'}))return;
+  try{if(r.eventoId)await calFetch('/events/'+encodeURIComponent(r.eventoId)+'?sendUpdates=all',{method:'DELETE'}).catch(e=>{if(!/404|410|deleted/i.test(e.message))throw e;});
+    await updateDoc(doc(db,'crmLeads',id),{reuniaoMarcada:deleteField(),atividades:[...(lead.atividades||[]),{tipo:'nota',quando:Date.now(),por:currentUser||'',nota:'Reunião desmarcada.'}],atualizadoEm:crmHojeISO()});calCarregarHoje(true);showToast('Reunião desmarcada.');}
+  catch(e){lbAvisar('Não desmarcou: '+e.message);}};
+// link direto pra ficha (?lead=ID, vem na descrição do evento)
+window.__abrirLeadUrl=()=>{const id=new URLSearchParams(location.search).get('lead');if(!id)return;let n=0;const t=setInterval(()=>{n++;if(crmLeads.some(l=>l.id===id)){clearInterval(t);try{document.querySelector('.nav-item[data-page="comercial"]')?.click();setTimeout(()=>{window.brdSwitchBoard('crm');window.__crmOpenEdit(id);},300);}catch(e){}}else if(n>40)clearInterval(t);},500);try{crmIniciar();}catch(e){}};
+setTimeout(()=>{try{window.__abrirLeadUrl();}catch(e){}},2500);
 function crmAgendaHtml(){
   const hoje=crmHojeISO();
   const base=crmLeads.filter(l=>crmFilter.dono==='all'||l.donoEmail===crmFilter.dono);
@@ -12980,6 +13126,7 @@ function crmKanbanHtml(){
             <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}${l.donoNome?` · <b style="color:var(--gold)">${esc(l.donoNome)}</b>`:' · <span style="color:var(--amber)">sem dono</span>'}</div>
             ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
             ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
+            ${l.reuniaoMarcada?.inicio&&new Date(l.reuniaoMarcada.fim||l.reuniaoMarcada.inicio)>new Date()?`<div class="kfollow reuniao">Reunião ${new Date(l.reuniaoMarcada.inicio).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})} · ${esc(l.reuniaoMarcada.comNome||'')}</div>`:''}
             ${crmCardInfoHtml(l)}
             ${(l.etiquetas||[]).length?`<div class="crm-etqs">${l.etiquetas.slice(0,4).map(e=>`<span>${esc(e)}</span>`).join('')}</div>`:''}
             <div>
@@ -13087,7 +13234,7 @@ function renderCRM(){
   ${crmAba==='painel' ? `<div class="crm-pv-lista">${CRM_VENDEDORES.filter(v=>!crmSouVendedor()||v.email===crmEu()).map(crmPainelVendedorHtml).join('')}</div>`
     : crmAba==='lincoln'&&isLincoln() ? crmPainelLincolnHtml()
     : crmAba==='config'&&isLincoln() ? crmConfigHtml()
-    : `${crmPlacarHtml()}${crmAgendaHtml()}${crmResumoHtml()}${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}`}
+    : `${crmPlacarHtml()}${crmReunioesHojeHtml()}${crmAgendaHtml()}${crmResumoHtml()}${crmView==='kanban' ? crmKanbanHtml() : crmListHtml()}`}
   ${leadFormOpen ? `<div class="crm-drawer-bg"></div><div class="crm-drawer"><div class="crm-drawer-top"><h3>${editingLeadId?esc(crmLeads.find(l=>l.id===editingLeadId)?.nome||'Lead'):'Novo lead'}</h3><button class="btn-cancel" onclick="window.__crmToggleForm(false)">Fechar ✕</button></div>${crmLeadFormHtml()}</div>` : ''}
   `;
   const kb=container.querySelector('.kanban');if(kb)kb.scrollLeft=rol.board;
