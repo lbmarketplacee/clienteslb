@@ -1192,6 +1192,66 @@ textarea{resize:vertical;min-height:70px;}
 .crm-cfg-metas{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}.crm-cfg-metas label{display:flex;flex-direction:column;font-size:12px;color:var(--text-dim);gap:4px}
 .crm-cfg-metas input{width:90px;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
 .crm-dup{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:12.5px}.crm-dup>div{display:flex;flex-direction:column;gap:2px}
+/* ===== CENTRAL COMERCIAL (29/10/2026) ===== */
+#page-centralcom{--cc-ouro:#d4a94a;--cc-zap:#25D366}
+.cc-hero{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:26px 28px;border-radius:18px;margin-bottom:16px;
+  background:radial-gradient(120% 140% at 0% 0%,#2a2110 0%,#121212 55%),#121212;border:1px solid #d4a94a44;box-shadow:0 10px 40px #0007,inset 0 1px 0 #ffffff0d}
+.cc-hero:after{content:'';position:absolute;right:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,#d4a94a33,transparent 70%);pointer-events:none}
+.cc-hero h2{font-family:Oswald,sans-serif;font-size:34px;letter-spacing:.02em;margin:6px 0 2px;background:linear-gradient(90deg,#f6e3a8,#d4a94a 60%,#a97c22);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cc-hero p{margin:0;color:var(--text-dim);font-size:14px}
+.cc-selo{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.12em;color:#7be3a2;background:#25D36618;border:1px solid #25D36655;border-radius:20px;padding:3px 9px}
+.cc-selo i{width:7px;height:7px;border-radius:50%;background:#25D366;box-shadow:0 0 0 0 #25D366aa;animation:ccPulse 1.6s infinite}
+@keyframes ccPulse{0%{box-shadow:0 0 0 0 #25D36699}70%{box-shadow:0 0 0 8px #25D36600}100%{box-shadow:0 0 0 0 #25D36600}}
+.cc-meta{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.cc-meta span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim)}.cc-meta b{font-size:17px}.cc-meta em{display:block;font-size:12px;color:var(--text-dim);font-style:normal}
+.cc-anel{--p:0;width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--cc-ouro) calc(var(--p)*1%),#ffffff14 0);position:relative}
+.cc-anel:before{content:'';position:absolute;inset:7px;border-radius:50%;background:#141414}.cc-anel b{position:relative;font-family:Oswald,sans-serif;font-size:18px;color:var(--cc-ouro)}
+.cc-kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.cc-kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;position:relative;overflow:hidden}
+.cc-kpi:before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:#ffffff22}
+.cc-kpi.quente:before{background:linear-gradient(90deg,#e0525a,#f0a35e)}.cc-kpi.zap:before{background:var(--cc-zap)}.cc-kpi.azul:before{background:#3fa8f5}.cc-kpi.verde:before{background:#5cb88a}.cc-kpi.ouro:before{background:var(--cc-ouro)}
+.cc-kpi span{display:block;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+.cc-kpi b{display:block;font-family:Oswald,sans-serif;font-size:30px;line-height:1.15;margin:4px 0 2px}.cc-kpi.quente b{color:#f0a35e}.cc-kpi.zap b{color:#5fe08f}.cc-kpi.ouro b{color:var(--cc-ouro)}
+.cc-kpi em{font-size:11px;color:var(--text-dim);font-style:normal}
+.cc-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.cc-tab{position:relative;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:11px 13px;cursor:pointer;color:var(--text);transition:.15s}
+.cc-tab:hover{border-color:#d4a94a88}.cc-tab b{display:block;font-size:14px}.cc-tab span{font-size:11.5px;color:var(--text-dim)}
+.cc-tab.on{border-color:var(--cc-ouro);background:linear-gradient(180deg,#d4a94a1c,transparent);box-shadow:inset 0 -3px 0 var(--cc-ouro)}
+.cc-tab i{position:absolute;top:8px;right:10px;font-style:normal;font-size:11px;font-weight:700;background:#e0525a;color:#fff;border-radius:10px;padding:1px 7px}.cc-tab i:empty{display:none}
+.cc-pane{display:none}.cc-pane.on{display:block;animation:fadeUp .25s ease}
+.cc-escopo{display:inline-flex;border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:10px}
+.cc-escopo button{border:none;background:transparent;color:var(--text-dim);padding:6px 14px;font-size:12.5px;cursor:pointer}.cc-escopo button.on{background:var(--cc-ouro);color:#111;font-weight:700}
+.cc-bloco{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.cc-bloco-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.cc-bloco-cab b{font-size:15px}.cc-bloco-cab b span{background:#ffffff14;border-radius:10px;padding:1px 8px;font-size:12px;margin-left:4px}.cc-bloco-cab em{font-size:12px;color:var(--text-dim);font-style:normal}
+.cc-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
+.cc-av{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:#d4a94a22;color:var(--cc-ouro)}.cc-av.zap{background:#25D36622;color:#5fe08f}
+.cc-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.cc-info b{cursor:pointer;font-size:14px;display:inline}.cc-info b:hover{color:var(--cc-ouro)}
+.cc-info em{font-size:12px;color:var(--text-dim);font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cc-info .cc-ia{color:#c7a8ff}
+.cc-info>.cc-tag,.cc-info>.ktag,.cc-info>.wa-sla{align-self:flex-start}
+.cc-tag{font-size:10.5px;font-weight:700;border-radius:8px;padding:1px 7px;margin-top:2px}.cc-tag.ok{background:#5cb88a22;color:#5cb88a}.cc-tag.aten{background:#d4a94a22;color:#d4a94a}.cc-tag.urg{background:#e0525a22;color:#ff7a80}
+.cc-acoes{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.cc-bt{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:9px;padding:7px 11px;font-size:12.5px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.cc-bt:hover{border-color:var(--cc-ouro)}.cc-bt.zap{border-color:#25D36677;color:#5fe08f}.cc-bt.ouro{background:var(--cc-ouro);color:#111;border-color:var(--cc-ouro);font-weight:700}.cc-bt.verde{background:#5cb88a;color:#0b1a12;border-color:#5cb88a;font-weight:700}
+.cc-vazio{font-size:13px;color:var(--text-dim);padding:10px 0}
+.cc-agenda-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-dim)}
+.cc-dias{display:grid;grid-template-columns:repeat(7,minmax(180px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.cc-dia{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:10px;min-height:120px}.cc-dia.hoje{border-color:var(--cc-ouro);box-shadow:0 0 0 1px #d4a94a55}
+.cc-dia-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:8px;flex-wrap:wrap}.cc-dia-cab b{text-transform:capitalize;font-size:15px}.cc-dia-cab span{color:var(--text-dim);font-size:12px}.cc-dia-cab em{margin-left:auto;font-size:11px;color:var(--text-dim);font-style:normal}
+.cc-ev{display:flex;gap:8px;padding:7px 0;border-top:1px solid var(--border)}.cc-ev.passou{opacity:.6}
+.cc-ev>b{font-family:Oswald,sans-serif;color:var(--cc-ouro);min-width:42px}.cc-ev>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:12.5px}
+.cc-ev em{font-style:normal;font-size:11.5px;color:#9fb6ff;cursor:pointer}.cc-ev em.sem{color:#d4a94a;cursor:default}
+.cc-ev-acoes{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.cc-ev-acoes .cc-bt{padding:4px 8px;font-size:11.5px}
+.cc-placar{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.cc-pessoa{display:grid;grid-template-columns:44px 1.4fr repeat(4,1fr);align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
+.cc-pessoa.top{border-color:var(--cc-ouro);background:linear-gradient(90deg,#d4a94a18,transparent)}
+.cc-pos{font-family:Oswald,sans-serif;font-size:22px;color:var(--cc-ouro)}.cc-pessoa-nome b{display:block;font-size:15px}.cc-pessoa-nome span{font-size:11.5px;color:var(--text-dim)}
+.cc-num b{display:block;font-family:Oswald,sans-serif;font-size:22px}.cc-num span{font-size:11px;color:var(--text-dim)}
+#ccPaneConversas .wa-crm-wrap{height:calc(100vh - 330px)}
+@media (max-width:1100px){.cc-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.cc-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:700px){.cc-hero{padding:18px}.cc-hero h2{font-size:26px}.cc-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.cc-kpi b{font-size:24px}
+  .cc-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.cc-tab span{display:none}.cc-item{flex-wrap:wrap}.cc-acoes{width:100%;justify-content:flex-start}
+  .cc-pessoa{grid-template-columns:34px 1fr 1fr;}.cc-pessoa .cc-num:nth-child(n+5){display:none}.cc-dias{grid-template-columns:repeat(7,minmax(220px,1fr))}}
 /* caixa de entrada do WhatsApp (29/10/2026) */
 .wa-fila{display:flex;gap:4px;flex-wrap:wrap}
 .wa-fila button{font-size:11.5px;padding:5px 9px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer}
@@ -1267,7 +1327,7 @@ textarea{resize:vertical;min-height:70px;}
 @media(max-width:800px){.ttp-form{grid-template-columns:1fr}}
 /* Portal do cliente (08/10/2026): a cliente entra com login próprio e só vê o card do Mercado Livre da loja dela */
 body.modo-portal .nav-item:not([data-page="marketing"]){display:none!important}
-body.modo-comercial .nav-item:not([data-page="comercial"]),body.modo-comercial .nav-grupo-cab,body.modo-comercial #notifBtn,body.modo-comercial .topbar-actions{display:none!important}
+body.modo-comercial .nav-item:not([data-page="centralcom"]),body.modo-comercial .nav-grupo-cab,body.modo-comercial #notifBtn,body.modo-comercial .topbar-actions{display:none!important}
 body.modo-comercial .nav-grupo-itens{display:flex!important;flex-direction:column}
 body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
 body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):not([data-mlsub="qualidade"]){display:none!important}
@@ -1734,6 +1794,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <button class="nav-item sidebar-item" data-page="marketing" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing<span class="nav-pend" id="mktNavBadge" title="Pedidos de produto novos"></span></button>
       <button class="nav-item sidebar-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
       <button class="nav-item sidebar-item" data-page="desempenho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
+      <button class="nav-item sidebar-item hidden" data-page="centralcom" id="navCentralCom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Central Comercial</button>
       <button class="nav-item sidebar-item" data-page="whatsapp" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Conversas WhatsApp<span id="waNavBadge" style="display:none;position:absolute;top:6px;right:10px;background:#25D366;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1"></span></button>
       <button class="nav-item sidebar-item" data-page="perguntas" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg> Perguntas ML<span id="pqNavBadge" class="nav-pend"></span></button>
       <button class="nav-item sidebar-item" data-page="cadastros" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros<span class="nav-pend" id="cadNavBadge"></span></button>
@@ -1994,6 +2055,28 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           </div>
           <aside class="wa-ficha hidden" id="waFicha"></aside>
         </div>
+      </div>
+
+      <div class="page" id="page-centralcom">
+        <div class="cc-hero">
+          <div class="cc-hero-esq"><div class="cc-selo"><i></i> AO VIVO</div><h2>Central Comercial</h2><p id="ccOla">Olá</p></div>
+          <div class="cc-meta" id="ccMeta"></div>
+        </div>
+        <div class="cc-kpis" id="ccKpis"></div>
+        <div class="cc-tabs">
+          <button class="cc-tab on" data-cc="fila" onclick="window.__ccAba('fila')"><b>Fila do dia</b><span>quem chamar agora</span><i data-n="fila"></i></button>
+          <button class="cc-tab" data-cc="conversas" onclick="window.__ccAba('conversas')"><b>Conversas</b><span>WhatsApp da LB</span><i data-n="conversas"></i></button>
+          <button class="cc-tab" data-cc="funil" onclick="window.__ccAba('funil')"><b>Funil</b><span>CRM de leads</span></button>
+          <button class="cc-tab" data-cc="agenda" onclick="window.__ccAba('agenda')"><b>Agenda</b><span>reuniões da semana</span></button>
+          <button class="cc-tab" data-cc="placar" onclick="window.__ccAba('placar')"><b>Placar</b><span>metas e ranking</span></button>
+          <button class="cc-tab" data-cc="marketing" onclick="window.__ccAba('marketing')"><b>Marketing</b><span>tráfego e diário</span></button>
+        </div>
+        <div class="cc-pane on" data-cc="fila"><div class="cc-escopo"><button data-v="meu" onclick="window.__ccEscopo('meu')">Meus leads</button><button data-v="todos" onclick="window.__ccEscopo('todos')">Todos</button></div><div id="ccFila"></div></div>
+        <div class="cc-pane" data-cc="conversas" id="ccPaneConversas"></div>
+        <div class="cc-pane" data-cc="funil" id="ccPaneFunil"></div>
+        <div class="cc-pane" data-cc="agenda"><div id="ccAgenda"></div></div>
+        <div class="cc-pane" data-cc="placar"><div id="ccPlacar"></div></div>
+        <div class="cc-pane" data-cc="marketing" id="ccPaneMarketing"></div>
       </div>
 
       <div class="page" id="page-cadastros">
@@ -3713,10 +3796,12 @@ const portalClienteId=()=>PORTAL_CLIENTES[currentEmail]||null;
 // Freela do comercial (Akemi, 15/10/2026): só a tela Comercial & Marketing (Marketing, Comercial, Tráfego Meta, CRM de Leads).
 // Não carrega clientes/tarefas/robôs — as regras do Firestore também só liberam comercialBoard, comercialDiario e crmLeads.
 const COMERCIAL_FREELA=['akemikimidesign@gmail.com','isalbmarketplace@gmail.com'];
-const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase());
+const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase())||['suporte@lbmarketplace.com.br','felipesoares@potencialmidia.com'].includes(String(currentEmail||'').toLowerCase());
 function startListeners(){if(unsubC)return;
   if(ehFreelaComercial()){document.body.classList.add('modo-comercial');unsubC=()=>{};
-    setTimeout(()=>{try{document.querySelector('.nav-item[data-page="comercial"]')?.click();}catch(e){}},700);
+    // Central Comercial (29/10/2026): Isa, Duda e Felipe só veem ela. Quem é da equipe lê os clientes só pra separar lead × cliente no WhatsApp.
+    if(USERS_MAP[currentEmail]&&!COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase()))try{onSnapshot(collection(db,'clientes'),sn=>{clientesCache=sn.docs.map(d=>({id:d.id,...d.data()}));},()=>{});}catch(e){}
+    setTimeout(()=>{try{const b=document.querySelector('.nav-item[data-page="centralcom"]');b?.classList.remove('hidden');b?.click();}catch(e){}},700);
     return;}
   if(portalClienteId()){document.body.classList.add('modo-portal');
     unsubC=onSnapshot(doc(db,"clientes",portalClienteId()),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();portalAviso();},e=>console.error('[portal]',e));
@@ -3738,7 +3823,7 @@ function atualizarTopbar(pg){
   ver('openMigBtn',pg==='clientes'&&isLincoln());
   ver('importInitialBtn',pg==='clientes'&&isLincoln());
 }
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='perguntas')pqIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;try{window.__ccAoNavegar(pg);}catch(e){}document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],centralcom:['Central Comercial','Fila do dia, conversas, funil, agenda e placar — tudo do comercial num lugar só.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='perguntas')pqIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 
 // ===== Menu agrupado (15/10/2026, Lincoln: "muita coisa na esquerda") — só REAGRUPA os botões que já existem (cliques,
 // permissões e telas continuam iguais); grupo some se nenhum item dele estiver liberado pra pessoa. Estado aberto/fechado no localStorage.
@@ -4063,6 +4148,7 @@ const IA_ENDPOINT='https://lbiagerador.vercel.app/api/gerar';
 /* ================= COMERCIAL & MARKETING (restrito) ================= */
 const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com','isalbmarketplace@gmail.com','suporte@lbmarketplace.com.br'];
 const isComercialAllowed=()=>COMERCIAL_EMAILS.includes(currentEmail);
+setInterval(()=>{const b=document.getElementById('navCentralCom');if(b&&currentEmail)b.classList.toggle('hidden',!isComercialAllowed());},2000);
 let comEntriesCache=[],comMetasCache=null,comMesAtual='';
 function comSetupAcesso(){
   const navBtn=document.querySelector('.nav-item[data-page="comercial"]');
@@ -4522,7 +4608,7 @@ function whatsappIniciar(){
   setInterval(()=>{if(document.getElementById('page-whatsapp')?.classList.contains('active')&&document.visibilityState==='visible')whatsappRenderizarLista();},60000);
   onSnapshot(query(collection(db,"whatsappConversas"),orderBy("ultimaMensagemEm","desc")),snap=>{
     whatsappConversasCache=snap.docs.map(d=>({id:d.id,...d.data()}));
-    whatsappRenderizarLista();
+    whatsappRenderizarLista();try{ccRedesenhar();}catch(e){}
     if(waConversaAtualTelefone)waAbrirConversa(waConversaAtualTelefone);
   });
 }
@@ -4672,7 +4758,7 @@ function waNaoLidas(c){
 // Marca como vista quando alguém da equipe está com a conversa aberta na tela.
 function waMarcarVista(c){
   if(!c||!waNaoLidas(c)||document.visibilityState!=='visible')return;
-  if(!document.getElementById('page-whatsapp')?.classList.contains('active'))return;
+  if(!document.getElementById('page-whatsapp')?.classList.contains('active')&&!(document.getElementById('page-centralcom')?.classList.contains('active')&&ccAba==='conversas'))return;
   const agora=new Date().toISOString();c.vistoEquipeEm=agora;
   updateDoc(doc(db,'whatsappConversas',c.id),{vistoEquipeEm:agora}).catch(e=>console.error('vistoEquipeEm',e));
 }
@@ -12147,6 +12233,7 @@ function crmIniciar(){
     crmPassarCloserAuto();
     crmRedesenhar(); // guarda e devolve o rascunho da ficha e da importação
     if(document.getElementById('page-whatsapp')?.classList.contains('active')){whatsappRenderizarLista();const cv=whatsappConversasCache.find(x=>x.id===waConversaAtualTelefone);if(cv)waFichaRender(cv);}
+    try{ccRedesenhar();}catch(e){}
   });
 }
 
@@ -13083,6 +13170,129 @@ window.__crmJuntar=async tel=>{const g=crmLeads.filter(l=>crmTel(l.whatsapp)===t
   if(melhor.donoEmail){up.donoEmail=melhor.donoEmail;up.donoNome=melhor.donoNome||'';}
   try{await updateDoc(doc(db,'crmLeads',fica.id),up);for(const l of sai)await deleteDoc(doc(db,'crmLeads',l.id));log(fica.id,fica.nome,'leads juntados',`${currentUser} juntou ${g.length} leads repetidos (${sai.map(l=>l.nome).join(', ')}).`).catch(()=>{});showToast('✓ Leads juntados.');}
   catch(e){showToast('Erro ao juntar: '+e.message);}};
+// ===== CENTRAL COMERCIAL (29/10/2026, Lincoln: "um sistema dentro do sistema, só pro comercial — Isa, Duda e Felipe só veem isso; tem que ser muito foda")
+// Junta numa tela: fila do dia (quem chamar agora), conversas do WhatsApp, funil (CRM), agenda da semana, placar e marketing/tráfego.
+// As conversas, o funil e o painel de marketing são os MESMOS do sistema — a tela pega emprestado (move os blocos pra cá e devolve ao sair).
+const CC_SO=['suporte@lbmarketplace.com.br','akemikimidesign@gmail.com','felipesoares@potencialmidia.com','isalbmarketplace@gmail.com'];
+const ccSoComercial=()=>CC_SO.includes(String(currentEmail||'').toLowerCase());
+let ccAba='fila',ccEscopo='meu',ccAgenda={de:null,eventos:null,erro:null,carregando:false},ccIniciado=false,ccTimer=null;
+const ccEu=()=>String(currentEmail||'').toLowerCase();
+// blocos emprestados: [seletor, id do marcador de onde volta]
+const CC_BLOCOS={conversas:'#page-whatsapp .wa-crm-wrap',funil:'#board-crm',marketing:'#page-comercial .brd-app'};
+function ccPegar(qual,destino){const el=document.querySelector(CC_BLOCOS[qual]);const alvo=document.getElementById(destino);if(!el||!alvo||alvo.contains(el))return;
+  if(!el.__lbVolta){const m=document.createComment('cc-'+qual);el.parentNode.insertBefore(m,el);el.__lbVolta=m;}alvo.appendChild(el);}
+function ccDevolverTudo(){ // o funil mora dentro do painel de marketing: volta pro marcador dele (que está dentro do painel), depois o painel volta
+  for(const sel of [CC_BLOCOS.funil,CC_BLOCOS.conversas,CC_BLOCOS.marketing]){const el=document.querySelector(sel);const m=el?.__lbVolta;if(m&&m.parentNode&&el.previousSibling!==m)m.parentNode.insertBefore(el,m.nextSibling);}
+}
+window.__ccAoNavegar=pg=>{if(pg!=='centralcom')ccDevolverTudo();else ccIniciar();};
+function ccIniciar(){
+  if(!ccEscopo)ccEscopo=ccSoComercial()?'meu':'todos';document.querySelectorAll('.cc-escopo button').forEach(b=>b.classList.toggle('on',b.dataset.v===ccEscopo));
+  const ola=document.getElementById('ccOla');if(ola){const h=new Date().getHours();ola.textContent=`${h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}, ${currentUser||''}`;}
+  if(!ccIniciado){ccIniciado=true;try{crmIniciar();}catch(e){}try{whatsappIniciar();}catch(e){}try{waRRIniciar();}catch(e){}
+    ccTimer=setInterval(()=>{if(document.getElementById('page-centralcom')?.classList.contains('active')&&document.visibilityState==='visible'){ccRenderTopo();if(ccAba==='fila')ccRenderFila();}},30000);
+  }
+  ccTrocarAba(ccAba,true);
+}
+window.__ccAba=a=>ccTrocarAba(a);
+function ccTrocarAba(a,forcar){ccAba=a;try{localStorage.setItem('ccAba',a);}catch(e){}
+  document.querySelectorAll('.cc-tab').forEach(b=>b.classList.toggle('on',b.dataset.cc===a));
+  document.querySelectorAll('.cc-pane').forEach(p=>p.classList.toggle('on',p.dataset.cc===a));
+  if(a==='conversas'){ccPegar('conversas','ccPaneConversas');whatsappRenderizarLista();}
+  if(a==='funil'){ccPegar('funil','ccPaneFunil');crmIniciar();renderCRM();}
+  if(a==='marketing'){ccPegar('marketing','ccPaneMarketing');try{brdIniciar();}catch(e){}}
+  if(a==='fila')ccRenderFila();if(a==='agenda')ccRenderAgenda(forcar);if(a==='placar')ccRenderPlacar();
+  ccRenderTopo();
+}
+// ---- números do topo ----
+const ccHoje=()=>crmHojeISO();
+function ccMeus(l){return ccEscopo==='todos'||String(l.donoEmail||'').toLowerCase()===ccEu()||(!l.donoEmail&&isLincoln());}
+function ccFilaItens(){
+  const hoje=ccHoje(),agora=Date.now();const vendas=(crmLeads||[]).filter(l=>crmFunilDe(l)==='vendas');
+  const novos=vendas.filter(l=>(l.stage||'novo')==='novo'&&!(l.tentativas>0)&&ccMeus(l)).map(l=>({t:'novo',l,quando:crmQuandoEntrou(l)})).sort((a,b)=>b.quando-a.quando);
+  const retornos=vendas.filter(l=>ccMeus(l)&&['atrasado','hoje'].includes(crmAcompanhamento(l,hoje).tipo)&&!((l.stage||'novo')==='novo'&&!(l.tentativas>0))).map(l=>({t:crmAcompanhamento(l,hoje).tipo,l,quando:Date.parse((l.proximoContato||hoje)+'T09:00:00')})).sort((a,b)=>a.quando-b.quando);
+  const conversas=(whatsappConversasCache||[]).filter(c=>waPrecisaResposta(c)&&waTipoConversa(c).tipo==='lead'&&(ccEscopo==='todos'||!waDono(c)||String(waDono(c)?.email||'').toLowerCase()===ccEu())).map(c=>({t:'whats',c,quando:waStatus(c).desde})).sort((a,b)=>a.quando-b.quando);
+  return{novos,retornos,conversas};
+}
+function ccRenderTopo(){
+  const el=document.getElementById('ccKpis');if(!el)return;const hoje=ccHoje(),mes=hoje.slice(0,7);const vendas=(crmLeads||[]).filter(l=>crmFunilDe(l)==='vendas');
+  const f=ccFilaItens();const novosHoje=vendas.filter(l=>(l.createdDate||'')===hoje).length;
+  const reunHoje=(calHoje.dia===hoje&&calHoje.eventos)?calHoje.eventos.length:vendas.filter(l=>String(l.reuniaoMarcada?.inicio||'').slice(0,10)===hoje).length;
+  const marcadasHoje=vendas.filter(l=>l.reuniaoMarcada?.em&&crmIsoDe(l.reuniaoMarcada.em)===hoje).length+vendas.filter(l=>(l.agendadoEm||'')===hoje&&!l.reuniaoMarcada?.em).length;
+  const fechMes=vendas.filter(l=>l.stage==='fechado'&&String(l.fechadoEm||'').startsWith(mes)).length;
+  const metaMes=CRM_VENDEDORES.reduce((t,v)=>t+(v.email==='suporte@lbmarketplace.com.br'?0:crmMetaDe(v.email)),0)||10;
+  const tents=vendas.reduce((t,l)=>t+(l.atividades||[]).filter(a=>CRM_TENTATIVAS[a.tipo]&&crmIsoDe(a.quando)===hoje).length,0);
+  const card=(id,rot,v,sub,cls='')=>`<div class="cc-kpi ${cls}"><span>${rot}</span><b id="${id}" data-v="0">0</b><em>${sub}</em></div>`;
+  if(!el.dataset.ok){el.dataset.ok='1';el.innerHTML=card('ccK1','Pra chamar agora',0,'leads novos sem contato','quente')+card('ccK2','WhatsApp esperando',0,'leads sem resposta','zap')+card('ccK3','Retornos de hoje',0,'atrasados + hoje')+card('ccK4','Reuniões hoje',0,'na agenda da LB','azul')+card('ccK5','Marcadas hoje',0,'reuniões agendadas no dia','verde')+card('ccK6','Contatos feitos hoje',0,'tentativas registradas')+card('ccK7','Fechados no mês',0,'contratos','ouro');}
+  const n=x=>String(Math.round(x));
+  animateTo(document.getElementById('ccK1'),f.novos.length,n);animateTo(document.getElementById('ccK2'),f.conversas.length,n);animateTo(document.getElementById('ccK3'),f.retornos.length,n);
+  animateTo(document.getElementById('ccK4'),reunHoje,n);animateTo(document.getElementById('ccK5'),marcadasHoje,n);animateTo(document.getElementById('ccK6'),tents,n);animateTo(document.getElementById('ccK7'),fechMes,n);
+  const meta=document.getElementById('ccMeta');if(meta){const pct=Math.min(100,Math.round(fechMes/metaMes*100));meta.innerHTML=`<div class="cc-anel" style="--p:${pct}"><b>${pct}%</b></div><div><span>Meta do mês</span><b>${fechMes} de ${metaMes} contratos</b><em>${novosHoje} lead(s) novo(s) hoje</em></div>`;}
+  const cont={fila:f.novos.length+f.retornos.length+f.conversas.length,conversas:f.conversas.length};
+  document.querySelectorAll('.cc-tab [data-n]').forEach(s=>{const v=cont[s.dataset.n];s.textContent=v?v:'';});
+}
+// ---- fila do dia ----
+function ccTempo(ms){const m=Math.max(0,Math.round((Date.now()-ms)/60000));return m<60?`${m} min`:m<1440?`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}`:`${Math.floor(m/1440)}d`;}
+function ccConversaDoLead(l){const k=waChaveTel(l.whatsapp);return k?(whatsappConversasCache||[]).find(c=>waChaveTel(c.telefone||c.id)===k):null;}
+function ccLinhaLead(it){const l=it.l;const conv=ccConversaDoLead(l);const min=Math.round((Date.now()-it.quando)/60000);
+  const sel=it.t==='novo'?`<span class="cc-tag ${min<=5?'ok':min<=30?'aten':'urg'}">chegou há ${ccTempo(it.quando)}</span>`:`<span class="cc-tag ${it.t==='atrasado'?'urg':'aten'}">${esc(crmAcompanhamento(l).texto||'retornar hoje')}</span>`;
+  const tel=crmTel(l.whatsapp);
+  return `<div class="cc-item"><div class="cc-av">${esc((l.nome||'?').trim().charAt(0).toUpperCase())}</div>
+    <div class="cc-info"><b onclick="window.__ccFicha('${l.id}')">${esc(l.nome||'Lead')}</b>${sel}${crmPerfilTag(l)}
+      <em>${esc(crmStageInfo(l.stage).label)} · ${esc(l.origem||'—')}${l.tentativas?` · ${l.tentativas} tentativa(s)`:''}${l.donoNome&&ccEscopo==='todos'?` · ${esc(l.donoNome)}`:''}</em>
+      ${l.ia?.proximoPasso?`<em class="cc-ia">IA: ${esc(l.ia.proximoPasso)}</em>`:''}</div>
+    <div class="cc-acoes">${tel?`<a class="cc-bt" href="tel:+55${tel}" title="Ligar">Ligar</a>`:''}
+      ${conv?`<button class="cc-bt zap" onclick="window.__ccConversa('${conv.id}')">WhatsApp</button>`:(l.whatsapp?`<a class="cc-bt zap" href="${crmWhatsLink(l.whatsapp)}" target="_blank">WhatsApp</a>`:'')}
+      <button class="cc-bt" onclick="window.__crmTentativa('${l.id}','nao_atendeu')">Não atendeu</button>
+      <button class="cc-bt ouro" onclick="window.__crmMarcar('${l.id}')">Marcar reunião</button></div></div>`;}
+function ccLinhaConversa(it){const c=it.c;const d=waDono(c);const ult=[...(c.mensagens||[])].reverse().find(m=>m.de==='lead');
+  return `<div class="cc-item"><div class="cc-av zap">${esc(waIniciais(c.nome||c.telefone))}</div>
+    <div class="cc-info"><b onclick="window.__ccConversa('${c.id}')">${esc(c.nome||c.telefone||c.id)}</b>${waSlaHtml(c)}<em>"${esc(String(waPreviewTexto(ult)||'').slice(0,110))}"</em>${d?`<em>${esc(d.nome)}</em>`:''}</div>
+    <div class="cc-acoes"><button class="cc-bt zap" onclick="window.__ccConversa('${c.id}')">Responder</button></div></div>`;}
+function ccRenderFila(){const el=document.getElementById('ccFila');if(!el)return;const f=ccFilaItens();
+  const bloco=(tit,sub,lista,fn,vazio)=>`<section class="cc-bloco"><div class="cc-bloco-cab"><b>${tit} <span>${lista.length}</span></b><em>${sub}</em></div>${lista.length?lista.slice(0,40).map(fn).join(''):`<div class="cc-vazio">${vazio}</div>`}${lista.length>40?`<div class="cc-vazio">+${lista.length-40} — veja no Funil</div>`:''}</section>`;
+  el.innerHTML=bloco('Leads novos — chamar agora','meta: primeiro contato em até 5 minutos',f.novos,ccLinhaLead,'Nenhum lead novo esperando. 👏')
+    +bloco('WhatsApp esperando resposta','leads que escreveram e ainda não responderam',f.conversas,ccLinhaConversa,'Nenhuma conversa esperando.')
+    +bloco('Retornos de hoje e atrasados','cadência e próximos contatos marcados',f.retornos,ccLinhaLead,'Nada atrasado.');}
+window.__ccEscopo=v=>{ccEscopo=v;try{localStorage.setItem('ccEscopo',v);}catch(e){}document.querySelectorAll('.cc-escopo button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));ccRenderFila();ccRenderTopo();};
+window.__ccConversa=id=>{ccTrocarAba('conversas');setTimeout(()=>window.__waAbrirConversa(id),50);};
+window.__ccFicha=id=>{ccTrocarAba('funil');setTimeout(()=>window.__crmOpenEdit(id),80);};
+// ---- agenda da semana (conector da agenda da LB) ----
+async function ccCarregarAgenda(){const de=ccHoje();const ate=crmSomaDias(de,6);ccAgenda={de,eventos:ccAgenda.eventos,erro:null,carregando:true};
+  try{const d=await calWeb('eventos',{de:calIso(de,'00:00'),ate:calIso(ate,'23:59')});ccAgenda.eventos=(d.eventos||[]).filter(e=>e.status!=='cancelled'&&e.start?.dateTime);}catch(e){ccAgenda.erro=e.message;}
+  ccAgenda.carregando=false;if(ccAba==='agenda')ccRenderAgenda();}
+function ccRenderAgenda(forcar){const el=document.getElementById('ccAgenda');if(!el)return;
+  if((forcar||ccAgenda.de!==ccHoje())&&!ccAgenda.carregando){ccCarregarAgenda();}
+  if(ccAgenda.carregando&&!ccAgenda.eventos){el.innerHTML='<div class="cc-vazio">Lendo a agenda da LB…</div>';return;}
+  if(ccAgenda.erro){el.innerHTML=`<div class="cc-vazio" style="color:var(--red)">${esc(ccAgenda.erro)}</div>`;return;}
+  const dias={};for(const e of ccAgenda.eventos||[]){const d=new Date(e.start.dateTime).toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});(dias[d]=dias[d]||[]).push(e);}
+  const ordem=Array.from({length:7},(_,i)=>crmSomaDias(ccHoje(),i));
+  el.innerHTML=`<div class="cc-agenda-topo"><span>Próximos 7 dias · agenda LB MARKETPLACE</span><button class="cc-bt" onclick="window.__ccAgendaAtualizar()">↻ Atualizar</button></div><div class="cc-dias">${ordem.map(d=>{const evs=dias[d]||[];const dt=new Date(d+'T12:00:00');
+    return `<div class="cc-dia ${d===ccHoje()?'hoje':''}"><div class="cc-dia-cab"><b>${d===ccHoje()?'Hoje':dt.toLocaleDateString('pt-BR',{weekday:'short'})}</b><span>${dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</span><em>${evs.length} reunião(ões)</em></div>
+      ${evs.map(e=>{const l=calLeadDoEvento(e);const passou=new Date(e.end?.dateTime||e.start.dateTime)<new Date();const meet=e.hangoutLink;
+        return `<div class="cc-ev ${passou?'passou':''}"><b>${calHora(e.start.dateTime)}</b><div><span>${esc((e.summary||'').replace(/Sessão Estratégica Gratuita — LB Marketplace/i,'Sessão Estratégica'))}</span>${l?`<em onclick="window.__ccFicha('${l.id}')">${esc(l.nome)} · ${esc(crmStageInfo(l.stage).label)}</em>`:'<em class="sem">sem lead ligado</em>'}
+          <div class="cc-ev-acoes">${meet&&!passou?`<a class="cc-bt" href="${esc(meet)}" target="_blank">Meet</a>`:''}${l?.whatsapp?`<a class="cc-bt zap" href="${crmWhatsLink(l.whatsapp)}" target="_blank">WhatsApp</a>`:''}
+            ${l&&passou&&['novo','contato','agendado'].includes(l.stage||'novo')?`<button class="cc-bt verde" onclick="window.__crmMoveStage('${l.id}','compareceu')">Compareceu</button><button class="cc-bt" onclick="window.__ccFaltou('${l.id}')">Não veio</button>`:''}
+            ${l&&!passou&&['novo','contato'].includes(l.stage||'novo')?`<button class="cc-bt ouro" onclick="window.__crmMoveStage('${l.id}','agendado')">→ Agendado</button>`:''}</div></div></div>`;}).join('')||'<div class="cc-vazio">Livre</div>'}</div>`;}).join('')}</div>`;}
+window.__ccAgendaAtualizar=()=>{ccAgenda.de=null;ccRenderAgenda(true);};
+window.__ccFaltou=async id=>{const l=crmLeads.find(x=>x.id===id);if(!l)return;
+  try{const atividades=[...(l.atividades||[]),{tipo:'nota',quando:Date.now(),por:currentUser||'',nota:'Não compareceu à reunião — remarcar.'}];
+    const p=(l.stage||'novo')!=='contato'?crmMudancaEtapa(l,'contato',{por:currentUser||'',atividades}):{atividades};
+    Object.assign(p,{proximoContato:crmHojeISO(),atualizadoEm:crmHojeISO(),faltouReuniaoEm:Date.now()});await updateDoc(doc(db,'crmLeads',id),p);showToast('Marcado: não veio. Ficou pra remarcar hoje.');}
+  catch(e){showToast('Erro: '+e.message);}};
+// ---- placar ----
+function ccRenderPlacar(){const el=document.getElementById('ccPlacar');if(!el)return;const hoje=ccHoje(),mes=hoje.slice(0,7);const vendas=(crmLeads||[]).filter(l=>crmFunilDe(l)==='vendas');
+  const pessoas=[...CRM_VENDEDORES].map(v=>{const meus=vendas.filter(l=>String(l.donoEmail||'').toLowerCase()===v.email);
+    const tent=vendas.reduce((t,l)=>t+(l.atividades||[]).filter(a=>CRM_TENTATIVAS[a.tipo]&&crmIsoDe(a.quando)===hoje&&String(a.por||'').toLowerCase().startsWith(v.nome.toLowerCase())).length,0);
+    const marc=vendas.filter(l=>l.reuniaoMarcada?.em&&crmIsoDe(l.reuniaoMarcada.em).startsWith(mes)&&String(l.reuniaoMarcada.por||'').toLowerCase().startsWith(v.nome.toLowerCase())).length;
+    const fech=meus.filter(l=>l.stage==='fechado'&&String(l.fechadoEm||'').startsWith(mes)).length;
+    const abertos=meus.filter(l=>CRM_ATIVAS.includes(l.stage||'novo')).length;
+    return{...v,tent,marc,fech,abertos,papel:CRM_PAPEL[v.email]||(v.email==='lincoln@lbmarketplace.com.br'?'Diretoria':'')};}).filter(p=>p.abertos||p.fech||p.tent||p.marc);
+  el.innerHTML=`<div class="cc-placar">${pessoas.sort((a,b)=>(b.fech-a.fech)||(b.marc-a.marc)||(b.tent-a.tent)).map((p,i)=>`<div class="cc-pessoa ${i===0?'top':''}"><div class="cc-pos">${i+1}º</div><div class="cc-pessoa-nome"><b>${esc(p.nome)}</b><span>${esc(p.papel)}</span></div>
+    <div class="cc-num"><b>${p.tent}</b><span>contatos hoje</span></div><div class="cc-num"><b>${p.marc}</b><span>reuniões marcadas (mês)</span></div><div class="cc-num"><b>${p.fech}</b><span>fechados (mês)</span></div><div class="cc-num"><b>${p.abertos}</b><span>leads abertos</span></div></div>`).join('')}</div>
+    <div class="cc-pv">${CRM_VENDEDORES.filter(v=>ccSoComercial()?v.email===ccEu():true).filter(v=>v.email!=='lincoln@lbmarketplace.com.br'||isLincoln()).map(v=>crmPainelVendedorHtml(v)).join('')}</div>`;}
+// atualiza a central quando muda lead/conversa
+const ccRedesenhar=()=>{if(!document.getElementById('page-centralcom')?.classList.contains('active'))return;ccRenderTopo();if(ccAba==='fila')ccRenderFila();if(ccAba==='placar')ccRenderPlacar();if(ccAba==='agenda'&&ccAgenda.eventos)ccRenderAgenda();};
+try{ccAba=localStorage.getItem('ccAba')||'fila';ccEscopo=localStorage.getItem('ccEscopo')||'';}catch(e){}
 // importar lista de prospecção ativa (Duda)
 window.__crmImport=abrir=>{crmImportOpen=abrir;if(!abrir){crmImportPrev=null;crmImpTexto='';}if(abrir){leadFormOpen=false;editingLeadId=null;}renderCRM();};
 window.__crmImpOrigem=v=>{crmImpOrigem=v;};

@@ -52,6 +52,9 @@ service cloud.firestore {
     }
     // Duda/Akemi (freela, fora da equipe): painel comercial e o histórico das ações dela no CRM
     match /comercialBoard/{resto=**} { allow read, write: if comercialFreela(); }
+    // Central Comercial (29/10/2026): o comercial de fora da equipe (Duda) usa as conversas do WhatsApp e as respostas rápidas
+    match /whatsappConversas/{resto=**} { allow read, write: if comercialFreela(); }
+    match /whatsappRespostasRapidas/{resto=**} { allow read, write: if comercialFreela(); }
     match /comercialDiario/{resto=**} { allow read, write: if comercialFreela(); }
     match /historico/{id} { allow create: if comercialFreela(); }
     // Gastos pessoais do Lincoln: só ele
