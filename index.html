@@ -11483,11 +11483,14 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
     if(r.ok)criados.push({...r,cor,tam:t.tam});else erros.push(`${[cor,t.tam].filter(Boolean).join(' ')||'produto'}: ${r.erro}`);
     // loja oficial (Yashop 23/10/2026): o ML exige o EAN de verdade — "não tem código cadastrado" não vale. Para e explica.
     if(!r.ok&&/\[GTIN\] are required/i.test(r.erro||'')){erros.length=0;erros.push('o Mercado Livre exige o CÓDIGO DE BARRAS (EAN) desse produto — nessa conta não dá pra mandar "não tem código". Preencha o campo "Código de barras / EAN" com o número da etiqueta do produto e clique em "Tentar de novo só no Mercado Livre".');break;}
-    if(!r.ok&&/unable_to_list/.test(r.erro||'')&&!criados.length){contaBloqueada=true;break;}
+    if(!r.ok&&/unable_to_list/.test(r.erro||'')&&!criados.length){contaBloqueada=true;window.__mlCausaBloqueio=[].concat(r.resposta?.cause||[]).map(x=>typeof x==='string'?x:(x?.code||x?.message||'')).filter(Boolean);break;}
   }if(contaBloqueada)break;}
   // seller.unable_to_list = a CONTA não pode anunciar (Djan 05/10, VYM 14/10/2026) — lê o motivo no /users e para no 1º erro
   if(contaBloqueada){let mot='a conta do ML está impedida de anunciar';try{const us=await ler(`/users/${c.mlUserId}`);const stt=us?.status||{};const m=[];
-      if(stt.mercadoenvios&&stt.mercadoenvios!=='accepted')m.push(`Mercado Envios "${stt.mercadoenvios}" — ativar em Preferências de venda → Formas de entrega`);
+      // motivo que o próprio ML manda no erro (BRK Elegance 29/10/2026: "restrictions_coliving" com Mercado Envios já ativo)
+      const CAUSA_ML={restrictions_coliving:'o ML ligou essa conta a OUTRA conta do mesmo dono/aparelho/documento (restrição de "convivência de contas") — a cliente precisa abrir um chamado no Mercado Livre (Ajuda → Minha conta → "não consigo anunciar") e confirmar a identidade; não é problema do anúncio'};
+      for(const k of (window.__mlCausaBloqueio||[]))m.push(CAUSA_ML[k]||`motivo do ML: ${k}`);
+      if(stt.mercadoenvios&&stt.mercadoenvios!=='accepted'&&!(window.__mlCausaBloqueio||[]).length)m.push(`Mercado Envios "${stt.mercadoenvios}" — ativar em Preferências de venda → Formas de entrega`);
       if(stt.list&&stt.list.allow===false)m.push(`anúncios bloqueados${(stt.list.codes||[]).length?` (${stt.list.codes.join(', ')})`:''}`);
       if(stt.sell&&stt.sell.allow===false)m.push(`vendas bloqueadas${(stt.sell.codes||[]).length?` (${stt.sell.codes.join(', ')})`:''}`);
       if(stt.site_status&&stt.site_status!=='active')m.push(`conta "${stt.site_status}"`);
