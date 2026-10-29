@@ -13192,6 +13192,7 @@ function ccIniciar(){
     ccTimer=setInterval(()=>{if(document.getElementById('page-centralcom')?.classList.contains('active')&&document.visibilityState==='visible'){ccRenderTopo();if(ccAba==='fila')ccRenderFila();}},30000);
   }
   ccTrocarAba(ccAba,true);
+  if(!ccAgenda.eventos&&!ccAgenda.carregando)ccCarregarAgenda();
 }
 window.__ccAba=a=>ccTrocarAba(a);
 function ccTrocarAba(a,forcar){ccAba=a;try{localStorage.setItem('ccAba',a);}catch(e){}
@@ -13216,7 +13217,7 @@ function ccFilaItens(){
 function ccRenderTopo(){
   const el=document.getElementById('ccKpis');if(!el)return;const hoje=ccHoje(),mes=hoje.slice(0,7);const vendas=(crmLeads||[]).filter(l=>crmFunilDe(l)==='vendas');
   const f=ccFilaItens();const novosHoje=vendas.filter(l=>(l.createdDate||'')===hoje).length;
-  const reunHoje=(calHoje.dia===hoje&&calHoje.eventos)?calHoje.eventos.length:vendas.filter(l=>String(l.reuniaoMarcada?.inicio||'').slice(0,10)===hoje).length;
+  const reunHoje=(ccAgenda.de===hoje&&ccAgenda.eventos)?ccAgenda.eventos.filter(e=>String(e.start?.dateTime||'').slice(0,10)===hoje).length:(calHoje.dia===hoje&&calHoje.eventos)?calHoje.eventos.length:vendas.filter(l=>String(l.reuniaoMarcada?.inicio||'').slice(0,10)===hoje).length;
   const marcadasHoje=vendas.filter(l=>l.reuniaoMarcada?.em&&crmIsoDe(l.reuniaoMarcada.em)===hoje).length+vendas.filter(l=>(l.agendadoEm||'')===hoje&&!l.reuniaoMarcada?.em).length;
   const fechMes=vendas.filter(l=>l.stage==='fechado'&&String(l.fechadoEm||'').startsWith(mes)).length;
   const metaMes=CRM_VENDEDORES.reduce((t,v)=>t+(v.email==='suporte@lbmarketplace.com.br'?0:crmMetaDe(v.email)),0)||10;
@@ -13259,7 +13260,7 @@ window.__ccFicha=id=>{ccTrocarAba('funil');setTimeout(()=>window.__crmOpenEdit(i
 // ---- agenda da semana (conector da agenda da LB) ----
 async function ccCarregarAgenda(){const de=ccHoje();const ate=crmSomaDias(de,6);ccAgenda={de,eventos:ccAgenda.eventos,erro:null,carregando:true};
   try{const d=await calWeb('eventos',{de:calIso(de,'00:00'),ate:calIso(ate,'23:59')});ccAgenda.eventos=(d.eventos||[]).filter(e=>e.status!=='cancelled'&&e.start?.dateTime);}catch(e){ccAgenda.erro=e.message;}
-  ccAgenda.carregando=false;if(ccAba==='agenda')ccRenderAgenda();}
+  ccAgenda.carregando=false;if(ccAba==='agenda')ccRenderAgenda();ccRenderTopo();}
 function ccRenderAgenda(forcar){const el=document.getElementById('ccAgenda');if(!el)return;
   if((forcar||ccAgenda.de!==ccHoje())&&!ccAgenda.carregando){ccCarregarAgenda();}
   if(ccAgenda.carregando&&!ccAgenda.eventos){el.innerHTML='<div class="cc-vazio">Lendo a agenda da LB…</div>';return;}
