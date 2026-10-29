@@ -12744,6 +12744,15 @@ const crmChanceTxt=l=>CRM_ATIVAS.includes(l.stage||'novo')?`chance ${Math.round(
 // Agenda = principal do lincoln@lbmarketplace.com.br ("LB MARKETPLACE"), compartilhada pra editar com Carol, Guilherme e Isa.
 // Login do Google no navegador (escopo calendar.events, token de 1 h guardado na sessão); a página de agendamento continua igual.
 const CAL_ID='lincoln@lbmarketplace.com.br';
+// 29/10/2026: a agenda passa pelo conector (Apps Script na conta LB MARKETPLACE, ferramentas/agenda-lb/Codigo.gs) — ninguém precisa
+// "Conectar agenda" (no celular/app a janelinha do Google não voltava). O conector confere o login do sistema (idToken) e a lista da equipe.
+const CAL_WEB='https://script.google.com/macros/s/AKfycbxXxKzT9U0EeD6zuTB-n2m-tinl5HhmhgC6DwItLvv2uhzdSCX8ufjpmQRuY-hWJuiLmw/exec';
+async function calWeb(acao,dados={}){
+  const idToken=await auth.currentUser?.getIdToken();if(!idToken)throw new Error('Entre no sistema primeiro.');
+  const r=await fetch(CAL_WEB,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({acao,idToken,...dados})});
+  const d=await r.json().catch(()=>({ok:false,erro:'resposta inválida do conector da agenda'}));
+  if(!d.ok)throw new Error(d.erro||'erro no conector da agenda');return d;
+}
 const CAL_SCOPE='https://www.googleapis.com/auth/calendar.events';
 const CAL_API='https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(CAL_ID);
 const CAL_HORARIO=[9,19]; // horário de reunião oferecido (9h às 19h, de 30 em 30 min)
@@ -12772,8 +12781,8 @@ async function calFetch(caminho,opts={},tentou){
 const calIso=(dia,hora)=>`${dia}T${hora}:00-03:00`;
 const calHora=iso=>new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
 async function calEventosDoDia(dia){
-  const d=await calFetch(`/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(calIso(dia,'00:00'))}&timeMax=${encodeURIComponent(calIso(dia,'23:59'))}&maxResults=100`);
-  return (d.items||[]).filter(e=>e.status!=='cancelled'&&e.start?.dateTime);
+  const d=await calWeb('eventos',{de:calIso(dia,'00:00'),ate:calIso(dia,'23:59')});
+  return (d.eventos||[]).filter(e=>e.status!=='cancelled'&&e.start?.dateTime);
 }
 // evento ↔ lead: id do lead gravado no evento → e-mail de convidado → telefone na descrição → nome no título
 function calLeadDoEvento(e){
@@ -12809,12 +12818,11 @@ window.__calConectar=async()=>{try{if(calNoCelular()){await calConectarRedirect(
 window.__calAtualizar=()=>calCarregarHoje(true);
 function crmReunioesHojeHtml(){
   if(crmFunilAtual!=='vendas')return '';
-  if(calToken&&calHoje.dia!==crmHojeISO()&&!calHoje.carregando)setTimeout(()=>calCarregarHoje(false),0);
+  if(calHoje.dia!==crmHojeISO()&&!calHoje.carregando&&!calHoje.erro)setTimeout(()=>calCarregarHoje(false),0);
   const marcadas=crmLeads.filter(l=>l.reuniaoMarcada?.inicio&&String(l.reuniaoMarcada.inicio).slice(0,10)===crmHojeISO());
   let corpo='';
-  if(!calToken)corpo=`<div class="crm-rh-vazio">Conecte a agenda da LB pra ver as reuniões de hoje ligadas aos leads. <button class="btn btn-gold btn-sm" onclick="window.__calConectar()">Conectar agenda</button></div>`;
-  else if(calHoje.carregando&&!calHoje.eventos)corpo='<div class="crm-rh-vazio">Lendo a agenda…</div>';
-  else if(calHoje.erro)corpo=`<div class="crm-rh-vazio" style="color:var(--red)">${esc(calHoje.erro)} <button class="btn btn-ghost btn-sm" onclick="window.__calConectar()">Conectar de novo</button></div>`;
+  if(calHoje.carregando&&!calHoje.eventos)corpo='<div class="crm-rh-vazio">Lendo a agenda…</div>';
+  else if(calHoje.erro)corpo=`<div class="crm-rh-vazio" style="color:var(--red)">${esc(calHoje.erro)} <button class="btn btn-ghost btn-sm" onclick="window.__calAtualizar()">Tentar de novo</button></div>`;
   else{
     const evs=(calHoje.eventos||[]);
     corpo=evs.length?evs.map(e=>{const l=calLeadDoEvento(e);const passou=new Date(e.end?.dateTime||e.start.dateTime)<new Date();const meet=e.hangoutLink||e.conferenceData?.entryPoints?.find(p=>p.entryPointType==='video')?.uri;
@@ -12822,7 +12830,7 @@ function crmReunioesHojeHtml(){
         <div class="crm-rh-acoes">${l&&['novo','contato'].includes(l.stage||'novo')?`<button class="btn btn-gold btn-sm" title="Agendou pelo link — mover pra Agendado" onclick="window.__crmMoveStage('${l.id}','agendado')">→ Agendado</button>`:''}${l?.whatsapp?`<a class="btn btn-ghost btn-sm" href="${crmWhatsLink(l.whatsapp)}" target="_blank">WhatsApp</a>`:''}${meet?`<a class="btn btn-ghost btn-sm" href="${esc(meet)}" target="_blank">Meet</a>`:''}${l?`<button class="btn btn-gold btn-sm" onclick="window.__crmOpenEdit('${l.id}')">Ficha</button>`:''}</div></div>`;}).join(''):'<div class="crm-rh-vazio">Nenhuma reunião na agenda hoje.</div>';
   }
   const naoNaAgenda=marcadas.filter(l=>!(calHoje.eventos||[]).some(e=>e.id===l.reuniaoMarcada.eventoId));
-  return `<div class="crm-rh"><div class="crm-rh-tit">Reuniões de hoje${calToken?` <button class="crm-rh-at" onclick="window.__calAtualizar()" title="Ler a agenda de novo">↻</button>`:''}</div>${corpo}${calHoje.eventos&&naoNaAgenda.length?`<div class="crm-rh-vazio">Marcadas no CRM e não achadas na agenda: ${naoNaAgenda.map(l=>esc(l.nome)).join(', ')}</div>`:''}</div>`;
+  return `<div class="crm-rh"><div class="crm-rh-tit">Reuniões de hoje <button class="crm-rh-at" onclick="window.__calAtualizar()" title="Ler a agenda de novo">↻</button></div>${corpo}${calHoje.eventos&&naoNaAgenda.length?`<div class="crm-rh-vazio">Marcadas no CRM e não achadas na agenda: ${naoNaAgenda.map(l=>esc(l.nome)).join(', ')}</div>`:''}</div>`;
 }
 // caixa na ficha do lead
 // botões de etapa na ficha (29/10/2026, Lincoln: "no celular não dá pra arrastar o cartão")
@@ -12837,8 +12845,6 @@ function crmMarcarBox(lead){
 }
 window.__crmMarcar=async id=>{
   const lead=crmLeads.find(l=>l.id===id);if(!lead)return;
-  if(!calToken&&calNoCelular()){if(await lbConfirmar('Primeiro conecte a agenda da LB (abre o Google e volta pro sistema). Depois é só tocar em "Marcar reunião" de novo.',{okTxt:'Conectar agenda'}))window.__calConectar();return;}
-  try{await calPegarToken();}catch(e){lbAvisar(e.message);return;}
   const amanha=crmSomaDias(crmHojeISO(),1);
   const ov=document.createElement('div');ov.className='modal-overlay lb-dialog-overlay';
   ov.innerHTML=`<div class="modal lb-dialog" role="dialog" aria-modal="true" style="max-width:520px"><div class="lb-dialog-tit">Marcar reunião com ${esc(lead.nome)}</div>
@@ -12876,8 +12882,8 @@ window.__crmMarcar=async id=>{
         attendees:[{email:com},...(email?[{email}]:[])],
         conferenceData:{createRequest:{requestId:'lb'+Date.now().toString(36),conferenceSolutionKey:{type:'hangoutsMeet'}}},
         extendedProperties:{private:{leadId:lead.id}},reminders:{useDefault:true}};
-      const ev=await calFetch('/events?conferenceDataVersion=1&sendUpdates=all',{method:'POST',body:JSON.stringify(corpo)});
-      if(antigo&&antigo!==ev.id)await calFetch('/events/'+encodeURIComponent(antigo)+'?sendUpdates=all',{method:'DELETE'}).catch(()=>{});
+      const ev=(await calWeb('criar',{evento:corpo})).evento;
+      if(antigo&&antigo!==ev.id)await calWeb('apagar',{id:antigo}).catch(()=>{});
       const meet=ev.hangoutLink||'';
       const p=['novo','contato'].includes(lead.stage||'novo')?crmMudancaEtapa(lead,'agendado',{por:currentUser||crmEu()}):{atividades:[...(lead.atividades||[])]};
       p.atividades.push({tipo:'nota',quando:Date.now(),por:currentUser||'',nota:`Reunião marcada: ${ini.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})} com ${comNome}${meet?' · '+meet:''}`});
@@ -12892,7 +12898,7 @@ window.__crmMarcar=async id=>{
 };
 window.__crmDesmarcar=async id=>{const lead=crmLeads.find(l=>l.id===id);const r=lead?.reuniaoMarcada;if(!r)return;
   if(!await lbConfirmar(`Desmarcar a reunião de ${lead.nome}? O evento sai da agenda e o lead recebe o cancelamento por e-mail.`,{okTxt:'Desmarcar'}))return;
-  try{if(r.eventoId)await calFetch('/events/'+encodeURIComponent(r.eventoId)+'?sendUpdates=all',{method:'DELETE'}).catch(e=>{if(!/404|410|deleted/i.test(e.message))throw e;});
+  try{if(r.eventoId)await calWeb('apagar',{id:r.eventoId});
     await updateDoc(doc(db,'crmLeads',id),{reuniaoMarcada:deleteField(),atividades:[...(lead.atividades||[]),{tipo:'nota',quando:Date.now(),por:currentUser||'',nota:'Reunião desmarcada.'}],atualizadoEm:crmHojeISO()});calCarregarHoje(true);showToast('Reunião desmarcada.');}
   catch(e){lbAvisar('Não desmarcou: '+e.message);}};
 // link direto pra ficha (?lead=ID, vem na descrição do evento)
