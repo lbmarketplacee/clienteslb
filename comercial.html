@@ -205,7 +205,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
   .mob-bar button{background:none;border:0;color:#a1a1aa;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;padding:4px 6px;position:relative;min-width:56px}
   .mob-bar button svg{width:21px;height:21px}.mob-bar button.on{color:var(--ouro)}
   .mob-bar .bdg{position:absolute;top:0;right:8px;background:var(--verm);color:#fff;border-radius:999px;font-size:10px;padding:0 5px}
-  .chat{grid-template-columns:1fr;height:calc(100vh - 54px - 64px);margin:-14px -14px -90px}
+  .chat{grid-template-columns:minmax(0,1fr);height:calc(100vh - 54px - 64px);margin:-14px -14px -90px}
   .chat .c-conv{display:none}.chat.aberta .c-lista{display:none}.chat.aberta .c-conv{display:flex}
   .chat.ficha-on .c-ficha{top:54px;width:100%;bottom:64px}
   .bal{max-width:86%}
@@ -217,6 +217,8 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
   .topo .sub{display:none}
   .btn{padding:10px 13px;font-size:14px;border-radius:11px}.btn.sm{padding:9px 12px;font-size:13.5px;border-radius:10px;min-height:40px}
   .item{padding:14px}.item .ac .btn{flex:1;justify-content:center}
+  .ev{flex-wrap:wrap;padding:12px}.ev .inf{flex:1 1 60%}.ev .ac{width:100%;display:flex;gap:6px}.ev .ac .btn{flex:1;justify-content:center}
+  .c-lista,.c-conv{min-width:0}
   .item .inf b{font-size:15px}.item .inf em{white-space:normal}
   .c-cab{flex-wrap:wrap;gap:6px;padding:8px 10px}.c-cab .inf{flex:1 1 60%}.c-cab .btn.sm{min-height:34px;padding:6px 9px;font-size:12.5px}
   .c-env{padding:8px 10px calc(8px + env(safe-area-inset-bottom))}.c-env .chips .btn.sm{flex:1;justify-content:center}
