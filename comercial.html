@@ -932,7 +932,7 @@ function rAgenda() {
       <div class="c-filtros" style="margin-bottom:12px">${dias.slice(0, 10).map((d) => `<button class="${d === dia ? 'on' : ''}" data-agdia="${d}">${d === hoje() ? 'Hoje' : nomeDia(d)}</button>`).join('')}</div>
       ${quemFaz.map(([em, nm]) => { const ls = livresDoDia(dia, em, S.agenda.eventos); return `<div style="margin-bottom:14px"><b style="display:block;margin-bottom:6px">${esc(nm)} <span style="color:var(--dim);font-weight:500;font-size:12px">${ls.filter((x) => x.livre).length} livres</span></b><div class="livres">${ls.length ? ls.map((x) => x.livre ? `<button data-slot="${dia}|${x.h}|${em}">${x.h}</button>` : `<span class="ocup">${x.h}</span>`).join('') : '<span style="color:var(--dim);font-size:12.5px">Sem horário nesse dia.</span>'}</div></div>`; }).join('')}
     </div></div></div>`;
-  if (matchMedia('(max-width:900px)').matches) $('#agGrid').style.gridTemplateColumns = '1fr';
+  if (matchMedia('(max-width:900px)').matches) $('#agGrid').style.gridTemplateColumns = 'minmax(0,1fr)';
   $('#agRec').onclick = () => carregarAgenda(true);
   if ($('#agLemb')) $('#agLemb').onclick = abrirLembretes;
   el.querySelectorAll('[data-agdia]').forEach((b) => (b.onclick = () => { S.agendaDia = b.dataset.agdia; rAgenda(); }));
