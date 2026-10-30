@@ -149,7 +149,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
 .c-env.nota textarea{background:#fffbea;border-color:#f3d77a}
 .aviso{font-size:12px;padding:8px 10px;border-radius:9px;background:var(--lar2);color:#92400e}
 .c-ficha{border-left:1px solid var(--line);overflow:auto;padding:14px;min-width:0}
-.c-vazio{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--dim);height:100%}
+.c-vazio{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--dim);height:100%}.c-vazio svg{width:44px;height:44px;opacity:.5}
 /* ficha */
 .fx h4{margin:16px 0 8px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
 .fx .nome{font-size:18px;font-weight:800;margin:0}
@@ -635,7 +635,7 @@ function leadsDaFila(fil) {
   const L = vendas().filter(meuLead);
   if (fil === 'lnovos') return L.filter((l) => (l.stage || 'novo') === 'novo').sort((a, b) => M.criadoMs(b) - M.criadoMs(a));
   if (fil === 'lcontato') return L.filter((l) => l.stage === 'contato').sort((a, b) => String(a.proximoContato || '9').localeCompare(String(b.proximoContato || '9')) || M.criadoMs(b) - M.criadoMs(a));
-  if (fil === 'lagend') return L.filter((l) => l.stage === 'agendado').sort((a, b) => (M.ms(a.reuniaoMarcada?.inicio) || 9e15) - (M.ms(b.reuniaoMarcada?.inicio) || 9e15));
+  if (fil === 'lagend') { const t = (l) => M.ms(l.reuniaoMarcada?.inicio) || 9e15; const passou = (l) => t(l) < Date.now() - 2 * 3600000; return L.filter((l) => l.stage === 'agendado').sort((a, b) => (passou(a) - passou(b)) || (passou(a) ? t(b) - t(a) : t(a) - t(b))); }
   return [];
 }
 const telLead = (l) => { const d = String(l?.whatsapp || '').replace(/\D/g, ''); return d ? (d.length <= 11 ? '55' + d : d) : ''; };
@@ -644,12 +644,12 @@ function listaLeadsChat(fil) {
   let lista = leadsDaFila(fil);
   if (q) lista = lista.filter((l) => low([l.nome, l.whatsapp, l.email].join(' ')).normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q));
   $('#chatItens').innerHTML = lista.length ? lista.slice(0, 200).map((l) => { const c = convDoLead(l); const r = l.reuniaoMarcada; const tel = telLead(l);
-    const tag = fil === 'lagend' ? (r?.inicio ? `<span class="tag az">reunião ${M.diaBR(r.inicio) === hoje() ? 'hoje' : brData(M.diaBR(r.inicio))} ${hora(r.inicio)}${r.comNome ? ' · ' + esc(r.comNome) : ''}</span>${confirmacaoTag(l)}` : '<span class="tag la">sem horário</span>')
+    const tag = fil === 'lagend' ? (r?.inicio ? (M.ms(r.inicio) < Date.now() - 2 * 3600000 ? `<span class="tag vm">reunião ${brData(M.diaBR(r.inicio))} ${hora(r.inicio)} já passou — marcar compareceu/faltou</span>` : '') + `<span class="tag az">reunião ${M.diaBR(r.inicio) === hoje() ? 'hoje' : brData(M.diaBR(r.inicio))} ${hora(r.inicio)}${r.comNome ? ' · ' + esc(r.comNome) : ''}</span>${confirmacaoTag(l)}` : '<span class="tag la">sem horário</span>')
       : fil === 'lnovos' ? `<span class="tag ${Date.now() - M.criadoMs(l) < 30 * 60000 ? 've' : 'vm'}">chegou ${quando(M.criadoMs(l))}</span>${l.tentativas ? `<span class="tag">${N(l.tentativas)} tentativa(s)</span>` : ''}`
       : `<span class="tag">${N(l.tentativas || 0)} tentativa(s)</span>${l.proximoContato ? `<span class="tag ${l.proximoContato <= hoje() ? 'vm' : 'la'}">retorno ${l.proximoContato <= hoje() ? (l.proximoContato < hoje() ? 'atrasado' : 'hoje') : brData(l.proximoContato)}</span>` : '<span class="tag la">sem retorno</span>'}`;
     const u = c ? (c.mensagens || []).at(-1) : null;
     return `<div class="ci ${S.chatLead === l.id || (c && S.chatAberta === c.id) ? 'on' : ''}" data-lead="${l.id}"><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><div class="l1"><b>${esc(l.nome || 'Lead')}</b>${c && naoLidas(c) ? `<span class="naolida">${naoLidas(c)}</span>` : ''}${tel ? `<a class="btn sm" style="margin-left:auto;padding:2px 9px" href="tel:+${tel}" title="Ligar">Ligar</a>` : ''}</div>
-      <div class="pv">${u ? (u.de !== 'lead' ? '↗ ' : '') + esc(String(u.texto || '[' + (u.tipo || 'mídia') + ']').slice(0, 80)) : '<i>ainda sem conversa no WhatsApp da LB</i>'}</div><div>${tag}${!c ? '<span class="tag ro">começa por template</span>' : foraJanela(c) ? '<span class="tag la">fora das 24h</span>' : ''}${l.donoNome && !vendedor() ? `<span class="tag az">${esc(l.donoNome)}</span>` : ''}</div></div></div>`; }).join('') : '<div class="vazio">Ninguém nessa fila.</div>';
+      <div class="pv">${u ? (u.de !== 'lead' ? '↗ ' : '') + esc(String(u.texto || '[' + (u.tipo || 'mídia') + ']').slice(0, 80)) : '<i>ainda sem conversa no WhatsApp da LB</i>'}</div><div>${tag}${!c ? '<span class="tag ro">começa por template</span>' : !(c.mensagens || []).some((m) => m.de === 'lead') ? '<span class="tag la">ainda não respondeu · só template</span>' : foraJanela(c) ? '<span class="tag la">fora das 24h · só template</span>' : '<span class="tag ve">pode escrever</span>'}${l.donoNome && !vendedor() ? `<span class="tag az">${esc(l.donoNome)}</span>` : ''}</div></div></div>`; }).join('') : '<div class="vazio">Ninguém nessa fila.</div>';
   document.querySelectorAll('[data-lead]').forEach((d) => (d.onclick = (e) => { if (e.target.closest('a')) return; abrirLeadChat(d.dataset.lead); }));
 }
 function abrirLeadChat(id) {
