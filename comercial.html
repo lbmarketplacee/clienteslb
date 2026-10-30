@@ -994,7 +994,7 @@ async function sincronizarAgenda() {
   if (sincronizando || !S.agenda || !S.prontoLeads) return; sincronizando = true;
   try {
     for (const e of S.agenda.eventos) {
-      const ini = M.ms(e.start?.dateTime); if (ini < Date.now()) continue;
+      const ini = M.ms(e.start?.dateTime); if (ini < M.ms(hoje() + 'T00:00:00-03:00')) continue; // reunião de hoje que já começou também liga
       const l = leadDoEvento(e); if (!l || !['novo', 'contato', 'agendado'].includes(l.stage || 'novo')) continue;
       const r = l.reuniaoMarcada; if (r?.eventoId === e.id && M.ms(r.inicio) === ini) continue;
       if (r?.inicio && M.ms(r.inicio) > Date.now() && r.eventoId !== e.id) continue; // já tem outra reunião futura marcada pelo sistema
@@ -1022,7 +1022,15 @@ function leadDoEvento(e) {
   const id = e.extendedProperties?.private?.leadId; if (id) { const l = S.leads.find((x) => x.id === id); if (l) return l; }
   const ems = (e.attendees || []).map((a) => low(a.email)); const porEmail = S.leads.find((l) => l.email && ems.includes(low(l.email))); if (porEmail) return porEmail;
   const t = String(e.description || '').match(/\(?\d{2}\)?\s?9?\d{4}[-\s]?\d{4}/); if (t) { const l = leadPorTel.get(chaveTel(t[0])); if (l) return l; }
-  return null;
+  // 30/10/2026: evento criado à mão na agenda ("Reunião Jeiuson - LB MARKETPLACE"), sem convidado nem telefone → pelo nome no título,
+  // só se UM lead aberto tiver esse nome (1º nome com 4+ letras; nome completo vale mais)
+  const tit = ' ' + low(e.summary || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ') + ' ';
+  if (/sess[aã]o estrat/.test(tit)) return null;
+  const nm = (l) => low(l.nome || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const abertos = vendas().filter((l) => ['novo', 'contato', 'agendado', 'compareceu', 'negociacao'].includes(l.stage || 'novo'));
+  const completo = abertos.filter((l) => nm(l).includes(' ') && tit.includes(' ' + nm(l) + ' ')); if (completo.length === 1) return completo[0];
+  const primeiro = abertos.filter((l) => { const p = nm(l).split(' ')[0]; return p.length >= 4 && tit.includes(' ' + p + ' '); });
+  return primeiro.length === 1 ? primeiro[0] : null;
 }
 function eventoHtml(e) {
   const l = leadDoEvento(e); const cl = closersDoEvento(e).map((em) => CLOSERS.find((c) => c[0] === em)?.[1]).filter(Boolean);
