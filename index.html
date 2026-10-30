@@ -2608,6 +2608,10 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           </div>
           <button class="btn btn-gold btn-sm" id="relClienteBtn" style="margin-bottom:20px">Gerar relatório do cliente</button>
           <div id="relResultado"></div>
+          <div style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><b style="font-size:14px">Relatórios do mês — todos os clientes</b><span style="color:var(--text-dim);font-size:12.5px">os que já foram gerados no mês escolhido acima</span><button class="btn btn-ghost btn-sm" id="relTodosBtn" style="margin-left:auto">Ver lista</button></div>
+            <div id="relTodos"></div>
+          </div>
           <div class="dt-secao">
             <h3 class="dt-titulo">Datas comemorativas</h3>
             <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 12px;line-height:1.5">Quanto todas as lojas venderam no dia da data (10.10, 11.11, Black Friday…) comparado com a média dos 7 dias anteriores. Por marketplace e por loja, com Ads do dia, produtos campeões e o que os robôs fizeram. Sai sozinho na manhã seguinte de cada data.</p>
@@ -7937,6 +7941,26 @@ document.getElementById('relClienteBtn')?.addEventListener('click',async()=>{
       </div>`;
   }catch(e){resEl.innerHTML=`<div class="empty-state" style="padding:20px;color:var(--red)">${esc(e.message)}</div>`;}
   btn.disabled=false;btn.textContent='Gerar relatório do cliente';
+});
+// 30/10/2026 (Lincoln: mandar o relatório pra todos os clientes): lista os relatórios já gerados do mês, com link,
+// copiar e "WhatsApp" (abre o WhatsApp do aparelho com a mensagem pronta pro número de avisos do cliente)
+document.getElementById('relTodosBtn')?.addEventListener('click',async()=>{
+  const mes=document.getElementById('relMesInput').value; const el=document.getElementById('relTodos');
+  if(!mes){showToast('Escolha o mês.');return;}
+  el.innerHTML='<div class="empty-state" style="padding:14px">Carregando...</div>';
+  try{
+    const snap=await getDocs(query(collection(db,'relatorios'),where('mes','==',mes)));
+    const lista=snap.docs.map(d=>d.data()).filter(r=>r.token&&r.dados).sort((a,b)=>(b.dados.total||0)-(a.dados.total||0));
+    if(!lista.length){el.innerHTML='<div class="empty-state" style="padding:14px">Nenhum relatório gerado nesse mês ainda.</div>';return;}
+    const mesNome=lista[0].dados.mesNome||mes;
+    el.innerHTML=`<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:8px">${lista.length} relatórios</div>`+lista.map(r=>{
+      const c=clientesCache.find(x=>x.id===r.clienteId)||{}; const link=`${location.origin}/relatorio.html?r=${r.token}`;
+      const tel=String(c.whatsappAvisos||c.whatsappContrato||c.whatsapp||c.telefone||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+      const msg=`Oi! Aqui é da LB Marketplace. Segue o relatório de ${mesNome} da ${c.nome||r.dados.cliente}, com as vendas, os anúncios e tudo que a nossa equipe fez na loja no mês:\n${link}\n\nQualquer dúvida é só chamar!`;
+      return `<div class="cm-item" style="flex-wrap:wrap;gap:8px"><span class="nome">${esc(c.nome||r.dados.cliente)}</span><span style="color:var(--text-dim);font-size:12px">${r.dados.emAndamento?'parcial · ':''}${r.dados.incompleto?'incompleto · ':''}${fmtR(r.dados.total)}</span>
+        <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="${esc(link)}" target="_blank" rel="noopener">Abrir</a><button class="btn btn-ghost btn-sm" data-relcopiar="${esc(msg)}">Copiar mensagem</button>${tel?`<a class="btn btn-gold btn-sm" target="_blank" rel="noopener" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}">WhatsApp</a>`:'<span style="font-size:12px;color:var(--text-dim)">sem WhatsApp na ficha</span>'}</span></div>`;}).join('');
+    el.querySelectorAll('[data-relcopiar]').forEach(b=>b.onclick=()=>navigator.clipboard.writeText(b.dataset.relcopiar).then(()=>showToast('✓ Mensagem com o link copiada.')));
+  }catch(e){el.innerHTML=`<div class="empty-state" style="padding:14px;color:var(--red)">${esc(e.message)}</div>`;}
 });
 document.getElementById('relGerarBtn')?.addEventListener('click',async()=>{
   const clienteId=document.getElementById('relClienteSelect').value;
