@@ -91,7 +91,7 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
         <div class="kpi"><label>Investido</label><b>${brl(d.ads.investido)}</b></div>
         <div class="kpi"><label>Vendas pelos anúncios</label><b>${brl(d.ads.vendasAnuncios)}</b></div>
         <div class="kpi"><label>Retorno (ROAS)</label><b>${d.ads.roas?d.ads.roas.toLocaleString('pt-BR')+'x':'—'}</b>${d.ads.roas?`<i>cada R$ 1 virou ${brl(d.ads.roas)}</i>`:''}</div>
-        ${(()=>{const p=Object.values(d.ads.plataformas||{})[0];return p&&p.participacao!==null?`<div class="kpi"><label>Vendas via anúncio</label><b>${p.participacao.toLocaleString('pt-BR')}%</b><i>do vendido na ${esc(Object.keys(d.ads.plataformas)[0].replace(' Ads',''))}</i></div>`:'';})()}
+        ${(()=>{const p=Object.values(d.ads.plataformas||{})[0];return p&&p.participacao!==null&&p.participacao<=100?`<div class="kpi"><label>Vendas via anúncio</label><b>${p.participacao.toLocaleString('pt-BR')}%</b><i>do vendido na ${esc(Object.keys(d.ads.plataformas)[0].replace(' Ads',''))}</i></div>`:'';})()}
       </div>
       <div class="painel" style="margin-top:12px"><table><thead><tr><th>Plataforma</th><th class="n">Investido</th><th class="n">Vendas pelos anúncios</th><th class="n">Pedidos</th><th class="n">Cliques</th><th class="n">Retorno</th><th class="n">Retorno mês anterior</th></tr></thead><tbody>
         ${Object.entries(d.ads.plataformas).map(([n,p])=>`<tr><td><b>${esc(n)}</b></td><td class="n">${brl(p.investido)}</td><td class="n">${brl(p.vendasAnuncios)}</td><td class="n">${num(p.pedidosAnuncios)}</td><td class="n">${num(p.cliques)}</td><td class="n">${p.roas?p.roas.toLocaleString('pt-BR')+'x':'—'}</td><td class="n">${p.anterior?.roas?p.anterior.roas.toLocaleString('pt-BR')+'x':'—'}</td></tr>`).join('')}
@@ -101,7 +101,6 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
       <div class="feito">
         ${(a.equipe||[]).length?a.equipe.map(x=>`<div><b>${num(x.n)}</b><span>${esc(x.rotulo)}</span></div>`).join(''):`${a.ofertasRelampago?`<div><b>${num(a.ofertasRelampago)}</b><span>ofertas relâmpago colocadas no ar</span></div>`:''}${a.descontosRenovados?`<div><b>${num(a.descontosRenovados)}</b><span>descontos fixos renovados sem interrupção</span></div>`:''}`}
       </div>
-      ${fora.length?`<div class="fora">Produtos que ficaram de fora das ofertas: ${fora.map(([m,q])=>`${num(q)} por ${esc(m)}`).join(' · ')}.</div>`:''}
     </section>`:''}
     ${(d.rotina||[]).length?`<section><h2>A rotina da Equipe LB na sua loja</h2><div class="painel rotina"><ul>${d.rotina.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></section>`:''}`;
   document.getElementById('rodape').textContent=`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} · LB Marketplace Assessoria · Vendas consideram apenas pedidos válidos (cancelados e não pagos ficam de fora).`;
