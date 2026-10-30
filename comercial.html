@@ -629,10 +629,53 @@ function rChat() {
   if (S.erroConvs) { $('#chatItens').innerHTML = `<div class="vazio">Sem acesso às conversas ainda (${esc(S.erroConvs)}). Peça pro Lincoln liberar.</div>`; return; }
   listaChat(); convChat();
 }
+// 30/10/2026 (Lincoln): filas de LEADS no Atendimentos — a Isa chama os novos/em contato e confirma os agendados daqui
+const FILAS_LEAD = { lnovos: 'Leads novos', lcontato: 'Em contato', lagend: 'Agendados' };
+function leadsDaFila(fil) {
+  const L = vendas().filter(meuLead);
+  if (fil === 'lnovos') return L.filter((l) => (l.stage || 'novo') === 'novo').sort((a, b) => M.criadoMs(b) - M.criadoMs(a));
+  if (fil === 'lcontato') return L.filter((l) => l.stage === 'contato').sort((a, b) => String(a.proximoContato || '9').localeCompare(String(b.proximoContato || '9')) || M.criadoMs(b) - M.criadoMs(a));
+  if (fil === 'lagend') return L.filter((l) => l.stage === 'agendado').sort((a, b) => (M.ms(a.reuniaoMarcada?.inicio) || 9e15) - (M.ms(b.reuniaoMarcada?.inicio) || 9e15));
+  return [];
+}
+const telLead = (l) => { const d = String(l?.whatsapp || '').replace(/\D/g, ''); return d ? (d.length <= 11 ? '55' + d : d) : ''; };
+function listaLeadsChat(fil) {
+  const q = low(S.chatBusca).normalize('NFD').replace(/[̀-ͯ]/g, '');
+  let lista = leadsDaFila(fil);
+  if (q) lista = lista.filter((l) => low([l.nome, l.whatsapp, l.email].join(' ')).normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q));
+  $('#chatItens').innerHTML = lista.length ? lista.slice(0, 200).map((l) => { const c = convDoLead(l); const r = l.reuniaoMarcada; const tel = telLead(l);
+    const tag = fil === 'lagend' ? (r?.inicio ? `<span class="tag az">reunião ${M.diaBR(r.inicio) === hoje() ? 'hoje' : brData(M.diaBR(r.inicio))} ${hora(r.inicio)}${r.comNome ? ' · ' + esc(r.comNome) : ''}</span>${confirmacaoTag(l)}` : '<span class="tag la">sem horário</span>')
+      : fil === 'lnovos' ? `<span class="tag ${Date.now() - M.criadoMs(l) < 30 * 60000 ? 've' : 'vm'}">chegou ${quando(M.criadoMs(l))}</span>${l.tentativas ? `<span class="tag">${N(l.tentativas)} tentativa(s)</span>` : ''}`
+      : `<span class="tag">${N(l.tentativas || 0)} tentativa(s)</span>${l.proximoContato ? `<span class="tag ${l.proximoContato <= hoje() ? 'vm' : 'la'}">retorno ${l.proximoContato <= hoje() ? (l.proximoContato < hoje() ? 'atrasado' : 'hoje') : brData(l.proximoContato)}</span>` : '<span class="tag la">sem retorno</span>'}`;
+    const u = c ? (c.mensagens || []).at(-1) : null;
+    return `<div class="ci ${S.chatLead === l.id || (c && S.chatAberta === c.id) ? 'on' : ''}" data-lead="${l.id}"><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><div class="l1"><b>${esc(l.nome || 'Lead')}</b>${c && naoLidas(c) ? `<span class="naolida">${naoLidas(c)}</span>` : ''}${tel ? `<a class="btn sm" style="margin-left:auto;padding:2px 9px" href="tel:+${tel}" title="Ligar">Ligar</a>` : ''}</div>
+      <div class="pv">${u ? (u.de !== 'lead' ? '↗ ' : '') + esc(String(u.texto || '[' + (u.tipo || 'mídia') + ']').slice(0, 80)) : '<i>ainda sem conversa no WhatsApp da LB</i>'}</div><div>${tag}${!c ? '<span class="tag ro">começa por template</span>' : foraJanela(c) ? '<span class="tag la">fora das 24h</span>' : ''}${l.donoNome && !vendedor() ? `<span class="tag az">${esc(l.donoNome)}</span>` : ''}</div></div></div>`; }).join('') : '<div class="vazio">Ninguém nessa fila.</div>';
+  document.querySelectorAll('[data-lead]').forEach((d) => (d.onclick = (e) => { if (e.target.closest('a')) return; abrirLeadChat(d.dataset.lead); }));
+}
+function abrirLeadChat(id) {
+  const l = S.leads.find((x) => x.id === id); if (!l) return; const c = convDoLead(l);
+  if (c) { S.chatLead = id; abrirConversa(c.id); return; }
+  S.chatLead = id; S.chatAberta = null; S.chatNota = false; if (S.pagina !== 'chat') irPara('chat');
+  $('#chatBox')?.classList.add('aberta'); listaChat(); convChat(true);
+}
+// lead que ainda não tem conversa com o número da LB: o WhatsApp só deixa começar por template
+function paneSemConversa(box, l) {
+  box.dataset.k = '';
+  const tel = telLead(l); const r = l.reuniaoMarcada;
+  box.innerHTML = `<div class="c-cab"><button class="btn sm" id="cVoltar" style="display:${matchMedia('(max-width:900px)').matches ? 'inline-flex' : 'none'}">‹</button><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><b>${esc(l.nome || 'Lead')}</b><em>${esc(l.whatsapp || 'sem telefone')} · ${esc(etapaRot(l.stage))}</em></div><button class="btn sm" id="cFicha">Ficha</button></div>
+  <div class="c-msgs"><div class="vazio" style="max-width:420px;margin:30px auto;line-height:1.5">Esse lead ainda <b>não tem conversa</b> com o WhatsApp da LB.<br>A 1ª mensagem tem que ser um <b>template aprovado</b> (regra do WhatsApp). Quando ele responder, a conversa abre aqui e dá pra escrever livre.${r?.inicio ? `<br><br>Reunião: <b>${M.diaBR(r.inicio) === hoje() ? 'hoje' : brData(M.diaBR(r.inicio))} às ${hora(r.inicio)}</b>${r.comNome ? ' com ' + esc(r.comNome) : ''}` : ''}</div></div>
+  <div class="c-env"><div class="lin" style="flex-wrap:wrap">${tel ? `<button class="btn pri" id="slTpl">Mandar template</button><a class="btn" href="tel:+${tel}">Ligar</a>` : '<span class="aviso">Lead sem telefone — preencha na ficha.</span>'}<button class="btn ouro" data-marcar="${l.id}">${r?.inicio ? 'Remarcar' : 'Marcar reunião'}</button></div></div>`;
+  if ($('#slTpl')) $('#slTpl').onclick = () => abrirTemplates({ id: tel, telefone: tel, nome: l.nome, mensagens: [] }, l);
+  $('#cVoltar').onclick = () => { S.chatLead = null; $('#chatBox').classList.remove('aberta', 'ficha-on'); listaChat(); };
+  $('#cFicha').onclick = () => $('#chatBox').classList.toggle('ficha-on');
+  $('#chatFicha').innerHTML = `<button class="btn sm" style="float:right" onclick="document.getElementById('chatBox').classList.remove('ficha-on')">Fechar</button>` + fichaHtml(l);
+  ligarFicha($('#chatFicha'), l);
+}
 function listaChat() {
-  const fs = [['responder', 'Responder'], ['abertas', 'Abertas'], ['minhas', 'Minhas'], ['semdono', 'Sem dono'], ['ia', 'Com a IA'], ['resolvidas', 'Resolvidas'], ...(gestor() ? [['clientes', 'Clientes LB']] : [])];
-  $('#chatFiltros').innerHTML = fs.map(([k, r]) => { const n = convsDaFila(k).length; return `<button class="${S.chatFiltro === k ? 'on' : ''}" data-cf="${k}">${r}${k !== 'resolvidas' && n ? ' ' + n : ''}</button>`; }).join('');
+  const fs = [['responder', 'Responder'], ...Object.entries(FILAS_LEAD), ['abertas', 'Abertas'], ['minhas', 'Minhas'], ['semdono', 'Sem dono'], ['ia', 'Com a IA'], ['resolvidas', 'Resolvidas'], ...(gestor() ? [['clientes', 'Clientes LB']] : [])];
+  $('#chatFiltros').innerHTML = fs.map(([k, r]) => { const n = FILAS_LEAD[k] ? leadsDaFila(k).length : convsDaFila(k).length; return `<button class="${S.chatFiltro === k ? 'on' : ''}" data-cf="${k}">${r}${k !== 'resolvidas' && n ? ' ' + n : ''}</button>`; }).join('');
   document.querySelectorAll('[data-cf]').forEach((b) => (b.onclick = () => { S.chatFiltro = b.dataset.cf; listaChat(); }));
+  if (FILAS_LEAD[S.chatFiltro]) return listaLeadsChat(S.chatFiltro);
   const q = low(S.chatBusca).normalize('NFD').replace(/[̀-ͯ]/g, '');
   let lista = q ? [...convsVisiveis(), ...(gestor() ? convsVisiveis(true) : [])] : convsDaFila(S.chatFiltro);
   if (q) lista = lista.filter((c) => { const l = leadDaConv(c); const tx = [c.nome, c.telefone, c.id, l?.nome, ...(c.mensagens || []).slice(-30).map((m) => m.texto)].join(' '); return low(tx).normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q); });
@@ -644,6 +687,7 @@ function listaChat() {
   document.querySelectorAll('[data-abrir]').forEach((d) => (d.onclick = () => abrirConversa(d.dataset.abrir)));
 }
 function abrirConversa(id) {
+  if (!S.leads.some((l) => l.id === S.chatLead && convDoLead(l)?.id === id)) S.chatLead = null;
   S.chatAberta = id; S.chatNota = false; if (S.pagina !== 'chat') irPara('chat');
   $('#chatBox')?.classList.add('aberta'); listaChat(); convChat(true);
   const c = S.convs.find((x) => x.id === id); if (c && naoLidas(c)) updateDoc(doc(db, 'whatsappConversas', id), { vistoEquipeEm: new Date().toISOString() }).catch(() => { });
@@ -652,7 +696,8 @@ const foraJanela = (c) => { const u = [...(c?.mensagens || [])].reverse().find((
 function convChat(rolar) {
   const box = $('#chatConv'); if (!box) return;
   const c = S.convs.find((x) => x.id === S.chatAberta);
-  if (!c) { box.innerHTML = `<div class="c-vazio">${ico('chat')}<span>Escolha uma conversa</span></div>`; $('#chatFicha').innerHTML = ''; return; }
+  if (!c && S.chatLead) { const l = S.leads.find((x) => x.id === S.chatLead); const cc = l && convDoLead(l); if (cc) { S.chatAberta = cc.id; return convChat(true); } if (l) return paneSemConversa(box, l); }
+  if (!c) { box.dataset.k = ''; box.innerHTML = `<div class="c-vazio">${ico('chat')}<span>Escolha uma conversa</span></div>`; $('#chatFicha').innerHTML = ''; return; }
   const l = leadDaConv(c); const st = M.statusConversa(c);
   const itens = [...(c.mensagens || []).map((m, i) => ({ t: M.ms(m.em), m, i })), ...(c.notas || []).map((n) => ({ t: M.ms(n.em), nota: n }))].sort((a, b) => a.t - b.t);
   let dia = '';
