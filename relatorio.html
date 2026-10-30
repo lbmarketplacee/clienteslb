@@ -50,6 +50,7 @@
     body{background:#fff}.btn-pdf{display:none}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     main{padding-top:16px}.kpi,.painel,.grafico,.feito div,.resumo{break-inside:avoid}
   }
+.rotina ul{margin:0;padding:6px 6px 6px 22px}.rotina li{margin:7px 0;line-height:1.45}.rotina li::marker{color:#d4a94a}
 </style>
 </head>
 <body>
@@ -96,13 +97,13 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
         ${Object.entries(d.ads.plataformas).map(([n,p])=>`<tr><td><b>${esc(n)}</b></td><td class="n">${brl(p.investido)}</td><td class="n">${brl(p.vendasAnuncios)}</td><td class="n">${num(p.pedidosAnuncios)}</td><td class="n">${num(p.cliques)}</td><td class="n">${p.roas?p.roas.toLocaleString('pt-BR')+'x':'—'}</td><td class="n">${p.anterior?.roas?p.anterior.roas.toLocaleString('pt-BR')+'x':'—'}</td></tr>`).join('')}
       </tbody></table></div></section>`:''}
     ${Object.keys(d.porDia||{}).length?`<section><h2>Vendas por dia</h2><div class="grafico"><canvas id="graf"></canvas></div></section>`:''}
-    ${(a.ofertasRelampago||a.descontosRenovados)?`<section><h2>O que a LB fez por você</h2>
+    ${(a.equipe||[]).length||(a.ofertasRelampago||a.descontosRenovados)?`<section><h2>O que a Equipe LB fez pela sua loja</h2>
       <div class="feito">
-        ${a.ofertasRelampago?`<div><b>${num(a.ofertasRelampago)}</b><span>ofertas relâmpago mantidas no ar automaticamente</span></div>`:''}
-        ${a.descontosRenovados?`<div><b>${num(a.descontosRenovados)}</b><span>descontos fixos renovados sem interrupção</span></div>`:''}
+        ${(a.equipe||[]).length?a.equipe.map(x=>`<div><b>${num(x.n)}</b><span>${esc(x.rotulo)}</span></div>`).join(''):`${a.ofertasRelampago?`<div><b>${num(a.ofertasRelampago)}</b><span>ofertas relâmpago colocadas no ar</span></div>`:''}${a.descontosRenovados?`<div><b>${num(a.descontosRenovados)}</b><span>descontos fixos renovados sem interrupção</span></div>`:''}`}
       </div>
       ${fora.length?`<div class="fora">Produtos que ficaram de fora das ofertas: ${fora.map(([m,q])=>`${num(q)} por ${esc(m)}`).join(' · ')}.</div>`:''}
-    </section>`:''}`;
+    </section>`:''}
+    ${(d.rotina||[]).length?`<section><h2>A rotina da Equipe LB na sua loja</h2><div class="painel rotina"><ul>${d.rotina.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></section>`:''}`;
   document.getElementById('rodape').textContent=`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} · LB Marketplace Assessoria · Vendas consideram apenas pedidos válidos (cancelados e não pagos ficam de fora).`;
   document.getElementById('btnPdf').hidden=false;
   const dias=Object.keys(d.porDia||{}).sort();
