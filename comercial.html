@@ -649,7 +649,6 @@ function convChat(rolar) {
   const c = S.convs.find((x) => x.id === S.chatAberta);
   if (!c) { box.innerHTML = `<div class="c-vazio">${ico('chat')}<span>Escolha uma conversa</span></div>`; $('#chatFicha').innerHTML = ''; return; }
   const l = leadDaConv(c); const st = M.statusConversa(c);
-  const rascunho = $('#envTexto')?.value || ''; const focado = document.activeElement?.id === 'envTexto';
   const itens = [...(c.mensagens || []).map((m, i) => ({ t: M.ms(m.em), m, i })), ...(c.notas || []).map((n) => ({ t: M.ms(n.em), nota: n }))].sort((a, b) => a.t - b.t);
   let dia = '';
   const msgs = itens.map((x) => { const d = M.diaBR(x.t); const sep = d !== dia ? `<div class="dia-sep">${d === hoje() ? 'Hoje' : brData(d) + '/' + d.slice(0, 4)}</div>` : ''; dia = d;
@@ -659,19 +658,15 @@ function convChat(rolar) {
     const tr = m.midia?.id && c.transcricoes?.[m.midia.id] ? `<div style="font-size:12px;color:var(--dim);margin-top:4px"><i>“${esc(c.transcricoes[m.midia.id])}”</i></div>` : '';
     return sep + `<div class="bal ${cls}">${m.de !== 'lead' ? `<span class="quem">${m.de === 'ia' ? 'IA da LB' : esc(m.por || 'Equipe')}</span>` : ''}${esc(m.texto && !(m.midia && /^\[/.test(m.texto)) ? m.texto : '')}${midia}${tr}<small>${hora(x.t)}</small></div>`; }).join('');
   const dono = c.donoNome || l?.donoNome;
-  box.innerHTML = `<div class="c-cab"><button class="btn sm" id="cVoltar" style="display:${matchMedia('(max-width:900px)').matches ? 'inline-flex' : 'none'}">‹</button><div class="av" style="background:#dcfce7;color:#166534">${esc(iniciais(c.nome || l?.nome))}</div><div class="inf"><b>${esc(l?.nome || c.nome || c.telefone)}</b><em>${esc(c.telefone || c.id)}${dono ? ' · ' + esc(dono) : ' · sem dono'}${c.modo === 'auto' ? ' · IA respondendo' : ''}</em></div>
+  // 29/10/2026: a caixa de escrever só é montada quando muda a conversa/modo. Antes cada mensagem nova redesenhava tudo
+  // e o clique em Enviar (ou na sugestão da IA) caía num botão que já tinha sido trocado → não enviava.
+  const chave = [c.id, S.chatNota ? 'n' : 'm', foraJanela(c) ? 'f' : 'd', l?.id || ''].join('|');
+  if (box.dataset.k !== chave || !$('#envTexto')) { box.dataset.k = chave; montarEnvio(box, c, l); }
+  $('#cCab').innerHTML = `<div class="c-cab"><button class="btn sm" id="cVoltar" style="display:${matchMedia('(max-width:900px)').matches ? 'inline-flex' : 'none'}">‹</button><div class="av" style="background:#dcfce7;color:#166534">${esc(iniciais(c.nome || l?.nome))}</div><div class="inf"><b>${esc(l?.nome || c.nome || c.telefone)}</b><em>${esc(c.telefone || c.id)}${dono ? ' · ' + esc(dono) : ' · sem dono'}${c.modo === 'auto' ? ' · IA respondendo' : ''}</em></div>
     <button class="btn sm" id="cIA" title="IA responde sozinha / equipe assume">${c.modo === 'auto' ? 'Assumir' : 'Devolver pra IA'}</button>
     ${!dono || (low(c.donoEmail) !== S.email && !vendedor()) ? `<button class="btn sm" id="cPegar">Pegar pra mim</button>` : ''}
-    <button class="btn sm" id="cResolver">${st.status === 'resolvida' ? 'Reabrir' : 'Resolver'}</button><button class="btn sm" id="cFicha">Ficha</button></div>
-  <div class="c-msgs" id="cMsgs">${msgs || '<div class="vazio">Sem mensagens.</div>'}</div>
-  <div class="c-env ${S.chatNota ? 'nota' : ''}">${foraJanela(c) && !S.chatNota ? '<div class="aviso">Passou de 24h desde a última mensagem do lead: o WhatsApp só deixa mandar <b>template aprovado</b>.</div>' : ''}
-    <div class="lin"><textarea id="envTexto" rows="1" placeholder="${S.chatNota ? 'Nota interna (o lead não vê)…' : 'Escreva a mensagem… (Enter envia, Shift+Enter quebra linha)'}"></textarea><button class="btn pri" id="envBtn">${S.chatNota ? 'Salvar nota' : 'Enviar'}</button></div>
-    <div class="chips"><button class="btn sm" id="envIA">✨ Sugestão da IA</button><button class="btn sm" id="envTpl">Template</button><button class="btn sm" id="envNota">${S.chatNota ? 'Voltar pra mensagem' : 'Nota interna'}</button>${l ? `<button class="btn sm ouro" data-marcar="${l.id}">Marcar reunião</button>` : ''}</div></div>`;
-  const ta = $('#envTexto'); ta.value = rascunho; if (focado) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
-  ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; };
-  ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(max-width:900px)').matches) { e.preventDefault(); enviar(); } };
-  $('#envBtn').onclick = enviar; $('#envNota').onclick = () => { S.chatNota = !S.chatNota; convChat(); };
-  $('#envIA').onclick = sugerirIA; $('#envTpl').onclick = () => abrirTemplates(c, l);
+    <button class="btn sm" id="cResolver">${st.status === 'resolvida' ? 'Reabrir' : 'Resolver'}</button><button class="btn sm" id="cFicha">Ficha</button></div>`;
+  $('#cMsgs').innerHTML = msgs || '<div class="vazio">Sem mensagens.</div>';
   $('#cVoltar').onclick = () => { S.chatAberta = null; $('#chatBox').classList.remove('aberta', 'ficha-on'); listaChat(); };
   $('#cFicha').onclick = () => $('#chatBox').classList.toggle('ficha-on');
   $('#cResolver').onclick = () => updateDoc(doc(db, 'whatsappConversas', c.id), { resolvidaEm: st.status === 'resolvida' ? null : new Date().toISOString() }).then(() => toast(st.status === 'resolvida' ? 'Reaberta.' : 'Resolvida.')).catch((e) => toast(e.message));
@@ -683,18 +678,84 @@ function convChat(rolar) {
   $('#chatFicha').innerHTML = `<button class="btn sm" style="float:right" onclick="document.getElementById('chatBox').classList.remove('ficha-on')">Fechar</button>` + (ehCliente(c) ? `<div class="fx"><p class="nome">${esc(c.nome || c.telefone)}</p><div class="lin" style="margin:6px 0"><span class="tag az">Cliente LB · ${esc(S.clientesTel[chaveTel(c.telefone || c.id)] || '')}</span></div><p style="color:var(--dim);font-size:13px">Conversa de suporte de cliente. A ficha da loja fica no sistema LB.</p><a class="btn" href="/#loja" target="_blank">Abrir a Central da Loja</a></div>` : l ? fichaHtml(l) : `<div class="fx"><p class="nome">${esc(c.nome || c.telefone)}</p><p style="color:var(--dim)">Esse contato ainda não tem ficha no CRM.</p><button class="btn ouro" id="cCriarLead">Criar lead no CRM</button></div>`);
   if (ehCliente(c)) { } else if (l) ligarFicha($('#chatFicha'), l); else $('#cCriarLead').onclick = () => criarLeadDaConv(c);
 }
+function montarEnvio(box, c, l) {
+  const rascunho = $('#envTexto')?.value || ''; const focado = document.activeElement?.id === 'envTexto';
+  box.innerHTML = `<div id="cCab" style="display:contents"></div><div class="c-msgs" id="cMsgs"></div>
+  <div class="c-env ${S.chatNota ? 'nota' : ''}">${foraJanela(c) && !S.chatNota ? '<div class="aviso">Passou de 24h desde a última mensagem do lead: o WhatsApp só deixa mandar <b>template aprovado</b>.</div>' : ''}
+    <div class="lin"><textarea id="envTexto" rows="1" placeholder="${S.chatNota ? 'Nota interna (o lead não vê)…' : 'Escreva a mensagem… (Enter envia, Shift+Enter quebra linha)'}"></textarea>${S.chatNota ? '' : `<button class="btn" id="envAudio" title="Gravar áudio">🎤</button>`}<button class="btn pri" id="envBtn">${S.chatNota ? 'Salvar nota' : 'Enviar'}</button></div>
+    <div id="envGrav" style="display:none"></div>
+    <div class="chips"><button class="btn sm" id="envIA">✨ Sugestão da IA</button><button class="btn sm" id="envTpl">Template</button><button class="btn sm" id="envNota">${S.chatNota ? 'Voltar pra mensagem' : 'Nota interna'}</button>${l ? `<button class="btn sm ouro" data-marcar="${l.id}">Marcar reunião</button>` : ''}</div></div>`;
+  const ta = $('#envTexto'); ta.value = rascunho; if (focado || rascunho) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; }; ta.oninput();
+  ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(max-width:900px)').matches) { e.preventDefault(); enviar(); } };
+  $('#envBtn').onclick = enviar; $('#envNota').onclick = () => { S.chatNota = !S.chatNota; convChat(); };
+  $('#envIA').onclick = sugerirIA; $('#envTpl').onclick = () => { const cc = S.convs.find((x) => x.id === S.chatAberta); if (cc) abrirTemplates(cc, leadDaConv(cc)); };
+  if ($('#envAudio')) $('#envAudio').onclick = gravarAudio;
+}
+// ---- áudio pro lead (29/10/2026): grava no navegador e manda pelo WhatsApp da LB.
+// O WhatsApp aceita AAC/MP4, OGG e MP3 (não aceita webm, que é o que o Chrome grava) → no Chrome vira MP3 aqui mesmo.
+const AUD_MAX_S = 300;
+function audioFormato() {
+  const R = window.MediaRecorder; if (!R) return null;
+  for (const m of ['audio/mp4;codecs=mp4a.40.2', 'audio/ogg;codecs=opus']) if (R.isTypeSupported?.(m)) return { gravar: m, enviar: m.split(';')[0], ext: m.includes('mp4') ? 'm4a' : 'ogg' };
+  return { gravar: '', enviar: 'audio/mpeg', ext: 'mp3', converter: true };
+}
+function carregarLame() {
+  if (window.lamejs) return Promise.resolve();
+  return new Promise((ok, erro) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'; sc.onload = ok; sc.onerror = () => erro(new Error('não carregou o conversor de áudio')); document.head.appendChild(sc); });
+}
+async function paraMp3(blob) {
+  await carregarLame();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = await ctx.decodeAudioData(await blob.arrayBuffer()); ctx.close();
+  const ch = buf.getChannelData(0); const rate = buf.sampleRate;
+  const pcm = new Int16Array(ch.length); for (let i = 0; i < ch.length; i++) pcm[i] = Math.max(-32768, Math.min(32767, ch[i] * 32768));
+  const enc = new lamejs.Mp3Encoder(1, rate, 64); const partes = [];
+  for (let i = 0; i < pcm.length; i += 1152) { const d = enc.encodeBuffer(pcm.subarray(i, i + 1152)); if (d.length) partes.push(new Uint8Array(d)); }
+  const fim = enc.flush(); if (fim.length) partes.push(new Uint8Array(fim));
+  return new Blob(partes, { type: 'audio/mpeg' });
+}
+const blobBase64 = (b) => new Promise((ok, erro) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = erro; r.readAsDataURL(b); });
+async function gravarAudio() {
+  const c = S.convs.find((x) => x.id === S.chatAberta); if (!c) return;
+  if (foraJanela(c)) { toast('Fora da janela de 24h: áudio não vai. Use um template.'); return; }
+  const fmt = audioFormato(); if (!fmt || !navigator.mediaDevices?.getUserMedia) { toast('Esse navegador não grava áudio.'); return; }
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { toast('Libere o microfone pra gravar.'); return; }
+  const rec = new MediaRecorder(stream, fmt.gravar ? { mimeType: fmt.gravar } : undefined); const pedacos = []; let cancelado = false;
+  rec.ondataavailable = (e) => e.data.size && pedacos.push(e.data);
+  const g = $('#envGrav'); const ini = Date.now(); g.style.display = 'flex'; g.style.cssText += ';gap:8px;align-items:center';
+  g.innerHTML = `<span style="color:#dc2626;font-weight:700">● Gravando <span id="gravT">0:00</span></span><button class="btn sm" id="gravCanc">Cancelar</button><button class="btn sm pri" id="gravOk">Parar e enviar</button>`;
+  const tick = setInterval(() => { const s = Math.floor((Date.now() - ini) / 1000); const t = $('#gravT'); if (t) t.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; if (s >= AUD_MAX_S) rec.stop(); }, 500);
+  const fechar = () => { clearInterval(tick); stream.getTracks().forEach((t) => t.stop()); };
+  $('#gravCanc').onclick = () => { cancelado = true; rec.stop(); };
+  $('#gravOk').onclick = () => rec.stop();
+  rec.onstop = async () => {
+    fechar(); if (cancelado || !pedacos.length) { g.style.display = 'none'; g.innerHTML = ''; return; }
+    g.innerHTML = '<span>Enviando áudio…</span>';
+    try {
+      let blob = new Blob(pedacos, { type: fmt.gravar || rec.mimeType || 'audio/webm' });
+      if (fmt.converter) blob = await paraMp3(blob);
+      if (blob.size > 3 * 1024 * 1024) throw new Error('áudio grande demais (máx. 3 MB) — grave um mais curto');
+      const r = await api(WA_API, { acao: 'enviar_midia', telefone: c.id, base64: await blobBase64(blob), mime: fmt.enviar, nome: `audio-${Date.now()}.${fmt.ext}` });
+      if (r.ok === false) throw new Error(r.erro || 'não enviou');
+      toast('Áudio enviado.'); registrarContatoWhats(c);
+    } catch (e) { toast('Áudio: ' + e.message); }
+    g.style.display = 'none'; g.innerHTML = '';
+  };
+  rec.start(1000);
+}
 async function enviar() {
   const c = S.convs.find((x) => x.id === S.chatAberta); const ta = $('#envTexto'); const texto = ta.value.trim(); if (!c || !texto) return;
-  const b = $('#envBtn'); b.disabled = true;
+  const b = $('#envBtn'); if (b.disabled) return; b.disabled = true; const rot = b.textContent; b.textContent = 'Enviando…';
   try {
     if (S.chatNota) { await updateDoc(doc(db, 'whatsappConversas', c.id), { notas: arrayUnion({ por: S.nome, texto, em: new Date().toISOString() }) }); ta.value = ''; toast('Nota salva.'); }
     else {
       const r = await api(WA_API, { acao: 'enviar_mensagem', telefone: c.id, texto });
       if (r.ok === false) { if (foraJanela(c)) { toast('Fora da janela de 24h — use um template.'); abrirTemplates(c, leadDaConv(c)); } else toast(r.erro || 'Não enviou.'); }
-      else { ta.value = ''; ta.style.height = 'auto'; registrarContatoWhats(c); }
+      else { ta.value = ''; ta.style.height = 'auto'; toast('Enviada.'); registrarContatoWhats(c); }
     }
   } catch (e) { toast('Erro: ' + e.message); }
-  b.disabled = false;
+  const b2 = $('#envBtn') || b; b2.disabled = false; b2.textContent = rot;
 }
 // 1ª mensagem da equipe pra lead novo conta como contato no CRM (vai pra "Em contato")
 async function registrarContatoWhats(c) {
