@@ -360,7 +360,9 @@ function reindexar() { leadPorTel = new Map(); for (const l of S.leads) { const 
 const leadDaConv = (c) => leadPorTel.get(chaveTel(c.telefone || c.id)) || null;
 const convDoLead = (l) => { const k = chaveTel(l?.whatsapp); return k ? S.convs.find((c) => chaveTel(c.telefone || c.id) === k) : null; };
 const ehCliente = (c) => !!S.clientesTel[chaveTel(c.telefone || c.id)] || c.qualificacao === 'cliente';
-function meuLead(l) { if (!vendedor()) return true; return low(l.donoEmail) === S.email || low(l.reuniaoMarcada?.com) === S.email; }
+// 30/10/2026 (Lincoln): o Guilherme vê TODOS os agendados (pode chamar/ligar pra antecipar), mesmo os da Isa ou com reunião com outra pessoa
+const VE_TODOS_AGENDADOS = ['guilherme@lbmarketplace.com.br'];
+function meuLead(l) { if (!vendedor()) return true; if (VE_TODOS_AGENDADOS.includes(S.email) && l.stage === 'agendado') return true; return low(l.donoEmail) === S.email || low(l.reuniaoMarcada?.com) === S.email; }
 function minhaConv(c) { if (!vendedor()) return true; if (low(c.donoEmail) === S.email) return true; const l = leadDaConv(c); return !!l && meuLead(l); }
 const vendas = () => S.leads.filter((l) => (l.funil || 'vendas') === 'vendas');
 
@@ -648,7 +650,7 @@ function listaLeadsChat(fil) {
       : fil === 'lnovos' ? `<span class="tag ${Date.now() - M.criadoMs(l) < 30 * 60000 ? 've' : 'vm'}">chegou ${quando(M.criadoMs(l))}</span>${l.tentativas ? `<span class="tag">${N(l.tentativas)} tentativa(s)</span>` : ''}`
       : `<span class="tag">${N(l.tentativas || 0)} tentativa(s)</span>${l.proximoContato ? `<span class="tag ${l.proximoContato <= hoje() ? 'vm' : 'la'}">retorno ${l.proximoContato <= hoje() ? (l.proximoContato < hoje() ? 'atrasado' : 'hoje') : brData(l.proximoContato)}</span>` : '<span class="tag la">sem retorno</span>'}`;
     const u = c ? (c.mensagens || []).at(-1) : null;
-    return `<div class="ci ${S.chatLead === l.id || (c && S.chatAberta === c.id) ? 'on' : ''}" data-lead="${l.id}"><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><div class="l1"><b>${esc(l.nome || 'Lead')}</b>${c && naoLidas(c) ? `<span class="naolida">${naoLidas(c)}</span>` : ''}${tel ? `<a class="btn sm" style="margin-left:auto;padding:2px 9px" href="tel:+${tel}" title="Ligar">Ligar</a>` : ''}</div>
+    return `<div class="ci ${S.chatLead === l.id || (c && S.chatAberta === c.id) ? 'on' : ''}" data-lead="${l.id}"><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><div class="l1"><b>${esc(l.nome || 'Lead')}</b>${c && naoLidas(c) ? `<span class="naolida">${naoLidas(c)}</span>` : ''}${tel ? `<a class="btn sm" style="margin-left:auto;padding:2px 9px" href="tel:+${tel}" title="Ligar">Ligar</a>${vendedor() ? `<a class="btn sm zap" style="padding:2px 9px" target="_blank" href="https://wa.me/${tel}" title="Abre o WhatsApp do seu aparelho (seu número)">Meu Zap</a>` : ''}` : ''}</div>
       <div class="pv">${u ? (u.de !== 'lead' ? '↗ ' : '') + esc(String(u.texto || '[' + (u.tipo || 'mídia') + ']').slice(0, 80)) : '<i>ainda sem conversa no WhatsApp da LB</i>'}</div><div>${tag}${!c ? '<span class="tag ro">começa por template</span>' : !(c.mensagens || []).some((m) => m.de === 'lead') ? '<span class="tag la">ainda não respondeu · só template</span>' : foraJanela(c) ? '<span class="tag la">fora das 24h · só template</span>' : '<span class="tag ve">pode escrever</span>'}${l.donoNome && !vendedor() ? `<span class="tag az">${esc(l.donoNome)}</span>` : ''}</div></div></div>`; }).join('') : '<div class="vazio">Ninguém nessa fila.</div>';
   document.querySelectorAll('[data-lead]').forEach((d) => (d.onclick = (e) => { if (e.target.closest('a')) return; abrirLeadChat(d.dataset.lead); }));
 }
