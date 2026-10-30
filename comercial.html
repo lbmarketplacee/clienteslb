@@ -810,7 +810,9 @@ async function enviar() {
 // 1ª mensagem da equipe pra lead novo conta como contato no CRM (vai pra "Em contato")
 async function registrarContatoWhats(c) {
   const l = leadDaConv(c); if (!l || (l.stage || 'novo') !== 'novo') return;
-  try { await updateDoc(doc(db, 'crmLeads', l.id), aplicarAtividade(l, 'respondeu', { data: M.somaDias(hoje(), 1) })); } catch (e) { }
+  // 30/10/2026: registra como "WhatsApp enviado" (conta tentativa e marca o próximo retorno pela cadência) e move pra Em contato.
+  // Antes gravava "Respondeu", como se o lead tivesse respondido.
+  try { const p = aplicarAtividade(l, 'whatsapp'); p.stage = 'contato'; Object.assign(p, mudancaEtapa(l, 'contato', p.atividades)); await updateDoc(doc(db, 'crmLeads', l.id), p); } catch (e) { }
 }
 async function sugerirIA() {
   const c = S.convs.find((x) => x.id === S.chatAberta); if (!c) return; const ta = $('#envTexto'); const b = $('#envIA'); b.disabled = true; b.textContent = 'Pensando…';
