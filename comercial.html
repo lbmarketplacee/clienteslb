@@ -1000,7 +1000,7 @@ async function sincronizarAgenda() {
       const l = leadDoEvento(e); if (!l || !['novo', 'contato', 'agendado'].includes(l.stage || 'novo')) continue;
       const r = l.reuniaoMarcada; if (r?.eventoId === e.id && M.ms(r.inicio) === ini) continue;
       if (r?.inicio && M.ms(r.inicio) > Date.now() && r.eventoId !== e.id) continue; // já tem outra reunião futura marcada pelo sistema
-      const cl = closersDoEvento(e); const com = cl.find((x) => x !== 'lincoln@lbmarketplace.com.br') || cl[0] || 'lincoln@lbmarketplace.com.br';
+      const cl = closersDoEvento(e); const com = cl.find((x) => x !== 'lincoln@lbmarketplace.com.br') || REUNIAO_LINCOLN_VAI_PARA;
       const p = ['novo', 'contato'].includes(l.stage || 'novo') ? mudancaEtapa(l, 'agendado') : { atividades: [...(l.atividades || [])] };
       p.atividades.push({ tipo: 'nota', quando: Date.now(), por: 'Agenda', nota: `Reunião na agenda: ${new Date(ini).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` });
       p.reuniaoMarcada = { inicio: new Date(ini).toISOString(), fim: e.end?.dateTime ? new Date(e.end.dateTime).toISOString() : new Date(ini + 30 * 60000).toISOString(), eventoId: e.id, meet: e.hangoutLink || '', com, comNome: CLOSERS.find((c) => c[0] === com)?.[1] || '', por: 'Agenda Google', em: r?.em || Date.now(), origem: 'agenda' };
@@ -1018,7 +1018,14 @@ function confirmacaoTag(l) {
   if (r.lembreteDiaEm || r.lembrete1hEm) return '<span class="tag la">lembrete enviado · sem resposta</span>';
   return '<span class="tag">lembrete ainda não saiu</span>';
 }
-function closersDoEvento(e) { const at = (e.attendees || []).map((a) => low(a.email)); return CLOSERS.filter(([em]) => at.includes(em)).map(([em]) => em); }
+// 30/10/2026 (Lincoln): quem faz as reuniões marcadas pela página do Google (e qualquer evento só com o Lincoln) é o Guilherme.
+// A agenda é da conta lincoln@, por isso ele aparece como convidado em tudo. Reunião marcada pelo sistema com o Lincoln escolhido continua dele.
+const REUNIAO_LINCOLN_VAI_PARA = 'guilherme@lbmarketplace.com.br';
+function closersDoEvento(e) {
+  const at = (e.attendees || []).map((a) => low(a.email)); const cl = CLOSERS.filter(([em]) => at.includes(em)).map(([em]) => em);
+  if (cl.length === 1 && cl[0] === 'lincoln@lbmarketplace.com.br' && !e.extendedProperties?.private?.leadId) return [REUNIAO_LINCOLN_VAI_PARA];
+  return cl;
+}
 function meuEvento(e) { if (!vendedor()) return true; return closersDoEvento(e).includes(S.email); }
 function leadDoEvento(e) {
   const id = e.extendedProperties?.private?.leadId; if (id) { const l = S.leads.find((x) => x.id === id); if (l) return l; }
@@ -1040,7 +1047,7 @@ function eventoHtml(e) {
   return `<div class="ev"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b><em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) + ' ' + confirmacaoTag(l) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
 }
 function livresDoDia(dia, email, eventos, dur = 30) {
-  const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === 'lincoln@lbmarketplace.com.br'; }).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
+  const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === REUNIAO_LINCOLN_VAI_PARA || email === 'lincoln@lbmarketplace.com.br'; }).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
   const sem = new Date(dia + 'T12:00:00-03:00').getUTCDay(); // 0 domingo · 6 sábado
   if (sem === 0) return []; // domingo sem reunião
   const [hIni, hFim] = sem === 6 ? HORARIO_SABADO : HORARIO;
