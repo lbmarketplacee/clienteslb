@@ -267,6 +267,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
       <section class="pg" id="pg-chat"></section>
       <section class="pg" id="pg-funil"></section>
       <section class="pg" id="pg-agenda"></section>
+      <section class="pg" id="pg-resp"></section>
       <section class="pg" id="pg-camp"></section>
       <section class="pg" id="pg-equipe"></section>
     </div>
@@ -323,6 +324,7 @@ const PAGINAS = {
   chat: { rot: 'Atendimentos', sub: 'WhatsApp da LB', ic: 'chat', papeis: ['gestor', 'sdr', 'vendedor'] },
   funil: { rot: 'Funil', sub: 'CRM de leads', ic: 'funil', papeis: ['gestor', 'sdr', 'vendedor'] },
   agenda: { rot: 'Agenda', sub: 'Reuniões e horários livres', ic: 'agenda', papeis: ['gestor', 'sdr', 'vendedor'] },
+  resp: { rot: 'Respostas', sub: 'Tudo que chegou pelo formulário', ic: 'lista', papeis: ['gestor', 'sdr'] },
   camp: { rot: 'Campanhas', sub: 'De onde vêm os leads', ic: 'mega', papeis: ['gestor', 'sdr'] },
   equipe: { rot: 'Equipe', sub: 'Produtividade de cada um', ic: 'time', papeis: ['gestor'] },
 };
@@ -333,6 +335,7 @@ const IC = {
   funil: '<path d="M3 4h18l-7 8v6l-4 2v-8z"/>',
   agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
   mega: '<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 8a5 5 0 0 1 0 8M18 5a9 9 0 0 1 0 14"/>',
+  lista: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
   time: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11v6M14 14h6"/>',
   tel: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
@@ -425,7 +428,7 @@ function badges() {
 let rT; function render() { clearTimeout(rT); rT = setTimeout(renderJa, 60); }
 function renderJa() {
   badges();
-  const f = { dia: rDia, dash: rDash, chat: rChat, funil: rFunil, agenda: rAgenda, camp: rCamp, equipe: rEquipe }[S.pagina];
+  const f = { dia: rDia, dash: rDash, chat: rChat, funil: rFunil, agenda: rAgenda, resp: rResp, camp: rCamp, equipe: rEquipe }[S.pagina];
   try { f && f(); } catch (e) { console.error(e); }
   if ($('#drawer').classList.contains('on') && S.fichaId) rFicha();
 }
@@ -1253,6 +1256,64 @@ async function carregarMeta(forcar) {
   try { const r = await api(META_API, { acao: 'painel', de }); if (r.ok === false) throw new Error(r.erro || 'sem acesso'); S.meta = { ...r, __de: de }; S.metaErro = null; } catch (e) { S.metaErro = e.message; }
   S.metaCarregando = null; render();
 }
+// ================= RESPOSTAS DO FORMULÁRIO (31/10/2026, Lincoln: "igual o Typebot") =================
+// Cada lead que veio de formulário (próprio da LB em lbmarketplace.com.br/aplicacao ou o Typebot antigo) com as respostas.
+S.resp = S.resp || { q: '', st: 'todos', orig: 'todos', vende: 'todos' };
+function respDe(l) {
+  const rt = l.respostasTypebot || {}; const v = (...ks) => { for (const k of ks) if (rt[k] && !/^\{\{/.test(rt[k])) return String(rt[k]); return ''; };
+  const form = rt.formulario === 'lb-site' || /Formulário LB/.test(l.origem || '') ? 'Formulário LB' : 'Typebot';
+  return { tipo: v('tipoNegocio', 'TipoNegocio'), onde: v('canalVendas', 'CanalVendas'), vende: v('vendeMarketplace', 'VendeMarketplace') || l.vendeMarketplace || '',
+    form, fonte: [v('utm_source') || l.anuncio?.fonte, v('utm_medium') || l.anuncio?.meio].filter(Boolean).join(' · '), anuncio: l.anuncio?.anuncio || v('utm_content'), incompleto: !!l.formularioIncompleto };
+}
+function respostasLista() {
+  const p = periodo(), f = S.resp, q = f.q.trim().toLowerCase();
+  return S.leads.filter((l) => (l.respostasTypebot && Object.keys(l.respostasTypebot).length) || /Typebot|Formulário LB/.test(l.origem || ''))
+    .filter((l) => { const d = M.criadoDia(l); return d >= p.de && d <= p.ate; })
+    .map((l) => ({ l, r: respDe(l) }))
+    .filter(({ l, r }) => (f.st === 'todos' || (f.st === 'inc' ? r.incompleto : !r.incompleto))
+      && (f.orig === 'todos' || r.form === f.orig)
+      && (f.vende === 'todos' || (f.vende === 'sim' ? /^sim/i.test(r.vende) : f.vende === 'nao' ? /^ainda|^n[aã]o/i.test(r.vende) : !r.vende))
+      && (!q || [l.nome, l.whatsapp, l.email, r.tipo, r.onde].join(' ').toLowerCase().includes(q)))
+    .sort((a, b) => M.criadoMs(b.l) - M.criadoMs(a.l));
+}
+function rResp() {
+  const el = $('#pg-resp'); if (!S.prontoLeads) { el.innerHTML = '<div class="carreg">Lendo o CRM…</div>'; return; }
+  if (!el.dataset.pronto) {
+    el.dataset.pronto = '1';
+    el.innerHTML = `<div id="respPer"></div>
+    <div class="card painel" style="margin-top:12px"><div class="lin" style="flex-wrap:wrap;gap:8px;align-items:center">
+      <input type="search" id="respQ" placeholder="Buscar nome, WhatsApp, e-mail…" style="flex:1;min-width:200px">
+      <select id="respSt"><option value="todos">Completos e incompletos</option><option value="comp">Só completos</option><option value="inc">Parou no meio</option></select>
+      <select id="respOrig"><option value="todos">Formulário LB e Typebot</option><option value="Formulário LB">Formulário LB</option><option value="Typebot">Typebot</option></select>
+      <select id="respVende"><option value="todos">Já vende: todos</option><option value="sim">Já vende</option><option value="nao">Quer começar</option><option value="vazio">Não respondeu</option></select>
+      <button class="btn sm" id="respCsv">Baixar planilha</button></div></div>
+    <div id="respKpi" class="grid g4" style="margin-top:12px"></div>
+    <div class="card painel" style="margin-top:12px"><div class="tabw"><table class="tb"><thead><tr><th>Chegou</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Tipo de negócio</th><th>Onde vende</th><th>Já vende?</th><th>Origem</th><th>Status</th><th>Etapa</th></tr></thead><tbody id="respTb"></tbody></table></div><div id="respMais"></div></div>`;
+    const sync = () => { S.resp.q = $('#respQ').value; S.resp.st = $('#respSt').value; S.resp.orig = $('#respOrig').value; S.resp.vende = $('#respVende').value; respCorpo(); };
+    $('#respQ').addEventListener('input', sync); ['#respSt', '#respOrig', '#respVende'].forEach((k) => $(k).addEventListener('change', sync));
+    $('#respCsv').addEventListener('click', respCsv);
+  }
+  $('#respPer').innerHTML = chipsPeriodo();
+  respCorpo();
+}
+function respCorpo() {
+  const lst = respostasLista(), tot = lst.length, inc = lst.filter((x) => x.r.incompleto).length, sim = lst.filter((x) => /^sim/i.test(x.r.vende)).length;
+  const canais = {}; lst.forEach((x) => String(x.r.onde || '').split(/,\s*/).filter(Boolean).forEach((c) => { canais[c] = (canais[c] || 0) + 1; }));
+  const top = Object.entries(canais).sort((a, b) => b[1] - a[1])[0];
+  $('#respKpi').innerHTML = kpi('c-ou', 'lista', 'Respostas', tot, periodo().rot) + kpi('c-ve', 'funil', 'Completas', tot - inc, tot ? Math.round(((tot - inc) / tot) * 100) + '% terminaram' : '')
+    + kpi('c-vm', 'chat', 'Parou no meio', inc, 'só nome, e-mail e WhatsApp') + kpi('c-az', 'grafico', 'Já vendem', tot ? Math.round((sim / tot) * 100) + '%' : '—', top ? 'mais comum: ' + top[0] : '');
+  const dt = (l) => { const m = M.criadoMs(l); return m ? new Date(m).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'; };
+  const max = 300;
+  $('#respTb').innerHTML = lst.slice(0, max).map(({ l, r }) => `<tr data-ficha="${l.id}" style="cursor:pointer"><td>${dt(l)}</td><td><b>${esc(l.nome || '—')}</b></td><td>${esc(l.whatsapp || '')}</td><td>${esc(l.email || '')}</td><td>${esc(r.tipo || '—')}</td><td style="white-space:normal;min-width:160px">${esc(r.onde || '—')}</td><td>${r.vende ? `<span class="tag ${/^sim/i.test(r.vende) ? 've' : 'ou'}">${esc(r.vende)}</span>` : '—'}</td><td>${esc(r.form)}${r.fonte ? `<br><em style="color:var(--sub);font-size:12px">${esc(r.fonte)}</em>` : ''}</td><td>${r.incompleto ? '<span class="tag vm">parou no meio</span>' : '<span class="tag ve">completo</span>'}</td><td>${esc(etapaRot(l.stage))}</td></tr>`).join('') || '<tr><td colspan="10"><div class="vazio">Nenhuma resposta com esses filtros.</div></td></tr>';
+  $('#respMais').innerHTML = tot > max ? `<div class="vazio">Mostrando as ${max} mais novas de ${tot} — use a busca ou baixe a planilha.</div>` : '';
+}
+function respCsv() {
+  const lst = respostasLista(); const c = (x) => `"${String(x ?? '').replace(/"/g, '""')}"`;
+  const linhas = [['Chegou', 'Nome', 'WhatsApp', 'E-mail', 'Tipo de negócio', 'Onde vende', 'Já vende nos marketplaces', 'Formulário', 'Veio de', 'Status', 'Etapa', 'Responsável'].map(c).join(';')]
+    .concat(lst.map(({ l, r }) => [M.criadoMs(l) ? new Date(M.criadoMs(l)).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '', l.nome, l.whatsapp, l.email, r.tipo, r.onde, r.vende, r.form, r.fonte, r.incompleto ? 'Parou no meio' : 'Completo', etapaRot(l.stage), l.donoNome].map(c).join(';')));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })); a.download = `respostas-formulario-${hoje()}.csv`; a.click();
+}
+
 function rCamp() {
   const pg = $('#pg-camp'); const g = gestor();
   if (!pg.querySelector('#campMeta')) { pg.innerHTML = (g ? `<div class="sec" style="margin-top:0;display:flex;align-items:center;gap:10px">Campanha de Black Friday · leads que não fecharam <button class="btn sm" id="campRec">Atualizar</button></div><div id="campBox"><div class="carreg">Montando a campanha…</div></div><div class="sec">Meta Ads</div>` : '') + '<div id="campMeta"></div>'; if (g) { campanhaHtml(); $('#campRec').onclick = campanhaHtml; } }
