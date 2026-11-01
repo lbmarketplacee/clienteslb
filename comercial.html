@@ -1268,7 +1268,7 @@ function respDe(l) {
 function respostasLista() {
   const p = periodo(), f = S.resp, q = f.q.trim().toLowerCase();
   return S.leads.filter((l) => (l.respostasTypebot && Object.keys(l.respostasTypebot).length) || /Typebot|Formulário LB/.test(l.origem || ''))
-    .filter((l) => { const d = M.criadoDia(l); return d >= p.de && d <= p.ate; })
+    .filter((l) => { const m = M.criadoMs(l); const d = m ? M.diaBR(m) : M.criadoDia(l); return d >= p.de && d <= p.ate; })
     .map((l) => ({ l, r: respDe(l) }))
     .filter(({ l, r }) => (f.st === 'todos' || (f.st === 'inc' ? r.incompleto : !r.incompleto))
       && (f.orig === 'todos' || r.form === f.orig)
@@ -1283,10 +1283,10 @@ function rResp() {
     el.innerHTML = `<div id="respPer"></div>
     <div class="card painel" style="margin-top:12px"><div class="lin" style="flex-wrap:wrap;gap:8px;align-items:center">
       <input type="search" id="respQ" placeholder="Buscar nome, WhatsApp, e-mail…" style="flex:1;min-width:200px">
-      <select id="respSt"><option value="todos">Completos e incompletos</option><option value="comp">Só completos</option><option value="inc">Parou no meio</option></select>
-      <select id="respOrig"><option value="todos">Formulário LB e Typebot</option><option value="Formulário LB">Formulário LB</option><option value="Typebot">Typebot</option></select>
-      <select id="respVende"><option value="todos">Já vende: todos</option><option value="sim">Já vende</option><option value="nao">Quer começar</option><option value="vazio">Não respondeu</option></select>
-      <button class="btn sm" id="respCsv">Baixar planilha</button></div></div>
+      <select id="respSt" style="width:auto;flex:0 0 auto"><option value="todos">Completos e incompletos</option><option value="comp">Só completos</option><option value="inc">Parou no meio</option></select>
+      <select id="respOrig" style="width:auto;flex:0 0 auto"><option value="todos">Formulário LB e Typebot</option><option value="Formulário LB">Formulário LB</option><option value="Typebot">Typebot</option></select>
+      <select id="respVende" style="width:auto;flex:0 0 auto"><option value="todos">Já vende: todos</option><option value="sim">Já vende</option><option value="nao">Quer começar</option><option value="vazio">Não respondeu</option></select>
+      <button class="btn sm ouro" id="respCsv">Baixar planilha</button></div></div>
     <div id="respKpi" class="grid g4" style="margin-top:12px"></div>
     <div class="card painel" style="margin-top:12px"><div class="tabw"><table class="tb"><thead><tr><th>Chegou</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Tipo de negócio</th><th>Onde vende</th><th>Já vende?</th><th>Origem</th><th>Status</th><th>Etapa</th></tr></thead><tbody id="respTb"></tbody></table></div><div id="respMais"></div></div>`;
     const sync = () => { S.resp.q = $('#respQ').value; S.resp.st = $('#respSt').value; S.resp.orig = $('#respOrig').value; S.resp.vende = $('#respVende').value; respCorpo(); };
