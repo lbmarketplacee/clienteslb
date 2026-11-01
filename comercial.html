@@ -956,6 +956,14 @@ function rFicha() {
   d.innerHTML = `<button class="fechar" id="dFechar">×</button>` + fichaHtml(l); $('#dFechar').onclick = () => { d.classList.remove('on'); S.fichaId = null; };
   ligarFicha(d, l); if (foco && document.getElementById(foco)) { const i = document.getElementById(foco); i.value = val; i.focus(); }
 }
+// 31/10/2026: respostas do formulário (próprio da LB em /aplicacao ou Typebot) — os campos chegam em minúsculo (canalVendas…)
+function respostasForm(l) {
+  const rt = l.respostasTypebot || {}; const v = (...ks) => { for (const k of ks) if (rt[k] && !/^\{\{/.test(rt[k])) return rt[k]; return ''; };
+  const linhas = [['Tipo de negócio', v('tipoNegocio', 'TipoNegocio')], ['Onde vende', v('canalVendas', 'CanalVendas')], ['Já vende nos marketplaces?', v('vendeMarketplace', 'VendeMarketplace') || l.vendeMarketplace || ''],
+    ['Formulário', rt.formulario === 'lb-site' ? 'Site da LB' : (Object.keys(rt).length ? 'Typebot' : '')], ['Veio de', [v('utm_source'), v('utm_medium')].filter(Boolean).join(' · ')]].filter(([, x]) => x);
+  if (l.formularioIncompleto) linhas.push(['Atenção', 'Parou no meio do formulário (só deixou nome/e-mail/WhatsApp)']);
+  return linhas.map(([k, x]) => `<div class="campo"><span>${esc(k)}</span><b style="white-space:normal">${esc(x)}</b></div>`).join('');
+}
 function fichaHtml(l) {
   const st = l.stage || 'novo'; const r = l.reuniaoMarcada; const c = convDoLead(l); const rt = l.respostasTypebot || {};
   const tel = String(l.whatsapp || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
@@ -978,7 +986,7 @@ function fichaHtml(l) {
   <div class="campo"><span>Origem</span><b>${esc(l.origem || '—')}${l.anuncio?.campanha ? ' · ' + esc(nomesCampanhas()[l.anuncio.campanha] || 'campanha ' + l.anuncio.campanha) : ''}</b></div>
   <div class="campo"><span>Entrou</span><b>${M.criadoMs(l) ? new Date(M.criadoMs(l)).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}</b></div>
   <div class="campo"><span>Responsável</span><b>${gestor() ? `<select id="fxDono">${[...new Set([l.donoEmail, ...TIME.map((p) => p.email)].filter(Boolean))].map((e) => `<option value="${esc(e)}" ${low(e) === low(l.donoEmail) ? 'selected' : ''}>${esc(TIME.find((p) => p.email === e)?.nome || l.donoNome || e)}</option>`).join('')}</select>` : esc(l.donoNome || '—')}</b></div>
-  ${rt.CanalVendas ? `<div class="campo"><span>Onde vende</span><b style="white-space:normal">${esc(rt.CanalVendas)}</b></div>` : ''}${rt.VendeMarketplace || l.vendeMarketplace ? `<div class="campo"><span>Marketplace</span><b>${esc(rt.VendeMarketplace || l.vendeMarketplace)}</b></div>` : ''}${l.nicho ? `<div class="campo"><span>Segmento</span><b>${esc(l.nicho === 'Outros' ? l.nichoOutro || 'Outros' : l.nicho)}</b></div>` : ''}${l.motivoPerda && st === 'perdido' ? `<div class="campo"><span>Motivo</span><b style="white-space:normal">${esc(l.motivoPerda)}</b></div>` : ''}
+  ${respostasForm(l)}${l.nicho ? `<div class="campo"><span>Segmento</span><b>${esc(l.nicho === 'Outros' ? l.nichoOutro || 'Outros' : l.nicho)}</b></div>` : ''}${l.motivoPerda && st === 'perdido' ? `<div class="campo"><span>Motivo</span><b style="white-space:normal">${esc(l.motivoPerda)}</b></div>` : ''}
   <h4>Nota</h4><div class="lin"><input type="text" id="fxNota" placeholder="Escreva uma nota…" style="flex:1"><button class="btn sm" id="fxNotaOk">Salvar</button></div>
   <h4>Linha do tempo</h4><div class="tl">${tl.map((a) => `<div><b>${esc(rotAt[a.tipo] || a.tipo)}${a.tipo === 'etapa' ? ` → ${esc(etapaRot(a.para))}` : ''}</b>${a.nota ? ` — ${esc(a.nota)}` : ''}<em>${M.ms(a.quando) ? new Date(M.ms(a.quando)).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''} · ${esc(a.por || '')}</em></div>`).join('') || '<div>Sem histórico.</div>'}</div></div>`;
 }
