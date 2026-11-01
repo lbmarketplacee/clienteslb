@@ -978,6 +978,7 @@ function fichaHtml(l) {
   ${futura ? `<h4>Reunião</h4><div class="reuniao"><b>${new Date(r.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}</b>com ${esc(r.comNome || r.com || '')} · marcada por ${esc(r.por || '')} <div style="margin-top:6px">${confirmacaoTag(l)}</div>${r.meet ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><a href="${esc(r.meet)}" target="_blank">Link do Meet</a><button class="btn sm zap" data-acao="meet_enviar">Mandar o Meet no WhatsApp</button><button class="btn sm" data-acao="meet_copiar">Copiar mensagem</button></div>` : '<div style="margin-top:6px;font-size:12px;color:var(--dim)">Essa reunião não tem link do Meet.</div>'}<div class="lin" style="margin-top:8px"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button><button class="btn sm" data-acao="desmarcar">Desmarcar</button></div></div>` : ''}
   ${!futura && r && ['agendado'].includes(st) ? `<h4>Reunião (${brData(M.diaBR(r.inicio))} ${hora(r.inicio)} com ${esc(r.comNome || '')})</h4><div class="lin"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button></div>` : ''}
   ${st === 'compareceu' || (st === 'negociacao' && l.qualificado == null) ? `<h4>Na reunião, o lead é qualificado?</h4><div class="lin"><button class="btn sm ve" data-acao="qualificado">Sim, tem perfil</button><button class="btn sm vm" data-acao="naoqualificado">Não tem perfil</button></div>` : ''}
+  ${recBox(l)}
   <h4>Etapa</h4><div class="etapas">${M.ETAPAS.map((e) => `<button data-etapa="${e.key}" class="${st === e.key ? 'on' : ''}" style="${st === e.key ? `background:${e.cor}` : ''}">${e.label}</button>`).join('')}</div>
   <h4>Contrato</h4><div class="lin" style="flex-wrap:wrap"><select id="fxTipoC" style="max-width:260px"><option value="">Tipo de contrato…</option>${TIPOS_CONTRATO.map((t) => `<option ${l.tipoContrato === t ? 'selected' : ''}>${t}</option>`).join('')}</select><input type="text" inputmode="decimal" id="fxValorC" placeholder="Valor fixo/mês (R$)" value="${l.valorContrato ? esc(Number(l.valorContrato).toLocaleString('pt-BR')) : ''}" style="max-width:150px"><input type="text" inputmode="decimal" id="fxPctC" placeholder="% variável" value="${l.percentualVariavel ? esc(String(l.percentualVariavel).replace('.', ',')) : ''}" style="max-width:100px;${/variável/.test(l.tipoContrato || '') ? '' : 'display:none'}"></div>
   ${M.ATIVAS.includes(st) ? `<h4>Registrar contato</h4><div class="etapas"><button data-tent="nao_atendeu" data-id="${l.id}">Liguei — não atendeu</button><button data-tent="whatsapp" data-id="${l.id}">Mandei WhatsApp</button><button data-tent="respondeu" data-id="${l.id}">Respondeu</button><button data-tent="depois" data-id="${l.id}">Chamar depois</button><button data-tent="sem_interesse" data-id="${l.id}">Sem interesse</button></div>
@@ -994,6 +995,7 @@ function fichaHtml(l) {
   <h4>Linha do tempo</h4><div class="tl">${tl.map((a) => `<div><b>${esc(rotAt[a.tipo] || a.tipo)}${a.tipo === 'etapa' ? ` → ${esc(etapaRot(a.para))}` : ''}</b>${a.nota ? ` — ${esc(a.nota)}` : ''}<em>${M.ms(a.quando) ? new Date(M.ms(a.quando)).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''} · ${esc(a.por || '')}</em></div>`).join('') || '<div>Sem histórico.</div>'}</div></div>`;
 }
 function ligarFicha(root, l) {
+  root.querySelectorAll('[data-rec]').forEach((b) => (b.onclick = () => recAcao(l, b.dataset.rec, b)));
   root.querySelectorAll('[data-etapa]').forEach((b) => (b.onclick = () => moverEtapa(l.id, b.dataset.etapa)));
   root.querySelectorAll('[data-acao]').forEach((b) => (b.onclick = () => acaoReuniao(l, b.dataset.acao)));
   const px = root.querySelector('#fxProx'); if (px) px.onchange = () => updateDoc(doc(db, 'crmLeads', l.id), { proximoContato: px.value, cadencia: null, atualizadoEm: hoje() }).then(() => toast('Próximo contato salvo.')).catch((e) => toast(e.message));
@@ -1003,6 +1005,97 @@ function ligarFicha(root, l) {
     updateDoc(doc(db, 'crmLeads', l.id), p).then(() => toast('Contrato salvo.')).catch((e) => toast(e.message)); };
   if (tc) { tc.onchange = () => salvaC('tipo'); vc.onchange = () => salvaC('valor'); pc.onchange = () => salvaC('pct'); }
   const nb = root.querySelector('#fxNotaOk'); if (nb) nb.onclick = async () => { const i = root.querySelector('#fxNota'); const t = i.value.trim(); if (!t) return; i.value = ''; try { await updateDoc(doc(db, 'crmLeads', l.id), { atividades: [...(l.atividades || []), { tipo: 'nota', quando: Date.now(), por: S.nome, nota: t }], atualizadoEm: hoje() }); toast('Nota salva.'); } catch (e) { toast(e.message); } };
+}
+// ===== Gravador de reunião (01/11/2026, Lincoln: "gravei 2 reuniões e não salvou" — o botão só existia no CRM antigo).
+// Grava o Meet (aba com áudio + microfone) em pedaços de 5 min, transcreve cada pedaço na hora (Gemini) e salva no lead;
+// no fim a Claude analisa contra o roteiro comercial. Reunião analisada em lead "agendado" → vira "compareceu" sozinho.
+const REC_PEDACO = 5 * 60 * 1000;
+let REC = null;
+const recRel = (s) => { s = Math.max(0, Math.round(s)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function recTxt() { if (!REC) return ''; const s = (Date.now() - REC.inicio) / 1000; return REC.parando ? `Finalizando… ${REC.pendentes ? `transcrevendo ${REC.pendentes} pedaço(s)` : 'a IA está analisando'}` : `● Gravando ${recRel(s)} · ${REC.feitos} pedaço(s) salvos${REC.erros ? ` · ${REC.erros} erro(s)` : ''}`; }
+function recTick() { document.querySelectorAll('.rec-status').forEach((e) => (e.textContent = recTxt())); }
+function recBox(l) {
+  const lista = [...(l.reunioes || [])].sort((a, b) => b.em - a.em); const and = l.reuniaoAndamento;
+  let topo;
+  if (REC && REC.leadId === l.id) topo = `<div class="lin"><span class="rec-status" style="color:#e0525a;font-weight:700">${recTxt()}</span>${REC.parando ? '' : '<button class="btn sm vm" data-rec="parar">Parar e analisar</button>'}</div>`;
+  else if (REC) topo = `<div class="lin"><span class="tag">Gravando a reunião de ${esc(REC.nome)} — pare aquela antes.</span></div>`;
+  else if (and?.falas?.length) topo = `<div class="lin"><span class="tag la">Gravação interrompida (${and.falas.length} falas salvas)</span><button class="btn sm ouro" data-rec="analisar">Analisar o que foi salvo</button><button class="btn sm" data-rec="descartar">Descartar</button></div>`;
+  else topo = `<div class="lin"><button class="btn sm vm" data-rec="gravar">● Gravar reunião (Meet)</button><span style="font-size:12px;opacity:.7">Chrome do computador · avise o cliente que está gravando</span></div>`;
+  const it = lista.map((r) => { const a = r.analise || {}; return `<details style="margin-top:8px"><summary style="cursor:pointer"><b>${new Date(r.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</b> · ${recRel(r.duracaoSeg || 0)} · ${esc(r.vendedor || '')} · nota ${a.nota ?? '-'} · chance ${a.chanceFechar ?? '-'}%</summary><div class="ia-box" style="margin-top:6px">${esc(a.resumo || '')}${a.proximoPasso ? `<br><b>Próximo passo:</b> ${esc(a.proximoPasso)}` : ''}${(a.melhorar || []).length ? `<br><b>Melhorar:</b> ${a.melhorar.map(esc).join(' · ')}` : ''}${a.mensagemFollowUp ? `<br><b>WhatsApp:</b> ${esc(a.mensagemFollowUp)} <button class="btn sm" data-rec="copiar" data-txt="${esc(a.mensagemFollowUp)}">Copiar</button>` : ''}</div></details>`; }).join('');
+  return `<h4>Gravação da reunião</h4>${topo}${it}`;
+}
+const recB64 = (blob) => new Promise((ok, er) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1] || ''); fr.onerror = er; fr.readAsDataURL(blob); });
+async function recEnviar(blob, quem, offset, duracao) {
+  if (!REC) return; const g = REC; g.pendentes++; recTick();
+  try {
+    if (blob.size < 2000) return;
+    const audio = await recB64(blob); let d = null;
+    for (let t = 0; t < 3 && !d?.ok; t++) { d = await api(DIRETOR_API, { acao: 'reuniao_transcrever', audio, mime: blob.type || 'audio/webm', quem, offset, duracao }).catch((e) => ({ ok: false, erro: e.message })); if (!d?.ok) await new Promise((r) => setTimeout(r, 3000 * (t + 1))); }
+    if (!d?.ok) { g.erros++; console.error('reunião: pedaço não transcrito', d?.erro); return; }
+    g.falas.push(...(d.falas || [])); g.segAudio += duracao; g.feitos++;
+    await updateDoc(doc(db, 'crmLeads', g.leadId), { reuniaoAndamento: { inicio: g.inicio, vendedor: g.vendedor, falas: g.falas, segAudio: g.segAudio, atualizadoEm: Date.now() } }).catch((e) => console.error(e));
+  } finally { g.pendentes--; recTick(); }
+}
+function recPedaco() {
+  if (!REC) return; const ini = Date.now(); const off = (ini - REC.inicio) / 1000;
+  for (const [quem, st] of [['vendedor', REC.mic], ['cliente', REC.aba]]) {
+    const tipo = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+    const rec = new MediaRecorder(st, { mimeType: tipo, audioBitsPerSecond: 32000 }); const partes = [];
+    rec.ondataavailable = (e) => { if (e.data?.size) partes.push(e.data); };
+    rec.onstop = () => recEnviar(new Blob(partes, { type: 'audio/webm' }), quem, off, (Date.now() - ini) / 1000);
+    rec.start(); REC.recs[quem] = rec;
+  }
+}
+function recTrocar() { if (!REC || REC.parando) return; const velhos = Object.values(REC.recs); recPedaco(); velhos.forEach((r) => { try { r.stop(); } catch (e) { } }); }
+const recSair = (e) => { if (REC) { e.preventDefault(); e.returnValue = ''; } };
+async function recAnalisar(l, { falas, inicio, vendedor, duracaoSeg }) {
+  const rt = l.respostasTypebot || {};
+  const r = await api(DIRETOR_API, { acao: 'reuniao_analisar', falas, vendedor, duracaoSeg, lead: { nome: l.nome, loja: l.loja || l.nomeLoja || '', nicho: l.nicho === 'Outros' ? l.nichoOutro : l.nicho, faturamento: rt.faturamento || '', canais: rt.CanalVendas || '', notas: (l.atividades || []).filter((a) => a.tipo === 'nota').slice(-5).map((a) => a.nota).join(' | ') } });
+  if (!r.ok) throw new Error(r.erro || 'falha na análise');
+  const atual = S.leads.find((x) => x.id === l.id) || l;
+  const item = { id: 'r' + inicio, em: inicio, vendedor, vendedorEmail: low(S.email), duracaoSeg: Math.round(duracaoSeg), analise: r.analise, fala: r.fala || null, transcricao: r.transcricao || [], modelo: r.modelo || '' };
+  const at = [...(atual.atividades || []), { tipo: 'nota', quando: Date.now(), por: vendedor, nota: `Reunião gravada (${recRel(duracaoSeg)}, nota ${r.analise?.nota ?? '-'}): ${r.analise?.resumo || ''}`.slice(0, 1000) }];
+  const p = (atual.stage || 'novo') === 'agendado' ? mudancaEtapa(atual, 'compareceu', at) : { atividades: at };
+  Object.assign(p, { reunioes: [...(atual.reunioes || []).filter((x) => x.id !== item.id), item], reuniaoAndamento: null, atualizadoEm: hoje() });
+  if (r.analise?.retorno && !atual.proximoContato) p.proximoContato = r.analise.retorno;
+  await updateDoc(doc(db, 'crmLeads', l.id), p);
+}
+async function recAcao(l, a, btn) {
+  try {
+    if (a === 'copiar') { await navigator.clipboard.writeText(btn.dataset.txt || ''); return toast('Copiado.'); }
+    if (a === 'descartar') { if (!confirm('Descartar a gravação interrompida?')) return; await updateDoc(doc(db, 'crmLeads', l.id), { reuniaoAndamento: null }); return toast('Descartada.'); }
+    if (a === 'analisar') { const g = l.reuniaoAndamento; toast('Analisando a reunião…'); const fim = Math.max(...g.falas.map((x) => x.f || x.t || 0)); await recAnalisar(l, { falas: g.falas, inicio: g.inicio, vendedor: g.vendedor || S.nome, duracaoSeg: Math.max(fim, (g.atualizadoEm - g.inicio) / 1000 || 0) }); return toast('Reunião analisada.'); }
+    if (a === 'gravar') {
+      if (REC) return toast('Já tem uma reunião sendo gravada.');
+      if (!navigator.mediaDevices?.getDisplayMedia || !window.MediaRecorder) return alert('Esse navegador não grava. Use o Chrome no computador.');
+      if (!confirm('Gravar a reunião do Meet\n\n1. Deixe o Meet aberto em OUTRA aba deste Chrome.\n2. Na janela que vai abrir escolha "Guia do Chrome" → a aba do Meet e deixe LIGADO "Compartilhar áudio da guia".\n3. Permita o microfone.\n4. Avise o cliente que a reunião está sendo gravada.\n\nNão feche esta aba até parar a gravação.')) return;
+      let aba = null, mic = null;
+      try {
+        aba = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }, preferCurrentTab: false, selfBrowserSurface: 'exclude', surfaceSwitching: 'exclude', systemAudio: 'exclude' });
+        if (!aba.getAudioTracks().length) { aba.getTracks().forEach((t) => t.stop()); return alert('Veio SEM o áudio da aba — não dá pra gravar o cliente.\nTente de novo escolhendo "Guia do Chrome" → a aba do Meet, com "Compartilhar áudio da guia" LIGADO.'); }
+        mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      } catch (e) { aba?.getTracks().forEach((t) => t.stop()); mic?.getTracks().forEach((t) => t.stop()); return alert(/Permission|NotAllowed/.test(e.name + e.message) ? 'Gravação cancelada (permissão negada).' : 'Não deu pra gravar: ' + e.message); }
+      REC = { leadId: l.id, nome: l.nome || 'lead', vendedor: S.nome, inicio: Date.now(), abaStream: aba, micStream: mic, aba: new MediaStream(aba.getAudioTracks()), mic: new MediaStream(mic.getAudioTracks()), recs: {}, falas: [], segAudio: 0, feitos: 0, pendentes: 0, erros: 0, parando: false };
+      await updateDoc(doc(db, 'crmLeads', l.id), { reuniaoAndamento: { inicio: REC.inicio, vendedor: REC.vendedor, falas: [], segAudio: 0, atualizadoEm: Date.now() } }).catch(() => { });
+      aba.getTracks().forEach((t) => t.addEventListener('ended', () => { if (REC && !REC.parando) { toast('O compartilhamento da aba parou — finalizando a gravação.'); recAcao(S.leads.find((x) => x.id === REC.leadId) || l, 'parar'); } }));
+      recPedaco(); REC.troca = setInterval(recTrocar, REC_PEDACO); REC.relogio = setInterval(recTick, 1000);
+      window.addEventListener('beforeunload', recSair); toast('Gravando a reunião.'); return;
+    }
+    if (a === 'parar') {
+      if (!REC || REC.parando) return; const g = REC; g.parando = true; clearInterval(g.troca);
+      Object.values(g.recs).forEach((r) => { try { r.stop(); } catch (e) { } });
+      g.abaStream.getTracks().forEach((t) => t.stop()); g.micStream.getTracks().forEach((t) => t.stop()); recTick();
+      await new Promise((r) => setTimeout(r, 600));
+      for (let i = 0; i < 600 && g.pendentes > 0; i++) await new Promise((r) => setTimeout(r, 500));
+      recTick();
+      try {
+        if (!g.falas.length) throw new Error(g.erros ? `nenhum pedaço foi transcrito (${g.erros} erro(s))` : 'nenhuma fala foi reconhecida (o áudio estava mudo?)');
+        await recAnalisar(S.leads.find((x) => x.id === g.leadId) || l, { falas: g.falas, inicio: g.inicio, vendedor: g.vendedor, duracaoSeg: (Date.now() - g.inicio) / 1000 });
+        toast('Reunião analisada e salva no lead.');
+      } catch (e) { alert('A gravação ficou salva no lead, mas a análise falhou: ' + e.message + '\nUse "Analisar o que foi salvo" pra tentar de novo.'); }
+      finally { clearInterval(g.relogio); REC = null; window.removeEventListener('beforeunload', recSair); }
+    }
+  } catch (e) { toast('Erro: ' + e.message); }
 }
 // 30/10/2026 (Isa): mandar o link do Meet pro lead que já marcou
 function msgMeet(l) {
