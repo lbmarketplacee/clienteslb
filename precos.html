@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Costos y precios — LB Marketplace</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ec;--card:#fff;--text:#1d1a14;--dim:#6f6858;--line:#e7e1d3;--gold:#b8902f;--gold2:#d9b45a;--ok:#2f8f5b;--err:#c0392b;--chip:#f3ecdc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45}
+.top{background:#13110c;color:#fff;padding:18px 16px}
+.top .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.logo{font-family:Oswald,sans-serif;font-size:26px;color:var(--gold2);letter-spacing:1px}
+.logo small{display:block;font-family:Inter;font-size:9px;letter-spacing:3px;color:#cdb98a}
+.top h1{font-family:Oswald,sans-serif;font-weight:500;font-size:18px;margin:0 0 0 auto;text-align:right}
+.top h1 span{display:block;font-family:Inter;font-size:13px;color:#cdb98a;font-weight:500}
+main{max-width:760px;margin:0 auto;padding:18px 16px 120px}
+.intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.intro b{color:var(--gold)}
+.intro ul{margin:8px 0 0 18px;padding:0;color:var(--dim);font-size:14px}
+.busca{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;background:#fffdf8;margin-bottom:12px}
+.filtros{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--chip);border-radius:20px;padding:7px 12px;font-size:13.5px;cursor:pointer;user-select:none}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.prod{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px}
+.prod.feito{border-color:#bfe0cc;background:#fbfffc}
+.prod img,.prod .sem{width:76px;height:100px;border-radius:9px;object-fit:cover;background:#f1ece0;display:block}
+.nome{font-weight:600;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.info{font-size:12.5px;color:var(--dim);margin-top:3px}
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.campos label{font-size:12px;font-weight:600;color:var(--dim);display:block;margin-bottom:3px}
+.campos input,.nota{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit;font-size:16px;background:#fffdf8;color:var(--text)}
+.campos input:focus,.nota:focus,.busca:focus,textarea:focus{outline:2px solid var(--gold2);border-color:var(--gold2)}
+.nota{font-size:14px;margin-top:8px;display:none}
+.nota.on{display:block}
+.mais{background:none;border:0;color:var(--gold);font:inherit;font-size:12.5px;font-weight:600;padding:6px 0 0;cursor:pointer}
+.ganho{font-size:12.5px;margin-top:6px;font-weight:600}
+.ganho.ok{color:var(--ok)}.ganho.mal{color:var(--err)}
+.barra{position:fixed;left:0;right:0;bottom:0;background:#13110c;color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.barra .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.barra .cont{font-size:14px;flex:1}
+.barra .cont b{color:var(--gold2)}
+.btn{border:0;border-radius:10px;padding:13px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--gold);color:#fff;font-size:15px}
+.btn:disabled{opacity:.6;cursor:default}
+textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;min-height:80px;background:#fffdf8}
+.msg{padding:14px;border-radius:12px;margin:12px 0;font-size:14px}
+.msg.err{background:#fdecea;color:var(--err)}
+.msg.ok{background:#e9f6ee;color:var(--ok)}
+.carregando{text-align:center;color:var(--dim);padding:40px 0}
+.fim{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 18px;text-align:center}
+.fim h2{font-family:Oswald,sans-serif;font-weight:500;margin:0 0 8px}
+@media(max-width:420px){.top h1{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in"><div class="logo">LB<small>MARKETPLACE</small></div><h1>Costos y precios<span id="loja">—</span></h1></div></div>
+<main id="app"><div class="carregando">Cargando sus productos… (puede tardar hasta 1 minuto)</div></main>
+<div class="barra" id="barra" style="display:none"><div class="in"><div class="cont" id="cont"></div><button class="btn" id="enviar">Enviar</button></div></div>
+<script>
+const API='https://lb-shopee-gmv.vercel.app/api/pedido-produto';
+const T=new URLSearchParams(location.search).get('t')||'';
+const CHAVE='lbPrecos_'+T;
+let ITENS=[],R={},OBS='',FILTRO='todos',BUSCA='';
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const brl=(n)=>'R$ '+Number(n).toFixed(2).replace('.',',');
+function num(v){let s=String(v??'').replace(/r\$|\s/gi,'');if(!s)return null;if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');const n=Number(s);return Number.isFinite(n)?n:null}
+function guardar(){try{localStorage.setItem(CHAVE,JSON.stringify({R,OBS}))}catch(e){}}
+function preenchido(ch){const r=R[ch]||{};return num(r.receber)!=null}
+
+async function iniciar(){
+  if(!T){$('#app').innerHTML='<div class="msg err">Enlace inválido. Pida un nuevo enlace al equipo LB.</div>';return}
+  try{
+    const r=await fetch(`${API}?acao=precos_lista&t=${encodeURIComponent(T)}`);const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'Error');
+    $('#loja').textContent=d.loja;ITENS=d.itens||[];
+    for(const[ch,v]of Object.entries(d.respostas||{}))R[ch]={custo:v.custo!=null?String(v.custo).replace('.',','):'',receber:String(v.receber).replace('.',','),nota:v.nota||''};
+    try{const l=JSON.parse(localStorage.getItem(CHAVE)||'null');if(l){Object.assign(R,l.R||{});OBS=l.OBS||''}}catch(e){}
+    if(!ITENS.length){$('#app').innerHTML='<div class="msg err">No encontramos productos activos en su tienda. Hable con el equipo LB.</div>';return}
+    montar();
+  }catch(e){$('#app').innerHTML=`<div class="msg err">No pudimos cargar sus productos. ${esc(e.message)}<br><br><button class="btn" onclick="location.reload()">Intentar de nuevo</button></div>`}
+}
+
+function montar(){
+  $('#app').innerHTML=`<div class="intro">Hola 👋 Para cada producto, escriba:
+    <ul><li><b>Costo:</b> cuánto le cuesta a usted cada pieza.</li>
+    <li><b>Quiero recibir:</b> cuánto quiere que le quede <b>en su cuenta por cada pieza vendida</b>, ya descontadas las tasas del marketplace. Nosotros calculamos el precio de venta.</li></ul>
+    <div class="info" style="margin-top:8px">Puede completar solo algunos y enviar después el resto. Lo que escribe queda guardado en este celular.</div></div>
+    <input class="busca" id="busca" placeholder="Buscar producto…" value="${esc(BUSCA)}">
+    <div class="filtros"><span class="chip" data-f="todos">Todos (${ITENS.length})</span><span class="chip" data-f="falta">Faltan</span><span class="chip" data-f="feitos">Completados</span></div>
+    <div id="lista"></div>
+    <div class="intro" style="margin-top:14px"><b>¿Algún comentario?</b> <span class="info">(opcional)</span><textarea id="obs" placeholder="Ej.: los vestidos talla GG cuestan más…">${esc(OBS)}</textarea></div>`;
+  $('#busca').oninput=(e)=>{BUSCA=e.target.value;lista()};
+  $('#obs').oninput=(e)=>{OBS=e.target.value;guardar()};
+  document.querySelectorAll('.chip').forEach((c)=>c.onclick=()=>{FILTRO=c.dataset.f;lista()});
+  $('#barra').style.display='';lista();
+}
+
+function lista(){
+  document.querySelectorAll('.chip').forEach((c)=>c.classList.toggle('on',c.dataset.f===FILTRO));
+  const b=BUSCA.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const vis=ITENS.filter((i)=>(!b||i.nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').includes(b))&&(FILTRO==='todos'||(FILTRO==='falta')!==preenchido(i.chave)));
+  $('#lista').innerHTML=vis.map((i)=>{const r=R[i.chave]||{};const pr=i.precoMin!=null?(i.precoMax&&i.precoMax!==i.precoMin?`${brl(i.precoMin)} a ${brl(i.precoMax)}`:brl(i.precoMin)):'';
+    return `<div class="prod${preenchido(i.chave)?' feito':''}" data-ch="${esc(i.chave)}">
+      ${i.foto?`<img src="${esc(i.foto)}" loading="lazy" alt="">`:'<div class="sem"></div>'}
+      <div><div class="nome">${esc(i.nome)}</div>
+      <div class="info">${pr?'Precio hoy: '+pr:''}${i.variacoes?.length?(pr?' · ':'')+i.variacoes.length+' variaciones':''}</div>
+      <div class="campos"><div><label>Costo (R$)</label><input inputmode="decimal" data-k="custo" value="${esc(r.custo||'')}" placeholder="0,00"></div>
+      <div><label>Quiero recibir (R$)</label><input inputmode="decimal" data-k="receber" value="${esc(r.receber||'')}" placeholder="0,00"></div></div>
+      <div class="ganho"></div>
+      <button class="mais" type="button">${r.nota?'Nota':'+ El precio cambia por talla/color'}</button>
+      <input class="nota${r.nota?' on':''}" data-k="nota" value="${esc(r.nota||'')}" placeholder="Ej.: talla GG recibir 40"></div></div>`}).join('')||'<div class="info">Ningún producto.</div>';
+  document.querySelectorAll('.prod').forEach((el)=>{const ch=el.dataset.ch;ganho(el,ch);
+    el.querySelectorAll('input').forEach((inp)=>inp.oninput=()=>{R[ch]={...(R[ch]||{}),[inp.dataset.k]:inp.value};guardar();ganho(el,ch);el.classList.toggle('feito',preenchido(ch));contar()});
+    el.querySelector('.mais').onclick=()=>{const n=el.querySelector('.nota');n.classList.add('on');n.focus()}});
+  contar();
+}
+function ganho(el,ch){const r=R[ch]||{},c=num(r.custo),v=num(r.receber),g=el.querySelector('.ganho');
+  if(c==null||v==null){g.textContent='';g.className='ganho';return}
+  const l=v-c;g.textContent=l>0?`Su ganancia por pieza: ${brl(l)}`:`Atención: recibiría ${brl(v)} y la pieza cuesta ${brl(c)}`;g.className='ganho '+(l>0?'ok':'mal')}
+function contar(){const n=ITENS.filter((i)=>preenchido(i.chave)).length;$('#cont').innerHTML=`<b>${n}</b> de ${ITENS.length} productos completados`;$('#enviar').disabled=!n}
+
+$('#enviar').onclick=async()=>{
+  const respostas={};for(const i of ITENS){const r=R[i.chave];if(r&&(num(r.receber)!=null||r.custo||r.nota))respostas[i.chave]=r}
+  const btn=$('#enviar');btn.disabled=true;btn.textContent='Enviando…';
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'precos_enviar',t:T,respostas,obs:OBS})});const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'Error');
+    try{localStorage.removeItem(CHAVE)}catch(e){}
+    $('#barra').style.display='none';
+    $('#app').innerHTML=`<div class="fim"><h2>¡Listo, muchas gracias! ✅</h2><p>Recibimos ${d.produtos} producto${d.produtos>1?'s':''}. El equipo LB va a ajustar los precios y le avisa.</p><p class="info">Si quiere cambiar algo o completar los que faltan, abra este mismo enlace de nuevo.</p></div>`;
+    window.scrollTo(0,0);
+  }catch(e){btn.disabled=false;btn.textContent='Enviar';alert('No se pudo enviar: '+e.message)}
+};
+iniciar();
+</script>
+</body>
+</html>
