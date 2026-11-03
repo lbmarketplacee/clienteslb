@@ -1394,7 +1394,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .lj-busca{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:12px;padding:0 12px;color:var(--text-dim)}
 .lj-busca select{background:transparent;border:0;color:var(--text);font:inherit;font-size:14px;padding:11px 4px;min-width:240px;outline:none}
 .lj-busca select option{background:var(--bg-card2)}
-.lj-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:1200px){.lj-tabs{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}}.lj-tabs .prod-tab{padding:13px}.lj-tabs .prod-tab small{font-size:11px}
+.prod-tabs.lj-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:1200px){.prod-tabs.lj-tabs{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}}.lj-tabs .prod-tab{padding:13px}.lj-tabs .prod-tab small{font-size:11px}
 .lj-tabs .prod-tab.breve{opacity:.55}.lj-tabs .prod-tab.breve b::after{content:'em breve';margin-left:6px;font-family:inherit;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-dim);border-radius:5px;padding:0 5px;vertical-align:middle}
 .lj-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;margin-bottom:16px}
 @media(max-width:1100px){.lj-grid{grid-template-columns:minmax(0,1fr)}}
@@ -3953,7 +3953,7 @@ function renderDashCharts(){
   const _mesesAds=Object.values(gpm).filter(b=>b.ads>0);const at=_mesesAds.reduce((a,b)=>a+b.ads,0);const gt=_mesesAds.reduce((a,b)=>a+b.gmv,0); // Ads real (manual até ago + APIs); ROI só nos meses com Ads
   document.getElementById('dashMeses').textContent=meses.length;
   document.getElementById('dashAds').textContent=fmtR(at);
-  document.getElementById('dashRoi').textContent=at>0?(gt/at).toFixed(1)+'x':'—';
+  document.getElementById('dashRoi').textContent=at>0?(gt/at).toFixed(1).replace('.',',')+'x':'—';
   const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
   const _dc=document.getElementById('dashContratos');if(_dc)_dc.textContent=contratosCache.filter(c=>c.status==='aprovado'&&c.mes===ma).length;
 }
