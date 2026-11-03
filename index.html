@@ -150,7 +150,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--gold-dim);}
 .dl-dot{width:10px;height:10px;border-radius:3px;flex:none;}
 .dl-info{flex:1;min-width:0;}
 .dl-name{font-size:12px;color:var(--text);font-weight:600;}
-.dl-val{font-size:11px;color:var(--text-dim);}
+.dl-val{font-size:11px;color:var(--text-dim);white-space:nowrap;}
 .dl-pct{font-size:13px;font-weight:700;color:var(--text);}
 .perf-list{display:flex;flex-direction:column;gap:14px;}
 .perf-item{display:flex;align-items:center;gap:12px;}
@@ -1394,7 +1394,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .lj-busca{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:12px;padding:0 12px;color:var(--text-dim)}
 .lj-busca select{background:transparent;border:0;color:var(--text);font:inherit;font-size:14px;padding:11px 4px;min-width:240px;outline:none}
 .lj-busca select option{background:var(--bg-card2)}
-.lj-tabs{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.lj-tabs .prod-tab{padding:13px}.lj-tabs .prod-tab small{font-size:11px}
+.prod-tabs.lj-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:1200px){.prod-tabs.lj-tabs{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}}@media(max-width:600px){.prod-tabs.lj-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}.lj-tabs .prod-tab{padding:13px}.lj-tabs .prod-tab small{font-size:11px}
 .lj-tabs .prod-tab.breve{opacity:.55}.lj-tabs .prod-tab.breve b::after{content:'em breve';margin-left:6px;font-family:inherit;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-dim);border-radius:5px;padding:0 5px;vertical-align:middle}
 .lj-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;margin-bottom:16px}
 @media(max-width:1100px){.lj-grid{grid-template-columns:minmax(0,1fr)}}
@@ -1549,6 +1549,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .prod-hero-mps{margin-left:auto;display:flex;gap:6px}
 .prod-hero-mps span{width:30px;height:30px;border-radius:9px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
 .pp-badge{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.nav-item:has(.nav-pend.on){padding-right:46px}
 .nav-pend{display:none;position:absolute;top:6px;right:10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1}.nav-pend.on{display:flex}
 .nav-grupo-cab{position:relative}.nav-grupo-cab .nav-pend{right:30px;top:50%;transform:translateY(-50%)}.nav-grupo.aberto>.nav-grupo-cab .nav-pend{display:none}
 .cm-tool-card{position:relative}.cm-tool-card .nav-pend{top:10px;right:10px}
@@ -3898,7 +3899,7 @@ function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T
 function diffDias(s){if(!s)return null;return Math.ceil((parseDate(s)-new Date())/86400000);}
 function statusBadge(s){if(!s)return'<span class="status-none">—</span>';const d=diffDias(s);let c,l;if(d<0){c='status-vencido';l='Vencido';}else if(d<=7){c='status-amber';l=`Vence em ${d}d`;}else{c='status-ok';l='Ativo';}return`<span class="status-pill ${c}">${l}</span><span class="date-sub">${fmtDate(s)}</span>`;}
 function fmtR(v){return(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-function fmtRk(v){v=Number(v)||0;if(v>=1000000)return'R$ '+(v/1000000).toFixed(2)+'M';if(v>=1000)return'R$ '+(v/1000).toFixed(0)+'K';return fmtR(v);}
+function fmtRk(v){v=Number(v)||0;const br=(n,d)=>n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});if(v>=1000000)return'R$ '+br(v/1000000,2)+' mi';if(v>=1000)return'R$ '+br(v/1000,0)+' mil';return fmtR(v);} /* 03/11/2026: era 6.07M / 250K (formato americano) */
 function fmtMes(s){if(!s)return'—';const[y,m]=s.split('-');return['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][+m-1]+'/'+y;}
 function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function animateTo(el,target,fmt){if(!el)return;const prev=parseFloat(el.dataset.v||0);el.dataset.v=target;if(prev===target){el.textContent=fmt(target);return;}const t0=performance.now(),dur=850;function s(t){const p=Math.min((t-t0)/dur,1);const e2=1-Math.pow(1-p,3);el.textContent=fmt(prev+(target-prev)*e2);if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
@@ -3952,7 +3953,7 @@ function renderDashCharts(){
   const _mesesAds=Object.values(gpm).filter(b=>b.ads>0);const at=_mesesAds.reduce((a,b)=>a+b.ads,0);const gt=_mesesAds.reduce((a,b)=>a+b.gmv,0); // Ads real (manual até ago + APIs); ROI só nos meses com Ads
   document.getElementById('dashMeses').textContent=meses.length;
   document.getElementById('dashAds').textContent=fmtR(at);
-  document.getElementById('dashRoi').textContent=at>0?(gt/at).toFixed(1)+'x':'—';
+  document.getElementById('dashRoi').textContent=at>0?(gt/at).toFixed(1).replace('.',',')+'x':'—';
   const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
   const _dc=document.getElementById('dashContratos');if(_dc)_dc.textContent=contratosCache.filter(c=>c.status==='aprovado'&&c.mes===ma).length;
 }
@@ -5472,8 +5473,9 @@ function ljStatus(c){const cel=(cls,txt)=>`<div class="${cls}">${txt}</div>`;con
   r.push(['Relâmpago',sh?(c.ofertaRelampagoAuto===false?['at','robô desligado']:rS?(ljDias(rS)>=0?['ok',`coberto até ${ljData(rS)}`]:['at','criando agora']):['na','robô a cada hora']):['na','—'],tt?(c.tiktokOfertaAuto===false?['at','robô desligado']:rT?(ljDias(rT)>=0?['ok',`coberto até ${ljData(rT)}`]:['ruim','sem oferta agendada']):['na','robô 4x/dia']):['na','—'],ml?(c.mlOfertaAuto===false?['at','robô desligado']:['ok','robô todo dia 8h']):['na','—']]);
   r.push(['Ads',sh?(c.shopeeAdsShopId?(c.adsSaldoAtual!=null?[Number(c.adsSaldoAtual)>0?'ok':'ruim',`saldo ${fmtR(Number(c.adsSaldoAtual))}`]:['ok','conectado']):['at','conectar app Ads']):['na','—'],['na','—'],ml?['na','manual (LB ROAS 20)']:['na','—']]);
   return `<div class="lj-status">${cel('cab','')}${cel('cab','Shopee')}${cel('cab','TikTok Shop')}${cel('cab','Mercado Livre')}${r.map(([n,...v])=>cel('rot',n)+v.map(([k,t])=>cel(k,esc(t))).join('')).join('')}</div>`;}
+const LJ_ACAO={ofertas_criadas:'produtos entraram em promoção',respondida_auto:'pergunta de comprador respondida',preco_velho_removido:'preço antigo tirado da relâmpago',renovado:'renovado',renovada:'renovada',criado:'criado',criada:'criada',enviado:'enviado',erro:'erro',aplicar:'aplicado',aprovado:'aprovado',recusado:'recusado',completar:'completou as ofertas agendadas',sincronizado:'conferido'};
 function ljLog(l){const mp={shopee:'Shopee',tiktok:'TikTok',ml:'ML',shein:'SHEIN',geral:'',comercial:'Comercial',financeiro:'Financeiro'}[l.marketplace]??l.marketplace;
-  const d=l.detalhes||{};let t=l.acao||l.tipo||'';
+  const d=l.detalhes||{};let t=LJ_ACAO[l.acao]||String(l.acao||l.tipo||'').replace(/_/g,' ');
   if(l.tipo==='oferta_relampago'&&d.totalOfertas)t=`${d.totalOfertas} oferta(s) relâmpago com ${d.totalProdutos||'?'} produto(s)`;
   else if(l.tipo==='oferta_relampago'&&d.produtos)t=`+${d.produtos} produto(s) nas relâmpagos agendadas`;
   else if(l.tipo==='ads'&&Array.isArray(d.criados))t=`${d.criados.length} produto(s) colocados no Ads`;
@@ -6200,7 +6202,7 @@ function ljRender(){
   // sem isso, compara com o mês passado inteiro e mostra quanto já alcançou
   const ate=m1.ateDia,diaHoje=Number(new Date(Date.now()-3*3600000).toISOString().slice(8,10)),ateOk=ate&&Math.abs(Number(ate.dia)-diaHoje)<=1;
   const comp=(atual,k)=>{const base=ateOk?(k?Number(ate[k])||0:tot(ate)):0;const cheio=k?Number(m1[k])||0:T1;
-    if(base>0){const p=Math.round((atual/base-1)*100);return `<span class="${p>=0?'up':'down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span> vs ${fmtR(base)} de 1 a ${ate.dia} do mês passado`;}
+    if(base>0){const p=Math.round((atual/base-1)*100);return `<span class="${p>=0?'up':'down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span> vs ${fmtRk(base)} no mesmo período do mês passado`;}
     if(cheio>0)return `${Math.round(atual/cheio*100)}% do mês passado inteiro (${fmtR(cheio)})`;
     return 'mês passado sem registro';};
   const glow={shopee:'glow-coral',tiktok:'glow-teal',ml:'glow-gold'};
