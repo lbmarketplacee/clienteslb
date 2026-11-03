@@ -620,7 +620,7 @@ function rDia() {
   el.innerHTML = `<div style="font-size:20px;font-weight:800;margin-bottom:12px">${ola}, ${esc(S.nome)}</div>
   <div class="grid g5">
     ${irKpi('blkNovos', kpi('c-vm', 'users', vendedor() ? 'Leads novos meus' : 'Pra chamar agora', N(f.novos.length), 'sem nenhum contato', f.novos.length ? 'ruim' : 'bom'))}
-    ${irKpi('blkEsp', kpi('c-ve', 'chat', 'WhatsApp esperando', N(esp.length), 'leads sem resposta', esp.length ? 'ruim' : 'bom'))}
+    ${irKpi('blkEsp', kpi('c-ve', 'chat', 'WhatsApp', N(esp.length), 'esperando resposta', esp.length ? 'ruim' : 'bom'))}
     ${irKpi('blkRet', kpi('c-la', 'rel', 'Retornos de hoje', N(f.retornos.length), `atrasados + hoje${f.semRetorno.length ? ` · ${N(f.semRetorno.length)} sem data` : ''}`))}
     ${irKpi(reunHoje.length ? 'blkReun' : '#agenda', kpi('c-az', 'agenda', 'Reuniões hoje', S.agenda ? N(reunHoje.length) : '…', vendedor() ? 'as suas' : 'na agenda da LB'))}
     ${S.papel === 'sdr' ? kpi('c-ro', 'check', 'Marquei hoje', N(marcadasHoje), `${N(contatos)} contatos feitos hoje`) : kpi('c-ou', 'trofeu', 'Fechados no mês', N(fechMes), `${N(contatos)} contatos meus hoje`)}
