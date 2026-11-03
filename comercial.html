@@ -55,9 +55,10 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
 .sec:first-child{margin-top:0}
 .grid{display:grid;gap:14px}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g7{grid-template-columns:repeat(7,minmax(0,1fr))}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sombra)}
-.kpi{padding:16px 16px 14px;display:flex;gap:12px;align-items:flex-start}
-.kpi .ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.kpi .ic svg{width:20px;height:20px}
+.kpi{padding:16px 16px 14px;display:block;position:relative} /* 03/11/2026: ícone no canto e rótulo numa linha só (antes quebrava em 2-3 linhas) */
+.kpi .ic{position:absolute;top:13px;right:13px;width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.kpi .ic svg{width:17px;height:17px}
+.kpi>div:last-child span{padding-right:38px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .g7 .kpi .ic{display:none}.g7 .kpi{padding:14px}.kpi>div:last-child{min-width:0}.kpi span{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
 .kpi b{display:block;font-size:26px;font-weight:800;line-height:1.15;margin:2px 0}
 .kpi em{display:block;font-style:normal;font-size:12px;color:var(--dim)}
@@ -619,7 +620,7 @@ function rDia() {
   el.innerHTML = `<div style="font-size:20px;font-weight:800;margin-bottom:12px">${ola}, ${esc(S.nome)}</div>
   <div class="grid g5">
     ${irKpi('blkNovos', kpi('c-vm', 'users', vendedor() ? 'Leads novos meus' : 'Pra chamar agora', N(f.novos.length), 'sem nenhum contato', f.novos.length ? 'ruim' : 'bom'))}
-    ${irKpi('blkEsp', kpi('c-ve', 'chat', 'WhatsApp esperando', N(esp.length), 'leads sem resposta', esp.length ? 'ruim' : 'bom'))}
+    ${irKpi('blkEsp', kpi('c-ve', 'chat', 'WhatsApp', N(esp.length), 'esperando resposta', esp.length ? 'ruim' : 'bom'))}
     ${irKpi('blkRet', kpi('c-la', 'rel', 'Retornos de hoje', N(f.retornos.length), `atrasados + hoje${f.semRetorno.length ? ` · ${N(f.semRetorno.length)} sem data` : ''}`))}
     ${irKpi(reunHoje.length ? 'blkReun' : '#agenda', kpi('c-az', 'agenda', 'Reuniões hoje', S.agenda ? N(reunHoje.length) : '…', vendedor() ? 'as suas' : 'na agenda da LB'))}
     ${S.papel === 'sdr' ? kpi('c-ro', 'check', 'Marquei hoje', N(marcadasHoje), `${N(contatos)} contatos feitos hoje`) : kpi('c-ou', 'trofeu', 'Fechados no mês', N(fechMes), `${N(contatos)} contatos meus hoje`)}
