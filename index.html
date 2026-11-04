@@ -671,6 +671,10 @@ textarea{resize:vertical;min-height:70px;}
 .ia-feature-badge span{display:block;font-size:10.5px;color:var(--text-dim);line-height:1.4;}
 .cadastro-doc-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;background:#141210;border:1px solid var(--border);color:var(--text-dim);}
 .cadastro-doc-pill.ok{color:var(--green);border-color:var(--green);}
+.cadastro-doc-pill.alerta{color:#f87171;border-color:#f87171;}.cadastro-doc-pill.aviso{color:#fbbf24;border-color:#fbbf24;}
+.cad-dup{margin:10px 0 0;padding:9px 12px;border-radius:9px;border:1px solid #fbbf24;background:#fbbf2414;color:#fbbf24;font-size:12.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cad-conv{margin:10px 0 0;font-size:12.5px;color:var(--text-dim)}
+.cad-det-pdf{height:130px;border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;background:#141210;color:var(--text);font-weight:700}
 .cc-spark{width:80px;height:20px;margin-top:4px;}
 
 /* ===== RESPONSIVIDADE COMPLETA — CELULAR ===== */
@@ -3982,7 +3986,7 @@ const responsaveisPorMarketplace={
   tiktok:responsavelGeral,
   shein:responsavelGeral
 };
-const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),whatsappAvisos:document.getElementById('fWhatsappAvisos').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:lbValorBR(document.getElementById('fMensalidade').value)||0,whatsappContrato:document.getElementById('fWhatsappContrato').value.trim(),duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,dataInicio:document.getElementById('fInicio').value||'',segmento:document.getElementById('fSegmento').value.trim(),origemAquisicao:document.getElementById('fOrigem').value||null,upsellerAbsorvido:document.getElementById('fUpseller').checked,emitirNotaFiscal:document.getElementById('fEmitirNota').checked,upsellerValor:lbValorBR(document.getElementById('fUpsellerValor').value)||0,marketplaces:mps,responsavelGeral,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}if(!id&&window.__cadastroOrigemEndereco){dados.enderecoPartes=window.__cadastroOrigemEndereco;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');jrCriarAuto(r.id,dados.nome);if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido'}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
+const dados={nome:document.getElementById('fNome').value.trim(),email:document.getElementById('fEmail').value.trim(),driveUrl:document.getElementById('fDrive').value.trim(),whatsappAvisos:document.getElementById('fWhatsappAvisos').value.trim(),cnpjCpf:document.getElementById('fCnpjCpf').value.trim(),endereco:document.getElementById('fEndereco').value.trim(),mensalidade:lbValorBR(document.getElementById('fMensalidade').value)||0,whatsappContrato:document.getElementById('fWhatsappContrato').value.trim(),duracaoMeses:parseInt(document.getElementById('fDuracaoMeses').value)||0,diaVencimento:parseInt(document.getElementById('fDiaVencimento').value)||0,dataInicio:document.getElementById('fInicio').value||'',segmento:document.getElementById('fSegmento').value.trim(),origemAquisicao:document.getElementById('fOrigem').value||null,upsellerAbsorvido:document.getElementById('fUpseller').checked,emitirNotaFiscal:document.getElementById('fEmitirNota').checked,upsellerValor:lbValorBR(document.getElementById('fUpsellerValor').value)||0,marketplaces:mps,responsavelGeral,responsaveisPorMarketplace,descontoFixoFim:document.getElementById('fDesconto').value||null,cupomFim:document.getElementById('fCupom').value||null,saldoAds:parseFloat(document.getElementById('fSaldo').value)||0,observacoes:document.getElementById('fObs').value.trim(),ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()};if(!id&&window.__cadastroOrigemDocs){dados.documentosCadastro=window.__cadastroOrigemDocs;}if(!id&&window.__cadastroOrigemEndereco){dados.enderecoPartes=window.__cadastroOrigemEndereco;}try{if(id){await updateDoc(doc(db,"clientes",id),dados);await log(id,dados.nome,'edição',buildDiff(editOrig,dados)||'Sem alterações.');showToast('Cliente atualizado.');}else{const r=await addDoc(collection(db,"clientes"),dados);await log(r.id,dados.nome,'criação',`Cadastrado por ${currentUser}.`);showToast('Cliente cadastrado.');jrCriarAuto(r.id,dados.nome);if(window.__cadastroOrigemAtual){updateDoc(doc(db,"cadastros",window.__cadastroOrigemAtual),{status:'convertido',clienteId:r.id,convertidoPor:currentUser,convertidoEm:serverTimestamp()}).catch(()=>{});window.__cadastroOrigemAtual=null;window.__cadastroOrigemDocs=null;}}clientModalOverlay.classList.add('hidden');}catch(err){console.error(err);showToast('Erro ao salvar.');}});
 function buildDiff(a,n){if(!a)return'';const l=[];if(a.nome!==n.nome)l.push(`Nome: "${a.nome}" → "${n.nome}"`);if((a.email||'')!==(n.email||''))l.push('E-mail atualizado.');if((a.driveUrl||'')!==(n.driveUrl||''))l.push('Pasta do Drive atualizada.');const ma=(a.marketplaces||[]).join(',')||'—';const mn=(n.marketplaces||[]).join(',')||'—';if(ma!==mn)l.push(`Marketplaces: ${ma} → ${mn}`);if((a.descontoFixoFim||null)!==(n.descontoFixoFim||null))l.push(`Desconto: ${fmtDate(a.descontoFixoFim)||'—'} → ${fmtDate(n.descontoFixoFim)||'—'}`);if((a.cupomFim||null)!==(n.cupomFim||null))l.push(`Cupom: ${fmtDate(a.cupomFim)||'—'} → ${fmtDate(n.cupomFim)||'—'}`);if((Number(a.saldoAds)||0)!==(Number(n.saldoAds)||0))l.push(`Saldo Ads: ${fmtR(a.saldoAds)} → ${fmtR(n.saldoAds)}`);if((a.observacoes||'')!==(n.observacoes||''))l.push('Observações atualizadas.');return l.join('\n');}
 /* MODAL GMV */
 const gmvModalOverlay=document.getElementById('gmvModalOverlay');
@@ -7239,15 +7243,33 @@ document.getElementById('cadastrosVerConvertidosBtn')?.addEventListener('click',
   document.getElementById('cadastrosVerConvertidosBtn').textContent=cadastrosMostrarConvertidos?'👁 Ver Pendentes':'👁 Ver Já Convertidos';
   renderCadastrosRecebidos();
 });
+/* 04/11/2026 (Lincoln): cadastro já é cliente? (mesmo CPF/CNPJ, e-mail ou nome) · há quantos dias espera · PDF · criar cliente no cartão · quem converteu */
+const cadDig=s=>String(s||'').replace(/\D/g,'');
+function cadClienteDoCadastro(c){
+  if(c.clienteId){const x=(clientesCache||[]).find(k=>k.id===c.clienteId);if(x)return x;}
+  const d=cadDig(c.documento),em=String(c.email||'').trim().toLowerCase(),nm=String(c.nomeLoja||'').trim().toLowerCase();
+  return (clientesCache||[]).find(k=>(d.length>=11&&cadDig(k.cnpjCpf)===d)||(em&&String(k.email||'').trim().toLowerCase()===em)||(nm&&String(k.nome||'').trim().toLowerCase()===nm))||null;
+}
+const cadMs=t=>t?(t.seconds?t.seconds*1000:(t.toMillis?t.toMillis():Date.parse(t))):0;
+function cadEspera(c){
+  const ms=cadMs(c.criadoEm);if(!ms)return '';
+  const dias=Math.floor((Date.now()-ms)/86400000);
+  if(dias<1)return '<span class="cadastro-doc-pill ok">chegou hoje</span>';
+  return `<span class="cadastro-doc-pill alerta">esperando há ${dias} dia${dias>1?'s':''}</span>`;
+}
+function cadEhPdf(url){try{return /\.pdf($|\?)/i.test(decodeURIComponent(String(url||'')).split('?')[0]);}catch(e){return false;}}
 function renderCadastrosRecebidos(){
   const el=document.getElementById('cadastrosRecebidos');
   if(!el)return;
   const lista=cadastrosCache.filter(c=>cadastrosMostrarConvertidos?c.status==='convertido':c.status==='pendente');
   if(!lista.length){el.innerHTML=`<div class="empty-state" style="padding:20px">${cadastrosMostrarConvertidos?'Nenhum cadastro convertido ainda.':'Nenhum cadastro pendente.'}</div>`;return;}
   el.innerHTML=lista.map(c=>{
-    const dt=c.criadoEm?new Date(c.criadoEm.seconds*1000).toLocaleDateString('pt-BR'):'';
+    const dt=c.criadoEm?new Date(cadMs(c.criadoEm)).toLocaleDateString('pt-BR'):'';
+    const cli=cadClienteDoCadastro(c);
+    const conv=c.status==='convertido';
+    const convEm=c.convertidoEm?new Date(cadMs(c.convertidoEm)).toLocaleDateString('pt-BR'):'';
     return `<div class="cadastro-card">
-      <div class="cadastro-card-top"><span class="cadastro-nome">${esc(c.nomeLoja)}</span><span class="cadastro-data">${dt}</span></div>
+      <div class="cadastro-card-top"><span class="cadastro-nome">${esc(c.nomeLoja)}</span><span class="cadastro-data">${dt}${conv?'':' '+cadEspera(c)}</span></div>
       <div class="cadastro-plataformas">${(c.plataformas||[]).map(p=>`<span class="cadastro-plataforma-tag">${esc(p)}</span>`).join('')}</div>
       <div class="cadastro-grid">
         <div><b>E-mail:</b> ${esc(c.email)}</div>
@@ -7255,24 +7277,33 @@ function renderCadastrosRecebidos(){
         <div><b>CPF/CNPJ:</b> ${esc(c.documento)}</div>
         <div><b>Nicho:</b> ${esc(c.nicho||'-')}</div>
         <div><b>Qtd. produtos:</b> ${c.qtdProdutos||0}</div>
-        <div><b>Endereço:</b> ${esc(c.rua||'')}, ${esc(c.numero||'')} - ${esc(c.bairro||'')}, ${esc(c.cidade||'')}/${esc(c.estado||'')}</div>
+        <div><b>Endereço:</b> ${esc(c.rua||'')}, ${esc(c.numero||'')} - ${esc(c.bairro||'')}, ${esc(c.cidade||'')}/${esc(c.estado||'')}${c.cep?' - CEP '+esc(c.cep):''}</div>
       </div>
       <div class="cadastro-docs">
-        <span class="cadastro-doc-pill ${c.urlDocFrente?'ok':''}">📄 Doc. Frente ${c.urlDocFrente?'✓':'—'}</span>
-        <span class="cadastro-doc-pill ${c.urlDocVerso?'ok':''}">📄 Doc. Verso ${c.urlDocVerso?'✓':'—'}</span>
-        <span class="cadastro-doc-pill ${c.urlDocCnpj?'ok':''}">🏢 Doc. CNPJ ${c.urlDocCnpj?'✓':'—'}</span>
+        <span class="cadastro-doc-pill ${c.urlDocFrente?'ok':''}">📄 Doc. Frente ${c.urlDocFrente?(cadEhPdf(c.urlDocFrente)?'PDF ✓':'✓'):'—'}</span>
+        <span class="cadastro-doc-pill ${c.urlDocVerso?'ok':''}">📄 Doc. Verso ${c.urlDocVerso?(cadEhPdf(c.urlDocVerso)?'PDF ✓':'✓'):'—'}</span>
+        <span class="cadastro-doc-pill ${c.urlDocCnpj?'ok':''}">🏢 Doc. CNPJ ${c.urlDocCnpj?(cadEhPdf(c.urlDocCnpj)?'PDF ✓':'✓'):'—'}</span>
       </div>
+      ${!conv&&cli?`<div class="cad-dup">⚠ Já existe o cliente <b>${esc(cli.nome||'')}</b> com esse CPF/CNPJ, e-mail ou nome. <button class="btn btn-ghost btn-sm" onclick="window.__client360('${cli.id}')">Abrir ficha</button><button class="btn btn-ghost btn-sm" onclick="window.__cadMarcarConvertido('${c.id}','${cli.id}')">É esse — marcar como convertido</button></div>`:''}
+      ${conv?`<div class="cad-conv">Virou cliente${convEm?' em '+convEm:''}${c.convertidoPor?' por '+esc(c.convertidoPor):''}${cli?` · <b style="color:var(--text)">${esc(cli.nome||'')}</b>`:' · sem ficha ligada (cadastro antigo)'}</div>`:''}
       <div class="actions-cell">
-        <button class="btn btn-gold btn-sm" onclick="window.__verCadastro('${c.id}')">Ver Detalhes</button>
-        ${c.status==='convertido'?'<span class="cadastro-doc-pill ok">✓ Já é cliente</span>':`<button class="icon-btn danger" onclick="window.__descartarCadastro('${c.id}')">Descartar</button>`}
+        <button class="btn btn-ghost btn-sm" onclick="window.__verCadastro('${c.id}')">Ver Detalhes</button>
+        ${conv?(cli?`<button class="btn btn-gold btn-sm" onclick="window.__client360('${cli.id}')">Abrir ficha do cliente</button>`:'')+'<span class="cadastro-doc-pill ok">✓ Já é cliente</span>':`<button class="btn btn-gold btn-sm" onclick="window.__criarClienteDoCadastro('${c.id}')">Criar cliente</button><button class="icon-btn danger" onclick="window.__descartarCadastro('${c.id}')">Descartar</button>`}
       </div>
     </div>`;
   }).join('');
 }
+window.__cadMarcarConvertido=async(id,clienteId)=>{
+  const cli=(clientesCache||[]).find(k=>k.id===clienteId);
+  if(!await lbConfirmar(`Marcar este cadastro como já convertido no cliente ${cli?.nome||''}? (não cria cliente novo)`))return;
+  try{await updateDoc(doc(db,"cadastros",id),{status:'convertido',clienteId,convertidoPor:currentUser,convertidoEm:serverTimestamp()});showToast('Cadastro ligado ao cliente.');}catch(e){showToast('Erro.');}
+};
 window.__cadastroOrigemAtual=null;
-window.__criarClienteDoCadastro=(id)=>{
+window.__criarClienteDoCadastro=async(id)=>{
   const cad=cadastrosCache.find(x=>x.id===id);
   if(!cad)return;
+  const dup=cadClienteDoCadastro(cad);
+  if(dup&&!await lbConfirmar(`Já existe o cliente ${dup.nome||''} com esse CPF/CNPJ, e-mail ou nome. Criar um cliente NOVO mesmo assim?`))return;
   openClientModal(null);
   document.getElementById('clientModalTitle').textContent='Novo Cliente (via Cadastro Recebido)';
   document.getElementById('fNome').value=cad.nomeLoja||'';
@@ -7315,12 +7346,16 @@ window.__verCadastro=(id)=>{
     </div>
     <div class="cad-det-fotos">
       ${fotos.map(f=>f.url?`<div class="cad-det-foto-box">
-        <img src="${f.url}" alt="${f.label}" onclick="window.open('${f.url}','_blank')">
+        ${cadEhPdf(f.url)?`<div class="cad-det-pdf" onclick="window.open('${f.url}','_blank')"><span style="font-size:28px">📄</span>PDF — abrir</div>`:`<img src="${f.url}" alt="${f.label}" onclick="window.open('${f.url}','_blank')">`}
         <div class="lbl">${f.label}</div>
         <a href="${f.url}" download class="btn btn-ghost btn-sm" style="width:100%;display:inline-block;text-align:center">⬇ Baixar</a>
       </div>`:'').join('')}
     </div>
   `;
+  /* cadastro já convertido: sem Criar cliente / Descartar no detalhe */
+  ['cadDetCriarClienteBtn','cadDetDescartarBtn'].forEach(k=>{const b=document.getElementById(k);if(b)b.style.display=cad.status==='convertido'?'none':'';});
+  /* arquivo que não abre como foto (PDF do cartão CNPJ etc.) vira um botão de abrir */
+  document.querySelectorAll('#cadDetCorpo .cad-det-foto-box img').forEach(im=>im.addEventListener('error',()=>{const u=im.getAttribute('src');const bx=document.createElement('div');bx.className='cad-det-pdf';bx.innerHTML='<span style="font-size:28px">📄</span>PDF / arquivo — abrir';bx.onclick=()=>window.open(u,'_blank');im.replaceWith(bx);},{once:true}));
   document.getElementById('cadastroDetalheOverlay').classList.remove('hidden');
 };
 document.getElementById('cadDetFecharBtn')?.addEventListener('click',()=>document.getElementById('cadastroDetalheOverlay').classList.add('hidden'));
