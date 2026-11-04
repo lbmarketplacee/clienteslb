@@ -1348,6 +1348,16 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 .dt-loja summary{list-style:none;cursor:pointer}.dt-loja summary::-webkit-details-marker{display:none}
 .dt-badge{font-family:Oswald,sans-serif;font-weight:600;font-size:15px;border:1px solid;border-radius:8px;padding:2px 8px;min-width:52px;text-align:center}
 .dt-det{font-size:12.5px;padding:8px 12px 12px;display:flex;flex-direction:column;gap:6px}.dt-det ul{margin:4px 0 0 18px;padding:0}
+.fin-abas{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px;border-bottom:1px solid var(--border);padding-bottom:10px}
+.fin-abas button{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:999px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.fin-abas button.on{background:var(--gold);border-color:var(--gold);color:#111}
+.fin-abas button span{background:#ef4444;color:#fff;border-radius:999px;padding:0 7px;margin-left:4px;font-size:11px}.fin-abas button span:empty{display:none}
+#page-dre #dashCobrancas>.cm-item,#page-dre #dashCobrancas>.cob-resumo{display:none}
+.fin-fluxo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.fin-fluxo>div{border:1px solid var(--border);border-radius:12px;padding:12px 14px}.fin-fluxo small{display:block;font-size:11.5px;color:var(--text-dim)}.fin-fluxo b{font-family:Oswald,sans-serif;font-size:24px}
+.fin-barra{height:10px;border-radius:99px;background:#ffffff14;overflow:hidden;margin:4px 0 6px}.fin-barra i{display:block;height:100%;background:#10b981}
+.fin-alerta{border:1px solid #ef444466;background:#ef444412;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+@media(max-width:700px){.fin-fluxo{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .cv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
 .cv-card{border:1px solid;border-radius:12px;padding:12px 14px;cursor:pointer}
 .cv-letra{font-family:Oswald,sans-serif;font-size:22px;font-weight:600}.cv-num{font-weight:600;font-size:14px}.cv-sub{font-size:12px;color:var(--text-dim);margin-top:2px}
@@ -2528,14 +2538,17 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <div class="page" id="page-dre">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Financeiro LB <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Quanto entra, quanto sai e quanto sobra no mês — cuidado pelo Otto (IA). Detalhes do Asaas mais abaixo.</p></div>
+          <div class="page-head-text"><h2 class="page-title">Financeiro LB <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Quanto entra, quanto sai e quanto sobra no mês — cuidado pelo Otto (IA).</p></div>
           <div style="display:flex;gap:8px;margin-left:auto">
             <input type="month" id="dreMesInput" style="max-width:160px">
             <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">Atualizar</button>
           </div>
         </div>
-        <div id="finLB" style="margin:0 0 22px"></div>
-        <div class="panel hidden" id="dashCobrancas" style="margin:0 0 20px"></div>
+        <div class="fin-abas" id="finAbas"><button type="button" data-fintab="resumo" class="on">Resumo do mês</button><button type="button" data-fintab="deve">Quem deve <span id="finAbaDeveN"></span></button><button type="button" data-fintab="custos">Custos</button><button type="button" data-fintab="contrato">Contrato</button></div>
+        <div class="fin-sec" data-finsec="resumo"><div id="finLB"></div></div>
+        <div class="fin-sec hidden" data-finsec="deve"><div id="finConcWrap"></div><div id="finProx7"></div><div class="panel hidden" id="dashCobrancas" style="margin:18px 0 0"></div></div>
+        <div class="fin-sec hidden" data-finsec="custos"><div id="finCustosWrap"></div></div>
+        <div class="fin-antigo hidden">
         <div class="sgmv-summary">
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Recebido<br>(no Asaas)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
           <div class="summary-card metric-card glow-coral"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Saídas por PIX<br>(no Asaas)</div></div></div><div class="sc-value metric-value" id="dreDespesas">R$ 0</div></div>
@@ -2555,7 +2568,9 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           <div id="dreListaColaboradoras"><div class="empty-state" style="padding:20px">Escolha o mês e clique em Atualizar.</div></div>
         </div>
       
-        <div class="cm-secao" style="margin-top:20px">
+        </div>
+        <div class="fin-sec hidden" data-finsec="contrato">
+        <div class="cm-secao">
           <div id="contratoAvulsoBox">
           <h3 style="margin-bottom:14px">Gerar Contrato (PDF)</h3>
           <div class="field"><label>Nome do cliente/empresa</label><input type="text" id="caNome" placeholder="Nome completo ou razão social"></div>
@@ -2582,6 +2597,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
           <button type="button" class="btn btn-gold" id="gerarContratoAvulsoBtn" style="margin-top:10px">Gerar Contrato (.pdf)</button>
         </div>
         </div>
+      </div>
       </div>
 
       <div class="page" id="page-marketing">
@@ -5294,13 +5310,21 @@ async function finRender(){
     finCustos=r.custos.itens.filter(i=>!i.automatico).map(i=>({...i}));
     const cor=r.resultado>=0?'#10b981':'#ef4444';
     const card=(rot,val,sub,c)=>`<div class="cv-card" style="border-color:${c||'var(--border)'}"><div class="cv-sub">${rot}</div><div class="cv-letra" style="font-size:24px;color:${c||'inherit'}">${val}</div><div class="cv-sub">${sub||''}</div></div>`;
-    el.innerHTML=`<div class="cv-cards">${card('Entra (mensalidades)',fmtR(r.receitaPrevista),`${r.clientesPagantes} clientes pagantes · ticket ${fmtR(r.ticketMedio)}${r.clientesGratuitos?` · ${r.clientesGratuitos} gratuitos`:''}${r.recebidoAsaas!=null?`<br><b>recebido no Asaas no mês: ${fmtR(r.recebidoAsaas)}</b>`:''}`,'#10b981')}${card('Sai (custos do mês)',fmtR(r.custos.total),`fixos ${fmtR(r.custos.fixos)} · tráfego ${fmtR(r.custos.trafego)} · UpSeller ${fmtR(r.custos.upseller)} · taxas Asaas ${fmtR(r.custos.taxasAsaas)}`,'#ef4444')}${card('Sobra',fmtR(r.resultado),r.margem!=null?`margem ${String(r.margem).replace('.',',')}%`:'',cor)}${card('Ponto de equilíbrio',`${r.pontoDeEquilibrio??'—'} clientes`,`pra pagar os custos (custo por cliente ${fmtR(r.custoPorCliente)})`)}</div>
+    const prev=r.receitaPrevista||0,rec=r.recebidoAsaas||0,pct=prev?Math.min(100,Math.round(rec/prev*100)):0;
+    el.innerHTML=`<div id="finAlerta"></div>
+      <div class="fin-fluxo"><div><small>Previsto no mês</small><b>${fmtR(prev)}</b><small>${r.clientesPagantes} clientes pagantes · ticket ${fmtR(r.ticketMedio)}</small></div>
+        <div style="border-color:#10b98166"><small>Já recebido (Asaas)</small><b style="color:#10b981">${r.recebidoAsaas!=null?fmtR(rec):'—'}</b><div class="fin-barra"><i style="width:${pct}%"></i></div><small>${pct}% do previsto</small></div>
+        <div><small>Falta receber no mês</small><b>${fmtR(Math.max(0,prev-rec))}</b><small>inclui quem paga por fora do Asaas</small></div>
+        <div style="border-color:#ef444466"><small>Em atraso</small><b id="finAtrasado" style="color:#ef4444">…</b><small id="finAtrasadoSub">conferindo no Asaas</small></div></div>
+      <div class="cv-cards">${card('Sai (custos do mês)',fmtR(r.custos.total),`fixos ${fmtR(r.custos.fixos)} · tráfego ${fmtR(r.custos.trafego)} · UpSeller ${fmtR(r.custos.upseller)} · taxas Asaas ${fmtR(r.custos.taxasAsaas)} — <a href="#" onclick="event.preventDefault();window.__finAba('custos')" style="color:var(--gold)">ver custos</a>`,'#ef4444')}${card('Sobra (previsto − custos)',fmtR(r.resultado),r.margem!=null?`margem ${String(r.margem).replace('.',',')}%`:'',cor)}${card('Ponto de equilíbrio',`${r.pontoDeEquilibrio??'—'} clientes`,`pra pagar os custos (custo por cliente ${fmtR(r.custoPorCliente)})`)}</div>
+      <p style="font-size:11.5px;color:var(--text-dim);margin:-4px 0 12px">Previsto = mensalidade cadastrada de cada cliente ativo${r.clientesGratuitos?` (${r.clientesGratuitos} gratuitos fora)`:''}. Recebido = o que já caiu no Asaas neste mês.${r.trafegoErro?' (Tráfego: '+esc(r.trafegoErro)+')':''}</p>`;
+    document.getElementById('finCustosWrap').innerHTML=`<div class="cv-cards" style="display:none">${card('Entra (mensalidades)',fmtR(r.receitaPrevista),`${r.clientesPagantes} clientes pagantes · ticket ${fmtR(r.ticketMedio)}${r.clientesGratuitos?` · ${r.clientesGratuitos} gratuitos`:''}${r.recebidoAsaas!=null?`<br><b>recebido no Asaas no mês: ${fmtR(r.recebidoAsaas)}</b>`:''}`,'#10b981')}${card('Sai (custos do mês)',fmtR(r.custos.total),`fixos ${fmtR(r.custos.fixos)} · tráfego ${fmtR(r.custos.trafego)} · UpSeller ${fmtR(r.custos.upseller)} · taxas Asaas ${fmtR(r.custos.taxasAsaas)}`,'#ef4444')}${card('Sobra',fmtR(r.resultado),r.margem!=null?`margem ${String(r.margem).replace('.',',')}%`:'',cor)}${card('Ponto de equilíbrio',`${r.pontoDeEquilibrio??'—'} clientes`,`pra pagar os custos (custo por cliente ${fmtR(r.custoPorCliente)})`)}</div>
       <p style="font-size:11.5px;color:var(--text-dim);margin:-4px 0 12px">Entra = mensalidade cadastrada de cada cliente ativo (o recebido de verdade está no Asaas, abaixo). Tráfego do Meta e UpSeller entram sozinhos.${r.trafegoErro?' (Tráfego: '+esc(r.trafegoErro)+')':''}</p>
       <div class="cm-secao"><h3 style="margin-bottom:10px">Custos do mês</h3><div id="finCustosLista"></div>
         <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="window.__finAdd()">+ Adicionar custo</button><button class="btn btn-gold btn-sm" onclick="window.__finSalvar()">Salvar custos</button></div>
         ${r.custos.itens.filter(i=>i.automatico).map(i=>`<div class="cm-item" style="opacity:.85"><span class="nome">${esc(i.nome)} <span style="font-size:11px;color:var(--text-dim)">(automático)</span></span><b style="color:var(--red)">-${fmtR(i.valor)}</b></div>`).join('')}${r.taxasAsaasPorTipo&&Object.keys(r.taxasAsaasPorTipo).length?`<div style="font-size:11.5px;color:var(--text-dim);margin-top:4px">Taxas do Asaas: ${Object.entries(r.taxasAsaasPorTipo).map(([k,v])=>`${esc(k)} ${fmtR(v)}`).join(' · ')}</div>`:''}${r.asaasErro?`<div style="font-size:11.5px;color:#e0a352">Asaas: ${esc(r.asaasErro)}</div>`:''}</div>`;
     finDesenharCustos();
-    el.insertAdjacentHTML('beforeend','<div class="cm-secao" style="margin-top:18px"><h3 style="margin-bottom:6px">Quem pagou e quem deve — conciliação do Otto</h3><p style="font-size:12px;color:var(--text-dim);margin:0 0 10px">Mensalidade cadastrada × cobranças no Asaas (últimos 90 dias). Só você e a Carol veem isso.</p><div id="finConc"><div class="empty-state" style="padding:14px">Conferindo no Asaas…</div></div></div>');
+    document.getElementById('finConcWrap').innerHTML=('<div class="cm-secao"><h3 style="margin-bottom:6px">Quem pagou e quem deve — conciliação do Otto</h3><p style="font-size:12px;color:var(--text-dim);margin:0 0 10px">Mensalidade cadastrada × cobranças no Asaas (últimos 90 dias). Só você e a Carol veem isso.</p><div id="finConc"><div class="empty-state" style="padding:14px">Conferindo no Asaas…</div></div></div>');
     finConciliar();
   }catch(e){el.innerHTML=`<div class="empty-state" style="padding:16px">Não consegui calcular: ${esc(e.message)}</div>`;}
 }
@@ -5310,6 +5334,7 @@ async function finConciliar(){
     const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'conciliacao'})})).json();
     if(!r.ok)throw new Error(r.erro);
     const t=r.totais;const d=v=>v?String(v).split('-').reverse().slice(0,2).join('/'):'';
+    try{finResumoDaConciliacao(r);}catch(e){console.error(e);}
     const grupo=(tit,cor,lista,linha)=>lista.length?`<details ${cor==='#ef4444'?'open':''} style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:700;color:${cor}">${tit} (${lista.length})</summary><div class="cv-tabela" style="margin-top:6px">${lista.map(linha).join('')}</div></details>`:'';
     el.innerHTML=`<div class="cv-cards">${[['Em dia',t.emDia,'#10b981'],['Atrasados',`${t.atrasados} · ${fmtR(t.valorAtrasado)}`,'#ef4444'],['Fora do Asaas',`${t.foraDoAsaas} · ${fmtR(t.mensalidadeForaDoAsaas)}/mês`,'#e0a352'],['Sem pagamento ainda',t.semPagamento,'var(--text-dim)'],['Saíram mas têm cobrança',t.saiuMasCobra,'#a855f7']].map(([a,b,c])=>`<div class="cv-card" style="border-color:${c}55"><div class="cv-sub">${a}</div><div class="cv-letra" style="font-size:20px;color:${c}">${b}</div></div>`).join('')}</div>
       ${grupo('Atrasados','#ef4444',r.atrasados,x=>`<div class="cv-linha"><div class="cv-nome"><b>${esc(x.nome)}</b><span>${x.parcelas} parcela(s) · ${x.diasAtraso} dias de atraso${x.ultimoPagamento?` · último pagamento ${d(x.ultimoPagamento.data)}`:''}</span></div><div class="cv-val"><b style="color:#ef4444">${fmtR(x.valorAtrasado)}</b><span>mensalidade ${fmtR(x.mensalidade)}</span></div>${x.link?`<a class="btn btn-ghost btn-sm" href="${esc(x.link)}" target="_blank">Boleto</a>`:''}<button class="btn btn-ghost btn-sm" onclick="window.__finTarefa('${x.clienteId}',this)">Tarefa pra Carol</button></div>`)}
@@ -5319,6 +5344,26 @@ async function finConciliar(){
       ${grupo('Em dia','#10b981',r.emDia,x=>`<div class="cv-linha"><div class="cv-nome"><b>${esc(x.nome)}</b><span>pagou ${d(x.ultimoPagamento?.data)}${x.proxima?` · próxima ${d(x.proxima.vencimento)}`:''}</span></div><div class="cv-val"><b>${fmtR(x.mensalidade)}</b></div></div>`)}`;
   }catch(e){el.innerHTML=`<div class="empty-state" style="padding:14px">Não consegui conferir: ${esc(e.message)}</div>`;}
 }
+/* 04/11/2026: Financeiro em abas — Resumo / Quem deve / Custos / Contrato */
+function finResumoDaConciliacao(r){
+  const t=r.totais||{};const atr=document.getElementById('finAtrasado');
+  if(atr){atr.textContent=fmtR(t.valorAtrasado||0);document.getElementById('finAtrasadoSub').textContent=`${t.atrasados||0} cliente(s) com boleto vencido`;}
+  const n=(t.atrasados||0)+(t.saiuMasCobra||0);const bd=document.getElementById('finAbaDeveN');if(bd)bd.textContent=n?String(n):'';
+  const al=document.getElementById('finAlerta');
+  if(al){const p=[];if(t.atrasados)p.push(`<b>${t.atrasados} atrasado(s)</b> somando ${fmtR(t.valorAtrasado)}`);if(t.saiuMasCobra)p.push(`<b>${t.saiuMasCobra} que saíram (ou sem cadastro) ainda têm cobrança no Asaas</b>`);if(t.foraDoAsaas)p.push(`${t.foraDoAsaas} pagam por fora (conferir)`);
+    al.innerHTML=p.length?`<div class="fin-alerta">⚠ ${p.join(' · ')}<button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="window.__finAba('deve')">Ver quem deve</button></div>`:'';}
+  const hoje=Date.now(),lim=hoje+7*86400000;
+  const prox=[...(r.emDia||[]),...(r.semPagamento||[])].filter(x=>x.proxima?.vencimento).map(x=>({...x,ms:Date.parse(x.proxima.vencimento+'T12:00:00-03:00')})).filter(x=>x.ms>=hoje-86400000&&x.ms<=lim).sort((a,b)=>a.ms-b.ms);
+  const b=document.getElementById('finProx7');
+  if(b)b.innerHTML=`<div class="cm-secao" style="margin-top:18px"><h3 style="margin-bottom:10px">Vence nos próximos 7 dias (${prox.length})</h3>${prox.length?prox.map(x=>`<div class="cm-item"><span class="nome">${esc(x.nome)}</span><span style="color:var(--text-dim);font-size:12px;margin-right:12px">${String(x.proxima.vencimento).split('-').reverse().join('/')}</span><b>${fmtR(x.proxima.valor||x.mensalidade)}</b></div>`).join(''):'<div class="empty-state" style="padding:14px">Nada vence nos próximos 7 dias.</div>'}</div>`;
+}
+window.__finAba=(k)=>{
+  document.querySelectorAll('#finAbas button').forEach(b=>b.classList.toggle('on',b.dataset.fintab===k));
+  document.querySelectorAll('#page-dre .fin-sec').forEach(s=>s.classList.toggle('hidden',s.dataset.finsec!==k));
+  try{localStorage.setItem('finAba',k);}catch(e){}
+};
+document.getElementById('finAbas')?.addEventListener('click',e=>{const b=e.target.closest('button[data-fintab]');if(b)window.__finAba(b.dataset.fintab);});
+try{const k=localStorage.getItem('finAba');if(k&&k!=='resumo')setTimeout(()=>window.__finAba(k),0);}catch(e){}
 window.__finTarefa=async(id,btn)=>{btn.disabled=true;try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'tarefa_cobranca',clienteId:id})})).json();if(!r.ok)throw new Error(r.erro);btn.textContent='Tarefa criada ✓';}catch(e){btn.disabled=false;showToast('Erro: '+e.message);}};
 function finDesenharCustos(){
   const l=document.getElementById('finCustosLista');if(!l)return;
