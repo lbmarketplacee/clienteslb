@@ -1209,7 +1209,8 @@ function statusReuniao(e, l) {
   if (faltou) return 'faltou'; // "não veio" marcado logo depois desta reunião
   const depois = r?.inicio && M.ms(r.inicio) > ini + 60000 ? M.diaBR(r.inicio) : null; // o lead tem outra reunião depois desta
   if (l.compareceuEm && l.compareceuEm >= dia && (!depois || l.compareceuEm < depois)) return 'veio';
-  if (!l.compareceuEm && ini < Date.now() && ['compareceu', 'negociacao', 'fechado'].includes(l.stage) && (!r?.inicio || M.ms(r.inicio) <= ini + 60000)) return 'veio';
+  // última reunião do lead, já passou, e ele está em compareceu/negociação/fechado (compareceuEm só grava a 1ª vez)
+  if (ini < Date.now() && ['compareceu', 'negociacao', 'fechado'].includes(l.stage) && (!r?.inicio || M.ms(r.inicio) <= ini + 60000)) return 'veio';
   const atual = r?.inicio && Math.abs(M.ms(r.inicio) - ini) < 60000;
   if (atual && r.confirmacao === 'remarcar') return 'remarcou';
   if (r?.inicio && M.ms(r.inicio) > ini + 60000) return 'remarcou'; // o lead já tem outra reunião depois desta
