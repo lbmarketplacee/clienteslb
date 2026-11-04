@@ -7352,6 +7352,8 @@ window.__verCadastro=(id)=>{
       </div>`:'').join('')}
     </div>
   `;
+  /* cadastro já convertido: sem Criar cliente / Descartar no detalhe */
+  ['cadDetCriarClienteBtn','cadDetDescartarBtn'].forEach(k=>{const b=document.getElementById(k);if(b)b.style.display=cad.status==='convertido'?'none':'';});
   /* arquivo que não abre como foto (PDF do cartão CNPJ etc.) vira um botão de abrir */
   document.querySelectorAll('#cadDetCorpo .cad-det-foto-box img').forEach(im=>im.addEventListener('error',()=>{const u=im.getAttribute('src');const bx=document.createElement('div');bx.className='cad-det-pdf';bx.innerHTML='<span style="font-size:28px">📄</span>PDF / arquivo — abrir';bx.onclick=()=>window.open(u,'_blank');im.replaceWith(bx);},{once:true}));
   document.getElementById('cadastroDetalheOverlay').classList.remove('hidden');
