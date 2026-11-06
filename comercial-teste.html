@@ -1319,8 +1319,9 @@ function eventoHtml(e) {
   const st = statusReuniao(e, l);
   return `<div class="ev ${st ? 'st-' + st : ''}"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b>${l ? tagsMini(l) : ''}<em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) + ' ' + (st ? `<span class="tag ${ST_REU[st][0]}">${ST_REU[st][1]}</span>` : confirmacaoTag(l)) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
 }
+function ocupaPessoa(e, email) { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === REUNIAO_LINCOLN_VAI_PARA || email === 'lincoln@lbmarketplace.com.br'; }
 function livresDoDia(dia, email, eventos, dur = 30) {
-  const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === REUNIAO_LINCOLN_VAI_PARA || email === 'lincoln@lbmarketplace.com.br'; }).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
+  const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => ocupaPessoa(e, email)).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
   const sem = new Date(dia + 'T12:00:00-03:00').getUTCDay(); // 0 domingo · 6 sábado
   const hr = horarioDe(email, sem); if (!hr) return []; // domingo sem reunião (menos quem tem horário próprio)
   const [hIni, hFim] = hr;
@@ -1550,7 +1551,7 @@ async function marcarReuniao(id, pre = {}) {
       if (!dia || !h) { toast('Escolha um horário livre.'); return; } if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('E-mail inválido.'); return; }
       const ini = new Date(calIso(dia, h)), fim = new Date(ini.getTime() + dur * 60000); const comNome = CLOSERS.find((x) => x[0] === com)?.[1] || '';
       if (ini.getTime() < Date.now() && !confirm('Esse horário já passou. Registrar a reunião mesmo assim?')) return;
-      const choque = (S.agenda?.eventos || []).filter((o) => o.id !== l.reuniaoMarcada?.eventoId && o.transparency !== 'transparent' && closersDoEvento(o).includes(com) && M.ms(o.start.dateTime) < fim.getTime() && (M.ms(o.end?.dateTime) || M.ms(o.start.dateTime) + 1800000) > ini.getTime());
+      const choque = (S.agenda?.eventos || []).filter((o) => o.id !== l.reuniaoMarcada?.eventoId && o.transparency !== 'transparent' && ocupaPessoa(o, com) && M.ms(o.start.dateTime) < fim.getTime() && (M.ms(o.end?.dateTime) || M.ms(o.start.dateTime) + 1800000) > ini.getTime());
       if (choque.length && !confirm(`${comNome} já tem ${choque.map((o) => hora(o.start.dateTime) + ' ' + (leadDoEvento(o)?.nome || o.summary || 'compromisso')).join(', ')}. Marcar junto mesmo assim?`)) return;
       ev.target.disabled = true; ev.target.textContent = 'Marcando…';
       try {
