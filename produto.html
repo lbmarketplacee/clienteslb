@@ -183,6 +183,7 @@ async function iniciar(){
     const r=await fetch(`${API}?acao=loja&t=${encodeURIComponent(T)}`);const d=await r.json();
     $('carregando').classList.add('hidden');
     if(!d.ok){$('invalido').classList.remove('hidden');$('invalidoTxt').textContent=d.erro||'Peça um novo link pra equipe LB.';return;}
+    if(d.idioma==='es'){location.replace('producto.html?t='+encodeURIComponent(T));return;}
     $('nomeLoja').textContent=d.loja;st.mps=d.marketplaces;
     $('mps').innerHTML=d.marketplaces.map(m=>`<label class="mp"><input type="checkbox" class="mpck" value="${m}" checked>${MP_NOME[m]}</label>`).join('');
     $('form').classList.remove('hidden');renderTams();renderEstoque();
