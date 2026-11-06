@@ -234,11 +234,11 @@ $('tamAdd').onclick=addTam;$('tamNovo').addEventListener('keydown',e=>{if(e.key=
 // ---------- estoque ----------
 function combos(){const cs=st.cores.length?st.cores:[''],ts=st.tams.length?st.tams:[''];const out=[];for(const c of cs)for(const t of ts)out.push(`${c}|${t}`);return out;}
 function renderEstoque(){
-  const val={};document.querySelectorAll('.estq').forEach(i=>val[i.dataset.k]=i.value);
+  const val={},sk={};document.querySelectorAll('.estq').forEach(i=>val[i.dataset.k]=i.value);document.querySelectorAll('.skuq').forEach(i=>sk[i.dataset.k]=i.value);
   const lista=combos();
   if(lista.length===1&&lista[0]==='|'){$('estoqueBox').innerHTML=`<input type="number" min="0" id="estUnico" placeholder="Quantas peças você tem?" value="${esc($('estUnico')?.value||'')}">`;return;}
-  $('estoqueBox').innerHTML=`<div class="ex">Quantas peças de cada? <a href="#" onclick="event.preventDefault();todos()">Mesmo número pra todas</a></div><div class="est-wrap"><table class="est"><tr><th>${st.cores.length?'Cor':''}</th><th>${st.tams.length?'Tamanho':''}</th><th>Estoque</th></tr>
-    ${lista.map(k=>{const [c,t]=k.split('|');return `<tr><td>${esc(c)}</td><td>${esc(t)}</td><td><input type="number" min="0" class="estq" data-k="${esc(k)}" value="${esc(val[k]??'')}"></td></tr>`;}).join('')}</table></div>`;
+  $('estoqueBox').innerHTML=`<div class="ex">Quantas peças de cada? <a href="#" onclick="event.preventDefault();todos()">Mesmo número pra todas</a></div><div class="est-wrap"><table class="est"><tr><th>${st.cores.length?'Cor':''}</th><th>${st.tams.length?'Tamanho':''}</th><th>Estoque</th><th>SKU <span style="font-weight:400">(opcional)</span></th></tr>
+    ${lista.map(k=>{const [c,t]=k.split('|');return `<tr><td>${esc(c)}</td><td>${esc(t)}</td><td><input type="number" min="0" class="estq" data-k="${esc(k)}" value="${esc(val[k]??'')}"></td><td><input type="text" class="skuq" style="width:120px" maxlength="60" data-k="${esc(k)}" value="${esc(sk[k]??'')}"></td></tr>`;}).join('')}</table></div>`;
 }
 window.todos=()=>{const v=prompt('Quantas peças de cada variação?','20');if(v==null)return;document.querySelectorAll('.estq').forEach(i=>i.value=v);};
 
@@ -248,7 +248,8 @@ $('form').addEventListener('submit',async e=>{
   if(st.fotos.some(f=>f.estado==='enviando...')){mostrarErros(['Espere as fotos terminarem de enviar.']);return;}
   if(st.cores.length>1){const sem=st.cores.filter(c=>!st.fotos.some(f=>f.url&&f.cor===c));if(sem.length){mostrarErros([`Escolha a foto de cada cor (seção 3). Falta: ${sem.join(', ')}.`]);return;}}
   const estoque={};document.querySelectorAll('.estq').forEach(i=>{if(i.value!=='')estoque[i.dataset.k]=i.value;});
-  const produto={nome:$('nome').value,descricao:$('descricao').value,material:$('material').value,sku:$('sku').value,cores:st.cores,tamanhos:st.tams,medidas:$('medidas').value,
+  const skus={};document.querySelectorAll('.skuq').forEach(i=>{if(i.value.trim())skus[i.dataset.k]=i.value.trim();});
+  const produto={skus,nome:$('nome').value,descricao:$('descricao').value,material:$('material').value,sku:$('sku').value,cores:st.cores,tamanhos:st.tams,medidas:$('medidas').value,
     liquido:$('liquido').value,precoAtual:$('precoAtual').value,estoque,estoqueUnico:$('estUnico')?.value??'',peso:$('peso').value,embalagem:$('embalagem').value,codigoBarras:$('codigoBarras').value,
     marketplaces:[...document.querySelectorAll('.mpck:checked')].map(i=>i.value),observacoes:$('observacoes').value,fotos:st.fotos.filter(f=>f.url).map(f=>({url:f.url,cor:f.cor||null}))};
   const b=$('enviar');b.disabled=true;b.textContent='Enviando...';
