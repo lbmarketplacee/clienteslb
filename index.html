@@ -3692,7 +3692,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi","isalbmarketplace@gmail.com":"Isa","suporte@lbmarketplace.com.br":"Isa"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi","isalbmarketplace@gmail.com":"Isa","suporte@lbmarketplace.com.br":"Lídia"};
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 // Quem tem acesso total (tudo que era "só Lincoln"): Lincoln + Caroline (pedido do Lincoln, 07/10/2026)
 const ADMIN_EMAILS=[LINCOLN_EMAIL,"caroline@lbmarketplace.com.br"];
@@ -4992,7 +4992,7 @@ window.__waRRExcluir=async(id)=>{
 // tempo sem resposta, ficha do lead/cliente ao lado, nota interna, anexo, mensagem agendada, transcrição de áudio e sugestão da IA.
 // Campos novos em whatsappConversas: donoEmail/donoNome, resolvidaEm/resolvidaPor, notas[], etiquetas[], agendadas[] + temAgendada,
 // transcricoes{midiaId: texto}, slaAvisadoPara. O aviso de 15 min no celular e o envio das agendadas são do lb-shopee-gmv/api/push (5 min).
-const WA_DONOS=[['lincoln@lbmarketplace.com.br','Lincoln'],['caroline@lbmarketplace.com.br','Caroline'],['guilherme@lbmarketplace.com.br','Guilherme'],['suporte@lbmarketplace.com.br','Isa'],['mirela@lbmarketplace.com.br','Mirella']];
+const WA_DONOS=[['lincoln@lbmarketplace.com.br','Lincoln'],['caroline@lbmarketplace.com.br','Caroline'],['guilherme@lbmarketplace.com.br','Guilherme'],['suporte@lbmarketplace.com.br','Lídia'],['mirela@lbmarketplace.com.br','Mirella']];
 const WA_API='https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook';
 let waFilaAtual='abertas',waNotaLigada=false;
 let waFichaAberta=(()=>{try{return localStorage.getItem('waFicha')!=='0';}catch(e){return true;}})();
@@ -12269,7 +12269,7 @@ let crmLeads = [];
 let crmView = 'kanban';
 let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all', etiqueta:'all', ordem:(()=>{try{return localStorage.getItem('crmOrdem')||'novos';}catch(e){return 'novos';}})()};
 // Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
-const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'suporte@lbmarketplace.com.br',nome:'Isa'}];
+const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'suporte@lbmarketplace.com.br',nome:'Lídia'}];
 const CRM_COMISSAO=500;
 const crmEhVendedor=()=>CRM_VENDEDORES.some(v=>v.email===String(currentEmail||'').toLowerCase());
 // 26/10/2026 (Lincoln): a Isa (SDR) fala com TODOS os leads — vê e atualiza os de qualquer dono (não troca o dono)
@@ -12677,7 +12677,7 @@ function rgRender(){const el=document.getElementById('rgBox');if(!el)return;
   :`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>Nova reunião</h3></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="field"><label>Título</label><input id="rgTitulo" placeholder="ex.: Reunião da equipe — segunda"></div>
-      <div class="field"><label>Participantes (opcional)</label><input id="rgPart" placeholder="ex.: Lincoln, Carol, Isa"></div>
+      <div class="field"><label>Participantes (opcional)</label><input id="rgPart" placeholder="ex.: Lincoln, Carol, Lídia"></div>
       <div class="field" style="grid-column:1/-1"><label>Contexto (opcional — ajuda a IA)</label><input id="rgCtx" placeholder="ex.: alinhamento dos clientes da semana"></div>
       <div class="field"><label>Onde é a reunião</label><select id="rgModo"><option value="meet">Google Meet / online (grava a aba + meu microfone)</option><option value="presencial">Presencial (só o microfone do computador)</option></select></div>
       <div style="display:flex;align-items:flex-end"><button class="btn btn-gold" onclick="window.__rgGravar()">● Gravar reunião</button></div>
@@ -12959,7 +12959,7 @@ async function calWeb(acao,dados={}){
 const CAL_SCOPE='https://www.googleapis.com/auth/calendar.events';
 const CAL_API='https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(CAL_ID);
 const CAL_HORARIO=[9,19]; // horário de reunião oferecido (9h às 19h, de 30 em 30 min)
-const CAL_CLOSERS=[['guilherme@lbmarketplace.com.br','Guilherme'],['lincoln@lbmarketplace.com.br','Lincoln'],['caroline@lbmarketplace.com.br','Caroline'],['suporte@lbmarketplace.com.br','Isa']];
+const CAL_CLOSERS=[['guilherme@lbmarketplace.com.br','Guilherme'],['lincoln@lbmarketplace.com.br','Lincoln'],['caroline@lbmarketplace.com.br','Caroline'],['suporte@lbmarketplace.com.br','Lídia']];
 let calToken=(()=>{try{const t=JSON.parse(sessionStorage.getItem('lb_caltoken')||'null');return t&&t.ate>Date.now()?t.v:null;}catch(e){return null;}})();
 let calClient=null,calEspera=null,calHoje={dia:null,eventos:null,erro:null,carregando:false};
 function calPegarToken(forcar){
