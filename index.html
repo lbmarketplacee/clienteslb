@@ -14209,6 +14209,8 @@ function sheinAcharValor(valores,nome){const a=sheinSem(nome);if(!a)return null;
 // formato: 'retrato' = 1340×1785 (3:4, principal/detalhe), 'quadrada' = 1200×1200, número < 200 = miniatura da cor.
 // SEM borda branca: a SHEIN recusa principal com borda (Florecer, 19/10/2026) → preenche cortando (cover), nunca encaixando.
 // 06/11/2026 (Isabina): a foto da Shopee já vem com faixa branca dos lados (até 17%) → acha a área sem a faixa. Branco nos 4 lados é fundo de estúdio, não borda: fica.
+// 06/11/2026 (Isabina): a SHEIN recusa cor própria com "onça" (palavra sensível), e só avisa depois de subir as fotos
+const sheinCorPermitida=n=>String(n).replace(/(?<!\p{L})on[çc](?:inha|a)(?!\p{L})/giu,'Animal Print');
 function sheinSemBorda(img){
   const k=Math.min(1,400/Math.max(img.width,img.height)),W=Math.max(1,Math.round(img.width*k)),H=Math.max(1,Math.round(img.height*k));
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0,W,H);const D=g.getImageData(0,0,W,H).data;
@@ -14396,7 +14398,7 @@ const pxCriar={
     const cores=vC?vC.opcoes.map(o=>({nome:o.nome,foto:o.foto})):[{nome:'(cor do produto)',foto:null}];
     const podeProprio=id=>(prep.personalizaveis||[]).includes(Number(id));
     // nome igual ao da SHEIN → valor dela; diferente → cor PRÓPRIA com o nome da cliente (se a categoria deixar); senão a IA escolhe
-    const semCor=[];cores.forEach((x,i)=>{x.valueId=vC?sheinAcharValor(aCor.valores,x.nome):null;if(!x.valueId&&vC&&podeProprio(aCor.id))x.custom=String(x.nome).slice(0,50);if(!x.valueId&&!x.custom)semCor.push(i);});
+    const semCor=[];cores.forEach((x,i)=>{x.valueId=vC?sheinAcharValor(aCor.valores,x.nome):null;if(!x.valueId&&vC&&podeProprio(aCor.id))x.custom=sheinCorPermitida(x.nome).slice(0,50);if(!x.valueId&&!x.custom)semCor.push(i);});
     if(semCor.length){linha('SHEIN: escolhendo as cores...');const r=await sheinIA(semCor.map(i=>({nome:vC?`Cor da SHEIN equivalente a "${cores[i].nome}"`:'Cor principal do produto',valores:aCor.valores})),produtoTxt);
       semCor.forEach((i,k)=>{if(r[k]?.id)cores[i].valueId=r[k].id;});}
     const repet=cores.map(x=>x.valueId||('c:'+sheinSem(x.custom))).filter((v,i,a)=>v&&a.indexOf(v)!==i);
