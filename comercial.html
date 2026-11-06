@@ -293,6 +293,7 @@ const firebaseConfig = { apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", auth
 const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
 const WA_API = 'https://lb-whatsapp-webhook.vercel.app/api/whatsapp-webhook';
 const META_API = 'https://lb-shopee-gmv.vercel.app/api/meta-ads';
+const GRAVACAO_API = 'https://lb-shopee-gmv.vercel.app/api/gravacao';
 const PUSH_API = 'https://lb-shopee-gmv.vercel.app/api/push';
 const DIRETOR_API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
 const CAL_WEB = 'https://script.google.com/macros/s/AKfycbxXxKzT9U0EeD6zuTB-n2m-tinl5HhmhgC6DwItLvv2uhzdSCX8ufjpmQRuY-hWJuiLmw/exec';
@@ -1074,16 +1075,55 @@ function ligarFicha(root, l) {
 const REC_PEDACO = 5 * 60 * 1000;
 let REC = null;
 const recRel = (s) => { s = Math.max(0, Math.round(s)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
-function recTxt() { if (!REC) return ''; const s = (Date.now() - REC.inicio) / 1000; return REC.parando ? `Finalizando… ${REC.pendentes ? `transcrevendo ${REC.pendentes} pedaço(s)` : 'a IA está analisando'}` : `● Gravando ${recRel(s)} · ${REC.feitos} pedaço(s) salvos${REC.erros ? ` · ${REC.erros} erro(s)` : ''}`; }
+function recTxt() { if (!REC) return ''; const s = (Date.now() - REC.inicio) / 1000; return REC.parando ? `Finalizando… ${REC.salvandoVideo ? 'salvando o vídeo' : REC.pendentes ? `transcrevendo ${REC.pendentes} pedaço(s)` : 'a IA está analisando'}` : `● Gravando ${recRel(s)} · ${REC.feitos} pedaço(s) salvos${REC.erros ? ` · ${REC.erros} erro(s)` : ''}`; }
 function recTick() { document.querySelectorAll('.rec-status').forEach((e) => (e.textContent = recTxt())); }
+// 06/11/2026 (Lincoln): vídeo da reunião no cartão do lead. Grava aba + áudio dos dois lados e sobe em partes pro Storage durante a reunião.
+const recVideoHtml = (r) => r.video?.url ? `<div style="margin-top:6px"><video controls preload="metadata" src="${esc(r.video.url)}" style="width:100%;border-radius:10px;background:#000"></video><a class="btn sm" href="${esc(r.video.url)}" target="_blank" rel="noopener" style="margin-top:4px">Abrir o vídeo em outra aba</a></div>` : `<div style="font-size:12px;color:var(--dim);margin-top:4px">Sem vídeo nessa gravação.</div>`;
+const VID_PARTE = 8 * 1024 * 1024;
+async function vidPut(v, parte, inicio, total) {
+  const fim = inicio + parte.size - 1; const faixa = parte.size ? `bytes ${inicio}-${fim}/${total ?? '*'}` : `bytes */${total}`;
+  for (let t = 0; t < 4; t++) {
+    try { const r = await fetch(v.sessao, { method: 'PUT', headers: { 'Content-Range': faixa }, body: parte }); if (r.status === 308 || r.ok) return; throw new Error('upload ' + r.status); }
+    catch (e) { if (t === 3) throw e; await new Promise((k) => setTimeout(k, 2000 * (t + 1))); }
+  }
+}
+function vidEnviar(v, final) {
+  v.fila = v.fila.then(async () => {
+    if (v.erro) return;
+    const blob = new Blob(v.partes); let usar = final ? blob.size : Math.floor(blob.size / (256 * 1024)) * 256 * 1024;
+    if (!final && usar < VID_PARTE) return;
+    await vidPut(v, blob.slice(0, usar), v.enviado, final ? v.enviado + usar : null);
+    v.enviado += usar; v.partes = [blob.slice(usar)];
+  }).catch((e) => { v.erro = e.message; console.error('vídeo da reunião:', e); });
+}
+async function vidIniciar(g) {
+  try {
+    const mime = ['video/mp4;codecs=avc1.42E01F,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t)); if (!mime) return;
+    const s = await api(GRAVACAO_API, { acao: 'iniciar', leadId: g.leadId, tipo: mime }); if (!s.ok) throw new Error(s.erro || 'sem sessão');
+    const ac = new AudioContext(); await ac.resume().catch(() => { }); const saida = ac.createMediaStreamDestination(); ac.createMediaStreamSource(g.aba).connect(saida); ac.createMediaStreamSource(g.mic).connect(saida);
+    const rec = new MediaRecorder(new MediaStream([...g.abaStream.getVideoTracks(), ...saida.stream.getAudioTracks()]), { mimeType: mime, videoBitsPerSecond: 800000, audioBitsPerSecond: 64000 });
+    const v = { sessao: s.sessao, url: s.url, tipo: s.tipo, rec, ac, partes: [], enviado: 0, fila: Promise.resolve(), erro: null }; g.video = v;
+    rec.ondataavailable = (e) => { if (e.data?.size) { v.partes.push(e.data); vidEnviar(v, false); } };
+    rec.start(10000);
+  } catch (e) { console.error('vídeo da reunião não iniciou:', e); toast('A transcrição segue, mas o vídeo não vai gravar: ' + e.message); }
+}
+async function vidFinalizar(g) {
+  const v = g.video; if (!v) return null;
+  await new Promise((ok) => { if (v.rec.state === 'inactive') return ok(); v.rec.onstop = ok; try { v.rec.stop(); } catch (e) { ok(); } });
+  vidEnviar(v, true); await v.fila; v.ac.close().catch(() => { });
+  if (v.erro) { toast('O vídeo não foi salvo: ' + v.erro); return null; }
+  const info = { url: v.url, tipo: v.tipo, tam: v.enviado }; g.videoInfo = info;
+  await updateDoc(doc(db, 'crmLeads', g.leadId), { 'reuniaoAndamento.video': info }).catch(() => { });
+  return info;
+}
 function recBox(l) {
   const lista = [...(l.reunioes || [])].sort((a, b) => b.em - a.em); const and = l.reuniaoAndamento;
   let topo;
   if (REC && REC.leadId === l.id) topo = `<div class="lin"><span class="rec-status" style="color:#e0525a;font-weight:700">${recTxt()}</span>${REC.parando ? '' : '<button class="btn sm vm" data-rec="parar">Parar e analisar</button>'}</div>`;
   else if (REC) topo = `<div class="lin"><span class="tag">Gravando a reunião de ${esc(REC.nome)} — pare aquela antes.</span></div>`;
-  else if (and?.falas?.length) topo = `<div class="lin"><span class="tag la">Gravação interrompida (${and.falas.length} falas salvas)</span><button class="btn sm ouro" data-rec="analisar">Analisar o que foi salvo</button><button class="btn sm" data-rec="descartar">Descartar</button></div>`;
-  else topo = `<div class="lin"><button class="btn sm vm" data-rec="gravar">● Gravar reunião (Meet)</button><span style="font-size:12px;opacity:.7">Chrome do computador · avise o cliente que está gravando</span></div>`;
-  const it = lista.map((r) => { const a = r.analise || {}; return `<details style="margin-top:8px"><summary style="cursor:pointer"><b>${new Date(r.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</b> · ${recRel(r.duracaoSeg || 0)} · ${esc(r.vendedor || '')} · nota ${a.nota ?? '-'} · chance ${a.chanceFechar ?? '-'}%</summary><div class="ia-box" style="margin-top:6px">${esc(a.resumo || '')}${a.proximoPasso ? `<br><b>Próximo passo:</b> ${esc(a.proximoPasso)}` : ''}${(a.melhorar || []).length ? `<br><b>Melhorar:</b> ${a.melhorar.map(esc).join(' · ')}` : ''}${a.mensagemFollowUp ? `<br><b>WhatsApp:</b> ${esc(a.mensagemFollowUp)} <button class="btn sm" data-rec="copiar" data-txt="${esc(a.mensagemFollowUp)}">Copiar</button>` : ''}</div></details>`; }).join('');
+  else if (and?.falas?.length) topo = `<div class="lin"><span class="tag la">Gravação interrompida (${and.falas.length} falas salvas)</span><button class="btn sm ouro" data-rec="analisar">Analisar o que foi salvo</button><button class="btn sm" data-rec="descartar">Descartar</button></div>${and.video?.url ? recVideoHtml({ video: and.video }) : ''}`;
+  else topo = `<div class="lin"><button class="btn sm vm" data-rec="gravar">● Gravar reunião (Meet)</button><span style="font-size:12px;opacity:.7">Chrome do computador · avise o cliente que está gravando</span></div>${and?.video?.url ? recVideoHtml({ video: and.video }) : ''}`;
+  const it = lista.map((r) => { const a = r.analise || {}; return `<details style="margin-top:8px"><summary style="cursor:pointer"><b>${new Date(r.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</b> · ${recRel(r.duracaoSeg || 0)} · ${esc(r.vendedor || '')} · nota ${a.nota ?? '-'} · chance ${a.chanceFechar ?? '-'}%</summary><div class="ia-box" style="margin-top:6px">${esc(a.resumo || '')}${a.proximoPasso ? `<br><b>Próximo passo:</b> ${esc(a.proximoPasso)}` : ''}${(a.melhorar || []).length ? `<br><b>Melhorar:</b> ${a.melhorar.map(esc).join(' · ')}` : ''}${a.mensagemFollowUp ? `<br><b>WhatsApp:</b> ${esc(a.mensagemFollowUp)} <button class="btn sm" data-rec="copiar" data-txt="${esc(a.mensagemFollowUp)}">Copiar</button>` : ''}</div></details>${recVideoHtml(r)}`; }).join('');
   return `<h4>Gravação da reunião</h4>${topo}${it}`;
 }
 const recB64 = (blob) => new Promise((ok, er) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1] || ''); fr.onerror = er; fr.readAsDataURL(blob); });
@@ -1095,7 +1135,7 @@ async function recEnviar(blob, quem, offset, duracao) {
     for (let t = 0; t < 3 && !d?.ok; t++) { d = await api(DIRETOR_API, { acao: 'reuniao_transcrever', audio, mime: blob.type || 'audio/webm', quem, offset, duracao }).catch((e) => ({ ok: false, erro: e.message })); if (!d?.ok) await new Promise((r) => setTimeout(r, 3000 * (t + 1))); }
     if (!d?.ok) { g.erros++; console.error('reunião: pedaço não transcrito', d?.erro); return; }
     g.falas.push(...(d.falas || [])); g.segAudio += duracao; g.feitos++;
-    await updateDoc(doc(db, 'crmLeads', g.leadId), { reuniaoAndamento: { inicio: g.inicio, vendedor: g.vendedor, falas: g.falas, segAudio: g.segAudio, atualizadoEm: Date.now() } }).catch((e) => console.error(e));
+    await updateDoc(doc(db, 'crmLeads', g.leadId), { reuniaoAndamento: { inicio: g.inicio, vendedor: g.vendedor, falas: g.falas, segAudio: g.segAudio, atualizadoEm: Date.now(), ...(g.videoInfo ? { video: g.videoInfo } : {}) } }).catch((e) => console.error(e));
   } finally { g.pendentes--; recTick(); }
 }
 function recPedaco() {
@@ -1110,12 +1150,13 @@ function recPedaco() {
 }
 function recTrocar() { if (!REC || REC.parando) return; const velhos = Object.values(REC.recs); recPedaco(); velhos.forEach((r) => { try { r.stop(); } catch (e) { } }); }
 const recSair = (e) => { if (REC) { e.preventDefault(); e.returnValue = ''; } };
-async function recAnalisar(l, { falas, inicio, vendedor, duracaoSeg }) {
+async function recAnalisar(l, { falas, inicio, vendedor, duracaoSeg, video: videoInfo }) {
   const rt = l.respostasTypebot || {};
   const r = await api(DIRETOR_API, { acao: 'reuniao_analisar', falas, vendedor, duracaoSeg, lead: { nome: l.nome, loja: l.loja || l.nomeLoja || '', nicho: l.nicho === 'Outros' ? l.nichoOutro : l.nicho, faturamento: rt.faturamento || '', canais: rt.CanalVendas || '', notas: (l.atividades || []).filter((a) => a.tipo === 'nota').slice(-5).map((a) => a.nota).join(' | ') } });
   if (!r.ok) throw new Error(r.erro || 'falha na análise');
   const atual = S.leads.find((x) => x.id === l.id) || l;
-  const item = { id: 'r' + inicio, em: inicio, vendedor, vendedorEmail: low(S.email), duracaoSeg: Math.round(duracaoSeg), analise: r.analise, fala: r.fala || null, transcricao: r.transcricao || [], modelo: r.modelo || '' };
+  const video = videoInfo || atual.reuniaoAndamento?.video || null;
+  const item = { id: 'r' + inicio, em: inicio, vendedor, vendedorEmail: low(S.email), duracaoSeg: Math.round(duracaoSeg), analise: r.analise, fala: r.fala || null, transcricao: r.transcricao || [], modelo: r.modelo || '', ...(video ? { video } : {}) };
   const at = [...(atual.atividades || []), { tipo: 'nota', quando: Date.now(), por: vendedor, nota: `Reunião gravada (${recRel(duracaoSeg)}, nota ${r.analise?.nota ?? '-'}): ${r.analise?.resumo || ''}`.slice(0, 1000) }];
   const p = (atual.stage || 'novo') === 'agendado' ? mudancaEtapa(atual, 'compareceu', at) : { atividades: at };
   Object.assign(p, { reunioes: [...(atual.reunioes || []).filter((x) => x.id !== item.id), item], reuniaoAndamento: null, atualizadoEm: hoje() });
@@ -1133,26 +1174,29 @@ async function recAcao(l, a, btn) {
       if (!confirm('Gravar a reunião do Meet\n\n1. Deixe o Meet aberto em OUTRA aba deste Chrome.\n2. Na janela que vai abrir escolha "Guia do Chrome" → a aba do Meet e deixe LIGADO "Compartilhar áudio da guia".\n3. Permita o microfone.\n4. Avise o cliente que a reunião está sendo gravada.\n\nNão feche esta aba até parar a gravação.')) return;
       let aba = null, mic = null;
       try {
-        aba = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }, preferCurrentTab: false, selfBrowserSurface: 'exclude', surfaceSwitching: 'exclude', systemAudio: 'exclude' });
+        aba = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { max: 15 }, width: { max: 1280 }, height: { max: 720 } }, audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }, preferCurrentTab: false, selfBrowserSurface: 'exclude', surfaceSwitching: 'exclude', systemAudio: 'exclude' });
         if (!aba.getAudioTracks().length) { aba.getTracks().forEach((t) => t.stop()); return alert('Veio SEM o áudio da aba — não dá pra gravar o cliente.\nTente de novo escolhendo "Guia do Chrome" → a aba do Meet, com "Compartilhar áudio da guia" LIGADO.'); }
         mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       } catch (e) { aba?.getTracks().forEach((t) => t.stop()); mic?.getTracks().forEach((t) => t.stop()); return alert(/Permission|NotAllowed/.test(e.name + e.message) ? 'Gravação cancelada (permissão negada).' : 'Não deu pra gravar: ' + e.message); }
       REC = { leadId: l.id, nome: l.nome || 'lead', vendedor: S.nome, inicio: Date.now(), abaStream: aba, micStream: mic, aba: new MediaStream(aba.getAudioTracks()), mic: new MediaStream(mic.getAudioTracks()), recs: {}, falas: [], segAudio: 0, feitos: 0, pendentes: 0, erros: 0, parando: false };
       await updateDoc(doc(db, 'crmLeads', l.id), { reuniaoAndamento: { inicio: REC.inicio, vendedor: REC.vendedor, falas: [], segAudio: 0, atualizadoEm: Date.now() } }).catch(() => { });
       aba.getTracks().forEach((t) => t.addEventListener('ended', () => { if (REC && !REC.parando) { toast('O compartilhamento da aba parou — finalizando a gravação.'); recAcao(S.leads.find((x) => x.id === REC.leadId) || l, 'parar'); } }));
+      await vidIniciar(REC);
       recPedaco(); REC.troca = setInterval(recTrocar, REC_PEDACO); REC.relogio = setInterval(recTick, 1000);
       window.addEventListener('beforeunload', recSair); toast('Gravando a reunião.'); return;
     }
     if (a === 'parar') {
       if (!REC || REC.parando) return; const g = REC; g.parando = true; clearInterval(g.troca);
       Object.values(g.recs).forEach((r) => { try { r.stop(); } catch (e) { } });
+      g.salvandoVideo = true; recTick(); const videoSalvo = vidFinalizar(g);
       g.abaStream.getTracks().forEach((t) => t.stop()); g.micStream.getTracks().forEach((t) => t.stop()); recTick();
+      await videoSalvo; g.salvandoVideo = false;
       await new Promise((r) => setTimeout(r, 600));
       for (let i = 0; i < 600 && g.pendentes > 0; i++) await new Promise((r) => setTimeout(r, 500));
       recTick();
       try {
         if (!g.falas.length) throw new Error(g.erros ? `nenhum pedaço foi transcrito (${g.erros} erro(s))` : 'nenhuma fala foi reconhecida (o áudio estava mudo?)');
-        await recAnalisar(S.leads.find((x) => x.id === g.leadId) || l, { falas: g.falas, inicio: g.inicio, vendedor: g.vendedor, duracaoSeg: (Date.now() - g.inicio) / 1000 });
+        await recAnalisar(S.leads.find((x) => x.id === g.leadId) || l, { falas: g.falas, inicio: g.inicio, vendedor: g.vendedor, duracaoSeg: (Date.now() - g.inicio) / 1000, video: g.videoInfo });
         toast('Reunião analisada e salva no lead.');
       } catch (e) { alert('A gravação ficou salva no lead, mas a análise falhou: ' + e.message + '\nUse "Analisar o que foi salvo" pra tentar de novo.'); }
       finally { clearInterval(g.relogio); REC = null; window.removeEventListener('beforeunload', recSair); }
