@@ -192,6 +192,9 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
 .sg-ev.st-veio{background:#dcf5e3!important;border-left-color:var(--verde)!important}.sg-ev.st-faltou{background:#fde2e2!important;border-left-color:var(--verm)!important}.sg-ev.st-remarcou{background:#fff4cc!important;border-left-color:#d4a006!important}
 .ev.st-veio{background:#f0fbf3;box-shadow:inset 4px 0 0 var(--verde)}.ev.st-faltou{background:#fef3f3;box-shadow:inset 4px 0 0 var(--verm)}.ev.st-remarcou{background:#fffbea;box-shadow:inset 4px 0 0 #d4a006}
 .ag-leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:10px}.ag-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}.sg-ev:hover{z-index:4;box-shadow:var(--sombra);height:auto!important;min-height:60px}
+.sg-ev.arrasta{cursor:grab;user-select:none;-webkit-user-select:none}.sg-fantasma{z-index:5;opacity:.95;box-shadow:0 6px 18px #0003;pointer-events:none;cursor:grabbing}.sg-col{cursor:copy}
+.f-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 12px}.f-bar select{width:auto;flex:0 0 auto;min-height:34px;padding:4px 8px;font-size:12.5px}.f-bar .n{font-size:12.5px;color:var(--dim)}
+.tg{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.5;border:1px solid transparent;background:none;cursor:default;white-space:nowrap}button.tg{cursor:pointer;min-height:0}.tg.off{opacity:.55}.tg i{font-style:normal;cursor:pointer;opacity:.7}
 .sg-ac{display:flex;gap:4px;margin-top:3px}.sg-ac .btn{padding:2px 7px;min-height:0;font-size:11px}
 .ag-dia{margin-bottom:16px}.ag-dia>b{display:block;margin:0 0 8px;font-size:13px;color:var(--dim);text-transform:capitalize}
 .ev{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid #f1f2f4}
@@ -283,7 +286,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, collection, doc, onSnapshot, updateDoc, addDoc, getDoc, getDocs, setDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, doc, onSnapshot, updateDoc, addDoc, getDoc, getDocs, setDoc, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import * as M from './comercial/metricas.js?v=3';
 
 const firebaseConfig = { apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", storageBucket: "lb-gestao-clientes.firebasestorage.app", messagingSenderId: "344033285587", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" };
@@ -888,11 +891,45 @@ async function criarLeadDaConv(c) {
 // ================= FUNIL =================
 const etapaRot = (k) => M.ETAPAS.find((e) => e.key === (k || 'novo'))?.label || k;
 const etapaCor = (k) => M.ETAPAS.find((e) => e.key === (k || 'novo'))?.cor || '#999';
+// 06/11/2026 (Lincoln): tags nos leads (campo etiquetas) + filtros do funil. Tag nova nasce digitando na ficha; a lista sai dos próprios leads.
+S.ff = lerLS('cmFunilF', {}); S.ff.tags = S.ff.tags || [];
+const TAG_CORES = ['#2563eb', '#db2777', '#0d9488', '#b45309', '#7c3aed', '#dc2626', '#16a34a', '#0891b2', '#c2410c', '#4f46e5'];
+const tagCor = (t) => { let h = 0; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return TAG_CORES[h % TAG_CORES.length]; };
+const tagEstilo = (t) => `color:${tagCor(t)};background:${tagCor(t)}1a;border-color:${tagCor(t)}40`;
+const tagsMini = (l) => (l.etiquetas || []).map((t) => `<span class="tg" style="${tagEstilo(t)}">${esc(t)}</span>`).join('');
+function todasTags() { const m = new Map(); for (const l of vendas()) for (const t of l.etiquetas || []) m.set(t, (m.get(t) || 0) + 1); return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR')); }
+function passaFiltro(l) {
+  const f = S.ff, h = hoje(), st = l.stage || 'novo', r = l.reuniaoMarcada, ini = M.ms(r?.inicio);
+  if (f.tags.length && !f.tags.some((t) => (l.etiquetas || []).includes(t))) return false;
+  if (f.etapa && st !== f.etapa) return false;
+  if (f.perfil && (f.perfil === 'sem' ? !!l.perfil : l.perfil !== f.perfil)) return false;
+  if (f.temp && (f.temp === 'sem' ? !!l.ia?.temperatura : !new RegExp(f.temp, 'i').test(l.ia?.temperatura || ''))) return false;
+  if (f.origem && (l.origem || '') !== f.origem) return false;
+  if (f.retorno === 'atrasado' && !(l.proximoContato && l.proximoContato < h)) return false;
+  if (f.retorno === 'hoje' && l.proximoContato !== h) return false;
+  if (f.retorno === 'sem' && l.proximoContato) return false;
+  if (f.reuniao === 'futura' && !(ini > Date.now())) return false;
+  if (f.reuniao === 'confirmou' && !(ini > Date.now() && r.confirmacao === 'confirmou')) return false;
+  if (f.reuniao === 'semconf' && !(ini > Date.now() && r.confirmacao !== 'confirmou')) return false;
+  if (f.reuniao === 'semstatus' && !(ini && ini < Date.now() && st === 'agendado' && !l.faltouReuniaoEm)) return false;
+  if (f.reuniao === 'semdata' && !(st === 'agendado' && !ini)) return false;
+  if (f.tent === '0' && (l.tentativas || 0) > 0) return false;
+  if (f.tent === '3' && (l.tentativas || 0) < 3) return false;
+  return true;
+}
+const filtrosAtivos = () => S.ff.tags.length + ['etapa', 'perfil', 'temp', 'origem', 'retorno', 'reuniao', 'tent'].filter((k) => S.ff[k]).length;
+function filtrosHtml(n) {
+  const f = S.ff; const sel = (k, rot, ops) => `<select data-ff="${k}"><option value="">${rot}</option>${ops.map(([v, t]) => `<option value="${esc(v)}" ${f[k] === v ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+  const origens = [...new Set(vendas().map((l) => l.origem).filter(Boolean))].sort();
+  const tags = todasTags();
+  return `<div class="f-bar">${sel('etapa', 'Etapa: todas', M.ETAPAS.map((e) => [e.key, e.label]))}${sel('perfil', 'Perfil: todos', [['ja_vende', 'Já vende'], ['quer_entrar', 'Quer entrar'], ['sem', 'Sem perfil']])}${sel('temp', 'Temperatura: todas', [['quente', 'Quente'], ['morno', 'Morno'], ['frio', 'Frio'], ['sem', 'Sem análise']])}${sel('retorno', 'Retorno: todos', [['atrasado', 'Atrasado'], ['hoje', 'Hoje'], ['sem', 'Sem retorno']])}${sel('reuniao', 'Reunião: todas', [['futura', 'Marcada'], ['confirmou', 'Confirmada'], ['semconf', 'Sem confirmação'], ['semstatus', 'Passou sem status'], ['semdata', 'Agendado sem data']])}${sel('tent', 'Tentativas: todas', [['0', 'Nenhuma'], ['3', '3 ou mais']])}${sel('origem', 'Origem: todas', origens.map((o) => [o, o]))}<span class="n">${n} lead(s)</span>${filtrosAtivos() ? '<button class="btn sm" id="fLimpar">Limpar filtros</button>' : ''}</div>
+  <div class="f-bar"><b style="font-size:12.5px">Tags:</b>${tags.map(([t, q]) => `<button class="tg ${f.tags.includes(t) ? '' : 'off'}" data-ftag="${esc(t)}" style="${tagEstilo(t)}">${esc(t)} · ${q}</button>`).join('') || '<span class="n">Nenhuma tag ainda. Crie na ficha do lead.</span>'}</div>`;
+}
 function leadsFunil() {
   const q = low(S.funilBusca).normalize('NFD').replace(/[̀-ͯ]/g, '');
   return vendas().filter(meuLead).filter((l) => S.funilDono === 'todos' || (S.funilDono === 'eu' ? low(l.donoEmail) === S.email : low(l.donoEmail) === S.funilDono))
     .filter((l) => !q || low([l.nome, l.whatsapp, l.email, l.origem, l.instagram].join(' ')).normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q))
-    .sort((a, b) => M.criadoMs(b) - M.criadoMs(a));
+    .filter(passaFiltro).sort((a, b) => M.criadoMs(b) - M.criadoMs(a));
 }
 // 30/10/2026 (Lincoln): valor do contrato no lead + tipo (fixo, variável, desconto…) — soma por coluna do funil
 const TIPOS_CONTRATO = ['Fixo mensal', 'Fixo + variável (% das vendas)', 'Só variável (% das vendas)', 'Fixo com desconto (condição especial)', 'Teste / período reduzido', 'Outro'];
@@ -903,15 +940,15 @@ function cartao(l) {
   const h = hoje(); const at = l.proximoContato && M.ATIVAS.includes(l.stage || 'novo') ? (l.proximoContato < h ? `<span class="tag vm">atrasado ${brData(l.proximoContato)}</span>` : l.proximoContato === h ? '<span class="tag la">hoje</span>' : `<span class="tag">${brData(l.proximoContato)}</span>`) : '';
   const r = l.reuniaoMarcada?.inicio && M.ms(l.reuniaoMarcada.inicio) > Date.now() - 3 * 3600000 ? `<span class="tag az">reunião ${brData(M.diaBR(l.reuniaoMarcada.inicio))} ${hora(l.reuniaoMarcada.inicio)}</span>` : '';
   const temp = l.ia?.temperatura ? `<span class="tag ${/quente/i.test(l.ia.temperatura) ? 'vm' : /morno/i.test(l.ia.temperatura) ? 'la' : ''}">${esc(l.ia.temperatura)}</span>` : '';
-  return `<div class="kc" draggable="true" data-ficha="${l.id}" data-drag="${l.id}"><b>${esc(l.nome || 'Lead')}</b><em>${esc(l.origem || '—')} · entrou ${quando(M.criadoMs(l))}</em><div class="rod">${r}${r ? confirmacaoTag(l) : ''}${at}${temp}${l.perfil ? `<span class="tag ou">${esc(String(l.perfil).replace('_', ' '))}</span>` : ''}${valorLead(l) ? `<span class="tag ve" title="${esc(l.tipoContrato || 'Contrato')}">${RK(valorLead(l))}${l.percentualVariavel ? ' + ' + String(l.percentualVariavel).replace('.', ',') + '%' : ''}</span>` : ''}<span class="dono">${esc(l.donoNome || '')}</span></div></div>`;
+  return `<div class="kc" draggable="true" data-ficha="${l.id}" data-drag="${l.id}"><b>${esc(l.nome || 'Lead')}</b><em>${esc(l.origem || '—')} · entrou ${quando(M.criadoMs(l))}</em><div class="rod">${tagsMini(l)}${r}${r ? confirmacaoTag(l) : ''}${at}${temp}${l.perfil ? `<span class="tag ou">${esc(String(l.perfil).replace('_', ' '))}</span>` : ''}${valorLead(l) ? `<span class="tag ve" title="${esc(l.tipoContrato || 'Contrato')}">${RK(valorLead(l))}${l.percentualVariavel ? ' + ' + String(l.percentualVariavel).replace('.', ',') + '%' : ''}</span>` : ''}<span class="dono">${esc(l.donoNome || '')}</span></div></div>`;
 }
 function rFunil() {
   const el = $('#pg-funil'); if (!S.prontoLeads) { el.innerHTML = '<div class="carreg">Lendo o CRM…</div>'; return; }
   const L = leadsFunil(); const focoBusca = document.activeElement?.id === 'fBusca';
   const donos = [['todos', 'Todos'], ['eu', 'Meus'], ...TIME.filter((p) => p.email !== S.email).map((p) => [p.email, p.nome])];
   const etapa = S.funilEtapaMob || 'novo';
-  el.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><input type="search" id="fBusca" placeholder="Buscar lead…" style="max-width:280px" value="${esc(S.funilBusca)}">${vendedor() ? '' : `<div class="chips">${donos.map(([k, r]) => `<button class="chip ${S.funilDono === k ? 'on' : ''}" data-dono="${k}">${r}</button>`).join('')}</div>`}${gestor() ? '<button class="btn" id="fAuto" style="margin-left:auto">Automação</button>' : ''}<button class="btn pri" id="fNovo" style="${gestor() ? '' : 'margin-left:auto'}">+ Novo lead</button></div>
-  <div class="kan">${M.ETAPAS.map((e) => { const ls = L.filter((l) => (l.stage || 'novo') === e.key); const min = S.funilMin.includes(e.key); return `<div class="kcol ${min ? 'min' : ''}"><div class="kcab" data-min="${e.key}"><i style="background:${e.cor}"></i><span class="nm">${e.label}</span><span class="n">${ls.length}</span>${min ? `<span>${e.label} · ${ls.length}</span>` : ''}</div>${(() => { const tot = ls.reduce((t, l) => t + valorLead(l), 0), q = ls.filter(valorLead).length; return !min && tot ? `<div class="ksoma" title="${q} lead(s) com valor de contrato">${RK(tot)}/mês <em>· ${q} com valor</em></div>` : ''; })()}<div class="kcards" data-drop="${e.key}">${ls.slice(0, 120).map(cartao).join('')}${ls.length > 120 ? `<div class="vazio">+${ls.length - 120} (use a busca)</div>` : ''}</div></div>`; }).join('')}</div>
+  el.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><input type="search" id="fBusca" placeholder="Buscar lead…" style="max-width:280px" value="${esc(S.funilBusca)}">${vendedor() ? '' : `<div class="chips">${donos.map(([k, r]) => `<button class="chip ${S.funilDono === k ? 'on' : ''}" data-dono="${k}">${r}</button>`).join('')}</div>`}${gestor() ? '<button class="btn" id="fAuto" style="margin-left:auto">Automação</button>' : ''}<button class="btn pri" id="fNovo" style="${gestor() ? '' : 'margin-left:auto'}">+ Novo lead</button></div>${filtrosHtml(L.length)}
+  <div class="kan">${M.ETAPAS.filter((e) => !S.ff.etapa || e.key === S.ff.etapa).map((e) => { const ls = L.filter((l) => (l.stage || 'novo') === e.key); const min = S.funilMin.includes(e.key); return `<div class="kcol ${min ? 'min' : ''}"><div class="kcab" data-min="${e.key}"><i style="background:${e.cor}"></i><span class="nm">${e.label}</span><span class="n">${ls.length}</span>${min ? `<span>${e.label} · ${ls.length}</span>` : ''}</div>${(() => { const tot = ls.reduce((t, l) => t + valorLead(l), 0), q = ls.filter(valorLead).length; return !min && tot ? `<div class="ksoma" title="${q} lead(s) com valor de contrato">${RK(tot)}/mês <em>· ${q} com valor</em></div>` : ''; })()}<div class="kcards" data-drop="${e.key}">${ls.slice(0, 120).map(cartao).join('')}${ls.length > 120 ? `<div class="vazio">+${ls.length - 120} (use a busca)</div>` : ''}</div></div>`; }).join('')}</div>
   <div class="k-mob"><div class="c-filtros" style="margin-bottom:10px">${M.ETAPAS.map((e) => `<button class="${etapa === e.key ? 'on' : ''}" data-emob="${e.key}">${e.label} ${L.filter((l) => (l.stage || 'novo') === e.key).length}</button>`).join('')}</div><div style="display:flex;flex-direction:column;gap:8px">${L.filter((l) => (l.stage || 'novo') === etapa).slice(0, 150).map(cartao).join('') || '<div class="vazio">Ninguém nessa etapa.</div>'}</div></div>`;
   const fb = $('#fBusca'); fb.oninput = () => { S.funilBusca = fb.value; rFunil(); }; if (focoBusca) { fb.focus(); fb.setSelectionRange(fb.value.length, fb.value.length); }
   el.querySelectorAll('[data-dono]').forEach((b) => (b.onclick = () => { S.funilDono = b.dataset.dono; rFunil(); }));
@@ -919,6 +956,10 @@ function rFunil() {
   el.querySelectorAll('[data-min]').forEach((b) => (b.onclick = () => { const k = b.dataset.min; S.funilMin = S.funilMin.includes(k) ? S.funilMin.filter((x) => x !== k) : [...S.funilMin, k]; gravarLS('cmFunilMin', S.funilMin); rFunil(); }));
   el.querySelectorAll('[data-drag]').forEach((c) => (c.ondragstart = (e) => e.dataTransfer.setData('text/plain', c.dataset.drag)));
   el.querySelectorAll('[data-drop]').forEach((z) => { z.ondragover = (e) => { e.preventDefault(); z.classList.add('sobre'); }; z.ondragleave = () => z.classList.remove('sobre'); z.ondrop = (e) => { e.preventDefault(); z.classList.remove('sobre'); const id = e.dataTransfer.getData('text/plain'); if (id) moverEtapa(id, z.dataset.drop); }; });
+  const salvaFf = () => { gravarLS('cmFunilF', S.ff); rFunil(); };
+  el.querySelectorAll('[data-ff]').forEach((x) => (x.onchange = () => { S.ff[x.dataset.ff] = x.value; if (x.dataset.ff === 'etapa' && x.value) S.funilEtapaMob = x.value; salvaFf(); }));
+  el.querySelectorAll('[data-ftag]').forEach((b) => (b.onclick = () => { const t = b.dataset.ftag; S.ff.tags = S.ff.tags.includes(t) ? S.ff.tags.filter((x) => x !== t) : [...S.ff.tags, t]; salvaFf(); }));
+  if ($('#fLimpar')) $('#fLimpar').onclick = () => { S.ff = { tags: [] }; salvaFf(); };
   $('#fNovo').onclick = novoLead;
   if ($('#fAuto')) $('#fAuto').onclick = abrirAutomacao;
 }
@@ -992,7 +1033,8 @@ function fichaHtml(l) {
   const rotAt = { criado: 'Lead criado', etapa: 'Mudou de etapa', nota: 'Nota', nao_atendeu: 'Ligou — não atendeu', whatsapp: 'WhatsApp enviado', respondeu: 'Respondeu', depois: 'Pediu pra chamar depois', sem_interesse: 'Sem interesse', importado: 'Importado' };
   return `<div class="fx"><p class="nome">${esc(l.nome || 'Lead')}</p><div class="lin" style="margin:6px 0 10px"><span class="tag" style="background:${etapaCor(st)}22;color:${etapaCor(st)}">${esc(etapaRot(st))}</span>${l.perfil ? `<span class="tag ou">${esc(String(l.perfil).replace('_', ' '))}</span>` : ''}${l.qualificado === true ? '<span class="tag ve">qualificado</span>' : l.qualificado === false ? '<span class="tag vm">não qualificado</span>' : ''}${l.ia?.temperatura ? `<span class="tag vm">${esc(l.ia.temperatura)}</span>` : ''}</div>
   <div class="lin">${tel ? `<a class="btn sm" href="tel:+55${tel}">Ligar</a>` : ''}${c ? `<button class="btn sm zap" data-conv="${c.id}">Abrir conversa</button>` : tel ? `<a class="btn sm zap" target="_blank" href="https://wa.me/55${tel}">WhatsApp</a>` : ''}<button class="btn sm ouro" data-marcar="${l.id}">${futura ? 'Remarcar' : 'Marcar reunião'}</button></div>
-  ${futura ? `<h4>Reunião</h4><div class="reuniao"><b>${new Date(r.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}</b>com ${esc(r.comNome || r.com || '')} · marcada por ${esc(r.por || '')} <div style="margin-top:6px">${confirmacaoTag(l)}</div><div class="lin" style="margin-top:8px;align-items:center;gap:6px"><span style="font-size:12px;font-weight:600">Confirmou a reunião?</span><button class="btn sm ${r.confirmacao === 'confirmou' ? 've' : ''}" data-acao="conf_sim">Sim</button><button class="btn sm ${r.confirmacao === 'nao_confirmou' ? 'vm' : ''}" data-acao="conf_nao">Não</button></div>${r.meet ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><a href="${esc(r.meet)}" target="_blank">Link do Meet</a><button class="btn sm zap" data-acao="meet_enviar">Mandar o Meet no WhatsApp</button><button class="btn sm" data-acao="meet_copiar">Copiar mensagem</button></div>` : '<div style="margin-top:6px;font-size:12px;color:var(--dim)">Essa reunião não tem link do Meet.</div>'}<div class="lin" style="margin-top:8px"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button><button class="btn sm" data-acao="desmarcar">Desmarcar</button></div></div>` : ''}
+  <h4>Tags</h4><div class="lin" style="flex-wrap:wrap;gap:6px;align-items:center">${(l.etiquetas || []).map((t) => `<span class="tg" style="${tagEstilo(t)}">${esc(t)} <i data-tagrm="${esc(t)}" title="Tirar">×</i></span>`).join('')}<input type="text" id="fxTag" list="fxTags" maxlength="30" placeholder="Nova tag ou escolha" style="width:170px;min-height:32px;padding:4px 8px;font-size:12.5px"><datalist id="fxTags">${todasTags().filter(([t]) => !(l.etiquetas || []).includes(t)).map(([t]) => `<option value="${esc(t)}">`).join('')}</datalist><button class="btn sm" id="fxTagOk">Incluir</button></div>
+  ${futura ? `<h4>Reunião</h4><div class="reuniao"><b>${new Date(r.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}</b>com ${esc(r.comNome || r.com || '')} · marcada por ${esc(r.por || '')} <div style="margin-top:6px">${confirmacaoTag(l)}</div><div class="lin" style="margin-top:8px;align-items:center;gap:6px"><span style="font-size:12px;font-weight:600">Confirmou a reunião?</span><button class="btn sm ${r.confirmacao === 'confirmou' ? 've' : ''}" data-acao="conf_sim">Sim</button><button class="btn sm ${r.confirmacao === 'nao_confirmou' ? 'vm' : ''}" data-acao="conf_nao">Não</button></div>${r.meet ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><a href="${esc(r.meet)}" target="_blank">Link do Meet</a><button class="btn sm zap" data-acao="meet_enviar">Mandar o Meet no WhatsApp</button><button class="btn sm" data-acao="meet_copiar">Copiar mensagem</button></div>` : '<div style="margin-top:6px;font-size:12px;color:var(--dim)">Essa reunião não tem link do Meet.</div>'}<div class="lin" style="margin-top:8px"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button><button class="btn sm" data-marcar="${l.id}">Reagendar</button><button class="btn sm" data-acao="desmarcar">Desmarcar</button></div></div>` : ''}
   ${!futura && r && ['agendado'].includes(st) ? `<h4>Reunião (${brData(M.diaBR(r.inicio))} ${hora(r.inicio)} com ${esc(r.comNome || '')})</h4><div class="lin"><button class="btn sm ve" data-acao="compareceu">Compareceu</button><button class="btn sm vm" data-acao="faltou">Não veio</button></div>` : ''}
   ${st === 'compareceu' || (st === 'negociacao' && l.qualificado == null) ? `<h4>Na reunião, o lead é qualificado?</h4><div class="lin"><button class="btn sm ve" data-acao="qualificado">Sim, tem perfil</button><button class="btn sm vm" data-acao="naoqualificado">Não tem perfil</button></div>` : ''}
   ${recBox(l)}
@@ -1015,6 +1057,9 @@ function ligarFicha(root, l) {
   root.querySelectorAll('[data-rec]').forEach((b) => (b.onclick = () => recAcao(l, b.dataset.rec, b)));
   root.querySelectorAll('[data-etapa]').forEach((b) => (b.onclick = () => moverEtapa(l.id, b.dataset.etapa)));
   root.querySelectorAll('[data-acao]').forEach((b) => (b.onclick = () => acaoReuniao(l, b.dataset.acao)));
+  const incluirTag = async () => { const i = root.querySelector('#fxTag'); let t = i.value.trim().replace(/\s+/g, ' ').slice(0, 30); if (!t) return; t = todasTags().map(([x]) => x).find((x) => low(x) === low(t)) || t; i.value = ''; await updateDoc(doc(db, 'crmLeads', l.id), { etiquetas: arrayUnion(t), atualizadoEm: hoje() }).then(() => toast('Tag incluída.')).catch((e) => toast('Não incluiu: ' + e.message)); };
+  root.querySelector('#fxTagOk').onclick = incluirTag; root.querySelector('#fxTag').onkeydown = (k) => { if (k.key === 'Enter') { k.preventDefault(); incluirTag(); } };
+  root.querySelectorAll('[data-tagrm]').forEach((b) => (b.onclick = () => updateDoc(doc(db, 'crmLeads', l.id), { etiquetas: arrayRemove(b.dataset.tagrm), atualizadoEm: hoje() }).catch((e) => toast('Não tirou: ' + e.message))));
   const px = root.querySelector('#fxProx'); if (px) px.onchange = () => updateDoc(doc(db, 'crmLeads', l.id), { proximoContato: px.value, cadencia: null, atualizadoEm: hoje() }).then(() => toast('Próximo contato salvo.')).catch((e) => toast(e.message));
   const dn = root.querySelector('#fxDono'); if (dn) dn.onchange = () => { const p = TIME.find((x) => x.email === dn.value); updateDoc(doc(db, 'crmLeads', l.id), { donoEmail: dn.value, donoNome: p?.nome || '', donoAnterior: l.donoEmail || null, manterDono: true, atividades: [...(l.atividades || []), { tipo: 'nota', quando: Date.now(), por: S.nome, nota: `Responsável: ${l.donoNome || '—'} → ${p?.nome || dn.value}` }] }).then(() => toast('Responsável trocado.')).catch((e) => toast(e.message)); };
   const tc = root.querySelector('#fxTipoC'), vc = root.querySelector('#fxValorC'), pc = root.querySelector('#fxPctC');
@@ -1229,7 +1274,7 @@ function eventoHtml(e) {
   const l = leadDoEvento(e); const cl = closersDoEvento(e).map((em) => CLOSERS.find((c) => c[0] === em)?.[1]).filter(Boolean);
   const passou = M.ms(e.start?.dateTime) < Date.now(); const conv = l && convDoLead(l);
   const st = statusReuniao(e, l);
-  return `<div class="ev ${st ? 'st-' + st : ''}"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b><em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) + ' ' + (st ? `<span class="tag ${ST_REU[st][0]}">${ST_REU[st][1]}</span>` : confirmacaoTag(l)) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
+  return `<div class="ev ${st ? 'st-' + st : ''}"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b>${l ? tagsMini(l) : ''}<em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) + ' ' + (st ? `<span class="tag ${ST_REU[st][0]}">${ST_REU[st][1]}</span>` : confirmacaoTag(l)) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
 }
 function livresDoDia(dia, email, eventos, dur = 30) {
   const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === REUNIAO_LINCOLN_VAI_PARA || email === 'lincoln@lbmarketplace.com.br'; }).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
@@ -1244,19 +1289,19 @@ function rAgenda() {
   if (S.agendaErro && !S.agenda) { el.innerHTML = `<div class="card painel"><b>Não li a agenda:</b> ${esc(S.agendaErro)}<p style="color:var(--dim)">Se for "sem acesso", o Lincoln precisa incluir seu e-mail no conector da agenda.</p><button class="btn" id="agTenta">Tentar de novo</button></div>`; $('#agTenta').onclick = () => carregarAgenda(true); return; }
   if (!S.agenda) { el.innerHTML = '<div class="carreg">Lendo a agenda da LB…</div>'; return; }
   if ((S.agVista = S.agVista || lerLS('cmAgVista', 'lista')) === 'semana') return rAgSemana(el);
-  const dia = S.agendaDia || hoje(); const evs = S.agenda.eventos.filter(meuEvento);
+  const dia = S.agendaDia || hoje(); const evs = S.agenda.eventos.filter(meuEvento).filter(agTagOk);
   const dias = Array.from({ length: 14 }, (_, i) => M.somaDias(hoje(), i));
   const nomeDia = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' });
   const quemFaz = vendedor() ? CLOSERS.filter(([e]) => e === S.email) : CLOSERS;
   el.innerHTML = `<div class="grid" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px" id="agGrid">
-    <div>${AG_LEG}<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">${agVistaBtns()}<b style="font-size:15px">Próximas reuniões</b>${gestor() ? '<button class="btn sm" id="agLemb" style="margin-left:auto">Lembretes automáticos</button>' : ''}<button class="btn sm" id="agRec" style="${gestor() ? '' : 'margin-left:auto'}">Atualizar</button></div>
+    <div>${AG_LEG}<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">${agVistaBtns()}<b style="font-size:15px">Próximas reuniões</b>${agTagSel()}${gestor() ? '<button class="btn sm" id="agLemb" style="margin-left:auto">Lembretes automáticos</button>' : ''}<button class="btn sm" id="agRec" style="${gestor() ? '' : 'margin-left:auto'}">Atualizar</button></div>
       ${dias.map((d) => { const ev = evs.filter((e) => M.diaBR(e.start.dateTime) === d).sort((a, b) => M.ms(a.start.dateTime) - M.ms(b.start.dateTime)); return ev.length ? `<div class="ag-dia"><b>${d === hoje() ? 'Hoje · ' : ''}${nomeDia(d)}</b><div class="card">${ev.map(eventoHtml).join('')}</div></div>` : ''; }).join('') || '<div class="card vazio">Nenhuma reunião nos próximos 14 dias.</div>'}</div>
     <div><div class="card painel" style="position:sticky;top:0"><h3>Horários livres</h3><div class="ds">${vendedor() ? 'Seus horários livres no dia.' : 'Toque num horário livre pra marcar um lead direto.'}</div>
       <div class="c-filtros" style="margin-bottom:12px">${dias.slice(0, 10).map((d) => `<button class="${d === dia ? 'on' : ''}" data-agdia="${d}">${d === hoje() ? 'Hoje' : nomeDia(d)}</button>`).join('')}</div>
       ${quemFaz.map(([em, nm]) => { const ls = livresDoDia(dia, em, S.agenda.eventos); return `<div style="margin-bottom:14px"><b style="display:block;margin-bottom:6px">${esc(nm)} <span style="color:var(--dim);font-weight:500;font-size:12px">${ls.filter((x) => x.livre).length} livres</span></b><div class="livres">${ls.length ? ls.map((x) => x.livre ? `<button data-slot="${dia}|${x.h}|${em}">${x.h}</button>` : `<span class="ocup">${x.h}</span>`).join('') : '<span style="color:var(--dim);font-size:12.5px">Sem horário nesse dia.</span>'}</div></div>`; }).join('')}
     </div></div></div>`;
   if (matchMedia('(max-width:900px)').matches) $('#agGrid').style.gridTemplateColumns = 'minmax(0,1fr)';
-  $('#agRec').onclick = () => carregarAgenda(true); ligarVista(el);
+  $('#agRec').onclick = () => carregarAgenda(true); ligarVista(el); ligarAgTag(el);
   if ($('#agLemb')) $('#agLemb').onclick = abrirLembretes;
   el.querySelectorAll('[data-agdia]').forEach((b) => (b.onclick = () => { S.agendaDia = b.dataset.agdia; rAgenda(); }));
   el.querySelectorAll('[data-slot]').forEach((b) => (b.onclick = () => { const [d, h, em] = b.dataset.slot.split('|'); escolherLeadPraSlot(d, h, em); }));
@@ -1265,6 +1310,9 @@ function rAgenda() {
 const COR_CLOSER = { 'guilherme@lbmarketplace.com.br': '#2563eb', 'akemikimidesign@gmail.com': '#db2777', 'felipesoares@potencialmidia.com': '#0d9488', 'lincoln@lbmarketplace.com.br': '#b45309', 'caroline@lbmarketplace.com.br': '#7c3aed' };
 const agVistaBtns = () => `<div class="chips"><button class="chip ${S.agVista !== 'semana' ? 'on' : ''}" data-agvista="lista">Lista</button><button class="chip ${S.agVista === 'semana' ? 'on' : ''}" data-agvista="semana">Semana</button></div>`;
 function ligarVista(el) { el.querySelectorAll('[data-agvista]').forEach((b) => (b.onclick = () => { S.agVista = b.dataset.agvista; gravarLS('cmAgVista', S.agVista); rAgenda(); })); }
+const agTagOk = (e) => !S.agFTag || (leadDoEvento(e)?.etiquetas || []).includes(S.agFTag);
+const agTagSel = () => { const t = todasTags(); return t.length ? `<select id="agTag" style="width:auto;flex:0 0 auto;min-height:32px;padding:4px 8px;font-size:12.5px"><option value="">Tag: todas</option>${t.map(([x, q]) => `<option value="${esc(x)}" ${S.agFTag === x ? 'selected' : ''}>${esc(x)} (${q})</option>`).join('')}</select>` : ''; };
+function ligarAgTag(el) { const s = el.querySelector('#agTag'); if (s) s.onchange = () => { S.agFTag = s.value; rAgenda(); }; }
 function segundaDe(d) { const w = new Date(d + 'T12:00:00Z').getUTCDay(); return M.somaDias(d, -((w + 6) % 7)); }
 async function eventosSemana(ini) {
   S.agSemCache = S.agSemCache || {}; const c = S.agSemCache[ini]; if (c && (c.carregando || Date.now() - c.em < 120000)) return c;
@@ -1274,11 +1322,12 @@ async function eventosSemana(ini) {
   if (S.pagina === 'agenda' && S.agVista === 'semana') rAgenda(); return S.agSemCache[ini];
 }
 function rAgSemana(el) {
+  if (S.agArrastando) return;
   const ini = S.agSemIni || (S.agSemIni = segundaDe(hoje())); const dias = Array.from({ length: 7 }, (_, i) => M.somaDias(ini, i));
   const c = S.agSemCache?.[ini]; if (!c || (!c.carregando && Date.now() - c.em > 120000)) eventosSemana(ini);
   const fQuem = S.agFQuem || 'todos', fTipo = S.agFTipo || 'todos';
   const quemOpc = vendedor() ? [] : [['todos', 'Todos'], ...CLOSERS];
-  let evs = (c?.eventos || []).filter(meuEvento);
+  let evs = (c?.eventos || []).filter(meuEvento).filter(agTagOk);
   if (fQuem !== 'todos') evs = evs.filter((e) => closersDoEvento(e).includes(fQuem));
   if (fTipo !== 'todos') evs = evs.filter((e) => { const l = leadDoEvento(e); if (fTipo === 'lead') return !!l; if (fTipo === 'outros') return !l; if (fTipo === 'confirmou') return l?.reuniaoMarcada?.confirmacao === 'confirmou'; if (fTipo === 'semconf') return l && l.stage === 'agendado' && l.reuniaoMarcada?.confirmacao !== 'confirmou'; if (fTipo === 'compareceu') return l && ['compareceu', 'negociacao', 'fechado'].includes(l.stage); return true; });
   const H0 = 7, H1 = 23, PX = 46; const agora = Date.now();
@@ -1289,19 +1338,111 @@ function rAgSemana(el) {
     ds.forEach((e) => { const a = M.ms(e.start.dateTime), b = M.ms(e.end?.dateTime) || a + 1800000; if (grupo.length && a >= fimG) fecha(); grupo.push(e); fimG = Math.max(fimG, b); }); fecha(); });
   const bloco = (e) => { const [fx, nf] = faixa.get(e) || [0, 1]; const l = leadDoEvento(e); const cl = closersDoEvento(e); const cor = COR_CLOSER[cl[0]] || '#64748b'; const a = Math.max(H0 * 60, minDoDia(e.start.dateTime)), b = Math.min(H1 * 60, Math.max(a + 20, minDoDia(e.end?.dateTime || e.start.dateTime) || a + 30));
     const conf = l?.reuniaoMarcada?.confirmacao === 'confirmou' ? ' ✓' : ''; const feito = l && ['compareceu', 'negociacao', 'fechado'].includes(l.stage); const st = statusReuniao(e, l);
-    return `<div class="sg-ev ${feito ? 'feito' : ''} ${st ? 'st-' + st : ''}" ${l ? `data-ficha="${l.id}"` : ''} style="left:calc(${fx * 100 / nf}% + 2px);right:auto;width:calc(${100 / nf}% - 4px);top:${(a - H0 * 60) * PX / 60}px;height:${Math.max(18, (b - a) * PX / 60 - 2)}px;border-left-color:${cor};background:${cor}1a" title="${esc((e.summary || '') + (cl.length ? ' · com ' + cl.map((x) => CLOSERS.find((k) => k[0] === x)?.[1]).join(', ') : ''))}"><b>${hora(e.start.dateTime)}${conf} ${esc(l?.nome || e.summary || 'Compromisso')}</b><em>${esc(cl.map((x) => CLOSERS.find((k) => k[0] === x)?.[1]).filter(Boolean).join(', '))}${l ? ' · ' + esc(etapaRot(l.stage)) : ''}</em>${l && l.stage === 'agendado' && M.ms(e.start.dateTime) < agora ? `<span class="sg-ac"><button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Veio</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button></span>` : ''}</div>`; };
+    return `<div class="sg-ev ${feito ? 'feito' : ''} ${st ? 'st-' + st : ''} ${!feito && M.ms(e.start.dateTime) > agora ? 'arrasta' : ''}" data-evid="${esc(e.id)}" ${l ? `data-ficha="${l.id}"` : ''} style="left:calc(${fx * 100 / nf}% + 2px);right:auto;width:calc(${100 / nf}% - 4px);top:${(a - H0 * 60) * PX / 60}px;height:${Math.max(18, (b - a) * PX / 60 - 2)}px;border-left-color:${cor};background:${cor}1a" title="${esc((e.summary || '') + (cl.length ? ' · com ' + cl.map((x) => CLOSERS.find((k) => k[0] === x)?.[1]).join(', ') : ''))}"><b>${hora(e.start.dateTime)}${conf} ${esc(l?.nome || e.summary || 'Compromisso')}</b><em>${esc(cl.map((x) => CLOSERS.find((k) => k[0] === x)?.[1]).filter(Boolean).join(', '))}${l ? ' · ' + esc(etapaRot(l.stage)) : ''}</em>${l && l.stage === 'agendado' && M.ms(e.start.dateTime) < agora ? `<span class="sg-ac"><button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Veio</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button></span>` : ''}</div>`; };
   const nowMin = minDoDia(new Date().toISOString());
-  el.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">${agVistaBtns()}<button class="btn sm" data-agsem="-7">‹</button><b style="font-size:15px">${brData(ini)} a ${brData(dias[6])}</b><button class="btn sm" data-agsem="7">›</button><button class="btn sm" data-agsem="0">Hoje</button>${c?.carregando ? '<span style="color:var(--dim);font-size:12px">lendo…</span>' : ''}<button class="btn sm" id="agRec" style="margin-left:auto">Atualizar</button></div>${AG_LEG}
+  el.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">${agVistaBtns()}${agTagSel()}<button class="btn sm" data-agsem="-7">‹</button><b style="font-size:15px">${brData(ini)} a ${brData(dias[6])}</b><button class="btn sm" data-agsem="7">›</button><button class="btn sm" data-agsem="0">Hoje</button>${c?.carregando ? '<span style="color:var(--dim);font-size:12px">lendo…</span>' : ''}<button class="btn sm" id="agRec" style="margin-left:auto">Atualizar</button></div>${AG_LEG}
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${quemOpc.length ? `<div class="chips">${quemOpc.map(([k, n]) => `<button class="chip ${fQuem === k ? 'on' : ''}" data-agq="${k}">${k !== 'todos' ? `<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR_CLOSER[k]};margin-right:5px"></i>` : ''}${esc(n)}</button>`).join('')}</div>` : ''}<div class="chips">${[['todos', 'Tudo'], ['lead', 'Com lead'], ['semconf', 'Sem confirmação'], ['confirmou', 'Confirmados'], ['compareceu', 'Compareceram'], ['outros', 'Outros compromissos']].map(([k, n]) => `<button class="chip ${fTipo === k ? 'on' : ''}" data-agt="${k}">${n}</button>`).join('')}</div></div>
   ${c?.erro ? `<div class="card painel">Não li a agenda: ${esc(c.erro)}</div>` : ''}
   <div class="card sg-wrap"><div class="sg" style="--px:${PX}px"><div class="sg-h"></div>${dias.map((d) => `<div class="sg-dh ${d === hoje() ? 'hj' : ''}">${nomeDia(d)} <span>${evs.filter((e) => M.diaBR(e.start.dateTime) === d).length || ''}</span></div>`).join('')}
     <div class="sg-horas">${Array.from({ length: H1 - H0 }, (_, i) => `<div style="height:${PX}px">${String(H0 + i).padStart(2, '0')}h</div>`).join('')}</div>
-    ${dias.map((d) => `<div class="sg-col ${d === hoje() ? 'hj' : ''}" style="height:${(H1 - H0) * PX}px">${d === hoje() && nowMin > H0 * 60 && nowMin < H1 * 60 ? `<div class="sg-agora" style="top:${(nowMin - H0 * 60) * PX / 60}px"></div>` : ''}${evs.filter((e) => M.diaBR(e.start.dateTime) === d).map(bloco).join('')}</div>`).join('')}</div></div>
-  <div style="font-size:12px;color:var(--dim);margin-top:8px">Toque no compromisso pra abrir a ficha do lead. ✓ = confirmou o lembrete.</div>`;
+    ${dias.map((d) => `<div class="sg-col ${d === hoje() ? 'hj' : ''}" data-dia="${d}" style="height:${(H1 - H0) * PX}px">${d === hoje() && nowMin > H0 * 60 && nowMin < H1 * 60 ? `<div class="sg-agora" style="top:${(nowMin - H0 * 60) * PX / 60}px"></div>` : ''}${evs.filter((e) => M.diaBR(e.start.dateTime) === d).map(bloco).join('')}</div>`).join('')}</div></div>
+  <div style="font-size:12px;color:var(--dim);margin-top:8px">Arraste a reunião pra outro horário ou dia. Clique num horário vazio pra incluir uma reunião. Toque no compromisso pra abrir a ficha. ✓ = confirmou.</div>`;
+  ligarArrasto(el, evs, { H0, H1, PX }); ligarAgTag(el);
   ligarVista(el); $('#agRec').onclick = () => { if (S.agSemCache) delete S.agSemCache[ini]; eventosSemana(ini); };
   el.querySelectorAll('[data-agsem]').forEach((b) => (b.onclick = () => { const n = Number(b.dataset.agsem); S.agSemIni = n ? M.somaDias(ini, n) : segundaDe(hoje()); rAgenda(); }));
   el.querySelectorAll('[data-agq]').forEach((b) => (b.onclick = () => { S.agFQuem = b.dataset.agq; rAgenda(); }));
   el.querySelectorAll('[data-agt]').forEach((b) => (b.onclick = () => { S.agFTipo = b.dataset.agt; rAgenda(); }));
+}
+// ---------- 06/11/2026 (Lincoln): arrastar pra reagendar e clicar no horário vazio pra incluir reunião, tudo no Google Agenda ----------
+function ligarArrasto(el, evs, { H0, H1, PX }) {
+  const porId = new Map(evs.map((e) => [e.id, e]));
+  const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const colEm = (x, y) => document.elementsFromPoint(x, y).map((n) => n.closest?.('.sg-col')).find(Boolean);
+  const minDe = (col, y) => Math.max(H0 * 60, Math.min(H1 * 60 - 30, H0 * 60 + Math.round(((y - col.getBoundingClientRect().top) / PX) * 2) * 30));
+  el.querySelectorAll('.sg-ev.arrasta').forEach((b) => (b.onpointerdown = (p) => {
+    if (p.pointerType === 'touch' || p.button !== 0 || p.target.closest('button,a')) return;
+    const e = porId.get(b.dataset.evid); if (!e) return;
+    const off = p.clientY - b.getBoundingClientRect().top, x0 = p.clientX, y0 = p.clientY; let fant = null, alvo = null;
+    const nome = b.querySelector('b').textContent.replace(/^\d\d:\d\d\s*/, '');
+    const mv = (m) => {
+      if (!fant && Math.hypot(m.clientX - x0, m.clientY - y0) < 6) return;
+      if (!fant) { S.agArrastando = true; fant = b.cloneNode(true); fant.classList.add('sg-fantasma'); fant.removeAttribute('data-ficha'); fant.style.left = '2px'; fant.style.width = 'calc(100% - 4px)'; b.style.opacity = '.35'; }
+      const col = colEm(m.clientX, m.clientY); if (!col) return;
+      const min = minDe(col, m.clientY - off); alvo = { dia: col.dataset.dia, min };
+      if (fant.parentNode !== col) col.appendChild(fant);
+      fant.style.top = (min - H0 * 60) * PX / 60 + 'px'; fant.querySelector('b').textContent = hm(min) + ' ' + nome;
+    };
+    const up = () => {
+      document.removeEventListener('pointermove', mv); S.agArrastando = false; if (!fant) return;
+      fant.remove(); b.style.opacity = '';
+      const para = (k) => { k.stopPropagation(); k.preventDefault(); }; window.addEventListener('click', para, { capture: true, once: true }); setTimeout(() => window.removeEventListener('click', para, true), 300);
+      if (alvo) confirmarMover(e, alvo.dia, hm(alvo.min));
+    };
+    document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up, { once: true });
+  }));
+  el.querySelectorAll('.sg-col').forEach((c) => (c.onclick = (k) => {
+    if (k.target.closest('.sg-ev')) return;
+    const m = H0 * 60 + Math.floor(((k.clientY - c.getBoundingClientRect().top) / PX) * 2) * 30; const h = hm(m);
+    if (Date.parse(calIso(c.dataset.dia, h)) < Date.now()) return toast('Esse horário já passou.');
+    escolherLeadPraSlot(c.dataset.dia, h, vendedor() ? S.email : (S.agFQuem && S.agFQuem !== 'todos' ? S.agFQuem : CLOSERS[0][0]));
+  }));
+}
+async function moverEvento(e, iniMs) {
+  const dur = (M.ms(e.end?.dateTime) || M.ms(e.start.dateTime) + 1800000) - M.ms(e.start.dateTime);
+  const start = { dateTime: new Date(iniMs).toISOString(), timeZone: 'America/Sao_Paulo' }, end = { dateTime: new Date(iniMs + dur).toISOString(), timeZone: 'America/Sao_Paulo' };
+  try { return (await calWeb('mover', { id: e.id, start, end })).evento; }
+  catch (x) {
+    if (!/desconhecida/.test(x.message)) throw x;
+    /* conector ainda sem a ação "mover": recria o evento e apaga o antigo (o link do Meet muda) */
+    const corpo = { summary: e.summary, description: e.description || '', start, end, attendees: (e.attendees || []).map((a) => ({ email: a.email })), ...(e.extendedProperties ? { extendedProperties: e.extendedProperties } : {}), ...(e.hangoutLink ? { conferenceData: { createRequest: { requestId: 'lb' + Date.now(), conferenceSolutionKey: { type: 'hangoutsMeet' } } } } : {}) };
+    const novo = (await calWeb('criar', { evento: corpo })).evento; await calWeb('apagar', { id: e.id }).catch(() => { }); return novo;
+  }
+}
+async function confirmarMover(e, dia, h) {
+  const iniMs = Date.parse(calIso(dia, h)); if (iniMs === M.ms(e.start.dateTime)) return;
+  if (iniMs < Date.now()) return toast('Esse horário já passou.');
+  const l = leadDoEvento(e); const cl = closersDoEvento(e); const dur = (M.ms(e.end?.dateTime) || M.ms(e.start.dateTime) + 1800000) - M.ms(e.start.dateTime);
+  const conflito = (S.agSemCache?.[S.agSemIni]?.eventos || []).find((o) => o.id !== e.id && closersDoEvento(o).some((x) => cl.includes(x)) && M.ms(o.start.dateTime) < iniMs + dur && (M.ms(o.end?.dateTime) || M.ms(o.start.dateTime) + 1800000) > iniMs);
+  const nome = l?.nome || e.summary || 'Compromisso';
+  if (!confirm(`Reagendar ${nome}?\n\nDe: ${brData(M.diaBR(e.start.dateTime))} às ${hora(e.start.dateTime)}\nPara: ${brData(dia)} às ${h}${conflito ? `\n\nAtenção: já tem "${leadDoEvento(conflito)?.nome || conflito.summary || 'compromisso'}" nesse horário.` : ''}\n\nOs convidados recebem a atualização do Google.`)) return;
+  toast('Reagendando…');
+  try {
+    const evt = await moverEvento(e, iniMs); const fim = new Date(iniMs + dur).toISOString(); const ini = new Date(iniMs).toISOString();
+    if (l) {
+      const { lembreteDiaEm, lembrete1hEm, lembreteTentativaEm, lembreteErro, avisoSemConfirmacaoEm, confirmacao, confirmacaoEm, confirmacaoPor, posAvisoEm, posAviso2Em, preAguardandoJanela, ...r } = l.reuniaoMarcada || {};
+      const p = ['novo', 'contato'].includes(l.stage || 'novo') ? mudancaEtapa(l, 'agendado') : { atividades: [...(l.atividades || [])] };
+      p.atividades.push({ tipo: 'nota', quando: Date.now(), por: S.nome, nota: `Reunião reagendada de ${brData(M.diaBR(e.start.dateTime))} ${hora(e.start.dateTime)} para ${brData(dia)} ${h}.` });
+      Object.assign(p, { reuniaoMarcada: { ...r, inicio: ini, fim, eventoId: evt.id, meet: evt.hangoutLink || r.meet || '', em: Date.now() }, proximoContato: dia, atualizadoEm: hoje() });
+      await updateDoc(doc(db, 'crmLeads', l.id), p);
+    }
+    S.agSemCache = {}; S.agenda = null; carregarAgenda(true); rAgenda();
+    if (!l) return toast('Reagendado no Google Agenda.');
+    const meet = evt.hangoutLink || ''; const com = l.reuniaoMarcada?.comNome ? `, com ${l.reuniaoMarcada.comNome}` : '';
+    const msg = `Oi ${String(l.nome || '').split(' ')[0]}! Sua reunião com a LB Marketplace foi reagendada pra ${new Date(iniMs).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })} às ${h}${com}.${meet ? `\nLink da reunião: ${meet}` : ''}\nQualquer coisa é só chamar aqui.`;
+    const c = convDoLead(l); const tel = String(l.whatsapp || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
+    if (c && !foraJanela(c)) { if (confirm('Reagendado! Avisar o lead no WhatsApp da LB agora?\n\n' + msg)) { const r = await api(WA_API, { acao: 'enviar_mensagem', telefone: c.id, texto: msg }); toast(r.ok === false ? 'Não enviou: ' + (r.erro || '') : 'Lead avisado.'); } }
+    else if (tel && confirm('Reagendado! Abrir o WhatsApp com o aviso pronto?')) window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+    else toast('Reagendado no Google Agenda.');
+  } catch (x) { toast('Não reagendou: ' + x.message); }
+}
+function reuniaoLivre(dia, h, em) {
+  const quem = vendedor() ? CLOSERS.filter(([e]) => e === S.email) : CLOSERS;
+  modal(`<h3>Reunião sem lead</h3><p class="ds">${brData(dia)} às ${h}. Entra no Google Agenda com link do Meet.</p>
+    <label>Título</label><input type="text" id="rlTit" placeholder="Ex.: Reunião com cliente">
+    <div class="grid g3" style="gap:10px"><div><label>Duração</label><select id="rlDur"><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></div><div><label>Com quem</label><select id="rlCom">${quem.map(([e, n]) => `<option value="${e}" ${e === em ? 'selected' : ''}>${n}</option>`).join('')}</select></div></div>
+    <label>E-mail do convidado (opcional)</label><input type="email" id="rlEmail" placeholder="email@cliente.com">
+    <div class="acoes"><button class="btn" data-fechar>Cancelar</button><button class="btn ouro" id="rlOk">Incluir</button></div>`, (ov) => {
+    setTimeout(() => ov.querySelector('#rlTit').focus(), 50);
+    ov.querySelector('#rlOk').onclick = async (ev) => {
+      const tit = ov.querySelector('#rlTit').value.trim(), email = ov.querySelector('#rlEmail').value.trim(), com = ov.querySelector('#rlCom').value, dur = Number(ov.querySelector('#rlDur').value);
+      if (!tit) return toast('Coloque um título.'); if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('E-mail inválido.');
+      const ini = new Date(calIso(dia, h)), fim = new Date(ini.getTime() + dur * 60000); ev.target.disabled = true; ev.target.textContent = 'Incluindo…';
+      try {
+        await calWeb('criar', { evento: { summary: tit, description: `Incluída por ${S.nome} pela Central Comercial.`, start: { dateTime: ini.toISOString(), timeZone: 'America/Sao_Paulo' }, end: { dateTime: fim.toISOString(), timeZone: 'America/Sao_Paulo' }, attendees: [{ email: com }, ...(email ? [{ email }] : [])], conferenceData: { createRequest: { requestId: 'lb' + Date.now(), conferenceSolutionKey: { type: 'hangoutsMeet' } } } } });
+        ov.remove(); S.agSemCache = {}; S.agenda = null; carregarAgenda(true); rAgenda(); toast('Reunião incluída no Google Agenda.');
+      } catch (x) { toast('Não incluiu: ' + x.message); ev.target.disabled = false; ev.target.textContent = 'Incluir'; }
+    };
+  });
 }
 // ---------- automação do comercial (gestor): follow-up, template e sequência pré-reunião ----------
 async function abrirAutomacao() {
@@ -1334,10 +1475,11 @@ async function abrirLembretes() {
 }
 function escolherLeadPraSlot(dia, h, em) {
   const nm = CLOSERS.find((c) => c[0] === em)?.[1];
-  modal(`<h3>${brData(dia)} às ${h} com ${esc(nm)}</h3><p class="ds">Escolha o lead.</p><input type="search" id="slBusca" placeholder="Buscar pelo nome ou telefone…"><div id="slLista" style="max-height:340px;overflow:auto;margin-top:8px"></div><div class="acoes"><button class="btn" data-fechar>Cancelar</button></div>`, (ov) => {
+  modal(`<h3>${brData(dia)} às ${h} com ${esc(nm)}</h3><p class="ds">Escolha o lead ou <a href="#" id="slLivre">inclua uma reunião sem lead</a>.</p><input type="search" id="slBusca" placeholder="Buscar pelo nome ou telefone…"><div id="slLista" style="max-height:340px;overflow:auto;margin-top:8px"></div><div class="acoes"><button class="btn" data-fechar>Cancelar</button></div>`, (ov) => {
     const lista = () => { const q = low(ov.querySelector('#slBusca').value); const ls = vendas().filter(meuLead).filter((l) => M.ATIVAS.includes(l.stage || 'novo')).filter((l) => !q || low(l.nome + ' ' + l.whatsapp).includes(q)).sort((a, b) => M.criadoMs(b) - M.criadoMs(a)).slice(0, 40);
       ov.querySelector('#slLista').innerHTML = ls.map((l) => `<div class="item" style="cursor:pointer" data-sl="${l.id}"><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><b>${esc(l.nome)}</b><em>${esc(etapaRot(l.stage))} · ${esc(l.whatsapp || '')}</em></div></div>`).join('') || '<div class="vazio">Nenhum lead aberto com esse nome.</div>';
       ov.querySelectorAll('[data-sl]').forEach((d) => (d.onclick = () => { ov.remove(); marcarReuniao(d.dataset.sl, { dia, hora: h, com: em }); })); };
+    ov.querySelector('#slLivre').onclick = (k) => { k.preventDefault(); ov.remove(); reuniaoLivre(dia, h, em); };
     ov.querySelector('#slBusca').oninput = lista; lista(); setTimeout(() => ov.querySelector('#slBusca').focus(), 50);
   });
 }
@@ -1345,14 +1487,17 @@ async function marcarReuniao(id, pre = {}) {
   const l = S.leads.find((x) => x.id === id); if (!l) return;
   if (!S.agenda) await carregarAgenda(true);
   const quem = vendedor() ? CLOSERS.filter(([e]) => e === S.email) : CLOSERS;
-  const dia0 = pre.dia || (new Date().getHours() >= 17 ? M.somaDias(hoje(), 1) : hoje());
-  modal(`<h3>Marcar reunião com ${esc(l.nome)}</h3><p class="ds">Cria o evento na agenda da LB com link do Meet e convite pro lead.</p>
+  const rAtual = l.reuniaoMarcada; const reag = !!rAtual?.eventoId && M.ms(rAtual.inicio) > Date.now();
+  if (reag && !pre.com) pre = { ...pre, com: rAtual.com };
+  const dia0 = pre.dia || (reag ? M.diaBR(rAtual.inicio) : (new Date().getHours() >= 17 ? M.somaDias(hoje(), 1) : hoje()));
+  modal(`<h3>${reag ? 'Reagendar reunião' : 'Marcar reunião'} com ${esc(l.nome)}</h3><p class="ds">Cria o evento na agenda da LB com link do Meet e convite pro lead.</p>
     <div class="grid g3" style="gap:10px"><div><label>Dia</label><input type="date" id="mrDia" min="${hoje()}" value="${dia0}"></div><div><label>Duração</label><select id="mrDur"><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></div><div><label>Com quem</label><select id="mrCom">${quem.map(([e, n]) => `<option value="${e}" ${pre.com === e ? 'selected' : ''}>${n}</option>`).join('')}</select></div></div>
     <label>Horário livre</label><div class="livres" id="mrLivres"></div><input type="hidden" id="mrHora" value="${pre.hora || ''}">
     <label>E-mail do lead (recebe o convite)</label><input type="email" id="mrEmail" value="${esc(l.email || '')}" placeholder="email@cliente.com">
-    <div class="acoes"><button class="btn" data-fechar>Cancelar</button><button class="btn ouro" id="mrOk">Marcar</button></div>`, (ov) => {
+    <div class="acoes"><button class="btn" data-fechar>Cancelar</button><button class="btn ouro" id="mrOk">${reag ? 'Reagendar' : 'Marcar'}</button></div>`, (ov) => {
     const desenha = () => { const d = ov.querySelector('#mrDia').value, em = ov.querySelector('#mrCom').value, dur = Number(ov.querySelector('#mrDur').value); const ls = livresDoDia(d, em, S.agenda?.eventos || [], dur); const sel = ov.querySelector('#mrHora').value;
       ov.querySelector('#mrLivres').innerHTML = ls.filter((x) => x.livre).map((x) => `<button type="button" data-h="${x.h}" style="${x.h === sel ? 'background:#166534;color:#fff' : ''}">${x.h}</button>`).join('') || '<span style="color:var(--dim);font-size:12.5px">Nenhum horário livre — escolha outro dia.</span>';
+      if (sel && !ls.some((x) => x.livre && x.h === sel)) ov.querySelector('#mrLivres').insertAdjacentHTML('afterbegin', `<button type="button" style="background:#166534;color:#fff">${sel}</button>`);
       ov.querySelectorAll('[data-h]').forEach((b) => (b.onclick = () => { ov.querySelector('#mrHora').value = b.dataset.h; desenha(); })); };
     ['#mrDia', '#mrCom', '#mrDur'].forEach((s) => (ov.querySelector(s).onchange = desenha)); desenha();
     ov.querySelector('#mrOk').onclick = async (ev) => {
@@ -1363,7 +1508,8 @@ async function marcarReuniao(id, pre = {}) {
       try {
         const antigo = l.reuniaoMarcada?.eventoId;
         const corpo = { summary: `Sessão Estratégica — ${l.nome} (LB Marketplace)`, description: `Lead: ${l.nome}\nWhatsApp: ${l.whatsapp || '—'}\nCom: ${comNome}\nMarcado por ${S.nome} pela Central Comercial.\nFicha: https://sistema.lbmarketplace.com.br/comercial.html?lead=${l.id}#funil`, start: { dateTime: ini.toISOString(), timeZone: 'America/Sao_Paulo' }, end: { dateTime: fim.toISOString(), timeZone: 'America/Sao_Paulo' }, attendees: [{ email: com }, ...(email ? [{ email }] : [])], conferenceData: { createRequest: { requestId: 'lb' + Date.now().toString(36), conferenceSolutionKey: { type: 'hangoutsMeet' } } }, extendedProperties: { private: { leadId: l.id } }, reminders: { useDefault: true } };
-        const evt = (await calWeb('criar', { evento: corpo })).evento;
+        let evt = antigo ? (await calWeb('mover', { id: antigo, start: corpo.start, end: corpo.end, attendees: corpo.attendees }).catch(() => null))?.evento : null;
+        if (!evt) evt = (await calWeb('criar', { evento: corpo })).evento;
         if (antigo && antigo !== evt.id) await calWeb('apagar', { id: antigo }).catch(() => { });
         const meet = evt.hangoutLink || '';
         const p = ['novo', 'contato'].includes(l.stage || 'novo') ? mudancaEtapa(l, 'agendado') : { atividades: [...(l.atividades || [])] };
@@ -1371,7 +1517,7 @@ async function marcarReuniao(id, pre = {}) {
         Object.assign(p, { reuniaoMarcada: { inicio: ini.toISOString(), fim: fim.toISOString(), eventoId: evt.id, meet, com, comNome, por: S.nome, em: Date.now() }, proximoContato: dia, atualizadoEm: hoje(), ...(email && !l.email ? { email } : {}) });
         if (!l.primeiraRespostaEm) p.primeiraRespostaEm = Date.now();
         await updateDoc(doc(db, 'crmLeads', l.id), p);
-        ov.remove(); S.agenda = null; carregarAgenda(true);
+        ov.remove(); S.agSemCache = {}; S.agenda = null; carregarAgenda(true);
         const tel = String(l.whatsapp || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
         const msg = `Oi ${String(l.nome || '').split(' ')[0]}! Sua Sessão Estratégica com a LB Marketplace está marcada pra ${ini.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })} às ${h}, com ${comNome}.${meet ? `\nLink da reunião: ${meet}` : ''}\nQualquer coisa é só chamar aqui.`;
         const c = convDoLead(l);
