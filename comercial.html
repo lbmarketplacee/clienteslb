@@ -285,7 +285,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, collection, doc, onSnapshot, updateDoc, addDoc, getDoc, getDocs, setDoc, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import * as M from './comercial/metricas.js?v=3';
 
@@ -395,7 +395,6 @@ function minhaConv(c) { if (!vendedor()) return true; if (low(c.donoEmail) === S
 const vendas = () => S.leads.filter((l) => (l.funil || 'vendas') === 'vendas');
 
 // ---------- login ----------
-setPersistence(auth, browserLocalPersistence).catch(() => { });
 const celular = () => /iPhone|iPad|Android/i.test(navigator.userAgent) || matchMedia('(display-mode: standalone)').matches;
 $('#btnGoogle').onclick = async () => { $('#loginErro').textContent = ''; const p = new GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' }); try { if (celular()) await signInWithRedirect(auth, p); else await signInWithPopup(auth, p); } catch (e) { $('#loginErro').textContent = 'Não entrou: ' + (e.code || e.message); } };
 getRedirectResult(auth).catch((e) => { $('#loginErro').textContent = 'Não entrou: ' + (e.code || e.message); });
@@ -1282,7 +1281,7 @@ function closersDoEvento(e) {
   if (cl.length === 1 && cl[0] === 'lincoln@lbmarketplace.com.br' && !e.extendedProperties?.private?.leadId) return [REUNIAO_LINCOLN_VAI_PARA];
   return cl;
 }
-function meuEvento(e) { if (!vendedor()) return true; return closersDoEvento(e).includes(S.email); }
+function meuEvento(e) { if (!vendedor()) return true; const cl = closersDoEvento(e); return cl.length ? cl.includes(S.email) : S.email === REUNIAO_LINCOLN_VAI_PARA; }
 function leadDoEvento(e) {
   const id = e.extendedProperties?.private?.leadId; if (id) { const l = S.leads.find((x) => x.id === id); if (l) return l; }
   const ems = (e.attendees || []).map((a) => low(a.email)); const porEmail = S.leads.find((l) => l.email && ems.includes(low(l.email))); if (porEmail) return porEmail;
@@ -1320,8 +1319,9 @@ function eventoHtml(e) {
   const st = statusReuniao(e, l);
   return `<div class="ev ${st ? 'st-' + st : ''}"><div class="hr">${hora(e.start.dateTime)}</div><div class="inf"><b ${l ? `data-ficha="${l.id}" style="cursor:pointer"` : ''}>${esc(l?.nome || e.summary || 'Compromisso')}</b>${l ? tagsMini(l) : ''}<em>${cl.length ? 'com ' + esc(cl.join(', ')) + ' · ' : ''}${l ? esc(etapaRot(l.stage)) + ' ' + (st ? `<span class="tag ${ST_REU[st][0]}">${ST_REU[st][1]}</span>` : confirmacaoTag(l)) : 'sem lead ligado'}${e.hangoutLink ? ` · <a href="${esc(e.hangoutLink)}" target="_blank">Meet</a>` : ''}</em></div><div class="ac" style="display:flex;gap:6px;flex-wrap:wrap">${conv ? `<button class="btn sm zap" data-conv="${conv.id}">WhatsApp</button>` : ''}${l && passou && l.stage === 'agendado' ? `<button class="btn sm ve" data-evacao="compareceu" data-lead="${l.id}">Compareceu</button><button class="btn sm vm" data-evacao="faltou" data-lead="${l.id}">Não veio</button>` : ''}</div></div>`;
 }
+function ocupaPessoa(e, email) { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === REUNIAO_LINCOLN_VAI_PARA || email === 'lincoln@lbmarketplace.com.br'; }
 function livresDoDia(dia, email, eventos, dur = 30) {
-  const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => { const cl = closersDoEvento(e); return cl.length ? cl.includes(email) : email === REUNIAO_LINCOLN_VAI_PARA || email === 'lincoln@lbmarketplace.com.br'; }).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
+  const ocup = (eventos || []).filter((e) => M.diaBR(e.start.dateTime) === dia && e.transparency !== 'transparent').filter((e) => ocupaPessoa(e, email)).map((e) => [M.ms(e.start.dateTime), M.ms(e.end.dateTime)]);
   const sem = new Date(dia + 'T12:00:00-03:00').getUTCDay(); // 0 domingo · 6 sábado
   const hr = horarioDe(email, sem); if (!hr) return []; // domingo sem reunião (menos quem tem horário próprio)
   const [hIni, hFim] = hr;
@@ -1331,7 +1331,7 @@ function livresDoDia(dia, email, eventos, dur = 30) {
 function rAgenda() {
   const el = $('#pg-agenda');
   if (S.agendaErro && !S.agenda) { el.innerHTML = `<div class="card painel"><b>Não li a agenda:</b> ${esc(S.agendaErro)}<p style="color:var(--dim)">Se for "sem acesso", o Lincoln precisa incluir seu e-mail no conector da agenda.</p><button class="btn" id="agTenta">Tentar de novo</button></div>`; $('#agTenta').onclick = () => carregarAgenda(true); return; }
-  if (!S.agenda) { el.innerHTML = '<div class="carreg">Lendo a agenda da LB…</div>'; return; }
+  if (!S.agenda || !S.prontoLeads) { el.innerHTML = '<div class="carreg">Lendo a agenda da LB…</div>'; return; }
   if ((S.agVista = S.agVista || lerLS('cmAgVista', 'lista')) === 'semana') return rAgSemana(el);
   const dia = S.agendaDia || hoje(); const evs = S.agenda.eventos.filter(meuEvento).filter(agTagOk);
   const dias = Array.from({ length: 14 }, (_, i) => M.somaDias(hoje(), i));
@@ -1342,7 +1342,7 @@ function rAgenda() {
       ${dias.map((d) => { const ev = evs.filter((e) => M.diaBR(e.start.dateTime) === d).sort((a, b) => M.ms(a.start.dateTime) - M.ms(b.start.dateTime)); return ev.length ? `<div class="ag-dia"><b>${d === hoje() ? 'Hoje · ' : ''}${nomeDia(d)}</b><div class="card">${ev.map(eventoHtml).join('')}</div></div>` : ''; }).join('') || '<div class="card vazio">Nenhuma reunião nos próximos 14 dias.</div>'}</div>
     <div><div class="card painel" style="position:sticky;top:0"><h3>Horários livres</h3><div class="ds">${vendedor() ? 'Seus horários livres no dia.' : 'Toque num horário livre pra marcar um lead direto.'}</div>
       <div class="c-filtros" style="margin-bottom:12px">${dias.slice(0, 10).map((d) => `<button class="${d === dia ? 'on' : ''}" data-agdia="${d}">${d === hoje() ? 'Hoje' : nomeDia(d)}</button>`).join('')}</div>
-      ${quemFaz.map(([em, nm]) => { const ls = livresDoDia(dia, em, S.agenda.eventos); return `<div style="margin-bottom:14px"><b style="display:block;margin-bottom:6px">${esc(nm)} <span style="color:var(--dim);font-weight:500;font-size:12px">${ls.filter((x) => x.livre).length} livres</span></b><div class="livres">${ls.length ? ls.map((x) => x.livre ? `<button data-slot="${dia}|${x.h}|${em}">${x.h}</button>` : `<span class="ocup">${x.h}</span>`).join('') : '<span style="color:var(--dim);font-size:12.5px">Sem horário nesse dia.</span>'}</div></div>`; }).join('')}
+      ${quemFaz.map(([em, nm]) => { const ls = livresDoDia(dia, em, S.agenda.eventos); return `<div style="margin-bottom:14px"><b style="display:block;margin-bottom:6px">${esc(nm)} <span style="color:var(--dim);font-weight:500;font-size:12px">${ls.filter((x) => x.livre).length} livres</span></b><div class="livres">${ls.length ? ls.map((x) => x.livre ? `<button data-slot="${dia}|${x.h}|${em}">${x.h}</button>` : `<button class="ocup" data-slot="${dia}|${x.h}|${em}" title="Já tem reunião. Clique pra encaixar outro lead.">${x.h}</button>`).join('') : '<span style="color:var(--dim);font-size:12.5px">Sem horário nesse dia.</span>'}</div></div>`; }).join('')}
     </div></div></div>`;
   if (matchMedia('(max-width:900px)').matches) $('#agGrid').style.gridTemplateColumns = 'minmax(0,1fr)';
   $('#agRec').onclick = () => carregarAgenda(true); ligarVista(el); ligarAgTag(el);
@@ -1352,8 +1352,8 @@ function rAgenda() {
 }
 // ---------- 30/10/2026 (Lincoln): agenda tradicional (semana em grade) com filtros ----------
 const COR_CLOSER = { 'guilherme@lbmarketplace.com.br': '#2563eb', 'akemikimidesign@gmail.com': '#db2777', 'felipesoares@potencialmidia.com': '#0d9488', 'lincoln@lbmarketplace.com.br': '#b45309', 'caroline@lbmarketplace.com.br': '#7c3aed' };
-const agVistaBtns = () => `<div class="chips"><button class="chip ${S.agVista !== 'semana' ? 'on' : ''}" data-agvista="lista">Lista</button><button class="chip ${S.agVista === 'semana' ? 'on' : ''}" data-agvista="semana">Semana</button></div>`;
-function ligarVista(el) { el.querySelectorAll('[data-agvista]').forEach((b) => (b.onclick = () => { S.agVista = b.dataset.agvista; gravarLS('cmAgVista', S.agVista); rAgenda(); })); }
+const agVistaBtns = () => `<div class="chips"><button class="chip ${S.agVista !== 'semana' ? 'on' : ''}" data-agvista="lista">Lista</button><button class="chip ${S.agVista === 'semana' ? 'on' : ''}" data-agvista="semana">Semana</button></div><button class="btn sm ouro" id="agMarcar">Marcar reunião</button>`;
+function ligarVista(el) { const bm = el.querySelector('#agMarcar'); if (bm) bm.onclick = () => escolherLeadPraSlot('', '', vendedor() ? S.email : (S.agFQuem && S.agFQuem !== 'todos' ? S.agFQuem : REUNIAO_LINCOLN_VAI_PARA)); el.querySelectorAll('[data-agvista]').forEach((b) => (b.onclick = () => { S.agVista = b.dataset.agvista; gravarLS('cmAgVista', S.agVista); rAgenda(); })); }
 const agTagOk = (e) => !S.agFTag || (leadDoEvento(e)?.etiquetas || []).includes(S.agFTag);
 const agTagSel = () => { const t = todasTags(); return t.length ? `<select id="agTag" style="width:auto;flex:0 0 auto;min-height:32px;padding:4px 8px;font-size:12.5px"><option value="">Tag: todas</option>${t.map(([x, q]) => `<option value="${esc(x)}" ${S.agFTag === x ? 'selected' : ''}>${esc(x)} (${q})</option>`).join('')}</select>` : ''; };
 function ligarAgTag(el) { const s = el.querySelector('#agTag'); if (s) s.onchange = () => { S.agFTag = s.value; rAgenda(); }; }
@@ -1362,7 +1362,7 @@ async function eventosSemana(ini) {
   S.agSemCache = S.agSemCache || {}; const c = S.agSemCache[ini]; if (c && (c.carregando || Date.now() - c.em < 120000)) return c;
   S.agSemCache[ini] = { carregando: true, eventos: c?.eventos || [] };
   try { const d = await calWeb('eventos', { de: calIso(ini, '00:00'), ate: calIso(M.somaDias(ini, 6), '23:59') }); S.agSemCache[ini] = { eventos: (d.eventos || []).filter((e) => e.status !== 'cancelled' && e.start?.dateTime), em: Date.now() }; }
-  catch (e) { S.agSemCache[ini] = { erro: e.message, eventos: [], em: Date.now() }; }
+  catch (e) { S.agSemCache[ini] = { erro: e.message, eventos: c?.eventos || [], em: Date.now() - 90000 }; }
   if (S.pagina === 'agenda' && S.agVista === 'semana') rAgenda(); return S.agSemCache[ini];
 }
 function rAgSemana(el) {
@@ -1519,11 +1519,11 @@ async function abrirLembretes() {
 }
 function escolherLeadPraSlot(dia, h, em) {
   const nm = CLOSERS.find((c) => c[0] === em)?.[1];
-  modal(`<h3>${brData(dia)} às ${h} com ${esc(nm)}</h3><p class="ds">Escolha o lead ou <a href="#" id="slLivre">inclua uma reunião sem lead</a>.</p><input type="search" id="slBusca" placeholder="Buscar pelo nome ou telefone…"><div id="slLista" style="max-height:340px;overflow:auto;margin-top:8px"></div><div class="acoes"><button class="btn" data-fechar>Cancelar</button></div>`, (ov) => {
-    const lista = () => { const q = low(ov.querySelector('#slBusca').value); const ls = vendas().filter(meuLead).filter((l) => M.ATIVAS.includes(l.stage || 'novo')).filter((l) => !q || low(l.nome + ' ' + l.whatsapp).includes(q)).sort((a, b) => M.criadoMs(b) - M.criadoMs(a)).slice(0, 40);
+  modal(`<h3>${dia ? `${brData(dia)} às ${h} com ${esc(nm)}` : 'Marcar reunião'}</h3><p class="ds">${dia ? 'Escolha o lead ou <a href="#" id="slLivre">inclua uma reunião sem lead</a>.' : 'Escolha o lead. Busque pelo nome ou telefone pra ver todos os leads abertos.'}</p><input type="search" id="slBusca" placeholder="Buscar pelo nome ou telefone…"><div id="slLista" style="max-height:340px;overflow:auto;margin-top:8px"></div><div class="acoes"><button class="btn" data-fechar>Cancelar</button></div>`, (ov) => {
+    const lista = () => { const q = low(ov.querySelector('#slBusca').value); const ls = vendas().filter((l) => q || meuLead(l)).filter((l) => M.ATIVAS.includes(l.stage || 'novo')).filter((l) => !q || low(l.nome + ' ' + l.whatsapp).includes(q)).sort((a, b) => M.criadoMs(b) - M.criadoMs(a)).slice(0, 40);
       ov.querySelector('#slLista').innerHTML = ls.map((l) => `<div class="item" style="cursor:pointer" data-sl="${l.id}"><div class="av">${esc(iniciais(l.nome))}</div><div class="inf"><b>${esc(l.nome)}</b><em>${esc(etapaRot(l.stage))} · ${esc(l.whatsapp || '')}</em></div></div>`).join('') || '<div class="vazio">Nenhum lead aberto com esse nome.</div>';
-      ov.querySelectorAll('[data-sl]').forEach((d) => (d.onclick = () => { ov.remove(); marcarReuniao(d.dataset.sl, { dia, hora: h, com: em }); })); };
-    ov.querySelector('#slLivre').onclick = (k) => { k.preventDefault(); ov.remove(); reuniaoLivre(dia, h, em); };
+      ov.querySelectorAll('[data-sl]').forEach((d) => (d.onclick = () => { ov.remove(); marcarReuniao(d.dataset.sl, dia ? { dia, hora: h, com: em } : { com: em }); })); };
+    const sl = ov.querySelector('#slLivre'); if (sl) sl.onclick = (k) => { k.preventDefault(); ov.remove(); reuniaoLivre(dia, h, em); };
     ov.querySelector('#slBusca').oninput = lista; lista(); setTimeout(() => ov.querySelector('#slBusca').focus(), 50);
   });
 }
@@ -1537,6 +1537,7 @@ async function marcarReuniao(id, pre = {}) {
   modal(`<h3>${reag ? 'Reagendar reunião' : 'Marcar reunião'} com ${esc(l.nome)}</h3><p class="ds">Cria o evento na agenda da LB com link do Meet e convite pro lead.</p>
     <div class="grid g3" style="gap:10px"><div><label>Dia</label><input type="date" id="mrDia" min="${hoje()}" value="${dia0}"></div><div><label>Duração</label><select id="mrDur"><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></div><div><label>Com quem</label><select id="mrCom">${quem.map(([e, n]) => `<option value="${e}" ${pre.com === e ? 'selected' : ''}>${n}</option>`).join('')}</select></div></div>
     <label>Horário livre</label><div class="livres" id="mrLivres"></div><input type="hidden" id="mrHora" value="${pre.hora || ''}">
+    <label>Encaixar em outro horário (pode ser junto de outra reunião)</label><input type="time" id="mrOutra" step="300">
     <label>E-mail do lead (recebe o convite)</label><input type="email" id="mrEmail" value="${esc(l.email || '')}" placeholder="email@cliente.com">
     <div class="acoes"><button class="btn" data-fechar>Cancelar</button><button class="btn ouro" id="mrOk">${reag ? 'Reagendar' : 'Marcar'}</button></div>`, (ov) => {
     const desenha = () => { const d = ov.querySelector('#mrDia').value, em = ov.querySelector('#mrCom').value, dur = Number(ov.querySelector('#mrDur').value); const ls = livresDoDia(d, em, S.agenda?.eventos || [], dur); const sel = ov.querySelector('#mrHora').value;
@@ -1544,10 +1545,14 @@ async function marcarReuniao(id, pre = {}) {
       if (sel && !ls.some((x) => x.livre && x.h === sel)) ov.querySelector('#mrLivres').insertAdjacentHTML('afterbegin', `<button type="button" style="background:#166534;color:#fff">${sel}</button>`);
       ov.querySelectorAll('[data-h]').forEach((b) => (b.onclick = () => { ov.querySelector('#mrHora').value = b.dataset.h; desenha(); })); };
     ['#mrDia', '#mrCom', '#mrDur'].forEach((s) => (ov.querySelector(s).onchange = desenha)); desenha();
+    ov.querySelector('#mrOutra').onchange = (k) => { if (k.target.value) { ov.querySelector('#mrHora').value = k.target.value; desenha(); } };
     ov.querySelector('#mrOk').onclick = async (ev) => {
       const dia = ov.querySelector('#mrDia').value, h = ov.querySelector('#mrHora').value, dur = Number(ov.querySelector('#mrDur').value), com = ov.querySelector('#mrCom').value, email = ov.querySelector('#mrEmail').value.trim();
       if (!dia || !h) { toast('Escolha um horário livre.'); return; } if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('E-mail inválido.'); return; }
       const ini = new Date(calIso(dia, h)), fim = new Date(ini.getTime() + dur * 60000); const comNome = CLOSERS.find((x) => x[0] === com)?.[1] || '';
+      if (ini.getTime() < Date.now() && !confirm('Esse horário já passou. Registrar a reunião mesmo assim?')) return;
+      const choque = (S.agenda?.eventos || []).filter((o) => o.id !== l.reuniaoMarcada?.eventoId && o.transparency !== 'transparent' && ocupaPessoa(o, com) && M.ms(o.start.dateTime) < fim.getTime() && (M.ms(o.end?.dateTime) || M.ms(o.start.dateTime) + 1800000) > ini.getTime());
+      if (choque.length && !confirm(`${comNome} já tem ${choque.map((o) => hora(o.start.dateTime) + ' ' + (leadDoEvento(o)?.nome || o.summary || 'compromisso')).join(', ')}. Marcar junto mesmo assim?`)) return;
       ev.target.disabled = true; ev.target.textContent = 'Marcando…';
       try {
         const antigo = l.reuniaoMarcada?.eventoId;
