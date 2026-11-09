@@ -7284,7 +7284,7 @@ document.addEventListener('click',(e)=>{
 function navPendencias(){
   const nCad=(cadastrosCache||[]).filter(c=>c.status==='pendente').length,nPed=(ppCache||[]).filter(p=>p.status==='novo').length;
   const pinta=(el,n)=>{if(!el)return;el.textContent=n>99?'99+':String(n);el.classList.toggle('on',n>0);};
-  pinta(document.getElementById('cadNavBadge'),nCad);pinta(document.getElementById('mktNavBadge'),nPed+((window.__pq&&window.__pq.lista)||[]).length);
+  pinta(document.getElementById('cadNavBadge'),nCad);pinta(document.getElementById('mktNavBadge'),nPed);
   const card=document.getElementById('cmCardCriarProdutos');if(card){let b=card.querySelector('.nav-pend');if(!b){b=document.createElement('span');b.className='nav-pend';b.title='Pedidos de produto novos';card.appendChild(b);}pinta(b,nPed);}
   // grupo "Clientes" fechado: o número aparece no cabeçalho do grupo
   document.querySelectorAll('.nav-grupo').forEach(g=>{const cab=g.querySelector('.nav-grupo-cab');if(!cab)return;const n=[...g.querySelectorAll('.nav-item .nav-pend.on')].reduce((t,e)=>t+(parseInt(e.textContent)||0),0);
