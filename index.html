@@ -5305,6 +5305,20 @@ window.__dreAtualizar=async()=>{
 
 // ---------- Financeiro LB (Otto) — lb-shopee-gmv/api/agentes?acao=financeiro_lb (12/10/2026) ----------
 let finCustos=[];
+function finLucroHtml(r){
+  const L=r.lucro,c=r.lucroCfg||{};
+  const campo=(id,rot,val,dica)=>`<label style="flex:1;min-width:170px;font-size:12px;color:var(--text-dim)">${rot}<input id="${id}" value="${val==null?'':lbFmtValorBR(val)}" inputmode="decimal" placeholder="${dica||''}" style="display:block;width:100%;margin-top:4px;background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:inherit"></label>`;
+  const corV=v=>v>=0?'#10b981':'#ef4444';
+  return `<div class="cm-secao"><h3 style="margin-bottom:6px">Lucro real do mês</h3><p style="font-size:12px;color:var(--text-dim);margin:0 0 10px">Parte do dinheiro que entrou de verdade, não da mensalidade cadastrada. Sem valor digitado, usa o recebido no Asaas.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px">${campo('finRecebido','Entrou no mês (todas as contas)',c.recebidoInformado,'usa o Asaas')}${campo('finComissoes','Comissões do mês',c.comissoes)}${campo('finRetirada','Sua retirada por mês',c.retirada)}<button class="btn btn-gold btn-sm" onclick="window.__finLucroSalvar()">Salvar</button></div>
+    ${L?`<div class="fin-fluxo"><div><small>Entrou</small><b>${fmtR(L.recebido)}</b><small>${c.recebidoInformado!=null?'informado':'recebido no Asaas'}</small></div><div style="border-color:#ef444466"><small>Gastos</small><b style="color:#ef4444">${fmtR(L.custos+L.comissoes)}</b><small>custos ${fmtR(L.custos)} · comissões ${fmtR(L.comissoes)}</small></div><div><small>Lucro líquido</small><b style="color:${corV(L.liquido)}">${fmtR(L.liquido)}</b><small>${L.margem!=null?`margem ${String(L.margem).replace('.',',')}%`:''}</small></div><div style="border-color:${corV(L.livre)}66"><small>Lucro livre</small><b style="color:${corV(L.livre)}">${fmtR(L.livre)}</b><small>depois da retirada ${fmtR(L.retirada)} e da reserva ${fmtR(L.reserva)} (${L.reservaPct}%)</small></div></div>`:'<div class="empty-state" style="padding:12px">Informe quanto entrou no mês.</div>'}</div>`;
+}
+window.__finLucroSalvar=async()=>{
+  const v=id=>document.getElementById(id)?.value.trim()||'';
+  const rec=v('finRecebido');
+  try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'lucro_salvar',mes:document.getElementById('dreMesInput')?.value,recebido:rec===''?'':lbValorBR(rec),comissoes:lbValorBR(v('finComissoes')),retirada:lbValorBR(v('finRetirada'))})})).json();if(!r.ok)throw new Error(r.erro);showToast('Lucro do mês salvo.');finRender();}
+  catch(e){showToast('Erro ao salvar: '+e.message);}
+};
 async function finRender(){
   const el=document.getElementById('finLB');if(!el)return;
   const mesIn=document.getElementById('dreMesInput');if(mesIn&&!mesIn.value)mesIn.value=new Date(Date.now()-3*3600000).toISOString().slice(0,7);
@@ -5322,7 +5336,7 @@ async function finRender(){
         <div><small>Falta receber no mês</small><b>${fmtR(Math.max(0,prev-rec))}</b><small>inclui quem paga por fora do Asaas</small></div>
         <div style="border-color:#ef444466"><small>Em atraso</small><b id="finAtrasado" style="color:#ef4444">…</b><small id="finAtrasadoSub">conferindo no Asaas</small></div></div>
       <div class="cv-cards">${card('Sai (custos do mês)',fmtR(r.custos.total),`fixos ${fmtR(r.custos.fixos)} · tráfego ${fmtR(r.custos.trafego)} · UpSeller ${fmtR(r.custos.upseller)} · taxas Asaas ${fmtR(r.custos.taxasAsaas)} — <a href="#" onclick="event.preventDefault();window.__finAba('custos')" style="color:var(--gold)">ver custos</a>`,'#ef4444')}${card('Sobra (previsto − custos)',fmtR(r.resultado),r.margem!=null?`margem ${String(r.margem).replace('.',',')}%`:'',cor)}${card('Ponto de equilíbrio',`${r.pontoDeEquilibrio??'—'} clientes`,`pra pagar os custos (custo por cliente ${fmtR(r.custoPorCliente)})`)}</div>
-      <p style="font-size:11.5px;color:var(--text-dim);margin:-4px 0 12px">Previsto = mensalidade cadastrada de cada cliente ativo${r.clientesGratuitos?` (${r.clientesGratuitos} gratuitos fora)`:''}. Recebido = o que já caiu no Asaas neste mês.${r.trafegoErro?' (Tráfego: '+esc(r.trafegoErro)+')':''}</p>`;
+      <p style="font-size:11.5px;color:var(--text-dim);margin:-4px 0 12px">Previsto = mensalidade cadastrada de cada cliente ativo${r.clientesGratuitos?` (${r.clientesGratuitos} gratuitos fora)`:''}. Recebido = o que já caiu no Asaas neste mês.${r.trafegoErro?' (Tráfego: '+esc(r.trafegoErro)+')':''}</p>${finLucroHtml(r)}`;
     document.getElementById('finCustosWrap').innerHTML=`<div class="cv-cards" style="display:none">${card('Entra (mensalidades)',fmtR(r.receitaPrevista),`${r.clientesPagantes} clientes pagantes · ticket ${fmtR(r.ticketMedio)}${r.clientesGratuitos?` · ${r.clientesGratuitos} gratuitos`:''}${r.recebidoAsaas!=null?`<br><b>recebido no Asaas no mês: ${fmtR(r.recebidoAsaas)}</b>`:''}`,'#10b981')}${card('Sai (custos do mês)',fmtR(r.custos.total),`fixos ${fmtR(r.custos.fixos)} · tráfego ${fmtR(r.custos.trafego)} · UpSeller ${fmtR(r.custos.upseller)} · taxas Asaas ${fmtR(r.custos.taxasAsaas)}`,'#ef4444')}${card('Sobra',fmtR(r.resultado),r.margem!=null?`margem ${String(r.margem).replace('.',',')}%`:'',cor)}${card('Ponto de equilíbrio',`${r.pontoDeEquilibrio??'—'} clientes`,`pra pagar os custos (custo por cliente ${fmtR(r.custoPorCliente)})`)}</div>
       <p style="font-size:11.5px;color:var(--text-dim);margin:-4px 0 12px">Entra = mensalidade cadastrada de cada cliente ativo (o recebido de verdade está no Asaas, abaixo). Tráfego do Meta e UpSeller entram sozinhos.${r.trafegoErro?' (Tráfego: '+esc(r.trafegoErro)+')':''}</p>
       <div class="cm-secao"><h3 style="margin-bottom:10px">Custos do mês</h3><div id="finCustosLista"></div>
