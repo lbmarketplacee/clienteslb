@@ -262,6 +262,18 @@ export function diagnostico(f, ps, resp, metas = METAS_PADRAO) {
 // próximo contato da cadência (D+1, D+3, D+7 e repescagem em 30 dias) — igual ao CRM do sistema
 const CADENCIA = [1, 3, 7], REPESCAGEM = 30;
 export function somaDias(iso, n) { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+// 09/11/2026 (Lincoln): filtro da coluna Fechado. Lead antigo sem fechadoEm usa a data da atividade; sem nenhuma data não entra em período.
+export function dataFechado(l) { if (l?.fechadoEm) return String(l.fechadoEm).slice(0, 10); const a = [...(l?.atividades || [])].reverse().find((x) => x.tipo === 'etapa' && x.para === 'fechado' && x.quando); return a ? diaBR(a.quando) : ''; }
+export function fechouNoPeriodo(l, periodo, h) {
+  if (!periodo) return true;
+  const d = dataFechado(l); if (!d) return false;
+  const seg = somaDias(h, -((new Date(h + 'T12:00:00Z').getUTCDay() + 6) % 7));
+  if (periodo === 'semana') return d >= seg && d <= h;
+  if (periodo === 'semana_passada') return d >= somaDias(seg, -7) && d < seg;
+  if (periodo === 'mes') return d.startsWith(h.slice(0, 7));
+  if (periodo === 'mes_passado') { const [a, m] = h.split('-').map(Number); return d.startsWith(m === 1 ? `${a - 1}-12` : `${a}-${String(m - 1).padStart(2, '0')}`); }
+  return true;
+}
 export function proximaCadencia(atividades) {
   const lista = atividades || []; let ini = 0;
   lista.forEach((a, i) => { if (a.tipo === 'respondeu' || a.tipo === 'depois') ini = i + 1; });

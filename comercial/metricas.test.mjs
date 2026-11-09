@@ -62,3 +62,20 @@ test('tempo de resposta, conversas e cadência', () => {
   assert.equal(M.proximaCadencia([{ tipo: 'nao_atendeu', quando: T }]).data, '2026-10-21');
   assert.equal(M.fmtMin(1500), '1 d');
 });
+
+test('filtro de período da coluna Fechado', () => {
+  const h = '2026-11-09'; // segunda
+  const l = (d) => ({ stage: 'fechado', fechadoEm: d });
+  assert.equal(M.fechouNoPeriodo(l('2026-11-09'), 'semana', h), true);
+  assert.equal(M.fechouNoPeriodo(l('2026-11-08'), 'semana', h), false);
+  assert.equal(M.fechouNoPeriodo(l('2026-11-08'), 'semana_passada', h), true);
+  assert.equal(M.fechouNoPeriodo(l('2026-11-02'), 'semana_passada', h), true);
+  assert.equal(M.fechouNoPeriodo(l('2026-11-01'), 'semana_passada', h), false);
+  assert.equal(M.fechouNoPeriodo(l('2026-11-01'), 'mes', h), true);
+  assert.equal(M.fechouNoPeriodo(l('2026-10-31'), 'mes', h), false);
+  assert.equal(M.fechouNoPeriodo(l('2026-10-31'), 'mes_passado', h), true);
+  assert.equal(M.fechouNoPeriodo(l('2025-12-15'), 'mes_passado', '2026-01-10'), true);
+  assert.equal(M.fechouNoPeriodo({ stage: 'fechado', atividades: [{ tipo: 'etapa', para: 'fechado', quando: Date.parse('2026-10-20T15:00:00Z') }] }, 'mes_passado', h), true);
+  assert.equal(M.fechouNoPeriodo({ stage: 'fechado' }, 'mes', h), false);
+  assert.equal(M.fechouNoPeriodo({ stage: 'fechado' }, '', h), true);
+});
