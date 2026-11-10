@@ -1807,6 +1807,7 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
       <button class="nav-item sidebar-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</button>
 
       <button class="nav-item sidebar-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minhas Tarefas</button>
+      <button class="nav-item sidebar-item" data-page="calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Calendário da LB</button>
       <button class="nav-item sidebar-item" data-page="loja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/><path d="M10 20v-4h4v4"/></svg> Central da Loja <span class="lj-novo">novo</span></button>
       <button class="nav-item sidebar-item" data-page="jornada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="19" cy="15" r="3"/></svg> Jornada do cliente</button>
       <button class="nav-item sidebar-item" data-page="marketing" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing<span class="nav-pend" id="mktNavBadge" title="Pedidos de produto novos"></span></button>
@@ -3112,6 +3113,37 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
   <div class="prod-tabs lj-tabs" id="ljTabs"></div>
   <div id="ljCorpo"></div>
 </div>
+<div class="page" id="page-calendario">
+  <style>
+  .clb-top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .clb-mes{display:flex;gap:8px;align-items:center}.clb-mes h3{font:600 20px Oswald,sans-serif;min-width:170px;text-align:center}
+  .clb-filtros{display:flex;gap:6px;flex-wrap:wrap}.clb-filtros button{border:1px solid var(--border);background:var(--bg-card);color:var(--text-dim);border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .clb-filtros button i{width:8px;height:8px;border-radius:50%;background:var(--c)}.clb-filtros button.on{border-color:var(--gold);color:var(--text)}
+  .clb-corpo{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px}
+  .clb-sem,.clb-dias{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.clb-sem span{font-size:11px;color:var(--text-dim2);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.5px}
+  .clb-dia{background:var(--bg-card);border:1px solid var(--border-soft);border-radius:8px;min-height:104px;padding:5px;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .clb-dia.fora{opacity:.4}.clb-dia.hoje{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  .clb-n{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:12px;color:var(--text-dim)}.clb-dia.hoje .clb-n span{color:var(--gold);font-weight:700}
+  .clb-data{font-size:10px;background:rgba(229,72,77,.15);color:#ff7a7f;border-radius:6px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .clb-chip{font-size:11px;line-height:1.25;border-left:3px solid var(--c);background:var(--bg-card2);border-radius:5px;padding:3px 5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .clb-chip.feito{opacity:.5;text-decoration:line-through}.clb-chip.esc{background:transparent;border:1px dashed var(--border);color:var(--text-dim);-webkit-line-clamp:3}.clb-chip small{display:block;font-size:10px}
+  .clb-lado{display:flex;flex-direction:column;gap:12px}.clb-box{padding:14px}.clb-box h4{font:600 14px Oswald,sans-serif;color:var(--gold);margin-bottom:8px;letter-spacing:.3px}.clb-box.atr h4{color:#ff7a7f}
+  .clb-pdia{margin-bottom:10px}.clb-pdia h5{font-size:12px;color:var(--text-dim);margin-bottom:4px;text-transform:capitalize;display:flex;gap:6px;align-items:center}
+  .clb-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border-soft);cursor:pointer}.clb-item input{margin-top:3px;width:16px;height:16px;flex:none}
+  .clb-item b{font-size:13px;font-weight:500;display:block}.clb-item small{font-size:11px;color:var(--text-dim2)}.clb-item.feito b{text-decoration:line-through;opacity:.6}
+  .clb-rot{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-soft);cursor:pointer}.clb-rot i{width:8px;height:8px;border-radius:50%;flex:none}.clb-rot span{flex:1;min-width:0}
+  .clb-rot b{font-size:12.5px;font-weight:500;display:block}.clb-rot small{font-size:11px;color:var(--text-dim2)}.clb-rot.off{opacity:.5}
+  .clb-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px}
+  .clb-janela{width:min(660px,100%);max-height:88vh;overflow:auto;padding:18px;background:#121212!important;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.6)}.clb-janela p{font-size:14px;line-height:1.5;margin:8px 0}
+  .clb-form{display:flex;flex-direction:column;gap:10px}.clb-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-dim)}
+  .clb-form input:not([type=checkbox]),.clb-form textarea,.clb-form select{background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font:inherit;font-size:14px}
+  .clb-sw input{width:auto!important;flex:none;margin:0}
+  .clb-sw{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:5px;margin-right:10px;font-size:12px;color:var(--text-dim);cursor:pointer}
+  @media(max-width:1000px){.clb-corpo{grid-template-columns:1fr}.clb-dia{min-height:70px}.clb-chip{font-size:10px}}
+  @media(max-width:600px){.clb-chip:not(.esc){font-size:0;height:6px;padding:0;border-left-width:0;background:var(--c)}.clb-chip.esc{display:none}.clb-dia{min-height:54px}}
+  </style>
+  <div id="clbRoot"></div>
+</div>
 <div class="page" id="page-jornada">
   <style>
   .jr-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
@@ -3858,7 +3890,7 @@ function atualizarTopbar(pg){
   ver('openMigBtn',pg==='clientes'&&isLincoln());
   ver('importInitialBtn',pg==='clientes'&&isLincoln());
 }
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;try{window.__ccAoNavegar(pg);}catch(e){}document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],centralcom:['Central Comercial','Fila do dia, conversas, funil, agenda e placar — tudo do comercial num lugar só.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;try{window.__ccAoNavegar(pg);}catch(e){}document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],calendario:['Calendário da LB','Rotinas fixas da operação, dias de escritório e datas do varejo.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],centralcom:['Central Comercial','Fila do dia, conversas, funil, agenda e placar — tudo do comercial num lugar só.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser+'! 👋';document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='calendario')clbIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 
 // ===== Menu agrupado (15/10/2026, Lincoln: "muita coisa na esquerda") — só REAGRUPA os botões que já existem (cliques,
 // permissões e telas continuam iguais); grupo some se nenhum item dele estiver liberado pra pessoa. Estado aberto/fechado no localStorage.
@@ -3880,7 +3912,7 @@ function navMontarGrupos(){
     box.querySelector('.nav-grupo-cab').addEventListener('click',()=>{box.classList.toggle('aberto');aberto[g.id]=box.classList.contains('aberto');try{localStorage.setItem('navGrupos',JSON.stringify(aberto));}catch(e){}});
   }
   // ordem: Dashboard · Tarefas · Central da Loja · [Clientes] · Todas as lojas · Conversas · [Ferramentas] · [Área restrita]
-  const ordem=['dashboard','tarefas','loja','#clientes','marketing','whatsapp','#ferramentas','#restrita'];
+  const ordem=['dashboard','tarefas','calendario','loja','#clientes','marketing','whatsapp','#ferramentas','#restrita'];
   for(const k of ordem){const el=k[0]==='#'?nav.querySelector(`.nav-grupo[data-grupo="${k.slice(1)}"]`):nav.querySelector(`:scope > .nav-item[data-page="${k}"]`);if(el)nav.appendChild(el);}
   navGruposAtualizar();new MutationObserver(navGruposAtualizar).observe(nav,{subtree:true,attributes:true,attributeFilter:['class','style']});
 }
@@ -5491,6 +5523,151 @@ async function jrSincTarefas(lista){
     }
   }catch(e){console.warn('[jornada → tarefas]',e);}finally{jrSincRodando=false;}
 }
+
+/* ===== CALENDÁRIO DA LB (10/11/2026, Lincoln + Carol) — rotinas fixas da operação, dias de escritório e datas do varejo.
+   Config: configuracoes/calendarioLB {rotinas:[...]}. Feito: calendarioFeitos/{AAAA-MM-DD}_{rotina}. Cada rotina do dia vira tarefa
+   (tarefas/cal_{data}_{rotina}_{pessoa}); marcar no calendário fecha as tarefas e tarefas feitas marcam o calendário. ===== */
+const CLB_PESSOAS=['Caroline','Guilherme','Mirela','Lincoln'];
+const CLB_INICIO='2026-11-10'; /* o calendário começou aqui: antes disso nada conta como atrasado */
+const CLB_COR={Caroline:'#c9a24a',Guilherme:'#3b82f6',Mirela:'#a855f7',Lincoln:'#10b981'};
+const CLB_PADRAO=[
+  {id:'campanhas_duplas',titulo:'Nomear as campanhas das datas duplas / Spike Days do mês',desc:'Criar e nomear as campanhas do mês (data dupla e Spike Days) nas lojas dos clientes.',quem:['Caroline'],regra:{t:'mensal',dia:1,util:true},como:'manual',onde:''},
+  {id:'relatorios',titulo:'Mandar os relatórios mensais pros clientes no WhatsApp',desc:'Central de Marketing → Relatório Mensal → "Relatórios do mês — todos os clientes": abrir, conferir e mandar pelo WhatsApp.',quem:['Mirela'],regra:{t:'mensal',dia:1,util:true},como:'ajuda',onde:'marketing'},
+  {id:'ads_quinzena',titulo:'Analisar o Ads de todos os clientes',desc:'Shopee Ads e Mercado Ads de cada loja: ROAS, saldo, campanhas sem venda. As propostas do Téo ficam no Escritório LB.',quem:['Caroline'],regra:{t:'quinzenal',dias:[1,15],util:true},como:'ajuda',onde:''},
+  {id:'nf_devolucao',titulo:'Emitir as notas de devolução do mês',desc:'NF de devolução de todas as vendas devolvidas no mês anterior, cliente por cliente.',quem:['Caroline'],regra:{t:'mensal',dia:5,util:true},como:'manual',onde:''},
+  {id:'raio_x',titulo:'Raio-X dos anúncios de todos os clientes',desc:'Central da Loja → Produtos → botão Raio-X nos anúncios principais de cada loja; o que ficar abaixo de 70 vira ajuste.',quem:['Caroline'],regra:{t:'mensal',dia:10,util:true},como:'ajuda',onde:'loja'},
+  {id:'afiliados_tiktok',titulo:'Analisar os afiliados do TikTok de todos os clientes',desc:'Quem está vendendo, comissão, produtos sem afiliado. Central da Loja → Anúncios → Afiliados do TikTok.',quem:['Caroline'],regra:{t:'mensal',dia:20,util:true},como:'ajuda',onde:'loja'},
+  {id:'relampago_ml',titulo:'Oferta relâmpago no Mercado Livre',desc:'Uma vez por semana: conferir as relâmpagos do ML de cada loja (Central de Marketing → Mercado Livre → Oferta Relâmpago).',quem:['Caroline'],regra:{t:'semanal',sem:[1]},como:'ajuda',onde:'marketing'},
+  {id:'escritorio',titulo:'Dia de escritório',desc:'Quarta e sexta: Carol, Guilherme e Mirela no escritório.',quem:['Caroline','Guilherme','Mirela'],regra:{t:'escritorio',sem:[3,5]},como:'manual',onde:''},
+  /* sugestões (desligadas até o Lincoln ligar) */
+  {id:'criativos_datas',titulo:'Criativos da data pra todos os clientes',desc:'Artes e stories da próxima data (dupla ou comemorativa) prontos 5 dias antes.',quem:['Mirela'],regra:{t:'antes_datas',dias:5},como:'ajuda',onde:'marketing',ativa:false,sugestao:true},
+  {id:'saude_semana',titulo:'Conferir saúde e reputação das lojas',desc:'Atraso de envio, cancelamento, reputação do ML, conexões caídas. Shopee → Saúde da Loja e Resumo diário.',quem:['Caroline'],regra:{t:'semanal',sem:[1]},como:'ajuda',onde:'marketing',ativa:false,sugestao:true},
+  {id:'saldo_ads',titulo:'Cobrar recarga de Ads dos clientes zerados',desc:'Lista de lojas com saldo de Ads ≤ 0 (o robô já avisa por WhatsApp; aqui é o contato humano).',quem:['Caroline'],regra:{t:'semanal',sem:[2]},como:'ajuda',onde:'',ativa:false,sugestao:true},
+  {id:'cupom_tiktok',titulo:'Conferir cupom do TikTok das lojas',desc:'Cupom do TikTok só se cria no Seller Center (a API é só leitura). Ver as tarefas "sem cupom TikTok".',quem:['Caroline'],regra:{t:'mensal',dia:25,util:true},como:'manual',onde:'',ativa:false,sugestao:true},
+  {id:'cobranca',titulo:'Conferir quem pagou e quem deve',desc:'Financeiro LB → Quem pagou e quem deve. Atrasados viram tarefa de cobrança.',quem:['Lincoln'],regra:{t:'mensal',dia:12,util:true},como:'ajuda',onde:'dre',ativa:false,sugestao:true},
+  {id:'depoimento',titulo:'Gravar depoimento de 1 cliente',desc:'Um depoimento real por mês pra proposta e anúncios.',quem:['Mirela'],regra:{t:'mensal',dia:18,util:true},como:'manual',onde:'',ativa:false,sugestao:true},
+  {id:'reuniao_mes',titulo:'Reunião do mês da equipe',desc:'Números do mês, metas, o que travou. Grava em Ferramentas → Reuniões (a IA faz a ata).',quem:['Lincoln','Caroline','Guilherme','Mirela'],regra:{t:'mensal',dia:3,util:true},como:'manual',onde:'reunioes',ativa:false,sugestao:true},
+];
+window.__clb={rotinas:null,feitos:{},mes:null,filtro:'',editando:null};
+const clbP2=n=>String(n).padStart(2,'0');
+const clbIso=d=>`${d.getFullYear()}-${clbP2(d.getMonth()+1)}-${clbP2(d.getDate())}`;
+const clbHoje=()=>clbIso(new Date(Date.now()-3*3600000+new Date().getTimezoneOffset()*60000));
+const clbAdmin=()=>isLincoln();
+function clbDatasVarejo(ano){const nth=(m,sem,n)=>{if(n>0){const d=new Date(ano,m-1,1);d.setDate(1+((sem-d.getDay()+7)%7)+(n-1)*7);return clbIso(d);}const d=new Date(ano,m,0);d.setDate(d.getDate()-((d.getDay()-sem+7)%7));return clbIso(d);};
+  const l=[];for(let m=1;m<=12;m++)l.push([`${ano}-${clbP2(m)}-${clbP2(m)}`,`${m}.${m}`]);
+  l.push([`${ano}-03-15`,'Dia do Consumidor'],[nth(5,0,2),'Dia das Mães'],[`${ano}-06-12`,'Dia dos Namorados'],[nth(8,0,2),'Dia dos Pais'],[`${ano}-10-12`,'Dia das Crianças'],[nth(11,5,-1),'Black Friday'],[`${ano}-12-25`,'Natal']);
+  const m=new Map();for(const [d,n] of l)m.set(d,m.has(d)?m.get(d)+' / '+n:n);return m;}
+/* dia útil: sábado/domingo passa pra segunda */
+function clbUtil(d){const x=new Date(d);while(x.getDay()===0||x.getDay()===6)x.setDate(x.getDate()+1);return x;}
+/* ocorrências de uma rotina no intervalo [ini, fim] (Date) → [{data, titulo}] */
+function clbOcorrencias(r,ini,fim){const out=[];const g=r.regra||{};const add=(d,tit)=>{const s=clbIso(d);if(d>=ini&&d<=fim&&!out.some(o=>o.data===s))out.push({data:s,titulo:tit||r.titulo});};
+  if(g.t==='mensal'||g.t==='quinzenal'){const dias=g.t==='mensal'?[g.dia||1]:(g.dias||[1,15]);
+    for(let y=ini.getFullYear(),m=ini.getMonth()-1;new Date(y,m,1)<=fim;m++){for(const dd of dias){const ult=new Date(y,m+1,0).getDate();let d=new Date(y,m,Math.min(dd,ult));if(g.util)d=clbUtil(d);add(d);}}}
+  else if(g.t==='semanal'||g.t==='escritorio'){for(let d=new Date(ini);d<=fim;d.setDate(d.getDate()+1))if((g.sem||[]).includes(d.getDay()))add(new Date(d));}
+  else if(g.t==='diario_util'){for(let d=new Date(ini);d<=fim;d.setDate(d.getDate()+1))if(d.getDay()>0&&d.getDay()<6)add(new Date(d));}
+  else if(g.t==='antes_datas'){for(const ano of new Set([ini.getFullYear(),fim.getFullYear()]))for(const [ds,nome] of clbDatasVarejo(ano)){const [a,mm,dd]=ds.split('-').map(Number);const d=new Date(a,mm-1,dd-(g.dias||5));add(d,`${r.titulo} (${nome})`);}}
+  return out;}
+function clbRegraTxt(g){const SEM=['dom','seg','ter','qua','qui','sex','sáb'];
+  if(g.t==='mensal')return `todo dia ${g.dia}${g.util?' (dia útil)':''}`;if(g.t==='quinzenal')return `dias ${(g.dias||[]).join(' e ')}${g.util?' (dia útil)':''}`;
+  if(g.t==='semanal'||g.t==='escritorio')return 'toda '+(g.sem||[]).map(s=>SEM[s]).join(' e ');if(g.t==='diario_util')return 'seg a sex';if(g.t==='antes_datas')return `${g.dias} dias antes de cada data`;return '';}
+const CLB_COMO={auto:['O sistema faz','ok'],ajuda:['O sistema ajuda','ajuda'],manual:['Manual','manual']};
+async function clbCarregar(){const sn=await getDoc(doc(db,'configuracoes','calendarioLB'));const c=sn.exists()?sn.data():null;
+  const salvas=c?.rotinas||[];const ids=new Set(salvas.map(r=>r.id));
+  window.__clb.rotinas=c?[...salvas,...CLB_PADRAO.filter(r=>!ids.has(r.id)&&!(c.removidas||[]).includes(r.id))]:CLB_PADRAO.map(r=>({...r}));}
+async function clbSalvar(){const C=window.__clb;const removidas=CLB_PADRAO.map(r=>r.id).filter(id=>!C.rotinas.some(r=>r.id===id));
+  await setDoc(doc(db,'configuracoes','calendarioLB'),{rotinas:C.rotinas,removidas,atualizadoEm:serverTimestamp(),atualizadoPor:currentEmail});}
+async function clbLerFeitos(ini,fim){const sn=await getDocs(query(collection(db,'calendarioFeitos'),where('data','>=',clbIso(ini)),where('data','<=',clbIso(fim))));
+  sn.docs.forEach(d=>{window.__clb.feitos[d.id]=d.data();});}
+function clbAtivas(){return (window.__clb.rotinas||[]).filter(r=>r.ativa!==false);}
+function clbDoDia(ds){const d=new Date(ds+'T12:00:00');return clbAtivas().flatMap(r=>clbOcorrencias(r,new Date(ds+'T00:00:00'),new Date(ds+'T23:59:59')).map(o=>({...o,r})));}
+async function clbIniciar(){const root=document.getElementById('clbRoot');if(!root)return;const C=window.__clb;
+  if(!C.mes){const h=new Date();C.mes=new Date(h.getFullYear(),h.getMonth(),1);}
+  root.innerHTML='<div class="card" style="padding:18px">Carregando o calendário…</div>';
+  try{if(!C.rotinas)await clbCarregar();const ini=new Date(C.mes.getFullYear(),C.mes.getMonth(),-6),fim=new Date(C.mes.getFullYear(),C.mes.getMonth()+1,14);await clbLerFeitos(ini,fim);}
+  catch(e){root.innerHTML=`<div class="card" style="padding:18px">Não deu pra abrir o calendário: ${esc(e.message)}</div>`;return;}
+  clbRender();}
+function clbChip(o,ds,mini){const k=`${ds}_${o.r.id}`;const feito=!!window.__clb.feitos[k]?.feito;const esc_=o.r.regra?.t==='escritorio';
+  const pessoas=(o.r.quem||[]);const cor=CLB_COR[pessoas[0]]||'#888';
+  return `<div class="clb-chip ${feito?'feito':''} ${esc_?'esc':''}" style="--c:${cor}" title="${esc(o.titulo)} — ${esc(pessoas.join(', '))}" onclick="window.__clbAbrir('${ds}','${o.r.id}')">${esc_?'🏢 ':''}${esc(mini&&!esc_?o.titulo.slice(0,34):o.titulo)}${esc_?`<small>${esc(pessoas.map(p=>p==='Caroline'?'Carol':p).join(', '))}</small>`:''}</div>`;}
+function clbRender(){const root=document.getElementById('clbRoot');if(!root)return;const C=window.__clb;const hoje=clbHoje();
+  const y=C.mes.getFullYear(),m=C.mes.getMonth();const prim=new Date(y,m,1);const ini=new Date(y,m,1-prim.getDay());const varejo=new Map([...clbDatasVarejo(y),...clbDatasVarejo(y+1)]);
+  const filtra=o=>!C.filtro||(o.r.quem||[]).includes(C.filtro);
+  const MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let grade='';for(let i=0;i<42;i++){const d=new Date(ini);d.setDate(ini.getDate()+i);const ds=clbIso(d);const fora=d.getMonth()!==m;
+    const itens=clbDoDia(ds).filter(filtra);const dv=varejo.get(ds);
+    grade+=`<div class="clb-dia ${fora?'fora':''} ${ds===hoje?'hoje':''}"><div class="clb-n"><span>${d.getDate()}</span>${dv?`<b class="clb-data">${esc(dv)}</b>`:''}</div>${itens.sort((a,b)=>(a.r.regra?.t==='escritorio')-(b.r.regra?.t==='escritorio')).map(o=>clbChip(o,ds,true)).join('')}</div>`;}
+  /* próximos 7 dias */
+  let prox='';for(let i=0;i<8;i++){const d=new Date(hoje+'T12:00:00');d.setDate(d.getDate()+i);const ds=clbIso(d);const itens=clbDoDia(ds).filter(filtra).filter(o=>o.r.regra?.t!=='escritorio');
+    const dv=varejo.get(ds);if(!itens.length&&!dv)continue;
+    prox+=`<div class="clb-pdia"><h5>${i===0?'Hoje':i===1?'Amanhã':d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})}${dv?` <b class="clb-data">${esc(dv)}</b>`:''}</h5>${itens.map(o=>{const k=`${ds}_${o.r.id}`;const f=window.__clb.feitos[k];
+      return `<label class="clb-item ${f?.feito?'feito':''}"><input type="checkbox" ${f?.feito?'checked':''} onchange="window.__clbMarcar('${ds}','${o.r.id}',this.checked)"><span><b>${esc(o.titulo)}</b><small>${esc((o.r.quem||[]).join(', '))} · ${CLB_COMO[o.r.como]?.[0]||''}${f?.feito?` · feito por ${esc(f.porNome||f.por||'')}`:''}</small></span></label>`;}).join('')}</div>`;}
+  /* atrasados (últimos 14 dias sem marcar) */
+  const atr=[];for(let i=1;i<=14;i++){const d=new Date(hoje+'T12:00:00');d.setDate(d.getDate()-i);const ds=clbIso(d);if(ds<CLB_INICIO)continue;for(const o of clbDoDia(ds).filter(filtra))if(o.r.regra?.t!=='escritorio'&&!window.__clb.feitos[`${ds}_${o.r.id}`]?.feito)atr.push([ds,o]);}
+  root.innerHTML=`<div class="clb-top"><div class="clb-mes"><button class="btn btn-ghost btn-sm" onclick="window.__clbMes(-1)" aria-label="Mês anterior">‹</button><h3>${MES[m]} ${y}</h3><button class="btn btn-ghost btn-sm" onclick="window.__clbMes(1)" aria-label="Próximo mês">›</button><button class="btn btn-ghost btn-sm" onclick="window.__clbMes(0)">Hoje</button></div>
+      <div class="clb-filtros"><button class="${!C.filtro?'on':''}" onclick="window.__clbFiltro('')">Todos</button>${CLB_PESSOAS.map(p=>`<button class="${C.filtro===p?'on':''}" style="--c:${CLB_COR[p]}" onclick="window.__clbFiltro('${p}')"><i></i>${p==='Caroline'?'Carol':p}</button>`).join('')}</div>
+      ${clbAdmin()?`<button class="btn btn-gold btn-sm" onclick="window.__clbGerenciar()">Rotinas</button>`:''}</div>
+    <div class="clb-corpo"><div class="clb-grade"><div class="clb-sem">${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(s=>`<span>${s}</span>`).join('')}</div><div class="clb-dias">${grade}</div></div>
+      <aside class="clb-lado">${atr.length?`<div class="card clb-box atr"><h4>Ficou pra trás (${atr.length})</h4>${atr.slice(0,12).map(([ds,o])=>`<label class="clb-item"><input type="checkbox" onchange="window.__clbMarcar('${ds}','${o.r.id}',this.checked)"><span><b>${esc(o.titulo)}</b><small>${ds.split('-').reverse().slice(0,2).join('/')} · ${esc((o.r.quem||[]).join(', '))}</small></span></label>`).join('')}</div>`:''}
+        <div class="card clb-box"><h4>Próximos dias</h4>${prox||'<small class="lj-sub">Nada nos próximos 7 dias.</small>'}</div>
+        <div class="card clb-box"><h4>Rotinas da LB</h4>${clbAtivas().map(r=>`<div class="clb-rot" onclick="window.__clbAbrir('','${r.id}')"><i style="background:${CLB_COR[(r.quem||[])[0]]||'#888'}"></i><span><b>${esc(r.titulo)}</b><small>${esc(clbRegraTxt(r.regra||{}))} · ${esc((r.quem||[]).join(', '))} · ${CLB_COMO[r.como]?.[0]||''}</small></span></div>`).join('')}
+          ${(C.rotinas||[]).some(r=>r.sugestao&&r.ativa===false)?`<p class="lj-sub" style="margin-top:8px">Tem ${(C.rotinas||[]).filter(r=>r.sugestao&&r.ativa===false).length} rotina(s) sugerida(s) esperando você ligar em "Rotinas".</p>`:''}</div></aside></div>
+    ${C.editando!=null?clbEditorHtml():''}${C.aberto?clbDetalheHtml():''}`;}
+window.__clbMes=d=>{const C=window.__clb;if(!d){const h=new Date();C.mes=new Date(h.getFullYear(),h.getMonth(),1);}else C.mes=new Date(C.mes.getFullYear(),C.mes.getMonth()+d,1);clbIniciar();};
+window.__clbFiltro=p=>{window.__clb.filtro=p;clbRender();};
+window.__clbMarcar=async(ds,id,feito)=>{const k=`${ds}_${id}`;const r=(window.__clb.rotinas||[]).find(x=>x.id===id);
+  const dado={data:ds,rotina:id,titulo:r?.titulo||id,feito,por:currentEmail,porNome:USERS_MAP[currentEmail]||currentEmail,em:serverTimestamp()};
+  try{await setDoc(doc(db,'calendarioFeitos',k),dado);window.__clb.feitos[k]={...dado,em:new Date()};
+    for(const p of (r?.quem||[])){const tid=`cal_${ds}_${id}_${p}`.replace(/[^\w-]/g,'_');const sn=await getDoc(doc(db,'tarefas',tid));
+      if(sn.exists())await updateDoc(doc(db,'tarefas',tid),feito?{coluna:'feito',concluidoEm:serverTimestamp(),concluidoPor:'Calendário LB'}:{coluna:'afazer'});}
+  }catch(e){lbAvisar('Não salvou: '+e.message);}clbRender();};
+window.__clbAbrir=(ds,id)=>{window.__clb.aberto={ds,id};clbRender();};
+window.__clbFechar=()=>{window.__clb.aberto=null;window.__clb.editando=null;clbRender();};
+function clbDetalheHtml(){const {ds,id}=window.__clb.aberto;const r=(window.__clb.rotinas||[]).find(x=>x.id===id);if(!r)return'';const f=ds?window.__clb.feitos[`${ds}_${id}`]:null;
+  return `<div class="clb-modal" onclick="if(event.target===this)window.__clbFechar()"><div class="card clb-janela"><div class="panel-head"><h3>${esc(r.titulo)}</h3><button class="btn btn-ghost btn-sm" onclick="window.__clbFechar()" aria-label="Fechar">✕</button></div>
+    <p>${esc(r.desc||'')}</p><p class="lj-sub">Quando: ${esc(clbRegraTxt(r.regra||{}))}${ds?` · ${ds.split('-').reverse().join('/')}`:''}<br>Quem: ${esc((r.quem||[]).join(', '))}<br>${CLB_COMO[r.como]?.[0]||''}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${ds&&r.regra?.t!=='escritorio'?`<button class="btn ${f?.feito?'btn-ghost':'btn-gold'}" onclick="window.__clbMarcar('${ds}','${id}',${!f?.feito});window.__clbFechar()">${f?.feito?'Desmarcar':'Marcar como feito'}</button>`:''}
+      ${r.onde?`<button class="btn btn-ghost" onclick="window.__clbFechar();document.querySelector('.nav-item[data-page=&quot;${r.onde}&quot;]')?.click()">Abrir a tela</button>`:''}
+      ${clbAdmin()?`<button class="btn btn-ghost" onclick="window.__clb.aberto=null;window.__clbEditar('${id}')">Editar rotina</button>`:''}</div></div></div>`;}
+window.__clbGerenciar=()=>{window.__clb.editando='lista';clbRender();};
+window.__clbEditar=id=>{window.__clb.editando=id;clbRender();};
+function clbEditorHtml(){const C=window.__clb;
+  if(C.editando==='lista')return `<div class="clb-modal" onclick="if(event.target===this)window.__clbFechar()"><div class="card clb-janela"><div class="panel-head"><h3>Rotinas da LB</h3><button class="btn btn-ghost btn-sm" onclick="window.__clbFechar()" aria-label="Fechar">✕</button></div>
+    ${(C.rotinas||[]).map(r=>`<div class="clb-rot ${r.ativa===false?'off':''}"><i style="background:${CLB_COR[(r.quem||[])[0]]||'#888'}"></i><span><b>${esc(r.titulo)}</b><small>${esc(clbRegraTxt(r.regra||{}))} · ${esc((r.quem||[]).join(', '))}${r.sugestao?' · sugestão':''}</small></span>
+      <label class="clb-sw"><input type="checkbox" ${r.ativa!==false?'checked':''} onchange="window.__clbAtiva('${r.id}',this.checked)"> ligada</label><button class="btn btn-ghost btn-sm" onclick="window.__clbEditar('${r.id}')">Editar</button></div>`).join('')}
+    <button class="btn btn-gold" style="margin-top:12px" onclick="window.__clbEditar('')">+ Nova rotina</button></div></div>`;
+  const r=(C.rotinas||[]).find(x=>x.id===C.editando)||{id:'',titulo:'',desc:'',quem:['Caroline'],regra:{t:'mensal',dia:1,util:true},como:'manual',onde:''};const g=r.regra||{};
+  return `<div class="clb-modal" onclick="if(event.target===this)window.__clbFechar()"><div class="card clb-janela"><div class="panel-head"><h3>${r.id?'Editar rotina':'Nova rotina'}</h3><button class="btn btn-ghost btn-sm" onclick="window.__clbFechar()" aria-label="Fechar">✕</button></div>
+    <div class="clb-form"><label>O que fazer<input id="clbTit" value="${esc(r.titulo)}"></label><label>Detalhes<textarea id="clbDesc" rows="3">${esc(r.desc||'')}</textarea></label>
+      <div><span class="lj-aj-lbl">Quem</span>${CLB_PESSOAS.map(p=>`<label class="clb-sw"><input type="checkbox" class="clbQuem" value="${p}" ${(r.quem||[]).includes(p)?'checked':''}> ${p}</label>`).join('')}</div>
+      <label>Quando<select id="clbTipo">${[['mensal','Todo mês num dia'],['quinzenal','A cada 15 dias (2 dias do mês)'],['semanal','Toda semana'],['diario_util','Todo dia útil'],['antes_datas','Antes de cada data (dupla/comemorativa)'],['escritorio','Dia de escritório']].map(([v,t])=>`<option value="${v}" ${g.t===v?'selected':''}>${t}</option>`).join('')}</select></label>
+      <label>Dia(s) do mês / dias antes<input id="clbDias" value="${esc(g.t==='quinzenal'?(g.dias||[]).join(', '):g.t==='antes_datas'?String(g.dias||5):String(g.dia||1))}" placeholder="ex.: 1  ou  1, 15"></label>
+      <div><span class="lj-aj-lbl">Dias da semana (semanal / escritório)</span>${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((s,i)=>`<label class="clb-sw"><input type="checkbox" class="clbSem" value="${i}" ${(g.sem||[]).includes(i)?'checked':''}> ${s}</label>`).join('')}</div>
+      <div><label class="clb-sw"><input type="checkbox" id="clbUtil" ${g.util?'checked':''}> Se cair no fim de semana, passa pra segunda</label></div>
+      <label>Como é feito<select id="clbComo">${Object.entries(CLB_COMO).map(([v,[t]])=>`<option value="${v}" ${r.como===v?'selected':''}>${t}</option>`).join('')}</select></label></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-gold" onclick="window.__clbSalvarRot('${r.id}')">Salvar</button>${r.id?`<button class="btn btn-ghost" style="color:#e5484d" onclick="window.__clbApagar('${r.id}')">Apagar</button>`:''}<button class="btn btn-ghost" onclick="window.__clbGerenciar()">Voltar</button></div></div></div>`;}
+window.__clbAtiva=async(id,on)=>{const r=window.__clb.rotinas.find(x=>x.id===id);if(!r)return;r.ativa=on;try{await clbSalvar();}catch(e){lbAvisar('Não salvou: '+e.message);}clbRender();};
+window.__clbSalvarRot=async id=>{const C=window.__clb;const v=s=>document.getElementById(s)?.value||'';const t=v('clbTipo');const nums=v('clbDias').split(/[,\s]+/).map(Number).filter(n=>n>0&&n<=31);
+  const regra={t};if(t==='mensal')regra.dia=nums[0]||1;if(t==='quinzenal')regra.dias=nums.length?nums.slice(0,2):[1,15];if(t==='antes_datas')regra.dias=nums[0]||5;
+  if(t==='semanal'||t==='escritorio')regra.sem=[...document.querySelectorAll('.clbSem:checked')].map(x=>Number(x.value));if(document.getElementById('clbUtil')?.checked)regra.util=true;
+  const titulo=v('clbTit').trim();if(!titulo){lbAvisar('Escreva o que fazer.');return;}const quem=[...document.querySelectorAll('.clbQuem:checked')].map(x=>x.value);if(!quem.length){lbAvisar('Escolha quem faz.');return;}
+  if((t==='semanal'||t==='escritorio')&&!regra.sem.length){lbAvisar('Escolha os dias da semana.');return;}
+  const nova={id:id||('r'+Date.now().toString(36)),titulo,desc:v('clbDesc').trim(),quem,regra,como:v('clbComo')||'manual',onde:(C.rotinas.find(x=>x.id===id)?.onde)||'',ativa:true};
+  const i=C.rotinas.findIndex(x=>x.id===id);if(i>=0)C.rotinas[i]={...C.rotinas[i],...nova,sugestao:false};else C.rotinas.push(nova);
+  try{await clbSalvar();showToast('Rotina salva.');}catch(e){lbAvisar('Não salvou: '+e.message);return;}C.editando='lista';clbRender();};
+window.__clbApagar=async id=>{if(!await lbConfirmar('Apagar essa rotina do calendário?',{okTxt:'Apagar'}))return;const C=window.__clb;C.rotinas=C.rotinas.filter(x=>x.id!==id);try{await clbSalvar();}catch(e){lbAvisar('Não salvou: '+e.message);}C.editando='lista';clbRender();};
+/* rotinas de hoje viram tarefa (1 por pessoa); tarefas todas feitas → marca o calendário */
+let clbSincRodando=false;
+async function clbSincTarefas(){if(clbSincRodando)return;clbSincRodando=true;
+  try{if(!window.__clb.rotinas)await clbCarregar();const ds=clbHoje();const itens=clbDoDia(ds).filter(o=>o.r.regra?.t!=='escritorio');
+    for(const o of itens){const k=`${ds}_${o.r.id}`;const fsn=await getDoc(doc(db,'calendarioFeitos',k));const feito=fsn.exists()&&fsn.data().feito;let todas=true,alguma=false;
+      for(const p of (o.r.quem||[])){const email=JR_EMAIL[p];if(!email)continue;const tid=`cal_${ds}_${o.r.id}_${p}`.replace(/[^\w-]/g,'_');const ref=doc(db,'tarefas',tid);const sn=await getDoc(ref);
+        if(!sn.exists()){if(feito)continue;await setDoc(ref,{titulo:o.titulo,descricao:`Calendário da LB — ${clbRegraTxt(o.r.regra||{})}\n\n${o.r.desc||''}\n\nQuando terminar, marque aqui ou no Calendário da LB.`,
+          prazo:ds,prioridade:'media',tipo:'interno',clienteId:null,clienteNome:null,coluna:'afazer',responsavelEmail:email,responsavel:USERS_MAP[email]||p,criadoPor:'Calendário LB (automático)',auto:true,chaveAuto:`calendario|${ds}|${o.r.id}|${p}`,timestamp:serverTimestamp()});todas=false;alguma=true;}
+        else{alguma=true;if(sn.data().coluna!=='feito')todas=false;}}
+      if(alguma&&todas&&!feito)await setDoc(doc(db,'calendarioFeitos',k),{data:ds,rotina:o.r.id,titulo:o.titulo,feito:true,por:'tarefas',porNome:'tarefa concluída',em:serverTimestamp()});}
+  }catch(e){console.warn('[calendário → tarefas]',e);}finally{clbSincRodando=false;}}
+setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail]&&ADMIN_EMAILS.concat(Object.values(JR_EMAIL)).includes(currentEmail))clbSincTarefas();}},3000);},4000);
+
 async function jrSincInicial(){try{const sn=await getDocs(collection(db,'jornadas'));await jrSincTarefas(sn.docs.map(d=>({id:d.id,...d.data()})));}catch(e){console.warn('[jornada → tarefas] inicial',e);}}
 setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail]&&currentEmail!=='felipesoares@potencialmidia.com')jrSincInicial();}},3000);},2000);
 
