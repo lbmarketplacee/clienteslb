@@ -5527,6 +5527,7 @@ async function jrSincTarefas(lista){
    Config: configuracoes/calendarioLB {rotinas:[...]}. Feito: calendarioFeitos/{AAAA-MM-DD}_{rotina}. Cada rotina do dia vira tarefa
    (tarefas/cal_{data}_{rotina}_{pessoa}); marcar no calendário fecha as tarefas e tarefas feitas marcam o calendário. ===== */
 const CLB_PESSOAS=['Caroline','Guilherme','Mirela','Lincoln'];
+const CLB_INICIO='2026-11-10'; /* o calendário começou aqui: antes disso nada conta como atrasado */
 const CLB_COR={Caroline:'#c9a24a',Guilherme:'#3b82f6',Mirela:'#a855f7',Lincoln:'#10b981'};
 const CLB_PADRAO=[
   {id:'campanhas_duplas',titulo:'Nomear as campanhas das datas duplas / Spike Days do mês',desc:'Criar e nomear as campanhas do mês (data dupla e Spike Days) nas lojas dos clientes.',quem:['Caroline'],regra:{t:'mensal',dia:1,util:true},como:'manual',onde:''},
@@ -5600,7 +5601,7 @@ function clbRender(){const root=document.getElementById('clbRoot');if(!root)retu
     prox+=`<div class="clb-pdia"><h5>${i===0?'Hoje':i===1?'Amanhã':d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})}${dv?` <b class="clb-data">${esc(dv)}</b>`:''}</h5>${itens.map(o=>{const k=`${ds}_${o.r.id}`;const f=window.__clb.feitos[k];
       return `<label class="clb-item ${f?.feito?'feito':''}"><input type="checkbox" ${f?.feito?'checked':''} onchange="window.__clbMarcar('${ds}','${o.r.id}',this.checked)"><span><b>${esc(o.titulo)}</b><small>${esc((o.r.quem||[]).join(', '))} · ${CLB_COMO[o.r.como]?.[0]||''}${f?.feito?` · feito por ${esc(f.porNome||f.por||'')}`:''}</small></span></label>`;}).join('')}</div>`;}
   /* atrasados (últimos 14 dias sem marcar) */
-  const atr=[];for(let i=1;i<=14;i++){const d=new Date(hoje+'T12:00:00');d.setDate(d.getDate()-i);const ds=clbIso(d);for(const o of clbDoDia(ds).filter(filtra))if(o.r.regra?.t!=='escritorio'&&!window.__clb.feitos[`${ds}_${o.r.id}`]?.feito)atr.push([ds,o]);}
+  const atr=[];for(let i=1;i<=14;i++){const d=new Date(hoje+'T12:00:00');d.setDate(d.getDate()-i);const ds=clbIso(d);if(ds<CLB_INICIO)continue;for(const o of clbDoDia(ds).filter(filtra))if(o.r.regra?.t!=='escritorio'&&!window.__clb.feitos[`${ds}_${o.r.id}`]?.feito)atr.push([ds,o]);}
   root.innerHTML=`<div class="clb-top"><div class="clb-mes"><button class="btn btn-ghost btn-sm" onclick="window.__clbMes(-1)" aria-label="Mês anterior">‹</button><h3>${MES[m]} ${y}</h3><button class="btn btn-ghost btn-sm" onclick="window.__clbMes(1)" aria-label="Próximo mês">›</button><button class="btn btn-ghost btn-sm" onclick="window.__clbMes(0)">Hoje</button></div>
       <div class="clb-filtros"><button class="${!C.filtro?'on':''}" onclick="window.__clbFiltro('')">Todos</button>${CLB_PESSOAS.map(p=>`<button class="${C.filtro===p?'on':''}" style="--c:${CLB_COR[p]}" onclick="window.__clbFiltro('${p}')"><i></i>${p==='Caroline'?'Carol':p}</button>`).join('')}</div>
       ${clbAdmin()?`<button class="btn btn-gold btn-sm" onclick="window.__clbGerenciar()">Rotinas</button>`:''}</div>
