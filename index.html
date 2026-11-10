@@ -5651,7 +5651,7 @@ function ljProdutosHtml(c){
       <td>${l.tt&&l.tt.status&&l.tt.status!=='ACTIVATE'?`<b>${fmtR(lj.prod.ttDesc[String(l.tt.id)]||l.tt.preco)}</b><div class="lj-sub at">${{FREEZE:'congelado pela TikTok',PENDING:'em análise',FAILED:'reprovado',SELLER_DEACTIVATED:'desativado',PLATFORM_DEACTIVATED:'desativado pela TikTok',DRAFT:'rascunho'}[l.tt.status]||l.tt.status}</div>`:l.tt?(lj.prod.ttDesc[String(l.tt.id)]?`<b>${fmtR(lj.prod.ttDesc[String(l.tt.id)])}</b><div class="lj-sub ok">no desconto</div>`:`<b>${fmtR(l.tt.preco)}</b><div class="lj-sub at">fora do desconto</div>`):'<span class="lj-na">não tem</span>'}</td>
       <td>${ljCel(l.ml,l.ml?.preco,l.ml?`${l.ml.ids.length} anúncio(s)`:'')}</td>
       <td>${s?`<b class="${(s.estoque||0)<=0?'lj-ruim':''}">${s.estoque??'—'}</b>${s.variacoesZeradas?`<div class="lj-sub at">${s.variacoesZeradas} zerada(s)</div>`:''}`:(l.tt?l.tt.estoque:l.ml?.estoque??'—')}</td>
-      <td><div style="display:flex;gap:6px;justify-content:flex-end">${rxBotao(l)}${s?`<button class="btn btn-sm ${lj.aj?.k===l.k?'btn-gold':'btn-ghost'}" onclick="window.__ljAjAbrir('${l.k}')">Ajustar</button>`:''}</div></td></tr>`;};
+      <td><div style="display:flex;gap:6px;justify-content:flex-end">${rxBotao(l)}${s?`<button class="btn btn-sm ${lj.aj?.k===l.k?'btn-gold':'btn-ghost'}" onclick="window.__ljAjAbrir('${l.k}')">Ajustar</button><button class="btn btn-sm btn-ghost" style="color:#e5484d" title="Zera o estoque de todas as variações na Shopee, TikTok e Mercado Livre" onclick="window.__ljZerar('${l.k}')">Zerar estoque</button>`:''}</div></td></tr>`;};
   const filtros=LJ_FILTROS.map(([k,n,fn])=>{const q=P.linhas.filter(fn).length;return (k==='todos'||q)?`<button class="chip ${lj.filtro===k?'active':''}" onclick="window.__ljFiltro('${k}')">${n} <b>${q}</b></button>`:'';}).join('');
   const tabela=`<div class="panel lj-tab-panel"><div class="panel-head"><h3>Catálogo da loja</h3><span class="p-sub">${P.linhas.length} produto(s) · ${P.mapaQuando?`mapa de ${new Date(P.mapaQuando).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:'sem mapa ainda'} <a href="#" onclick="event.preventDefault();window.__ljMapaRefazer(this)">atualizar mapa</a>${P.curvaQuando?` · curva de ${new Date(P.curvaQuando).toLocaleDateString('pt-BR')}`:' · sem curva ABC (analisar na Shopee → Curva ABC)'}</span></div>
     ${P.erros.length?`<div class="lj-alerta at" style="margin-bottom:12px"><span class="lj-dot at"></span><span><b>Não li tudo</b><small>${esc(P.erros.join(' · '))}</small></span></div>`:''}
@@ -5802,7 +5802,7 @@ function ljAjHtml(){const l=ljAjLinha();if(!l)return'';const s=l.sh;const vars=s
     <input id="ljAjLiq" class="lj-aj-liq" value="${String(lj.aj.liq.toFixed(2)).replace('.',',')}" oninput="window.__ljAjLiq(this.value)" inputmode="decimal">
     <small class="lj-sub">Hoje ≈ ${fmtR(dirLiquido(s.precoMin||0))} na Shopee · o preço de cada marketplace sai da regra LB${difer?' · <span class="at">variações com preços diferentes: o novo vale pra todas (use "Valor por variação" pra manter diferente)</span>':''}</small>
     <div id="ljAjPrecos" class="lj-aj-precos">${ljAjPrecos()}</div>`}
-    <div class="lj-aj-lbl">Estoque (Shopee, TikTok e Mercado Livre)${s.temVariacao?' por variação':''}</div>
+    <div class="lj-aj-lbl" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Estoque${s.temVariacao?' por variação':''} — vale pra todos os marketplaces</span><button class="btn btn-ghost btn-sm" style="color:#e5484d" onclick="window.__ljAjZerarCampos()">Zerar todas</button></div>
     <div class="lj-aj-est">${vars.map(v=>`<label><span title="${esc(v.nome||'')}">${esc(v.nome||'Estoque')}</span><input type="number" min="0" value="${lj.aj.est[String(v.id)]??0}" oninput="window.__ljAjEst('${v.id}',this.value)" class="${(lj.aj.est[String(v.id)]??0)<=0?'zero':''}"></label>`).join('')}</div>
     ${s.temVariacao?ljNovaHtml():''}
     <div class="lj-aj-passos"><b>O que o sistema vai fazer</b>
@@ -5836,6 +5836,23 @@ async function ljEstoqueOutros(c,l,est,nota){
       if(sem.length)nota(false,`Mercado Livre estoque: ${sem.length} anúncio(s) sem variação correspondente na Shopee (ficaram como estavam)`);
     }catch(e){nota(false,'Mercado Livre estoque: '+e.message);}}
 }
+window.__ljAjZerarCampos=()=>{const l=ljAjLinha();if(!l?.sh)return;const s=l.sh;for(const v of (s.temVariacao?s.variacoes:[{id:0}]))lj.aj.est[String(v.id)]=0;
+  document.querySelectorAll('.lj-aj-est input').forEach(i=>{i.value=0;i.classList.add('zero');});};
+/* Zerar estoque de uma vez (10/11/2026, Lincoln: "quero zerar o estoque, já zera de todos os marketplaces") */
+window.__ljZerar=async k=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=lj.prod?.linhas.find(x=>x.k===k);if(!c||!l?.sh)return;const s=l.sh;
+  if(!isLincoln()){lbAvisar('Só Lincoln e Carol.');return;}
+  const vars=s.temVariacao?s.variacoes:[{id:0,nome:'Estoque',estoque:s.estoque}];const est=Object.fromEntries(vars.map(v=>[String(v.id),0]));
+  const onde=['Shopee',l.tt&&'TikTok',l.ml&&'Mercado Livre'].filter(Boolean).join(', ');
+  if(!await lbConfirmar(`Zerar o estoque de ${l.nome.slice(0,70)}?\n\n${s.temVariacao?`${vars.length} variações`:'Produto sem variação'} → 0 em ${onde}.`,{okTxt:'Zerar em tudo'}))return;
+  showToast('Zerando…');const res=[];let ok=true;const nota=(b,t)=>{res.push((b?'✓ ':'✗ ')+t);if(!b)ok=false;};
+  try{const token=await shopeeGarantirTokenValido(c,'erp');
+    const r=await (await fetch(SHOPEE_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'ajustar_produto',app:'erp',access_token:token,shop_id:c.shopeeErpShopId,item_id:s.id,venda:null,cheio:null,modelos:[],estoque:est})})).json();
+    if(!r.passos)nota(false,'Shopee: '+(r.erro||'erro'));else for(const p of r.passos)nota(p.ok,`Shopee ${p.etapa}: ${p.ok?p.msg:p.erro}`);
+  }catch(e){nota(false,'Shopee: '+e.message);}
+  await ljEstoqueOutros(c,l,est,nota);
+  if(res.some(x=>/^✓ Shopee estoque/.test(x))){vars.forEach(v=>v.estoque=0);s.estoque=0;s.variacoesZeradas=(s.variacoes||[]).length;}
+  await log(c.id,c.nome,'zerou estoque (Central da Loja)',`${l.nome.slice(0,60)} · ${res.join(' | ')}`).catch(()=>{});
+  ljRender();lbAvisar((ok?'Estoque zerado em tudo.':'Zerado com avisos:')+'\n\n'+res.join('\n'));};
 window.__ljAjAplicar=async()=>{
   const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=ljAjLinha();if(!c||!l?.sh)return;const s=l.sh;
   if(lj.aj.modo==='variacao'&&s.temVariacao)return ljAjAplicarVar(c,l);
