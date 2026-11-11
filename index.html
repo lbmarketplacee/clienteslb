@@ -11759,7 +11759,8 @@ function cpPreencherDoPedido(lojaId){const pa=window.__cpPedidoAtual;window.__cp
   const st=document.getElementById('dirShPrecoTxt');if(st&&window.__cpEstPedido)st.insertAdjacentHTML('afterend','<div style="font-size:12px;color:#e0a352;margin:-4px 0 8px">Estoque diferente por variação (da cliente) — Shopee e ML usam o de cada variação; mudando o campo, vale o número pra todas.</div>');}
 // estoque por variação do pedido no formato do motor ('Cor|Tam'); só vale se o campo não foi mudado
 function cpEstoqueVar(u,est){const e=window.__cpEstPedido;if(!e||String(document.getElementById('dirShEst')?.value)!==e.valor)return est;
-  const out={};const ts=(u.tamanhos||[]).map(t=>t.tam??t);for(const c of (u.cores||[]))for(const t of (ts.length?ts:['']))out[`${c}|${t}`]=Number(e.mapa[`${c}|${t}`]??e.mapa[`|${c}`]??0);return out;}
+  const out={};const ts=(u.tamanhos||[]).map(t=>t.tam??t);const mp={};for(const [k,v] of Object.entries(e.mapa||{}))mp[k.toLowerCase()]=v; /* cor renomeada (maiúscula) não zera o estoque, 11/11/2026 */
+  for(const c of (u.cores||[]))for(const t of (ts.length?ts:['']))out[`${c}|${t}`]=Number(e.mapa[`${c}|${t}`]??mp[`${c}|${t}`.toLowerCase()]??e.mapa[`|${c}`]??mp[`|${c}`.toLowerCase()]??0);return out;}
 /* ---- Shopee → Cadastro → Criar Produto: cliente + fotos + infos → Central Criativa (fotos, título, descrição) → painel de criação ---- */
 let cpFotos=[];
 function cpRender(){
