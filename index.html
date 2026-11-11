@@ -6163,7 +6163,7 @@ window.__ljNovaCriar=async()=>{const n=lj.aj?.nova;const c=(clientesCache||[]).f
     const r=await dirShApi('variacao_adicionar',c,token,{item_id:l.sh.id,pedido,executar:1});
     const msg=(r.passos||[]).map(x=>(x.ok?'✓ ':'✗ ')+(x.ok?x.msg:x.erro)).join(' · ')||r.erro||'erro';
     const extra=r.ok?await ljNovaOutros(c,l,n,{atributo:n.tiers[n.tier].nome,opcoes:ops,p}):[];
-    n.res={ok:!!r.ok&&extra.every(x=>x.ok),msg:[r.ok||r.passos?.length?msg:r.erro,...extra.map(x=>(x.ok?'✓ ':'✗ ')+x.msg)].join(' · ')};
+    n.res={ok:!!r.ok&&extra.every(x=>x.ok),msg:[r.ok?msg:[r.passos?.length?msg:'',r.erro?'✗ '+r.erro:''].filter(Boolean).join(' · ')||'erro',...extra.map(x=>(x.ok?'✓ ':'✗ ')+x.msg)].join(' · ')};
     await log(c.id,c.nome,'variação nova (Central da Loja)',`${l.nome.slice(0,60)} · ${n.tiers[n.tier].nome}: ${ops.join(', ')} · ${n.res.msg}`).catch(()=>{});
     if(r.ok)showToast('Variação criada. Clique em Recarregar pra ver na lista.');
   }catch(e){n.erro=e.message;}
