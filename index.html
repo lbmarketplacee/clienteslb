@@ -11837,7 +11837,7 @@ window.__cpGerar=async(semFotos)=>{ // semFotos=true: usa só as fotos enviadas,
   try{
     const d=semFotos
       ?await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'texto_anuncio',produto:produtoIA,marketplace:'shopee',imagem:cpFotos[0]||null})})).json()
-      :await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos.slice(0,5),quantidadeFotos:5})})).json();
+      :await (await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto:produtoIA,marketplace:'shopee',imagens:cpFotos.slice(0,5),quantidadeFotos:cpFotos.length<4?6:5})})).json();
     if(!d.ok)throw new Error(d.erro||'a Central Criativa não respondeu');
     const fotos=(d.fotos||[]).filter(f=>f.imagem);
     // título do ML com a regra DELE (até 60, termo principal primeiro, sem cor/tamanho) — não é o da Shopee cortado
@@ -12169,6 +12169,12 @@ async function shGarantirObrigatorios(arvore,atributos,produto){
     atributos.push({attribute_id:Number(a.id),attribute_value_list:[{value_id:Number(v.id)}]});
   }
   const tem=new Set(atributos.map(a=>String(a.attribute_id)));
+  /* obrigatório de TEXTO livre, sem lista (WL Pesos 11/11/2026: "Item Code" is mandatory) → código/modelo = SKU; outro = 1ª linha do produto */
+  const sku=(document.getElementById('dirShSku')?.value||'').trim();
+  for(const a of (arvore||[]).filter(a=>a.obrigatorio&&!tem.has(String(a.id))&&!(a.valores||[]).length)){
+    const txt=(/code|c[oó]digo|model|refer|sku|part/i.test(a.nome||'')&&sku?sku:String(produto||'').split('\n')[0]).slice(0,60).trim();
+    if(txt){atributos.push({attribute_id:Number(a.id),attribute_value_list:[{value_id:0,original_value_name:txt}]});tem.add(String(a.id));}
+  }
   const faltam=(arvore||[]).filter(a=>a.obrigatorio&&!tem.has(String(a.id))&&(a.valores||[]).length);
   if(!faltam.length)return atributos;
   let r={};try{r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto,arvore:faltam.map(a=>({id:'O'+a.id,nome:a.nome,valores:a.valores}))})}).then(x=>x.json());}catch(e){}
