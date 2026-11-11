@@ -1714,6 +1714,16 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
   .table-wrap,.lj-tabela,.lj-rel-grid{overscroll-behavior-x:contain}
 }
 @supports(padding:env(safe-area-inset-top)){.sidebar{padding-top:max(24px,env(safe-area-inset-top))}}
+#clbAvisoBox{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);animation:clbAvIn .35s ease}
+#clbAvisoBox.sai{opacity:0;transition:opacity .4s}
+.clb-av-card{position:relative;overflow:hidden;width:min(440px,calc(100vw - 32px));background:#141414;border:1px solid #c9a14a;border-radius:22px;padding:26px 24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 6px rgba(201,161,74,.12);color:#f3f3f3;text-align:center;animation:clbAvPop .45s cubic-bezier(.2,1.4,.4,1)}
+.clb-av-ico{font-size:38px;line-height:1;margin-bottom:6px}
+.clb-av-tit{font-family:Oswald,sans-serif;font-size:22px;color:#e6c26e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.clb-av-card ul{list-style:none;margin:0 0 18px;padding:0;text-align:left}
+.clb-av-card li{padding:9px 12px;margin-bottom:6px;background:#1f1f1f;border-radius:10px;border-left:3px solid #c9a14a;font-size:14.5px}
+.clb-av-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.clb-av-barra{position:absolute;left:0;bottom:0;height:3px;background:#c9a14a;animation:clbAvBarra 15s linear forwards}
+@keyframes clbAvIn{from{opacity:0}to{opacity:1}}@keyframes clbAvPop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}@keyframes clbAvBarra{from{width:100%}to{width:0}}
 </style>
 <link rel="preload" as="style" href="lb-dashboard-modern.css" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="lb-dashboard-modern.css"></noscript>
@@ -5672,6 +5682,26 @@ async function clbSincTarefas(){if(clbSincRodando)return;clbSincRodando=true;
   }catch(e){console.warn('[calendário → tarefas]',e);}finally{clbSincRodando=false;}}
 setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail]&&ADMIN_EMAILS.concat(Object.values(JR_EMAIL)).includes(currentEmail))clbSincTarefas();}},3000);},4000);
 
+/* Aviso no meio da tela com as rotinas do Calendário da LB de hoje (10/11/2026, Lincoln): 1x por dia por pessoa, some sozinho */
+function clbEhMinha(p){return JR_EMAIL[p]===currentEmail||(p==='Lincoln'&&isLincoln()&&currentEmail!==JR_EMAIL.Caroline);}
+async function clbAvisoDoDia(forcar){try{if(!window.__clb.rotinas)await clbCarregar();const ds=clbHoje();const chave='clbAviso_'+ds+'_'+currentEmail;
+  if(!forcar){try{if(localStorage.getItem(chave))return;}catch(e){}}
+  const minhas=clbDoDia(ds).filter(o=>(o.r.quem||[]).some(clbEhMinha));if(!minhas.length)return;
+  const pend=[];for(const o of minhas){const sn=await getDoc(doc(db,'calendarioFeitos',`${ds}_${o.r.id}`));if(!(sn.exists()&&sn.data().feito))pend.push(o);}
+  if(!pend.length)return;try{localStorage.setItem(chave,'1');}catch(e){}
+  document.getElementById('clbAvisoBox')?.remove();
+  const nome=(USERS_MAP[currentEmail]||'').split(' ')[0];
+  const box=document.createElement('div');box.id='clbAvisoBox';
+  box.innerHTML=`<div class="clb-av-card" role="alertdialog" aria-label="Pendências de hoje"><div class="clb-av-ico">📅</div><div class="clb-av-tit">${nome?esc(nome)+', ':''}pendência${pend.length>1?'s':''} de hoje</div>
+    <ul>${pend.map(o=>`<li>${o.r.regra?.t==='escritorio'?'🏢 ':''}${esc(o.titulo)}</li>`).join('')}</ul>
+    <div class="clb-av-btns"><button class="btn btn-gold" id="clbAvVer">Ver no calendário</button><button class="btn" id="clbAvOk">Ok, entendi</button></div><div class="clb-av-barra"></div></div>`;
+  document.body.appendChild(box);const fechar=()=>{box.classList.add('sai');setTimeout(()=>box.remove(),400);};
+  box.querySelector('#clbAvOk').onclick=fechar;box.onclick=e=>{if(e.target===box)fechar();};
+  box.querySelector('#clbAvVer').onclick=()=>{fechar();document.querySelector('.nav-item[data-page="calendario"]')?.click();};
+  setTimeout(fechar,15000);
+}catch(e){console.warn('[calendário → aviso]',e);}}
+window.__clbAvisoDoDia=clbAvisoDoDia;
+setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail])setTimeout(()=>clbAvisoDoDia(),2500);}},3000);},5000);
 async function jrSincInicial(){try{const sn=await getDocs(collection(db,'jornadas'));await jrSincTarefas(sn.docs.map(d=>({id:d.id,...d.data()})));}catch(e){console.warn('[jornada → tarefas] inicial',e);}}
 setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail]&&currentEmail!=='felipesoares@potencialmidia.com')jrSincInicial();}},3000);},2000);
 
