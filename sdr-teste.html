@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testar a Lia (SDR) — LB Marketplace</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0b;--card:#18160f;--line:#2c281d;--text:#f3ecdc;--dim:#a39a85;--gold:#d4af37;--ok:#4caf7d;--err:#e06b5c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:24px 16px}
+h1{font-family:Oswald;font-weight:500;margin:0 0 4px}.dim{color:var(--dim);font-size:13.5px;line-height:1.5}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+label{display:block;font-size:12px;color:var(--dim);margin:10px 0 4px}
+input{width:100%;background:#100f0a;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 10px;font:inherit}
+.btn{background:var(--gold);color:#16130b;border:0;border-radius:12px;padding:14px 20px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.btn.parar{background:var(--err);color:#fff}.btn:disabled{opacity:.5}
+#st{margin-top:10px;font-size:14px}
+.fala{margin:8px 0;padding:10px 12px;border-radius:12px;max-width:85%;font-size:14.5px;line-height:1.4}
+.agent{background:#2a2417;border:1px solid #4a3d1c}.user{background:#13251b;border:1px solid #23492f;margin-left:auto}
+.fala small{display:block;font-size:11px;color:var(--dim);margin-bottom:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:560px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>TESTAR A LIA (SDR DE VOZ)</h1>
+  <div class="dim">Você conversa com a Lia pelo microfone, como se fosse um lead. Não liga pra ninguém e não precisa de número. Se você aceitar marcar, ela marca na agenda da LB como <b>[TESTE]</b> (dá pra apagar). Use fone de ouvido pra ela não ouvir a própria voz.</div>
+  <div class="box">
+    <div class="dim" style="margin-bottom:4px">Como o "lead" respondeu o formulário (muda o começo da conversa):</div>
+    <div class="grid">
+      <div><label>Nome</label><input id="nome" value="Lincoln"></div>
+      <div><label>Tipo de negócio</label><input id="tipo" value="confecção de moda feminina"></div>
+      <div><label>Onde vende</label><input id="onde" value="feirinha do Brás e Instagram"></div>
+      <div><label>Já vende nos marketplaces?</label><input id="ja" value="Ainda não, quero começar"></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px;align-items:center"><button class="btn" id="ligar">🎙️ Falar com a Lia</button><button class="btn parar" id="parar" style="display:none">Desligar</button></div>
+    <div id="st" class="dim"></div>
+  </div>
+  <div class="box"><div class="dim">Conversa</div><div id="conv"></div></div>
+  <div class="box dim">Ideias pra testar: perguntar "quanto custa?", dizer "agora não posso", "já tenho agência", "como você conseguiu meu número?", "você é robô?", e aceitar um horário. Depois me conte o que soou estranho.</div>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+const app = initializeApp({ apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" });
+const auth = getAuth(app);
+const $ = (s) => document.querySelector(s);
+let cliente = null;
+onAuthStateChanged(auth, (u) => { if (!u) { $('#st').innerHTML = '<button class="btn" id="entrar">Entrar com Google</button>'; $('#entrar').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()); } else $('#st').textContent = 'Pronto. Clique em "Falar com a Lia".'; });
+$('#ligar').onclick = async () => {
+  try {
+    $('#ligar').disabled = true; $('#st').textContent = 'Conectando…'; $('#conv').innerHTML = '';
+    const t = await auth.currentUser.getIdToken();
+    const q = new URLSearchParams({ acao: 'web_teste', nome: $('#nome').value, tipo: $('#tipo').value, onde: $('#onde').value, ja: $('#ja').value });
+    const r = await (await fetch('https://lb-shopee-gmv.vercel.app/api/sdr-voz?' + q, { headers: { Authorization: 'Bearer ' + t } })).json();
+    if (!r.ok) throw new Error(r.erro || 'não criou a chamada');
+    const { RetellWebClient } = await import('https://cdn.jsdelivr.net/npm/retell-client-js-sdk/+esm');
+    cliente = new RetellWebClient();
+    cliente.on('call_started', () => { $('#st').textContent = '🟢 Em chamada — pode falar.'; $('#parar').style.display = ''; });
+    cliente.on('call_ended', () => { $('#st').textContent = 'Chamada encerrada.'; $('#parar').style.display = 'none'; $('#ligar').disabled = false; });
+    cliente.on('error', (e) => { $('#st').textContent = 'Erro: ' + (e?.message || e); cliente?.stopCall(); });
+    cliente.on('update', (u) => { const tr = u?.transcript || []; $('#conv').innerHTML = tr.map((x) => `<div class="fala ${x.role === 'agent' ? 'agent' : 'user'}"><small>${x.role === 'agent' ? 'Lia' : 'Você'}</small>${String(x.content || '').replace(/</g, '&lt;')}</div>`).join(''); });
+    await cliente.startCall({ accessToken: r.accessToken });
+  } catch (e) { $('#st').textContent = 'Não conectou: ' + e.message; $('#ligar').disabled = false; }
+};
+$('#parar').onclick = () => cliente?.stopCall();
+</script>
+</body>
+</html>
