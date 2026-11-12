@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Precios y stock — LB Marketplace</title>
+<title>Preços e estoque — LB Marketplace</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
@@ -61,14 +61,18 @@ textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px
 </style>
 </head>
 <body>
-<div class="top"><div class="in"><div class="logo">LB<small>MARKETPLACE</small></div><h1>Precios y stock<span id="loja">—</span></h1></div></div>
-<main id="app"><div class="carregando">Cargando sus productos… (puede tardar hasta 1 minuto)</div></main>
+<div class="top"><div class="in"><div class="logo">LB<small>MARKETPLACE</small></div><h1 id="tit">Preços e estoque<span id="loja">—</span></h1></div></div>
+<main id="app"><div class="carregando">Carregando seus produtos… (pode levar até 1 minuto)</div></main>
 <div class="barra" id="barra" style="display:none"><div class="in"><div class="cont" id="cont"></div><button class="btn" id="enviar">Enviar</button></div></div>
 <script>
 const API='https://lb-shopee-gmv.vercel.app/api/pedido-produto';
 const T=new URLSearchParams(location.search).get('t')||'';
 const CHAVE='lbPrecos_'+T;
-let ITENS=[],R={},OBS='',FILTRO='todos',BUSCA='';
+let ITENS=[],R={},OBS='',FILTRO='todos',BUSCA='',L='pt';
+// textos (12/11/2026): português por padrão; espanhol pra quem tem clientes.linkProdutosIdioma = 'es' (Killa, Heidy)
+const TX={pt:{tit:'Preços e estoque',inval:'Link inválido. Peça um novo link pra equipe LB.',erro:'Erro',vazio:'Não encontramos produtos ativos na sua loja. Fale com a equipe LB.',falha:'Não conseguimos carregar seus produtos.',denovo:'Tentar de novo',intro:'Oi 👋 Em cada produto, escreva:<ul><li><b>Custo:</b> quanto custa pra você cada peça.</li><li><b>Quero receber:</b> quanto você quer que sobre <b>na sua conta por peça vendida</b>, já descontadas as taxas do marketplace. A gente calcula o preço de venda.</li><li><b>Estoque:</b> quantas peças você tem de cada cor e tamanho. Se não tiver, coloque 0.</li></ul><div class="info" style="margin-top:8px">Pode preencher só alguns e mandar o resto depois. O que você escreve fica salvo neste celular.</div>',busca:'Buscar produto…',todos:'Todos',faltam:'Faltam',feitos:'Preenchidos',obsT:'Algum comentário?',opc:'(opcional)',obsPh:'Ex.: os vestidos tamanho GG custam mais…',hoje:'Preço hoje: ',vars:' variações',custo:'Custo (R$)',receber:'Quero receber (R$)',estT:'Estoque por cor e tamanho',estU:'Estoque (peças)',hojeQ:'hoje: ',nota:'Observação',maisNota:'+ O preço muda por tamanho/cor',notaPh:'Ex.: tamanho GG receber 40',nenhum:'Nenhum produto.',ganho:'Seu lucro por peça: ',atencao:(v,c)=>`Atenção: você receberia ${v} e a peça custa ${c}`,de:' de ',preench:' produtos preenchidos',enviando:'Enviando…',enviar:'Enviar',pronto:'Pronto, muito obrigado! ✅',recebemos:(n)=>`Recebemos ${n} produto${n>1?'s':''}. A equipe LB vai ajustar os preços e o estoque e te avisa.`,mudar:'Se quiser mudar algo ou preencher os que faltam, abra este mesmo link de novo.',naoEnviou:'Não foi possível enviar: '},
+es:{tit:'Precios y stock',inval:'Enlace inválido. Pida un nuevo enlace al equipo LB.',erro:'Error',vazio:'No encontramos productos activos en su tienda. Hable con el equipo LB.',falha:'No pudimos cargar sus productos.',denovo:'Intentar de nuevo',intro:'Hola 👋 Para cada producto, escriba:<ul><li><b>Costo:</b> cuánto le cuesta a usted cada pieza.</li><li><b>Quiero recibir:</b> cuánto quiere que le quede <b>en su cuenta por cada pieza vendida</b>, ya descontadas las tasas del marketplace. Nosotros calculamos el precio de venta.</li><li><b>Stock:</b> cuántas piezas tiene de cada color y talla. Si no tiene, ponga 0.</li></ul><div class="info" style="margin-top:8px">Puede completar solo algunos y enviar después el resto. Lo que escribe queda guardado en este celular.</div>',busca:'Buscar producto…',todos:'Todos',faltam:'Faltan',feitos:'Completados',obsT:'¿Algún comentario?',opc:'(opcional)',obsPh:'Ej.: los vestidos talla GG cuestan más…',hoje:'Precio hoy: ',vars:' variaciones',custo:'Costo (R$)',receber:'Quiero recibir (R$)',estT:'Stock por color y talla',estU:'Stock (piezas)',hojeQ:'hoy: ',nota:'Nota',maisNota:'+ El precio cambia por talla/color',notaPh:'Ej.: talla GG recibir 40',nenhum:'Ningún producto.',ganho:'Su ganancia por pieza: ',atencao:(v,c)=>`Atención: recibiría ${v} y la pieza cuesta ${c}`,de:' de ',preench:' productos completados',enviando:'Enviando…',enviar:'Enviar',pronto:'¡Listo, muchas gracias! ✅',recebemos:(n)=>`Recibimos ${n} producto${n>1?'s':''}. El equipo LB va a ajustar los precios y le avisa.`,mudar:'Si quiere cambiar algo o completar los que faltan, abra este mismo enlace de nuevo.',naoEnviou:'No se pudo enviar: '}};
+const t=(k)=>(TX[L]||TX.pt)[k];
 const $=(s)=>document.querySelector(s);
 const esc=(s)=>String(s??'').replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const brl=(n)=>'R$ '+Number(n).toFixed(2).replace('.',',');
@@ -80,27 +84,24 @@ const vNome=v=>typeof v==='string'?v:v.nome;
 const vRot=v=>vNome(v).split(',').map(x=>x.trim()).filter(Boolean).join(' · ');
 
 async function iniciar(){
-  if(!T){$('#app').innerHTML='<div class="msg err">Enlace inválido. Pida un nuevo enlace al equipo LB.</div>';return}
+  if(!T){$('#app').innerHTML=`<div class="msg err">${t('inval')}</div>`;return}
   try{
     const r=await fetch(`${API}?acao=precos_lista&t=${encodeURIComponent(T)}`);const d=await r.json();
-    if(!d.ok)throw new Error(d.erro||'Error');
-    $('#loja').textContent=d.loja;ITENS=d.itens||[];
+    if(!d.ok)throw new Error(d.erro||t('erro'));
+    L=d.idioma==='es'?'es':'pt';document.documentElement.lang=L==='es'?'es':'pt-BR';$('#tit').firstChild.textContent=t('tit');document.title=t('tit')+' — LB Marketplace';$('#loja').textContent=d.loja;ITENS=d.itens||[];
     for(const[ch,v]of Object.entries(d.respostas||{}))R[ch]={custo:v.custo!=null?String(v.custo).replace('.',','):'',receber:v.receber!=null?String(v.receber).replace('.',','):'',nota:v.nota||'',estoque:Object.fromEntries(Object.entries(v.estoque||{}).map(([k,q])=>[k,String(q)]))};
     try{const l=JSON.parse(localStorage.getItem(CHAVE)||'null');if(l){Object.assign(R,l.R||{});OBS=l.OBS||''}}catch(e){}
-    if(!ITENS.length){$('#app').innerHTML='<div class="msg err">No encontramos productos activos en su tienda. Hable con el equipo LB.</div>';return}
+    if(!ITENS.length){$('#app').innerHTML=`<div class="msg err">${t('vazio')}</div>`;return}
     montar();
-  }catch(e){$('#app').innerHTML=`<div class="msg err">No pudimos cargar sus productos. ${esc(e.message)}<br><br><button class="btn" onclick="location.reload()">Intentar de nuevo</button></div>`}
+  }catch(e){$('#app').innerHTML=`<div class="msg err">${t('falha')} ${esc(e.message)}<br><br><button class="btn" onclick="location.reload()">${t('denovo')}</button></div>`}
 }
 
 function montar(){
-  $('#app').innerHTML=`<div class="intro">Hola 👋 Para cada producto, escriba:
-    <ul><li><b>Costo:</b> cuánto le cuesta a usted cada pieza.</li>
-    <li><b>Quiero recibir:</b> cuánto quiere que le quede <b>en su cuenta por cada pieza vendida</b>, ya descontadas las tasas del marketplace. Nosotros calculamos el precio de venta.</li><li><b>Stock:</b> cuántas piezas tiene de cada color y talla. Si no tiene, ponga 0.</li></ul>
-    <div class="info" style="margin-top:8px">Puede completar solo algunos y enviar después el resto. Lo que escribe queda guardado en este celular.</div></div>
-    <input class="busca" id="busca" placeholder="Buscar producto…" value="${esc(BUSCA)}">
-    <div class="filtros"><span class="chip" data-f="todos">Todos (${ITENS.length})</span><span class="chip" data-f="falta">Faltan</span><span class="chip" data-f="feitos">Completados</span></div>
+  $('#app').innerHTML=`<div class="intro">${t('intro')}</div>
+    <input class="busca" id="busca" placeholder="${t('busca')}" value="${esc(BUSCA)}">
+    <div class="filtros"><span class="chip" data-f="todos">${t('todos')} (${ITENS.length})</span><span class="chip" data-f="falta">${t('faltam')}</span><span class="chip" data-f="feitos">${t('feitos')}</span></div>
     <div id="lista"></div>
-    <div class="intro" style="margin-top:14px"><b>¿Algún comentario?</b> <span class="info">(opcional)</span><textarea id="obs" placeholder="Ej.: los vestidos talla GG cuestan más…">${esc(OBS)}</textarea></div>`;
+    <div class="intro" style="margin-top:14px"><b>${t('obsT')}</b> <span class="info">${t('opc')}</span><textarea id="obs" placeholder="${t('obsPh')}">${esc(OBS)}</textarea></div>`;
   $('#busca').oninput=(e)=>{BUSCA=e.target.value;lista()};
   $('#obs').oninput=(e)=>{OBS=e.target.value;guardar()};
   document.querySelectorAll('.chip').forEach((c)=>c.onclick=()=>{FILTRO=c.dataset.f;lista()});
@@ -115,13 +116,13 @@ function lista(){
     return `<div class="prod${preenchido(i.chave)?' feito':''}" data-ch="${esc(i.chave)}">
       ${i.foto?`<img src="${esc(i.foto)}" loading="lazy" alt="">`:'<div class="sem"></div>'}
       <div><div class="nome">${esc(i.nome)}</div>
-      <div class="info">${pr?'Precio hoy: '+pr:''}${i.variacoes?.length?(pr?' · ':'')+i.variacoes.length+' variaciones':''}</div>
-      <div class="campos"><div><label>Costo (R$)</label><input inputmode="decimal" data-k="custo" value="${esc(r.custo||'')}" placeholder="0,00"></div>
-      <div><label>Quiero recibir (R$)</label><input inputmode="decimal" data-k="receber" value="${esc(r.receber||'')}" placeholder="0,00"></div></div>
+      <div class="info">${pr?t('hoje')+pr:''}${i.variacoes?.length?(pr?' · ':'')+i.variacoes.length+t('vars'):''}</div>
+      <div class="campos"><div><label>${t('custo')}</label><input inputmode="decimal" data-k="custo" value="${esc(r.custo||'')}" placeholder="0,00"></div>
+      <div><label>${t('receber')}</label><input inputmode="decimal" data-k="receber" value="${esc(r.receber||'')}" placeholder="0,00"></div></div>
       <div class="ganho"></div>
-      ${i.variacoes?.length?`<div class="est"><div class="est-t">Stock por color y talla</div>${i.variacoes.map((v)=>{const n=vNome(v);const q=(r.estoque||{})[n]??'';return `<label class="est-l"><span>${esc(vRot(v))}${typeof v==='object'&&v.estoque!=null?`<small>hoy: ${v.estoque}</small>`:''}</span><input inputmode="numeric" data-e="${esc(n)}" value="${esc(q)}" placeholder="0"></label>`}).join('')}</div>`:`<div class="est"><label class="est-l"><span>Stock (piezas)</span><input inputmode="numeric" data-e="_" value="${esc((r.estoque||{})['_']??'')}" placeholder="0"></label></div>`}
-      <button class="mais" type="button">${r.nota?'Nota':'+ El precio cambia por talla/color'}</button>
-      <input class="nota${r.nota?' on':''}" data-k="nota" value="${esc(r.nota||'')}" placeholder="Ej.: talla GG recibir 40"></div></div>`}).join('')||'<div class="info">Ningún producto.</div>';
+      ${i.variacoes?.length?`<div class="est"><div class="est-t">${t('estT')}</div>${i.variacoes.map((v)=>{const n=vNome(v);const q=(r.estoque||{})[n]??'';return `<label class="est-l"><span>${esc(vRot(v))}${typeof v==='object'&&v.estoque!=null?`<small>${t('hojeQ')}${v.estoque}</small>`:''}</span><input inputmode="numeric" data-e="${esc(n)}" value="${esc(q)}" placeholder="0"></label>`}).join('')}</div>`:`<div class="est"><label class="est-l"><span>${t('estU')}</span><input inputmode="numeric" data-e="_" value="${esc((r.estoque||{})['_']??'')}" placeholder="0"></label></div>`}
+      <button class="mais" type="button">${r.nota?t('nota'):t('maisNota')}</button>
+      <input class="nota${r.nota?' on':''}" data-k="nota" value="${esc(r.nota||'')}" placeholder="${t('notaPh')}"></div></div>`}).join('')||`<div class="info">${t('nenhum')}</div>`;
   document.querySelectorAll('.prod').forEach((el)=>{const ch=el.dataset.ch;ganho(el,ch);
     el.querySelectorAll('input').forEach((inp)=>inp.oninput=()=>{const at=R[ch]||{};R[ch]=inp.dataset.e!=null?{...at,estoque:{...(at.estoque||{}),[inp.dataset.e]:inp.value.replace(/\D/g,'')}}:{...at,[inp.dataset.k]:inp.value};guardar();ganho(el,ch);el.classList.toggle('feito',preenchido(ch));contar()});
     el.querySelector('.mais').onclick=()=>{const n=el.querySelector('.nota');n.classList.add('on');n.focus()}});
@@ -129,19 +130,19 @@ function lista(){
 }
 function ganho(el,ch){const r=R[ch]||{},c=num(r.custo),v=num(r.receber),g=el.querySelector('.ganho');
   if(c==null||v==null){g.textContent='';g.className='ganho';return}
-  const l=v-c;g.textContent=l>0?`Su ganancia por pieza: ${brl(l)}`:`Atención: recibiría ${brl(v)} y la pieza cuesta ${brl(c)}`;g.className='ganho '+(l>0?'ok':'mal')}
-function contar(){const n=ITENS.filter((i)=>preenchido(i.chave)).length;$('#cont').innerHTML=`<b>${n}</b> de ${ITENS.length} productos completados`;$('#enviar').disabled=!n}
+  const l=v-c;g.textContent=l>0?t('ganho')+brl(l):t('atencao')(brl(v),brl(c));g.className='ganho '+(l>0?'ok':'mal')}
+function contar(){const n=ITENS.filter((i)=>preenchido(i.chave)).length;$('#cont').innerHTML=`<b>${n}</b>${t('de')}${ITENS.length}${t('preench')}`;$('#enviar').disabled=!n}
 
 $('#enviar').onclick=async()=>{
   const respostas={};for(const i of ITENS){const r=R[i.chave];if(r&&(num(r.receber)!=null||r.custo||r.nota||temEst(i.chave)))respostas[i.chave]=r}
-  const btn=$('#enviar');btn.disabled=true;btn.textContent='Enviando…';
+  const btn=$('#enviar');btn.disabled=true;btn.textContent=t('enviando');
   try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'precos_enviar',t:T,respostas,obs:OBS})});const d=await r.json();
-    if(!d.ok)throw new Error(d.erro||'Error');
+    if(!d.ok)throw new Error(d.erro||t('erro'));
     try{localStorage.removeItem(CHAVE)}catch(e){}
     $('#barra').style.display='none';
-    $('#app').innerHTML=`<div class="fim"><h2>¡Listo, muchas gracias! ✅</h2><p>Recibimos ${d.produtos} producto${d.produtos>1?'s':''}. El equipo LB va a ajustar los precios y le avisa.</p><p class="info">Si quiere cambiar algo o completar los que faltan, abra este mismo enlace de nuevo.</p></div>`;
+    $('#app').innerHTML=`<div class="fim"><h2>${t('pronto')}</h2><p>${t('recebemos')(d.produtos)}</p><p class="info">${t('mudar')}</p></div>`;
     window.scrollTo(0,0);
-  }catch(e){btn.disabled=false;btn.textContent='Enviar';alert('No se pudo enviar: '+e.message)}
+  }catch(e){btn.disabled=false;btn.textContent=t('enviar');alert(t('naoEnviou')+e.message)}
 };
 iniciar();
 </script>
