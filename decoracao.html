@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&family=Great+Vibes&family=Playfair+Display:wght@500;700&family=Montserrat:wght@500;700;800&family=Dancing+Script:wght@600&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{--bg:#0f0e0b;--card:#18160f;--line:#2c281d;--text:#f3ecdc;--dim:#a39a85;--gold:#d4af37;--gold2:#b8902f;--ok:#4caf7d;--err:#e06b5c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:14px}
@@ -73,15 +74,15 @@ textarea{min-height:56px;resize:vertical}
     </div>
   </section>
   <section>
-    <div class="topo-acoes"><button class="btn" id="btnGerar">Gerar as 7 peças</button><button class="btn sec" id="btnZip" disabled>Baixar tudo (ZIP)</button><span class="st" id="stGeral"></span></div>
-    <div class="dica" style="margin-bottom:12px">A IA faz só a parte visual; nome, frase e logo são escritos pelo sistema, no tamanho exato. Mudou a frase ou a cor? Clique em <b>Atualizar texto</b> — não gasta IA. Custo: ~8 imagens por cliente.</div>
+    <div class="topo-acoes"><button class="btn" id="btnGerar">Gerar as 7 peças</button><button class="btn sec" id="btnZip" disabled>Baixar tudo (ZIP)</button><button class="btn sec" id="btnDrive" disabled>Salvar no Drive</button><span class="st" id="stGeral"></span></div>
+    <div class="dica" style="margin-bottom:12px">A IA faz só a parte visual; nome, frase e logo são escritos pelo sistema, no tamanho exato. Ao terminar, as peças vão sozinhas pro Drive: pasta do cliente → <b>Decoração da loja</b> → data. Mudou a frase ou a cor? Clique em <b>Atualizar texto</b> — não gasta IA. Custo: ~8 imagens por cliente.</div>
     <div class="pecas" id="pecas"></div>
   </section>
 </main>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, query, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 const app = initializeApp({ apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", storageBucket: "lb-gestao-clientes.firebasestorage.app", messagingSenderId: "344033285587", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" });
 const auth = getAuth(app); const db = getFirestore(app);
 const API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
@@ -167,7 +168,7 @@ async function gerarPeca(p) {
     IMG[p.id] = p.id === 'ml_capa' ? await Promise.all([gerarFundo(p.id, 0), gerarFundo(p.id, 1)]) : [await gerarFundo(p.id)];
     await carregarFontes(); desenhar(p); st.textContent = 'Pronto ✓';
   } catch (e) { st.className = 'st err'; st.textContent = 'Falhou: ' + e.message; }
-  $('#btnZip').disabled = !Object.keys(IMG).length;
+  $('#btnZip').disabled = $('#btnDrive').disabled = !Object.keys(IMG).length;
 }
 $('#btnGerar').onclick = async () => {
   if (!CLI) return alert('Escolha o cliente.'); guardarPref();
@@ -175,6 +176,7 @@ $('#btnGerar').onclick = async () => {
   await document.fonts.ready;
   const fila = [...PECAS]; await Promise.all([0, 1, 2].map(async () => { while (fila.length) await gerarPeca(fila.shift()); }));
   $('#btnGerar').disabled = false; $('#stGeral').textContent = 'Pronto. Confira cada peça e gere de novo a que não gostar.';
+  salvarDrive(true);
 };
 
 // ---------- composição (texto e logo pelo sistema) ----------
@@ -256,6 +258,59 @@ function capaMl(x, ims, w, h) {
     px += b.w;
   }
 }
+
+// ---------- Google Drive (mesma pasta do cliente que o sistema usa: Clientes LB / <cliente> / Decoração da loja / AAAA-MM-DD) ----------
+const GOOGLE_CLIENT_ID = '745640594764-fvh6dmevj6eehqtgid0npvp46l82n0jm.apps.googleusercontent.com';
+let gToken = null; try { gToken = sessionStorage.getItem('lb_gtoken'); } catch (e) {} // o sistema passa o login do Drive quando abre esta aba
+function pedirToken() {
+  return new Promise((ok, er) => {
+    if (!window.google?.accounts?.oauth2) return er(new Error('Google ainda carregando, tente de novo.'));
+    google.accounts.oauth2.initTokenClient({ client_id: GOOGLE_CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive', callback: (r) => { if (r.error) return er(new Error(r.error)); gToken = r.access_token; try { sessionStorage.setItem('lb_gtoken', gToken); } catch (e) {} ok(gToken); } }).requestAccessToken({ prompt: '' });
+  });
+}
+async function drive(url, opts = {}) {
+  const r = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + gToken } });
+  if (r.status === 401) { gToken = null; try { sessionStorage.removeItem('lb_gtoken'); } catch (e) {} throw Object.assign(new Error('login do Drive expirou'), { relogar: true }); }
+  if (!r.ok) throw new Error('Drive ' + r.status); return r.json();
+}
+async function pasta(nome, pai) {
+  const q = encodeURIComponent(`name='${nome.replace(/'/g, "\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false` + (pai ? ` and '${pai}' in parents` : ''));
+  const d = await drive(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`); if (d.files?.[0]) return d.files[0].id;
+  return (await drive('https://www.googleapis.com/drive/v3/files?fields=id', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: nome, mimeType: 'application/vnd.google-apps.folder', ...(pai ? { parents: [pai] } : {}) }) })).id;
+}
+async function pastaCliente() {
+  const c = (await getDoc(doc(db, 'clientes', CLI.id))).data() || {};
+  if (c.driveFolderId) { try { await drive(`https://www.googleapis.com/drive/v3/files/${c.driveFolderId}?fields=id`); return c.driveFolderId; } catch (e) { if (e.relogar) throw e; } }
+  const cfg = (await getDocs(query(collection(db, 'driveCfg'), limit(1)))).docs[0]?.data() || {};
+  const mae = cfg.pastaMaeId || await pasta('Clientes LB', null);
+  const id = await pasta(c.nome || CLI.nome, mae);
+  await updateDoc(doc(db, 'clientes', CLI.id), { driveFolderId: id, driveUrl: 'https://drive.google.com/drive/folders/' + id }).catch(() => null);
+  return id;
+}
+async function salvarDrive(automatico = false) {
+  if (!CLI || !Object.keys(IMG).length) return;
+  const st = $('#stGeral');
+  try {
+    if (!gToken) { if (automatico) { st.innerHTML = 'Pronto. <b>Clique em "Salvar no Drive"</b> pra guardar na pasta do cliente.'; return; } await pedirToken(); }
+    st.textContent = 'Salvando no Drive…';
+    const dia = new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);
+    const destino = await pasta(dia, await pasta('Decoração da loja', await pastaCliente()));
+    let n = 0;
+    for (const p of PECAS) {
+      if (!IMG[p.id]) continue;
+      const blob = await new Promise((ok) => document.querySelector('#cv_' + p.id).toBlob(ok, 'image/png'));
+      const fd = new FormData(); fd.append('metadata', new Blob([JSON.stringify({ name: nomeArq(p), parents: [destino] })], { type: 'application/json' })); fd.append('file', blob);
+      const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { Authorization: 'Bearer ' + gToken }, body: fd });
+      if (r.status === 401) throw Object.assign(new Error('login do Drive expirou'), { relogar: true });
+      if (r.ok) n++;
+    }
+    st.innerHTML = `${n} peça(s) salva(s) no Drive ✓ <a href="https://drive.google.com/drive/folders/${destino}" target="_blank" style="color:#d4af37">abrir pasta</a>`;
+  } catch (e) {
+    if (e.relogar && !automatico) { gToken = null; return salvarDrive(false); }
+    st.innerHTML = automatico ? 'Pronto. <b>Clique em "Salvar no Drive"</b> pra guardar na pasta do cliente.' : 'Não salvou no Drive: ' + e.message;
+  }
+}
+$('#btnDrive').onclick = () => salvarDrive(false);
 // ---------- download ----------
 const nomeArq = (p) => `${($('#nome').value || 'loja').replace(/[^\w\- ]/g, '').trim().replace(/\s+/g, '-')}_${p.id}_${p.w}x${p.h}.png`;
 function baixar(p) { if (!IMG[p.id]) return; document.querySelector('#cv_' + p.id).toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = nomeArq(p); a.click(); }, 'image/png'); }
