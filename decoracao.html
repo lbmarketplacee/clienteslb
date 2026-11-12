@@ -165,7 +165,7 @@ async function gerarPeca(p) {
   const st = document.querySelector(`#st_${p.id}`); st.className = 'st'; st.textContent = 'Gerando com IA…';
   try {
     IMG[p.id] = p.id === 'ml_capa' ? await Promise.all([gerarFundo(p.id, 0), gerarFundo(p.id, 1)]) : [await gerarFundo(p.id)];
-    desenhar(p); st.textContent = 'Pronto ✓';
+    await carregarFontes(); desenhar(p); st.textContent = 'Pronto ✓';
   } catch (e) { st.className = 'st err'; st.textContent = 'Falhou: ' + e.message; }
   $('#btnZip').disabled = !Object.keys(IMG).length;
 }
@@ -182,10 +182,12 @@ function montarPecas() {
   $('#pecas').innerHTML = PECAS.map((p) => `<div class="peca${p.larga ? ' larga' : ''}"><h4>${p.nome} <span>${p.w}×${p.h}px</span></h4><canvas id="cv_${p.id}" width="${p.w}" height="${p.h}"></canvas>
     <div class="acoes"><button class="btn sec" data-g="${p.id}">Gerar de novo</button><button class="btn sec" data-t="${p.id}">Atualizar texto</button><button class="btn sec" data-d="${p.id}">Baixar PNG</button></div><div class="st" id="st_${p.id}"></div></div>`).join('');
   $('#pecas').querySelectorAll('[data-g]').forEach((b) => b.onclick = () => { if (!CLI) return alert('Escolha o cliente.'); gerarPeca(PECAS.find((p) => p.id === b.dataset.g)); });
-  $('#pecas').querySelectorAll('[data-t]').forEach((b) => b.onclick = () => desenhar(PECAS.find((p) => p.id === b.dataset.t)));
+  $('#pecas').querySelectorAll('[data-t]').forEach((b) => b.onclick = async () => { await carregarFontes(); desenhar(PECAS.find((p) => p.id === b.dataset.t)); });
   $('#pecas').querySelectorAll('[data-d]').forEach((b) => b.onclick = () => baixar(PECAS.find((p) => p.id === b.dataset.d)));
 }
-function redesenharTudo() { PECAS.forEach((p) => { if (IMG[p.id]) desenhar(p); }); }
+// fontes do Google só carregam quando usadas: garante antes de desenhar (senão a frase sai na letra padrão)
+async function carregarFontes() { const { serif, script } = fontes(); await Promise.all([`700 40px "${serif}"`, `400 40px "${script}"`, `600 40px "${script}"`, '700 20px Montserrat', '600 20px Montserrat'].map((f) => document.fonts.load(f).catch(() => null))); }
+async function redesenharTudo() { await carregarFontes(); PECAS.forEach((p) => { if (IMG[p.id]) desenhar(p); }); }
 function cobrir(x, img, dx, dy, dw, dh, fy = 0.5, fx = 0.5) {
   const k = Math.max(dw / img.naturalWidth, dh / img.naturalHeight); const sw = dw / k, sh = dh / k;
   const sx = (img.naturalWidth - sw) * fx, sy = (img.naturalHeight - sh) * fy;
@@ -220,7 +222,7 @@ function desenhar(p) {
   cobrir(x, ims[0], 0, 0, w, h, ladoTexto === 'topo' ? 0.7 : ladoTexto === 'baixo' ? 0.3 : 0.45, ladoTexto === 'esquerda' ? 0.75 : ladoTexto === 'direita' ? 0.25 : 0.5);
   if (larga) {
     const tw = w * 0.42; const g = ladoTexto === 'esquerda' ? x.createLinearGradient(0, 0, tw * 1.25, 0) : x.createLinearGradient(w, 0, w - tw * 1.25, 0);
-    g.addColorStop(0, rgba(c1, 0.94)); g.addColorStop(0.75, rgba(c1, 0.8)); g.addColorStop(1, rgba(c1, 0)); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    g.addColorStop(0, rgba(c1, 0.97)); g.addColorStop(0.7, rgba(c1, 0.93)); g.addColorStop(1, rgba(c1, 0)); x.fillStyle = g; x.fillRect(0, 0, w, h);
     const cx = ladoTexto === 'esquerda' ? tw / 2 + w * 0.02 : w - tw / 2 - w * 0.02;
     const alt = medirBloco(x, tw * 0.86, h); blocoTexto(x, cx, (h - alt) / 2, tw * 0.86, h);
   } else if (ladoTexto === 'baixo') {
