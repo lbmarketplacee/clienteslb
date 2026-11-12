@@ -88,6 +88,9 @@ const auth = getAuth(app); const db = getFirestore(app);
 const API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
 const SHOPEE = 'https://lb-shopee-gmv.vercel.app/api/shopee';
 const $ = (s) => document.querySelector(s);
+// dentro do sistema (aba da Central de Marketing) não mostra o cabeçalho próprio; só Lincoln e Carol usam (12/11/2026)
+const EMBED = new URLSearchParams(location.search).get('embed') === '1'; if (EMBED) document.querySelector('header').style.display = 'none';
+const DIRETORIA = ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br'];
 // mesmas medidas do lib/decoracao.js (lb-diretor-criativo)
 const PECAS = [
   { id: 'ml_capa', nome: 'Capa Mercado Livre', w: 1920, h: 100, larga: true },
@@ -109,6 +112,7 @@ const token = async () => auth.currentUser.getIdToken();
 $('#btnGoogle').onclick = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { $('#loginErro').textContent = 'Não entrou: ' + (e.code || e.message); } };
 onAuthStateChanged(auth, async (u) => {
   if (!u) { $('#login').style.display = ''; $('#app').style.display = 'none'; return; }
+  if (!DIRETORIA.includes(String(u.email || '').toLowerCase())) { $('#login').style.display = ''; $('#login').innerHTML = '<h3>Acesso restrito</h3><p class="dica">A Decoração da loja é só do Lincoln e da Carol.</p>'; $('#app').style.display = 'none'; return; }
   $('#login').style.display = 'none'; $('#app').style.display = '';
   const snap = await getDocs(collection(db, 'clientes'));
   CLIENTES = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.ativo !== false).sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
