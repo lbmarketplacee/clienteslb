@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decoração da loja — LB Marketplace</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&family=Great+Vibes&family=Playfair+Display:wght@500;700&family=Montserrat:wght@500;700;800&family=Dancing+Script:wght@600&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#0f0e0b;--card:#18160f;--line:#2c281d;--text:#f3ecdc;--dim:#a39a85;--gold:#d4af37;--gold2:#b8902f;--ok:#4caf7d;--err:#e06b5c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:14px}
+header{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--line)}
+header h1{font-family:Oswald;font-weight:500;font-size:22px;margin:0;letter-spacing:.5px}header small{color:var(--dim)}
+header a{margin-left:auto;color:var(--dim);text-decoration:none;font-size:13px}
+main{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;padding:18px 22px;max-width:1500px;margin:0 auto}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.box h3{font-family:Oswald;font-weight:500;font-size:15px;margin:0 0 10px;color:var(--gold)}
+label{display:block;font-size:12px;color:var(--dim);margin:10px 0 4px}
+input[type=text],select,textarea{width:100%;background:#100f0a;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 10px;font:inherit}
+textarea{min-height:56px;resize:vertical}
+.cores{display:flex;gap:10px;align-items:center}.cores input[type=color]{width:46px;height:34px;border:0;background:none;padding:0}
+.btn{background:var(--gold);color:#16130b;border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
+.btn.sec{background:#2a261b;color:var(--text);font-weight:600}.btn:disabled{opacity:.5;cursor:default}
+.fotos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.fotos div{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#222}
+.fotos div.on{border-color:var(--gold)}.fotos img{width:100%;height:100%;object-fit:cover}
+.fotos div.on::after{content:'✓';position:absolute;top:3px;right:5px;color:var(--gold);font-weight:800}
+#logoPrev{max-height:70px;margin-top:6px;border-radius:8px;background:#fff;display:none}
+.pecas{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}
+.peca{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.peca.larga{grid-column:1/-1}
+.peca h4{margin:0 0 8px;font-size:13.5px;display:flex;gap:8px;align-items:center}.peca h4 span{color:var(--dim);font-weight:400;font-size:12px}
+.peca canvas{width:100%;height:auto;border-radius:6px;background:repeating-conic-gradient(#222 0 25%,#2a2a2a 0 50%) 0 0/16px 16px;display:block}
+.peca .acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.st{color:var(--dim);font-size:12.5px;margin-top:8px;min-height:18px}
+.st.err{color:var(--err)}
+#login{max-width:380px;margin:12vh auto;text-align:center}
+.topo-acoes{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.dica{font-size:12px;color:var(--dim);line-height:1.45;margin-top:8px}
+</style>
+</head>
+<body>
+<header><div><h1>DECORAÇÃO DA LOJA</h1><small>Capas e banners de Shopee, Mercado Livre e TikTok no estilo de cada cliente</small></div><a href="/">← voltar ao sistema</a></header>
+<div id="login" class="box" style="display:none"><h3>Entrar</h3><p class="dica">Use o login Google da equipe LB.</p><button class="btn" id="btnGoogle">Entrar com Google</button><div class="st err" id="loginErro"></div></div>
+<main id="app" style="display:none">
+  <section>
+    <div class="box">
+      <h3>1. Cliente</h3>
+      <select id="cliente"><option value="">Carregando…</option></select>
+      <label>Nome que aparece nas artes</label><input type="text" id="nome">
+      <label>Segmento</label><input type="text" id="segmento" placeholder="Ex.: moda feminina elegante">
+      <label>Frase (letra cursiva)</label><input type="text" id="frase" placeholder="Ex.: Roupas elegantes e empoderadas">
+      <label>Selo / chamada (opcional)</label><input type="text" id="selo" placeholder="Ex.: Novidades toda semana · Frete grátis">
+      <label>Estilo visual (o que a cliente pediu)</label><textarea id="estilo" placeholder="Ex.: delicado, tons terrosos, flores secas, boutique"></textarea>
+      <label>Cores da marca</label>
+      <div class="cores"><input type="color" id="cor1" value="#f1e7dc"><span class="dica">fundo</span><input type="color" id="cor2" value="#5b3f35"><span class="dica">texto</span><input type="color" id="cor3" value="#b08d57"><span class="dica">destaque</span></div>
+      <label>Letra do nome</label>
+      <select id="fonte"><option value="Playfair Display|Great Vibes">Elegante (serifada + cursiva)</option><option value="Cormorant Garamond|Dancing Script">Delicada</option><option value="Montserrat|Dancing Script">Moderna</option><option value="Montserrat|Montserrat">Esportiva / direta</option></select>
+    </div>
+    <div class="box" style="margin-top:12px">
+      <h3>2. Logo</h3>
+      <input type="file" id="logoFile" accept="image/*"><img id="logoPrev" alt="">
+      <label style="display:flex;gap:6px;align-items:center;color:var(--text)"><input type="checkbox" id="logoCirculo" checked> logo dentro de um círculo</label>
+    </div>
+    <div class="box" style="margin-top:12px">
+      <h3>3. Fotos dos produtos (até 4)</h3>
+      <div class="topo-acoes"><button class="btn sec" id="btnShopee">Puxar da Shopee</button><label class="btn sec" style="margin:0">Enviar fotos<input type="file" id="fotoFile" accept="image/*" multiple hidden></label></div>
+      <div class="fotos" id="fotos"></div>
+      <div class="dica">Marque as que a IA deve usar de referência (as peças aparecem nas modelos). Sem foto, a IA cria produtos do segmento.</div>
+    </div>
+  </section>
+  <section>
+    <div class="topo-acoes"><button class="btn" id="btnGerar">Gerar as 7 peças</button><button class="btn sec" id="btnZip" disabled>Baixar tudo (ZIP)</button><span class="st" id="stGeral"></span></div>
+    <div class="dica" style="margin-bottom:12px">A IA faz só a parte visual; nome, frase e logo são escritos pelo sistema, no tamanho exato. Mudou a frase ou a cor? Clique em <b>Atualizar texto</b> — não gasta IA. Custo: ~8 imagens por cliente.</div>
+    <div class="pecas" id="pecas"></div>
+  </section>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+const app = initializeApp({ apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", storageBucket: "lb-gestao-clientes.firebasestorage.app", messagingSenderId: "344033285587", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" });
+const auth = getAuth(app); const db = getFirestore(app);
+const API = 'https://lb-diretor-criativo.vercel.app/api/diretor-criativo';
+const SHOPEE = 'https://lb-shopee-gmv.vercel.app/api/shopee';
+const $ = (s) => document.querySelector(s);
+// mesmas medidas do lib/decoracao.js (lb-diretor-criativo)
+const PECAS = [
+  { id: 'ml_capa', nome: 'Capa Mercado Livre', w: 1920, h: 100, larga: true },
+  { id: 'ml_banner_g', nome: 'Banner Mercado Livre (largo)', w: 1920, h: 480, texto: 'esquerda', larga: true },
+  { id: 'ml_banner_p', nome: 'Banner Mercado Livre (pequeno)', w: 600, h: 338, texto: 'esquerda' },
+  { id: 'shopee_capa', nome: 'Capa Shopee', w: 1200, h: 518, texto: 'esquerda' },
+  { id: 'shopee_banner', nome: 'Banner Shopee', w: 1200, h: 518, texto: 'direita' },
+  { id: 'tiktok_capa', nome: 'Capa TikTok', w: 780, h: 720, texto: 'baixo' },
+  { id: 'tiktok_banner', nome: 'Banner TikTok', w: 1107, h: 1421, texto: 'topo' },
+];
+let CLIENTES = [], CLI = null, LOGO = null, FOTOS = [], IMG = {}; // IMG[peca] = [Image, Image?]
+
+const carregar = (src) => new Promise((ok, er) => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => ok(i); i.onerror = er; i.src = src; });
+const paraDataUrl = (blob) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
+async function reduzir(src, max = 900) { const i = await carregar(src); const k = Math.min(1, max / Math.max(i.naturalWidth, i.naturalHeight)); const c = document.createElement('canvas'); c.width = Math.round(i.naturalWidth * k); c.height = Math.round(i.naturalHeight * k); c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.88); }
+const token = async () => auth.currentUser.getIdToken();
+
+// ---------- login ----------
+$('#btnGoogle').onclick = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { $('#loginErro').textContent = 'Não entrou: ' + (e.code || e.message); } };
+onAuthStateChanged(auth, async (u) => {
+  if (!u) { $('#login').style.display = ''; $('#app').style.display = 'none'; return; }
+  $('#login').style.display = 'none'; $('#app').style.display = '';
+  const snap = await getDocs(collection(db, 'clientes'));
+  CLIENTES = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.ativo !== false).sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
+  $('#cliente').innerHTML = '<option value="">Escolha o cliente…</option>' + CLIENTES.map((c) => `<option value="${c.id}">${String(c.nome).replace(/</g, '')}</option>`).join('');
+  const q = new URLSearchParams(location.search).get('cliente'); if (q) { $('#cliente').value = q; escolher(); }
+  montarPecas();
+});
+
+// ---------- cliente ----------
+const PREF = (id) => 'lbDecor_' + id;
+$('#cliente').onchange = escolher;
+function escolher() {
+  CLI = CLIENTES.find((c) => c.id === $('#cliente').value) || null; FOTOS = []; LOGO = null; IMG = {}; $('#logoPrev').style.display = 'none'; desenharFotos(); montarPecas();
+  if (!CLI) return;
+  let p = {}; try { p = JSON.parse(localStorage.getItem(PREF(CLI.id)) || '{}'); } catch (e) {}
+  $('#nome').value = p.nome || CLI.nome || ''; $('#segmento').value = p.segmento || CLI.segmento || ''; $('#frase').value = p.frase || ''; $('#selo').value = p.selo || ''; $('#estilo').value = p.estilo || '';
+  ['cor1', 'cor2', 'cor3'].forEach((k) => { if (p[k]) $('#' + k).value = p[k]; }); if (p.fonte) $('#fonte').value = p.fonte;
+}
+function guardarPref() { if (!CLI) return; const p = {}; ['nome', 'segmento', 'frase', 'selo', 'estilo', 'cor1', 'cor2', 'cor3', 'fonte'].forEach((k) => p[k] = $('#' + k).value); try { localStorage.setItem(PREF(CLI.id), JSON.stringify(p)); } catch (e) {} }
+['nome', 'frase', 'selo', 'cor1', 'cor2', 'cor3', 'fonte'].forEach((k) => $('#' + k).addEventListener('change', () => { guardarPref(); redesenharTudo(); }));
+['segmento', 'estilo'].forEach((k) => $('#' + k).addEventListener('change', guardarPref));
+$('#logoCirculo').onchange = redesenharTudo;
+
+$('#logoFile').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; const u = await paraDataUrl(f); LOGO = await carregar(u); $('#logoPrev').src = u; $('#logoPrev').style.display = 'block'; redesenharTudo(); };
+$('#fotoFile').onchange = async (e) => { for (const f of [...e.target.files].slice(0, 8)) FOTOS.push({ src: await reduzir(await paraDataUrl(f)), on: FOTOS.filter((x) => x.on).length < 4 }); desenharFotos(); };
+function desenharFotos() { $('#fotos').innerHTML = FOTOS.map((f, i) => `<div class="${f.on ? 'on' : ''}" data-i="${i}"><img src="${f.src}"></div>`).join(''); $('#fotos').querySelectorAll('div').forEach((d) => d.onclick = () => { const f = FOTOS[d.dataset.i]; if (!f.on && FOTOS.filter((x) => x.on).length >= 4) return; f.on = !f.on; desenharFotos(); }); }
+$('#btnShopee').onclick = async () => {
+  if (!CLI) return alert('Escolha o cliente.');
+  const d = (await getDoc(doc(db, 'clientes', CLI.id))).data() || {};
+  if (!d.shopeeErpAccessToken) return alert('Esse cliente não tem a Shopee (ERP) conectada. Envie as fotos.');
+  $('#btnShopee').disabled = true; $('#btnShopee').textContent = 'Lendo…';
+  try {
+    const q = new URLSearchParams({ acao: 'catalogo_listar', app: 'erp', access_token: d.shopeeErpAccessToken, shop_id: d.shopeeErpShopId, offset: '0', status: 'NORMAL' });
+    const r = await (await fetch(SHOPEE + '?' + q, { headers: { Authorization: 'Bearer ' + await token() } })).json();
+    const itens = (r.itens || []).sort((a, b) => (b.vendas || 0) - (a.vendas || 0)).slice(0, 8);
+    for (const it of itens) { const u = it.foto || it.imagem || it.imagens?.[0]; if (!u) continue; try { const b = await (await fetch(u)).blob(); FOTOS.push({ src: await reduzir(await paraDataUrl(b)), on: FOTOS.filter((x) => x.on).length < 4 }); } catch (e) {} }
+    if (!itens.length) alert('Não achei anúncios ativos na Shopee dele.');
+  } catch (e) { alert('Erro: ' + e.message); }
+  $('#btnShopee').disabled = false; $('#btnShopee').textContent = 'Puxar da Shopee'; desenharFotos();
+};
+
+// ---------- IA ----------
+async function gerarFundo(peca, variante = 0) {
+  const body = { acao: 'decoracao_peca', peca, variante, loja: $('#nome').value, segmento: $('#segmento').value, estilo: $('#estilo').value, cores: [$('#cor1').value, $('#cor2').value, $('#cor3').value], imagens: FOTOS.filter((f) => f.on).map((f) => f.src) };
+  for (let t = 0; t < 2; t++) {
+    const r = await fetch(API, { method: 'POST', headers: { Authorization: 'Bearer ' + await token(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    if (j.ok && j.imagem) { registrarUso(); return carregar(j.imagem); }
+    if (t === 1) throw new Error(j.erro || ('erro ' + r.status));
+  }
+}
+function registrarUso() { try { const d = new Date(Date.now() - 3 * 3600000).toISOString(); addDoc(collection(db, 'iaUso'), { dia: d.slice(0, 10), mes: d.slice(0, 7), tipo: 'decoracao', fotos: 1, textos: 0, custoUSD: 0.134, custoBRL: 0.74, usuario: auth.currentUser.email, em: serverTimestamp() }); } catch (e) {} }
+
+async function gerarPeca(p) {
+  const st = document.querySelector(`#st_${p.id}`); st.className = 'st'; st.textContent = 'Gerando com IA…';
+  try {
+    IMG[p.id] = p.id === 'ml_capa' ? await Promise.all([gerarFundo(p.id, 0), gerarFundo(p.id, 1)]) : [await gerarFundo(p.id)];
+    desenhar(p); st.textContent = 'Pronto ✓';
+  } catch (e) { st.className = 'st err'; st.textContent = 'Falhou: ' + e.message; }
+  $('#btnZip').disabled = !Object.keys(IMG).length;
+}
+$('#btnGerar').onclick = async () => {
+  if (!CLI) return alert('Escolha o cliente.'); guardarPref();
+  $('#btnGerar').disabled = true; $('#stGeral').textContent = 'Gerando… (1 a 2 minutos)';
+  await document.fonts.ready;
+  const fila = [...PECAS]; await Promise.all([0, 1, 2].map(async () => { while (fila.length) await gerarPeca(fila.shift()); }));
+  $('#btnGerar').disabled = false; $('#stGeral').textContent = 'Pronto. Confira cada peça e gere de novo a que não gostar.';
+};
+
+// ---------- composição (texto e logo pelo sistema) ----------
+function montarPecas() {
+  $('#pecas').innerHTML = PECAS.map((p) => `<div class="peca${p.larga ? ' larga' : ''}"><h4>${p.nome} <span>${p.w}×${p.h}px</span></h4><canvas id="cv_${p.id}" width="${p.w}" height="${p.h}"></canvas>
+    <div class="acoes"><button class="btn sec" data-g="${p.id}">Gerar de novo</button><button class="btn sec" data-t="${p.id}">Atualizar texto</button><button class="btn sec" data-d="${p.id}">Baixar PNG</button></div><div class="st" id="st_${p.id}"></div></div>`).join('');
+  $('#pecas').querySelectorAll('[data-g]').forEach((b) => b.onclick = () => { if (!CLI) return alert('Escolha o cliente.'); gerarPeca(PECAS.find((p) => p.id === b.dataset.g)); });
+  $('#pecas').querySelectorAll('[data-t]').forEach((b) => b.onclick = () => desenhar(PECAS.find((p) => p.id === b.dataset.t)));
+  $('#pecas').querySelectorAll('[data-d]').forEach((b) => b.onclick = () => baixar(PECAS.find((p) => p.id === b.dataset.d)));
+}
+function redesenharTudo() { PECAS.forEach((p) => { if (IMG[p.id]) desenhar(p); }); }
+function cobrir(x, img, dx, dy, dw, dh, fy = 0.5, fx = 0.5) {
+  const k = Math.max(dw / img.naturalWidth, dh / img.naturalHeight); const sw = dw / k, sh = dh / k;
+  const sx = (img.naturalWidth - sw) * fx, sy = (img.naturalHeight - sh) * fy;
+  x.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+}
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+function fontes() { const [serif, script] = $('#fonte').value.split('|'); return { serif, script }; }
+function logo(x, cx, cy, d) {
+  if (!LOGO) return 0;
+  x.save();
+  if ($('#logoCirculo').checked) { x.beginPath(); x.arc(cx, cy, d / 2, 0, Math.PI * 2); x.fillStyle = '#fff'; x.shadowColor = 'rgba(0,0,0,.18)'; x.shadowBlur = d * 0.08; x.fill(); x.shadowBlur = 0; x.clip(); const k = Math.min(d * 0.86 / LOGO.naturalWidth, d * 0.86 / LOGO.naturalHeight); const w = LOGO.naturalWidth * k, h = LOGO.naturalHeight * k; x.drawImage(LOGO, cx - w / 2, cy - h / 2, w, h); }
+  else { const k = Math.min(d / LOGO.naturalWidth, d / LOGO.naturalHeight); const w = LOGO.naturalWidth * k, h = LOGO.naturalHeight * k; x.drawImage(LOGO, cx - w / 2, cy - h / 2, w, h); }
+  x.restore(); return d;
+}
+function textoAjustado(x, txt, fonte, peso, tamanho, larguraMax) { let s = tamanho; do { x.font = `${peso} ${s}px "${fonte}"`; if (x.measureText(txt).width <= larguraMax) break; s -= 1; } while (s > 8); return s; }
+// bloco de texto centralizado em (cx, cy) dentro da largura lw; altura de referência h
+function blocoTexto(x, cx, top, lw, h, comLogo = true) {
+  const { serif, script } = fontes(); const c2 = $('#cor2').value, c3 = $('#cor3').value;
+  const nome = $('#nome').value.trim(), frase = $('#frase').value.trim(), selo = $('#selo').value.trim();
+  let y = top; x.textAlign = 'center'; x.textBaseline = 'middle';
+  if (comLogo && LOGO) { const d = h * 0.30; logo(x, cx, y + d / 2, d); y += d + h * 0.05; }
+  if (nome) { const up = serif === 'Montserrat' ? nome.toUpperCase() : nome.toUpperCase(); const s = textoAjustado(x, up, serif, 700, h * 0.11, lw); x.fillStyle = c2; x.save(); x.letterSpacing = `${Math.round(s * 0.12)}px`; x.fillText(up, cx, y + s / 2); x.restore(); y += s * 1.25; }
+  if (frase) { const s = textoAjustado(x, frase, script, script === 'Montserrat' ? 600 : 400, h * 0.15, lw); x.fillStyle = c3; x.fillText(frase, cx, y + s / 2); y += s * 1.2; }
+  if (selo) { const s = textoAjustado(x, selo.toUpperCase(), 'Montserrat', 700, h * 0.045, lw * 0.9); x.font = `700 ${s}px Montserrat`; const tw = x.measureText(selo.toUpperCase()).width + s * 2; x.fillStyle = c2; x.beginPath(); x.roundRect(cx - tw / 2, y + s * 0.3, tw, s * 2, s); x.fill(); x.fillStyle = $('#cor1').value; x.fillText(selo.toUpperCase(), cx, y + s * 1.3); y += s * 2.6; }
+  return y - top;
+}
+function desenhar(p) {
+  const cv = document.querySelector('#cv_' + p.id); const x = cv.getContext('2d'); const { w, h } = p; const c1 = $('#cor1').value;
+  x.clearRect(0, 0, w, h); const ims = IMG[p.id]; if (!ims) return;
+  if (p.id === 'ml_capa') return capaMl(x, ims, w, h);
+  const ladoTexto = p.texto; const larga = ladoTexto === 'esquerda' || ladoTexto === 'direita';
+  cobrir(x, ims[0], 0, 0, w, h, ladoTexto === 'topo' ? 0.7 : ladoTexto === 'baixo' ? 0.3 : 0.45, ladoTexto === 'esquerda' ? 0.75 : ladoTexto === 'direita' ? 0.25 : 0.5);
+  if (larga) {
+    const tw = w * 0.42; const g = ladoTexto === 'esquerda' ? x.createLinearGradient(0, 0, tw * 1.25, 0) : x.createLinearGradient(w, 0, w - tw * 1.25, 0);
+    g.addColorStop(0, rgba(c1, 0.94)); g.addColorStop(0.75, rgba(c1, 0.8)); g.addColorStop(1, rgba(c1, 0)); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const cx = ladoTexto === 'esquerda' ? tw / 2 + w * 0.02 : w - tw / 2 - w * 0.02;
+    const alt = medirBloco(x, tw * 0.86, h); blocoTexto(x, cx, (h - alt) / 2, tw * 0.86, h);
+  } else if (ladoTexto === 'baixo') {
+    const bh = h * 0.34; const g = x.createLinearGradient(0, h, 0, h - bh * 1.3); g.addColorStop(0, rgba(c1, 0.95)); g.addColorStop(0.7, rgba(c1, 0.82)); g.addColorStop(1, rgba(c1, 0)); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const alt = medirBloco(x, w * 0.8, h * 0.75); blocoTexto(x, w / 2, h - bh / 2 - alt / 2 - h * 0.01, w * 0.8, h * 0.75);
+  } else {
+    const bh = h * 0.34; const g = x.createLinearGradient(0, 0, 0, bh * 1.3); g.addColorStop(0, rgba(c1, 0.95)); g.addColorStop(0.7, rgba(c1, 0.82)); g.addColorStop(1, rgba(c1, 0)); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const alt = medirBloco(x, w * 0.82, h * 0.55); blocoTexto(x, w / 2, Math.max(h * 0.03, bh / 2 - alt / 2), w * 0.82, h * 0.55);
+  }
+}
+function medirBloco(x, lw, h) { const c = document.createElement('canvas').getContext('2d'); return blocoTexto(c, 0, 0, lw, h); }
+// capa do ML (1920×100): blocos — cena A | logo + nome | cena B | frase — cada um com a proporção dele, sem esticar
+function capaMl(x, ims, w, h) {
+  const c1 = $('#cor1').value, c2 = $('#cor2').value, c3 = $('#cor3').value; const { serif, script } = fontes();
+  const B = [{ t: 'cena', i: 0, w: 560 }, { t: 'logo', w: 360 }, { t: 'cena', i: 1, w: 560 }, { t: 'frase', w: 440 }];
+  let px = 0;
+  for (const b of B) {
+    if (b.t === 'cena') cobrir(x, ims[b.i] || ims[0], px, 0, b.w, h, 0.42);
+    else { const g = x.createLinearGradient(px, 0, px + b.w, 0); g.addColorStop(0, c1); g.addColorStop(1, rgba(c1, 0.92)); x.fillStyle = g; x.fillRect(px, 0, b.w, h); }
+    if (b.t === 'logo') {
+      const d = LOGO ? logo(x, px + 56, h / 2, 76) : 0; x.textAlign = d ? 'left' : 'center'; x.textBaseline = 'middle';
+      const nome = $('#nome').value.trim().toUpperCase(); const lw = d ? b.w - 120 : b.w - 30; const s = textoAjustado(x, nome, serif, 700, 34, lw);
+      x.fillStyle = c2; x.save(); x.letterSpacing = `${Math.round(s * 0.12)}px`; x.fillText(nome, d ? px + 104 : px + b.w / 2, h / 2 + (($('#segmento').value.trim()) ? -7 : 0)); x.restore();
+      const seg = $('#segmento').value.trim(); if (seg) { const s2 = textoAjustado(x, seg.toUpperCase(), 'Montserrat', 600, 11, lw); x.fillStyle = c3; x.save(); x.letterSpacing = '3px'; x.fillText(seg.toUpperCase(), d ? px + 104 : px + b.w / 2, h / 2 + s / 2 + 6); x.restore(); }
+    }
+    if (b.t === 'frase') {
+      const frase = $('#frase').value.trim() || $('#nome').value.trim(); x.textAlign = 'center'; x.textBaseline = 'middle';
+      const s = textoAjustado(x, frase, script, script === 'Montserrat' ? 700 : 400, 46, b.w - 40); x.fillStyle = c3; x.fillText(frase, px + b.w / 2, h / 2 - ($('#selo').value.trim() ? 8 : 0));
+      const selo = $('#selo').value.trim(); if (selo) { const s3 = textoAjustado(x, selo.toUpperCase(), 'Montserrat', 600, 11, b.w - 50); x.fillStyle = c2; x.save(); x.letterSpacing = '2px'; x.fillText(selo.toUpperCase(), px + b.w / 2, h / 2 + s / 2 + 2); x.restore(); }
+    }
+    px += b.w;
+  }
+}
+// ---------- download ----------
+const nomeArq = (p) => `${($('#nome').value || 'loja').replace(/[^\w\- ]/g, '').trim().replace(/\s+/g, '-')}_${p.id}_${p.w}x${p.h}.png`;
+function baixar(p) { if (!IMG[p.id]) return; document.querySelector('#cv_' + p.id).toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = nomeArq(p); a.click(); }, 'image/png'); }
+$('#btnZip').onclick = async () => {
+  const z = new JSZip(); for (const p of PECAS) { if (!IMG[p.id]) continue; const b = await new Promise((ok) => document.querySelector('#cv_' + p.id).toBlob(ok, 'image/png')); z.file(nomeArq(p), b); }
+  const blob = await z.generateAsync({ type: 'blob' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `decoracao_${($('#nome').value || 'loja').replace(/\s+/g, '-')}.zip`; a.click();
+};
+</script>
+</body>
+</html>
