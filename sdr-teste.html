@@ -49,23 +49,39 @@ const auth = getAuth(app);
 const $ = (s) => document.querySelector(s);
 let cliente = null;
 onAuthStateChanged(auth, (u) => { if (!u) { $('#st').innerHTML = '<button class="btn" id="entrar">Entrar com Google</button>'; $('#entrar').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()); } else $('#st').textContent = 'Pronto. Clique em "Falar com a Lia".'; });
+let callId = null;
 $('#ligar').onclick = async () => {
   try {
-    $('#ligar').disabled = true; $('#st').textContent = 'Conectando…'; $('#conv').innerHTML = '';
-    const t = await auth.currentUser.getIdToken();
-    const q = new URLSearchParams({ acao: 'web_teste', nome: $('#nome').value, tipo: $('#tipo').value, onde: $('#onde').value, ja: $('#ja').value });
-    const r = await (await fetch('https://lb-shopee-gmv.vercel.app/api/sdr-voz?' + q, { headers: { Authorization: 'Bearer ' + t } })).json();
-    if (!r.ok) throw new Error(r.erro || 'não criou a chamada');
-    const { RetellWebClient } = await import('https://cdn.jsdelivr.net/npm/retell-client-js-sdk/+esm');
-    cliente = new RetellWebClient();
-    cliente.on('call_started', () => { $('#st').textContent = '🟢 Em chamada — pode falar.'; $('#parar').style.display = ''; });
-    cliente.on('call_ended', () => { $('#st').textContent = 'Chamada encerrada.'; $('#parar').style.display = 'none'; $('#ligar').disabled = false; });
-    cliente.on('error', (e) => { $('#st').textContent = 'Erro: ' + (e?.message || e); cliente?.stopCall(); });
-    cliente.on('update', (u) => { const tr = u?.transcript || []; $('#conv').innerHTML = tr.map((x) => `<div class="fala ${x.role === 'agent' ? 'agent' : 'user'}"><small>${x.role === 'agent' ? 'Lia' : 'Você'}</small>${String(x.content || '').replace(/</g, '&lt;')}</div>`).join(''); });
-    await cliente.startCall({ accessToken: r.accessToken });
+    $('#ligar').disabled = true; $('#st').textContent = 'Conectando… (o navegador vai pedir o microfone)'; $('#conv').innerHTML = '';
+    const API = 'https://lb-shopee-gmv.vercel.app/api/sdr-voz';
+    const { RetellClient } = await import('https://cdn.jsdelivr.net/npm/retell-client-js-sdk@3.0.4/+esm');
+    // a chave da Retell fica no servidor: o SDK cria a chamada pelo nosso /api/sdr-voz?acao=web_proxy (com o login do sistema)
+    const client = new RetellClient({ key: 'unused', fetch: async (url, init) => {
+      if (!/create-web-call/.test(String(url))) return fetch(url, init);
+      const t = await auth.currentUser.getIdToken();
+      return fetch(API + '?acao=web_proxy', { ...init, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t } });
+    } });
+    cliente = client.createWebCall({
+      agent_id: 'definido-no-servidor',
+      retell_llm_dynamic_variables: { nome: $('#nome').value, tipo_negocio: $('#tipo').value, onde_vende: $('#onde').value, ja_vende: $('#ja').value },
+      hooks: {
+        onStatus: (s) => { if (s === 'live') { $('#st').textContent = '🟢 Em chamada — pode falar.'; $('#parar').style.display = ''; } },
+        onEnd: () => { $('#st').textContent = 'Chamada encerrada. Buscando a transcrição…'; $('#parar').style.display = 'none'; $('#ligar').disabled = false; setTimeout(transcricao, 4000); },
+        onError: (e) => { $('#st').textContent = 'Erro: ' + (e?.message || e); $('#ligar').disabled = false; $('#parar').style.display = 'none'; },
+      },
+    });
+    await cliente.ready; callId = cliente.callId;
   } catch (e) { $('#st').textContent = 'Não conectou: ' + e.message; $('#ligar').disabled = false; }
 };
-$('#parar').onclick = () => cliente?.stopCall();
+async function transcricao(tent = 0) {
+  if (!callId) return;
+  const t = await auth.currentUser.getIdToken();
+  const r = await (await fetch('https://lb-shopee-gmv.vercel.app/api/sdr-voz?acao=chamada&id=' + encodeURIComponent(callId), { headers: { Authorization: 'Bearer ' + t } })).json();
+  if (!r.transcricao && tent < 5) return setTimeout(() => transcricao(tent + 1), 4000);
+  $('#conv').innerHTML = String(r.transcricao || '').split('\n').filter(Boolean).map((l) => { const ag = /^Agent:/i.test(l); return `<div class="fala ${ag ? 'agent' : 'user'}"><small>${ag ? 'Lia' : 'Você'}</small>${l.replace(/^(Agent|User):\s*/i, '').replace(/</g, '&lt;')}</div>`; }).join('') || '<div class="dim">Sem transcrição.</div>';
+  $('#st').textContent = 'Chamada encerrada.' + (r.duracaoMs ? ` Duração ${Math.round(r.duracaoMs / 1000)}s.` : '') + (r.custo != null ? ` Custo US$ ${(r.custo / 100).toFixed(2)}.` : '') + (r.resumo ? ' Resumo: ' + r.resumo : '');
+}
+$('#parar').onclick = () => cliente?.end();
 </script>
 </body>
 </html>
