@@ -15014,7 +15014,7 @@ function ppItemHtml(p){const x=p.produto||{};const quando=p.criadoEm?.toDate?p.c
         ${p.status==='novo'?`<button class="btn btn-ghost btn-sm" onclick="event.preventDefault();window.__ppStatus('${p.id}','andamento')">Pegar</button>`:''}
         ${p.status!=='feito'?`<button class="btn btn-ghost btn-sm" onclick="event.preventDefault();window.__ppStatus('${p.id}','feito')">Marcar publicado</button>`:''}
         ${p.status!=='descartado'&&p.status!=='feito'?`<button class="btn btn-ghost btn-sm" onclick="event.preventDefault();window.__ppStatus('${p.id}','descartado')">Descartar</button>`:''}</div></div></summary>
-    <div class="pp-fotos">${(x.fotos||[]).map(f=>`<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" loading="lazy">${f.cor?`<span>${esc(f.cor)}</span>`:''}</a>`).join('')}</div>
+    <div class="pp-fotos">${(x.fotos||[]).map(f=>`<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" loading="lazy">${f.cor?`<span>${esc(f.cor)}</span>`:''}</a>`).join('')}</div>${(x.videos||[]).length?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0">${x.videos.map((v,i)=>`<div style="text-align:center"><video src="${esc(v.url)}" controls preload="metadata" playsinline style="width:170px;max-height:240px;border-radius:10px;background:#000"></video><div><a class="btn-link" href="${esc(v.url)}" target="_blank" rel="noopener" download>Baixar vídeo ${i+1}</a></div></div>`).join('')}</div>`:''}
     <div style="font-size:13px;white-space:pre-wrap;margin-bottom:8px">${esc(x.descricao)}</div>
     <div class="pp-dados">
       <div><b>Receber por peça:</b> ${fmtR(x.liquido)}${x.precoAtual?` (vende hoje a ${fmtR(x.precoAtual)})`:''}</div>
