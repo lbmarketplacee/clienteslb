@@ -14321,9 +14321,15 @@ async function migTitulo(texto,usados){
     t=String(r.titulo||'').replace(/\s+/g,' ').trim();if(t&&!usados.has(t.toLowerCase()))break;}
   if(t)usados.add(t.toLowerCase());return t;
 }
+/* baixa a foto com novas tentativas: o CDN da Shopee devolve 503/504 quando baixamos muitas seguidas (AQUARIOS 13/11/2026) */
+async function fotoCarregar(url){
+  const base=String(url).replace(/^http:/,'https:'),id=(base.match(/\/file\/([^/?#]+)/)||[])[1];
+  const urls=[base,...(id&&/shopee|susercontent/.test(base)?[`https://down-br.img.susercontent.com/file/${id}`]:[]),base,base];let b=null,st='';
+  for(const [k,x] of urls.entries()){if(k>1)await new Promise(r=>setTimeout(r,2000*k));try{const r=await fetch(x);st=r.status;if(r.ok){const bl=await r.blob();if(/^image\//.test(bl.type)||bl.size>2000){b=bl;break;}}}catch(e){st=e.message;}}
+  if(!b)throw new Error(`foto não baixou (${st}): …${base.slice(-30)}`);const u=URL.createObjectURL(b);
+  return new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>err(new Error('foto não abriu: …'+base.slice(-30)));i.src=u;});}
 async function migJpg(url){
-  const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
-  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
+  const img=await fotoCarregar(url);
   const L=Math.min(1200,Math.max(img.width,img.height,500));const cv=document.createElement('canvas');cv.width=cv.height=L;const g=cv.getContext('2d');
   g.fillStyle='#fff';g.fillRect(0,0,L,L);const e=Math.min(L/img.width,L/img.height);g.drawImage(img,(L-img.width*e)/2,(L-img.height*e)/2,img.width*e,img.height*e);URL.revokeObjectURL(u);
   return cv.toDataURL('image/jpeg',0.92);
@@ -14543,8 +14549,7 @@ function sheinSemBorda(img){
   return{x:l/k,y:t/k,w:(W-l-r)/k,h:(H-t-b)/k};
 }
 async function sheinJpg(url,formato='retrato'){
-  const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
-  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
+  const img=await fotoCarregar(url);
   const [W,H]=typeof formato==='number'?[formato,formato]:formato==='quadrada'?[1200,1200]:[1340,1785];
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const s=sheinSemBorda(img);
