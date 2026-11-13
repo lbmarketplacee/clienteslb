@@ -275,6 +275,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13px}
       <section class="pg" id="pg-funil"></section>
       <section class="pg" id="pg-agenda"></section>
       <section class="pg" id="pg-resp"></section>
+      <section class="pg" id="pg-prec"></section>
       <section class="pg" id="pg-camp"></section>
       <section class="pg" id="pg-equipe"></section>
     </div>
@@ -333,6 +334,7 @@ const PAGINAS = {
   funil: { rot: 'Funil', sub: 'CRM de leads', ic: 'funil', papeis: ['gestor', 'sdr', 'vendedor'] },
   agenda: { rot: 'Agenda', sub: 'Reuniões e horários livres', ic: 'agenda', papeis: ['gestor', 'sdr', 'vendedor'] },
   resp: { rot: 'Respostas', sub: 'Tudo que chegou pelo formulário', ic: 'lista', papeis: ['gestor', 'sdr'] },
+  prec: { rot: 'LB Precifica', sub: 'Cadastros da calculadora grátis', ic: 'users', papeis: ['gestor', 'sdr'] },
   camp: { rot: 'Campanhas', sub: 'De onde vêm os leads', ic: 'mega', papeis: ['gestor', 'sdr'] },
   equipe: { rot: 'Equipe', sub: 'Produtividade de cada um', ic: 'time', papeis: ['gestor'] },
 };
@@ -435,7 +437,7 @@ function badges() {
 let rT; function render() { clearTimeout(rT); rT = setTimeout(renderJa, 60); }
 function renderJa() {
   badges();
-  const f = { dia: rDia, dash: rDash, chat: rChat, funil: rFunil, agenda: rAgenda, resp: rResp, camp: rCamp, equipe: rEquipe }[S.pagina];
+  const f = { dia: rDia, dash: rDash, chat: rChat, funil: rFunil, agenda: rAgenda, resp: rResp, prec: rPrec, camp: rCamp, equipe: rEquipe }[S.pagina];
   try { f && f(); } catch (e) { console.error(e); }
   if ($('#drawer').classList.contains('on') && S.fichaId) rFicha();
 }
@@ -1650,6 +1652,76 @@ function respCsv() {
   const linhas = [['Chegou', 'Nome', 'WhatsApp', 'E-mail', 'Tipo de negócio', 'Onde vende', 'Já vende nos marketplaces', 'Formulário', 'Veio de', 'Status', 'Etapa', 'Responsável'].map(c).join(';')]
     .concat(lst.map(({ l, r }) => [M.criadoMs(l) ? new Date(M.criadoMs(l)).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '', l.nome, l.whatsapp, l.email, r.tipo, r.onde, r.vende, r.form, r.fonte, r.incompleto ? 'Parou no meio' : 'Completo', etapaRot(l.stage), l.donoNome].map(c).join(';')));
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })); a.download = `respostas-formulario-${hoje()}.csv`; a.click();
+}
+
+// ================= LB PRECIFICA (13/11/2026, Lincoln: calculadora grátis em novembro pra captar leads) =================
+// Todo cadastro do Precifica fica em `precificaLeads`. Quem fatura a partir de R$ 20 mil já entra sozinho no funil (quente).
+S.prec = S.prec || { q: '', f: 'todos', lista: null, erro: '' };
+const PREC_MP = { shopee: 'Shopee', ml: 'Mercado Livre', tiktok: 'TikTok Shop', shein: 'SHEIN', amazon: 'Amazon', outro: 'Outro' };
+async function precCarregar() {
+  S.prec.lista = null; S.prec.erro = ''; precCorpo();
+  try { const sn = await getDocs(collection(db, 'precificaLeads')); S.prec.lista = sn.docs.map((d) => ({ id: d.id, ...d.data() })); }
+  catch (e) { S.prec.erro = e.message; }
+  precCorpo();
+}
+const precMs = (x) => x.criadoEm?.toMillis ? x.criadoEm.toMillis() : (x.createdDate ? Date.parse(x.createdDate + 'T12:00:00-03:00') : 0);
+function precFiltrada() {
+  const f = S.prec, q = f.q.trim().toLowerCase(), h = hoje();
+  return (f.lista || []).filter((x) => (f.f === 'todos' || (f.f === 'quente' ? x.quente : f.f === 'fora' ? !x.crmLeadId : f.f === 'hoje' ? x.createdDate === h : true))
+    && (!q || [x.nome, x.whatsapp, x.email, x.loja, x.segmento].join(' ').toLowerCase().includes(q))).sort((a, b) => precMs(b) - precMs(a));
+}
+function rPrec() {
+  const el = $('#pg-prec');
+  if (!el.dataset.pronto) {
+    el.dataset.pronto = '1';
+    el.innerHTML = `<div class="card painel"><div class="lin" style="flex-wrap:wrap;gap:8px;align-items:center">
+      <input type="search" id="precQ" placeholder="Buscar nome, WhatsApp, e-mail, loja…" style="flex:1;min-width:200px">
+      <select id="precF" style="width:auto;flex:0 0 auto"><option value="todos">Todos</option><option value="hoje">Chegaram hoje</option><option value="quente">Quentes (R$ 20 mil+)</option><option value="fora">Fora do funil</option></select>
+      <button class="btn sm" id="precRec">Atualizar</button><button class="btn sm ouro" id="precCsv">Baixar planilha</button></div></div>
+    <div id="precKpi" class="grid g4" style="margin-top:12px"></div>
+    <div class="card painel" style="margin-top:12px"><div class="tabw"><table class="tb"><thead><tr><th>Chegou</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Loja</th><th>Segmento</th><th>Onde vende</th><th>Faturamento</th><th>Funil</th></tr></thead><tbody id="precTb"></tbody></table></div></div>
+    <p style="font-size:12px;color:var(--dim)">Quem fatura a partir de R$ 20 mil/mês entra sozinho no funil de vendas (etiqueta "LB Precifica"). Os outros ficam aqui — dá pra mandar pro funil um a um.</p>`;
+    $('#precQ').addEventListener('input', () => { S.prec.q = $('#precQ').value; precCorpo(); });
+    $('#precF').addEventListener('change', () => { S.prec.f = $('#precF').value; precCorpo(); });
+    $('#precRec').addEventListener('click', precCarregar); $('#precCsv').addEventListener('click', precCsv);
+    el.addEventListener('click', (ev) => { const b = ev.target.closest('[data-precfunil]'); if (b) precProFunil(b.dataset.precfunil, b); });
+    precCarregar(); return;
+  }
+  precCorpo();
+}
+function precCorpo() {
+  if (!$('#precTb')) return;
+  if (S.prec.erro) { $('#precTb').innerHTML = `<tr><td colspan="9"><div class="vazio">Não li os cadastros: ${esc(S.prec.erro)}</div></td></tr>`; return; }
+  if (!S.prec.lista) { $('#precTb').innerHTML = '<tr><td colspan="9"><div class="carreg">Lendo os cadastros…</div></td></tr>'; return; }
+  const todos = S.prec.lista, h = hoje(), sem = M.somaDias(h, -6);
+  $('#precKpi').innerHTML = kpi('c-ou', 'users', 'Cadastros', todos.length, 'desde o lançamento') + kpi('c-az', 'agenda', 'Hoje', todos.filter((x) => x.createdDate === h).length, `${todos.filter((x) => x.createdDate >= sem).length} nos últimos 7 dias`)
+    + kpi('c-ve', 'trofeu', 'Quentes', todos.filter((x) => x.quente).length, 'faturam R$ 20 mil+') + kpi('c-vm', 'funil', 'No funil', todos.filter((x) => x.crmLeadId).length, 'viraram lead de vendas');
+  const dt = (x) => { const m = precMs(x); return m ? new Date(m).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'; };
+  const tel = (t) => String(t || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
+  $('#precTb').innerHTML = precFiltrada().slice(0, 400).map((x) => `<tr><td>${dt(x)}</td><td><b>${esc(x.nome || '—')}</b></td><td>${x.whatsapp ? `<a href="https://wa.me/55${tel(x.whatsapp)}" target="_blank">${esc(x.whatsapp)}</a>` : '—'}</td><td>${esc(x.email || '')}</td><td>${esc(x.loja || '—')}</td><td>${esc(x.segmento || '—')}</td><td style="white-space:normal;min-width:140px">${esc((x.marketplaces || []).map((m) => PREC_MP[m] || m).join(', ') || '—')}</td><td>${x.quente ? `<span class="tag ve">${esc(x.faturamentoTxt || '')}</span>` : esc(x.faturamentoTxt || '—')}</td><td>${x.crmLeadId ? `<span class="tag ve" style="cursor:pointer" data-ficha="${esc(x.crmLeadId)}">no funil · abrir</span>` : `<button class="btn sm ouro" data-precfunil="${x.id}">Mandar pro funil</button>`}</td></tr>`).join('') || '<tr><td colspan="9"><div class="vazio">Nenhum cadastro com esse filtro.</div></td></tr>';
+}
+async function precProFunil(id, btn) {
+  const x = (S.prec.lista || []).find((y) => y.id === id); if (!x) return;
+  btn.disabled = true; btn.textContent = 'Mandando…';
+  try {
+    const h = hoje(), t = chaveTel(x.whatsapp), ja = t && S.leads.find((l) => chaveTel(l.whatsapp) === t);
+    const nota = { tipo: 'nota', quando: Date.now(), por: S.nome, nota: `Cadastro do LB Precifica. Faturamento: ${x.faturamentoTxt || '—'}. Vende em: ${(x.marketplaces || []).map((m) => PREC_MP[m] || m).join(', ') || '—'}.` };
+    let crmId;
+    if (ja) { crmId = ja.id; await updateDoc(doc(db, 'crmLeads', ja.id), { etiquetas: arrayUnion('LB Precifica'), atividades: arrayUnion(nota) }); }
+    else {
+      const onde = (x.marketplaces || []).map((m) => PREC_MP[m] || m).join(', ');
+      const ref = await addDoc(collection(db, 'crmLeads'), { nome: x.nome || 'Lead do Precifica', whatsapp: x.whatsapp || '', email: x.email || '', empresa: x.loja || '', segmento: x.segmento || '', stage: 'novo', funil: 'vendas', origem: 'LB Precifica', etiquetas: ['LB Precifica'], faturamento: x.faturamentoTxt || '', canalVendas: onde, vendeMarketplace: x.faturamento && x.faturamento !== 'ainda_nao_vendo' ? 'sim' : 'nao', donoEmail: S.email, donoNome: S.nome, atividades: [{ ...nota, tipo: 'criado' }], atualizadoEm: h, criadoEm: serverTimestamp(), createdDate: h });
+      crmId = ref.id;
+    }
+    await updateDoc(doc(db, 'precificaLeads', id), { crmLeadId: crmId, status: 'no_funil', mandadoPor: S.email, mandadoEm: Date.now() });
+    x.crmLeadId = crmId; toast(ja ? 'Já estava no funil — marquei a etiqueta.' : 'Lead criado no funil.'); precCorpo();
+  } catch (e) { btn.disabled = false; btn.textContent = 'Mandar pro funil'; toast('Erro: ' + e.message); }
+}
+function precCsv() {
+  const c = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const linhas = [['Chegou', 'Nome', 'WhatsApp', 'E-mail', 'Loja', 'Segmento', 'Onde vende', 'Faturamento', 'Quente', 'No funil'].map(c).join(';')]
+    .concat(precFiltrada().map((x) => [precMs(x) ? new Date(precMs(x)).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '', x.nome, x.whatsapp, x.email, x.loja, x.segmento, (x.marketplaces || []).map((m) => PREC_MP[m] || m).join(', '), x.faturamentoTxt, x.quente ? 'sim' : 'não', x.crmLeadId ? 'sim' : 'não'].map(c).join(';')));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })); a.download = `lb-precifica-cadastros-${hoje()}.csv`; a.click();
 }
 
 function rCamp() {
