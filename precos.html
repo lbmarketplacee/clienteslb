@@ -92,6 +92,8 @@ async function iniciar(){
     const r=await fetch(`${API}?acao=precos_lista&t=${encodeURIComponent(T)}`);const d=await r.json();
     if(!d.ok)throw new Error(d.erro||t('erro'));
     L=d.idioma==='es'?'es':'pt';document.documentElement.lang=L==='es'?'es':'pt-BR';$('#tit').firstChild.textContent=t('tit');document.title=t('tit')+' — LB Marketplace';$('#loja').textContent=d.loja;ITENS=d.itens||[];
+    // variações em ordem: cor, depois tamanho (PP, P, M, G, GG, G1…) — 13/11/2026
+    const OT=['PP','P','M','G','GG','XG','G1','G2','G3','G4'];const ot=x=>{const i=OT.indexOf(String(x||'').trim().toUpperCase());return i<0?99:i};for(const i of ITENS)if(i.variacoes?.length)i.variacoes.sort((a,b)=>{const[ca,ta]=vNome(a).split(',');const[cb,tb]=vNome(b).split(',');return (ca||'').localeCompare(cb||'','pt-BR')||ot(ta)-ot(tb)});
     for(const[ch,v]of Object.entries(d.respostas||{}))R[ch]={custo:v.custo!=null?String(v.custo).replace('.',','):'',receber:v.receber!=null?String(v.receber).replace('.',','):'',nota:v.nota||'',estoque:Object.fromEntries(Object.entries(v.estoque||{}).map(([k,q])=>[k,String(q)]))};
     try{const l=JSON.parse(localStorage.getItem(CHAVE)||'null');if(l){Object.assign(R,l.R||{});OBS=l.OBS||''}}catch(e){}
     if(!ITENS.length){$('#app').innerHTML=`<div class="msg err">${t('vazio')}</div>`;return}
