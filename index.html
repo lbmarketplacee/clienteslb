@@ -6021,7 +6021,7 @@ function ljAjHtml(){const l=ljAjLinha();if(!l)return'';const s=l.sh;const vars=s
     <div id="ljAjPrecos" class="lj-aj-precos">${ljAjPrecos()}</div>`}
     <div class="lj-aj-lbl" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Estoque${s.temVariacao?' por variação':''} — vale pra todos os marketplaces</span><button class="btn btn-ghost btn-sm" style="color:#e5484d" onclick="window.__ljAjZerarCampos()">Zerar todas</button></div>
     <div class="lj-aj-est">${vars.map(v=>`<label><span title="${esc(v.nome||'')}">${esc(v.nome||'Estoque')}</span><input type="number" min="0" value="${lj.aj.est[String(v.id)]??0}" oninput="window.__ljAjEst('${v.id}',this.value)" class="${(lj.aj.est[String(v.id)]??0)<=0?'zero':''}"></label>`).join('')}</div>
-    ${s.temVariacao?ljNovaHtml():''}
+    ${s.temVariacao?ljNovaHtml():''}${s.temVariacao?ljFotoHtml():''}
     <div class="lj-aj-passos"><b>O que o sistema vai fazer</b>
       <div><span>1</span>Shopee: tira só este produto das relâmpagos agendadas (as outras peças continuam)</div>
       <div><span>2</span>Shopee: novo preço no desconto fixo (cheio ×1,30) e o estoque novo</div>
@@ -6107,6 +6107,72 @@ window.__ljAjAplicar=async()=>{
   if(res.some(x=>/^✓ Shopee desconto/.test(x))){s.precoMin=s.precoMax=pSh.venda;(s.variacoes||[]).forEach(v=>{v.atual=pSh.venda;v.cheio=pSh.cheio;});}
   lj.aj.res={ok:tudoOk,msg:res.join(' · ')};if(btn){btn.disabled=false;btn.textContent='Aplicar';}
   ljRender();if(tudoOk)showToast('Ajuste aplicado. Clique em Recarregar pra ver os números novos.');};
+
+// ---- Trocar a foto de UMA opção (cor/estampa) nos 3 marketplaces (13/11/2026, Lincoln: "faça agora pro sistema") ----
+// Shopee: produto_upload_imagem → variacao_renomear {imagens:{opção:id}} (update_tier_variation, confirmado ao vivo 12/11 na BRK)
+// TikTok: produto_imagem ATTRIBUTE_IMAGE → produto_editar {foto_cor} (só onde a opção já tem foto; vai pra análise)
+// ML: anúncio de 1 cor (User Products) → foto nova na frente; anúncio antigo com variações → fotosVariacoes da variação dessa cor
+function ljFotoHtml(){const f=lj.aj.foto;
+  if(!f)return `<button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="window.__ljFotoAbrir()">Trocar a foto de uma opção (cor, estampa…)</button>`;
+  if(f.carregando)return `<div class="lj-aj-nova">Lendo as opções do anúncio…</div>`;
+  if(!f.opcoes)return `<div class="lj-aj-nova"><span class="at">${esc(f.erro||'Não deu pra ler as opções.')}</span> <button class="btn btn-ghost btn-sm" onclick="window.__ljFotoCampo('fechar')">Fechar</button></div>`;
+  const l=ljAjLinha();const prev=f.arquivo?URL.createObjectURL(f.arquivo):null;
+  return `<div class="lj-aj-nova"><h4>Trocar a foto de uma opção</h4>
+    <div class="lin"><label>${esc(f.nomeTier)}<select onchange="window.__ljFotoCampo('sel',this.value,true)">${f.opcoes.map(o=>`<option ${f.sel===o.nome?'selected':''}>${esc(o.nome)}</option>`).join('')}</select></label>
+      <label>Foto nova<input type="file" accept="image/*" onchange="window.__ljFotoCampo('arquivo',this.files[0],true)"></label></div>
+    <div style="display:flex;gap:14px;align-items:center;margin:6px 0">${(()=>{const o=f.opcoes.find(x=>x.nome===f.sel);return o?.url?`<div style="text-align:center"><img src="${esc(o.url)}" style="width:74px;height:74px;object-fit:cover;border-radius:8px"><small class="lj-sub" style="display:block">hoje</small></div>`:'';})()}
+      ${prev?`<span style="font-size:20px">→</span><div style="text-align:center"><img src="${prev}" style="width:74px;height:74px;object-fit:cover;border-radius:8px"><small class="lj-sub" style="display:block">nova</small></div>`:''}</div>
+    <div class="lj-nova-mps"><span class="on">${mpIco('shopee',15)} Shopee</span>
+      ${l?.tt?`<label><input type="checkbox" ${f.tt!==false?'checked':''} onchange="window.__ljFotoCampo('tt',this.checked)">${mpIco('tiktok',15)} TikTok</label>`:''}
+      ${l?.ml?`<label><input type="checkbox" ${f.ml!==false?'checked':''} onchange="window.__ljFotoCampo('ml',this.checked)">${mpIco('ml',15)} Mercado Livre</label>`:''}</div>
+    ${f.erro?`<div class="at" style="font-size:12px;margin:6px 0">${esc(f.erro)}</div>`:''}
+    ${f.res?`<div class="lj-alerta ${f.res.ok?'':'ruim'}" style="margin-top:8px"><span class="lj-dot ${f.res.ok?'ok':'ruim'}"></span><span><b>${f.res.ok?'Foto trocada':'Nem tudo deu certo'}</b><small>${esc(f.res.msg)}</small></span></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn btn-gold btn-sm" id="ljFotoBtn" onclick="window.__ljFotoTrocar()" ${isLincoln()&&f.arquivo?'':'disabled'} ${isLincoln()?'':'title="Só Lincoln e Carol"'}>Trocar foto</button><button class="btn btn-ghost btn-sm" onclick="window.__ljFotoCampo('fechar',0,true)">Fechar</button></div>
+    <small class="lj-sub" style="display:block;margin-top:6px">Shopee troca na hora. TikTok: a edição passa pela análise (a versão de hoje continua à venda). Mercado Livre: a foto nova entra na frente nos anúncios dessa cor.</small></div>`;}
+window.__ljFotoCampo=(k,v,render)=>{const f=lj.aj?.foto;if(!f)return;if(k==='fechar'){lj.aj.foto=null;ljRender();return;}f[k]=v;f.erro=null;if(k!=='res')f.res=null;if(render)ljRender();};
+window.__ljFotoAbrir=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);const s=ljAjLinha()?.sh;if(!c||!s)return;
+  lj.aj.foto={carregando:true};ljRender();
+  try{const token=await shopeeGarantirTokenValido(c,'erp');const r=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_model_list',query:JSON.stringify({item_id:s.id})});
+    const std=r?.response?.standardise_tier_variation||[];const t=std[0];
+    if(!t)throw new Error(r?.error?`${r.error} ${r.message||''}`:'Esse anúncio não tem variação.');
+    const opcoes=t.variation_option_list.map(o=>({nome:o.variation_option_name,url:o.image_url||(o.image_id?`https://cf.shopee.com.br/file/${o.image_id}`:null)}));
+    if(lj.aj?.foto)Object.assign(lj.aj.foto,{carregando:false,nomeTier:t.variation_name,opcoes,sel:opcoes[0]?.nome});
+  }catch(e){if(lj.aj)lj.aj.foto={erro:e.message};}ljRender();};
+const ljFotoNorm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+window.__ljFotoTrocar=async()=>{const f=lj.aj?.foto;const c=(clientesCache||[]).find(x=>x.id===lj.id);const l=ljAjLinha();if(!f?.arquivo||!c||!l?.sh)return;
+  const op=f.sel;const alvo=[`Shopee`,l.tt&&f.tt!==false&&'TikTok (vai pra análise)',l.ml&&f.ml!==false&&'Mercado Livre'].filter(Boolean);
+  if(!await lbConfirmar(`Trocar a foto de "${op}" em ${c.nome}?\n${l.nome.slice(0,70)}\n\nOnde: ${alvo.join(', ')}`,{okTxt:'Trocar foto'}))return;
+  const btn=document.getElementById('ljFotoBtn');if(btn){btn.disabled=true;btn.textContent='Trocando…';}
+  const res=[];const nota=(ok,t)=>res.push((ok?'✓ ':'✗ ')+t);const u=URL.createObjectURL(f.arquivo);
+  try{const jpg=await migJpg(u);
+    // Shopee
+    try{const token=await shopeeGarantirTokenValido(c,'erp');const up=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:jpg,ratio:'1:1'});
+      if(!up.ok||!up.image_id)throw new Error('foto: '+(up.erro||'sem id'));
+      const r=await dirShApi('variacao_renomear',c,token,{item_id:l.sh.id,imagens:{[op]:up.image_id},executar:1});
+      nota(!!r.ok,`Shopee: ${r.ok?'foto trocada':r.erro||'erro'}`);}catch(e){nota(false,'Shopee: '+e.message);}
+    // TikTok
+    if(l.tt&&f.tt!==false){try{const pr=await mig3Api(c,'produto_ler',{id:l.tt.id});
+        const nomes=[...new Set((pr.produto?.skus||[]).flatMap(k=>(k.sales_attributes||[]).filter(a=>a.sku_img).map(a=>a.value_name)))];
+        const nomeTt=nomes.find(n=>ljFotoNorm(n)===ljFotoNorm(op));
+        if(!nomeTt)throw new Error(nomes.length?`não achei "${op}" entre as opções com foto (${nomes.slice(0,6).join(', ')})`:'as opções desse produto não têm foto no TikTok');
+        const up=await mig3Api(c,'produto_imagem',{base64:jpg,uso:'ATTRIBUTE_IMAGE'});if(!up.ok)throw new Error('foto: '+up.erro);
+        const r=await mig3Api(c,'produto_editar',{id:l.tt.id,mudancas:{foto_cor:{[nomeTt]:up.uri}}});
+        nota(!!r.ok,`TikTok: ${r.ok?'foto enviada (em análise)':r.erro||'erro'}`);}catch(e){nota(false,'TikTok: '+e.message);}}
+    // Mercado Livre
+    if(l.ml&&f.ml!==false){try{const token=await mlGarantirTokenValido(c);let pic=null;const subir=async()=>{if(pic)return pic;const up=await dirMl('ml_upload_foto',{access_token:token,imagemBase64:jpg},true);if(!up.ok)throw new Error('foto: '+up.erro);return(pic=up.id);};
+        let n=0;const err=[];
+        for(const id of l.ml.ids){const it=(await dirMl('ler_api',{access_token:token,caminho:`/items/${id}?include_attributes=all`},true))?.data;if(!it)continue;
+          const ehCor=(v)=>ljFotoNorm(v)===ljFotoNorm(op);
+          if((it.variations||[]).length){const vs=it.variations.filter(v=>(v.attribute_combinations||[]).some(a=>ehCor(a.value_name)));if(!vs.length)continue;const p=await subir();
+            const fv=Object.fromEntries(vs.map(v=>[v.id,[p,...(v.picture_ids||[]).filter(x=>x!==p)].slice(0,10)]));
+            const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:id,mudancas:{fotosVariacoes:fv}},true);if(r.ok)n++;else err.push(r.erro);}
+          else{const cor=(it.attributes||[]).find(a=>/COLOR$/.test(a.id))?.value_name;if(!ehCor(cor))continue;const p=await subir();
+            const r=await dirMl('ml_atualizar_item',{access_token:token,item_id:id,mudancas:{pictures:[p,...(it.pictures||[]).map(x=>x.id).filter(x=>x!==p)].slice(0,10)}},true);if(r.ok)n++;else err.push(r.erro);}}
+        nota(!err.length&&n>0,n||err.length?`Mercado Livre: ${n} anúncio(s) com a foto nova${err.length?` · ${err[0]}`:''}`:`Mercado Livre: nenhum anúncio com a cor "${op}"`);}catch(e){nota(false,'Mercado Livre: '+e.message);}}
+  }finally{URL.revokeObjectURL(u);}
+  f.res={ok:res.every(x=>x.startsWith('✓')),msg:res.join(' · ')};
+  await log(c.id,c.nome,'foto da opção trocada (Central da Loja)',`${l.nome.slice(0,60)} · ${op} · ${f.res.msg}`).catch(()=>{});
+  if(btn){btn.disabled=false;btn.textContent='Trocar foto';}ljRender();};
 
 // ---- Adicionar variação na Shopee (27/10/2026) — backend shopee.js?acao=variacao_adicionar (update_tier_variation + add_model + desconto) ----
 const ljNovasOps=()=>String(lj.aj?.nova?.opcoes||'').split(',').map(x=>x.trim()).filter(Boolean);
