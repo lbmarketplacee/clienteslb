@@ -14331,7 +14331,7 @@ async function fotoCarregar(url){
 async function migJpg(url){
   const img=await fotoCarregar(url);
   const L=Math.min(1200,Math.max(img.width,img.height,500));const cv=document.createElement('canvas');cv.width=cv.height=L;const g=cv.getContext('2d');
-  g.fillStyle='#fff';g.fillRect(0,0,L,L);const e=Math.min(L/img.width,L/img.height);g.drawImage(img,(L-img.width*e)/2,(L-img.height*e)/2,img.width*e,img.height*e);URL.revokeObjectURL(u);
+  g.fillStyle='#fff';g.fillRect(0,0,L,L);const e=Math.min(L/img.width,L/img.height);g.drawImage(img,(L-img.width*e)/2,(L-img.height*e)/2,img.width*e,img.height*e);URL.revokeObjectURL(img.src);
   return cv.toDataURL('image/jpeg',0.92);
 }
 async function migAdsToken(c){try{return c.shopeeAdsShopId?await shopeeGarantirTokenValido(c,'ads'):null;}catch(e){return null;}}
@@ -14557,7 +14557,7 @@ async function sheinJpg(url,formato='retrato'){
   else{const e=Math.max(W/s.w,H/s.h),w=s.w*e,h=s.h*e;
     // corta igual dos lados; no vertical corta mais embaixo que em cima (não corta a cabeça da modelo)
     g.drawImage(img,s.x,s.y,s.w,s.h,(W-w)/2,(H-h)*0.2,w,h);}
-  URL.revokeObjectURL(u);return cv.toDataURL('image/jpeg',0.9);
+  URL.revokeObjectURL(img.src);return cv.toDataURL('image/jpeg',0.9);
 }
 // IA escolhe o valor da SHEIN quando o nome não bate (cor "Off white" → "Branco"; atributos obrigatórios: Material, Elasticidade...)
 async function sheinIA(perguntas,produto){
