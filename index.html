@@ -3881,7 +3881,7 @@ const portalClienteId=()=>PORTAL_CLIENTES[currentEmail]||null;
 // Freela do comercial (Akemi, 15/10/2026): só a tela Comercial & Marketing (Marketing, Comercial, Tráfego Meta, CRM de Leads).
 // Não carrega clientes/tarefas/robôs — as regras do Firestore também só liberam comercialBoard, comercialDiario e crmLeads.
 const COMERCIAL_FREELA=['akemikimidesign@gmail.com','isalbmarketplace@gmail.com'];
-const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase())||['suporte@lbmarketplace.com.br','felipesoares@potencialmidia.com'].includes(String(currentEmail||'').toLowerCase());
+const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase())||['felipesoares@potencialmidia.com'].includes(String(currentEmail||'').toLowerCase()); /* Lídia (suporte@) usa o sistema todo desde 13/11/2026 (Lincoln) */
 function startListeners(){if(unsubC)return;
   if(ehFreelaComercial()){location.replace('/comercial.html');return; // 29/10/2026: o comercial mora na página própria
     document.body.classList.add('modo-comercial');unsubC=()=>{};
