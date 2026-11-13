@@ -14518,7 +14518,9 @@ async function pxOcultosShopee(c){
 }
 // ---------- SHEIN (11/10/2026): API lb-shopee-gmv/api/shein.js (preparar/imagem/publicar). Regras em lib/shein-produto.js ----------
 const SHEIN_API='https://lb-shopee-gmv.vercel.app/api/shein';
-async function sheinApi(c,acao,extra={}){const r=await fetch(SHEIN_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
+async function sheinApi(c,acao,extra={}){const r=await fetch(SHEIN_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});const t=await r.text();let j;try{j=JSON.parse(t);}catch(e){j=null;}
+  /* resposta sem ok/erro (erro da Vercel: limite de tamanho, tempo...) vira erro legível */
+  if(!j||(j.ok!==true&&!j.erro))return{...(j||{}),ok:false,erro:`${acao}: HTTP ${r.status} ${(j?.error?.message||j?.error?.code||t||'').toString().slice(0,200)}`};return j;}
 // mesmo cálculo de lib/shein-produto.js: comissão 20% + 7% de folga descontados do preço, termina em ,99
 const sheinPreco=liq=>{const b=Number(liq)/(1-0.20-0.07);if(!(b>0))return null;return Math.floor(b)+0.99>=b?Math.floor(b)+0.99:Math.floor(b)+1.99;};
 const sheinSem=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9/ ]+/g,' ').replace(/\s+/g,' ').trim();
