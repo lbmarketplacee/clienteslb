@@ -75,6 +75,7 @@ textarea{min-height:110px;resize:vertical}
 <main id="app"><div class="card">Cargando...</div></main>
 <input type="file" id="arq" accept="image/*" multiple class="hidden">
 <input type="file" id="arqCor" accept="image/*" class="hidden">
+<input type="file" id="arqVid" accept="video/*" class="hidden">
 <script>
 const API='https://lb-shopee-gmv.vercel.app/api/pedido-produto';
 const T=new URLSearchParams(location.search).get('t')||'';
@@ -83,11 +84,11 @@ const COLORES=[['Negro','Preto','#111'],['Blanco','Branco','#fff'],['Beige','Beg
 const TALLAS=[['P','P'],['M','M'],['G','G'],['GG','GG'],['G1','G1'],['G2','G2'],['G3','G3'],['Única','Único']];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nuevo=()=>({skus:{},verSku:false,i:0,fotos:[],nombre:'',descripcion:'',cores:[],sinColor:false,tams:[],sinTalla:false,recibir:'',stock:{},stockUnico:''});
+const nuevo=()=>({videos:[],skus:{},verSku:false,i:0,fotos:[],nombre:'',descripcion:'',cores:[],sinColor:false,tams:[],sinTalla:false,recibir:'',stock:{},stockUnico:''});
 let st=nuevo(),mps=[],error='',enviando=false,corPendiente=null;
 const nombreColor=v=>(COLORES.find(c=>c[1]===v)||[v])[0];
 const nombreTalla=v=>(TALLAS.find(c=>c[1]===v)||[v])[0];
-const guardar=()=>{try{localStorage.setItem(CLAVE,JSON.stringify({...st,fotos:st.fotos.filter(f=>f.url).map(f=>({id:f.id,url:f.url,prev:f.url,cor:f.cor}))}));}catch(e){}};
+const guardar=()=>{try{localStorage.setItem(CLAVE,JSON.stringify({...st,fotos:st.fotos.filter(f=>f.url).map(f=>({id:f.id,url:f.url,prev:f.url,cor:f.cor})),videos:(st.videos||[]).filter(v=>v.url)}));}catch(e){}};
 const cargar=()=>{try{const v=JSON.parse(localStorage.getItem(CLAVE)||'null');if(v)st={...nuevo(),...v};}catch(e){}};
 const pasos=()=>['fotos','producto','colores',...(st.cores.length>1?['fotocolor']:[]),'tallas','precio','stock','revisar'];
 const combos=()=>{const cs=st.cores.length?st.cores:[''],ts=st.tams.length?st.tams:[''];const o=[];for(const c of cs)for(const t of ts)o.push(c+'|'+t);return o;};
@@ -105,7 +106,9 @@ const TEXTO={
 function escuchar(){const p=pasos()[st.i],x=TEXTO[p];if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(x[0]+'. '+x[1]);u.lang='es-ES';u.rate=.9;speechSynthesis.speak(u);}
 const cuerpo={
  fotos(){const add=st.fotos.length<15?`<label class="add" for="arq"><b>+</b>Agregar fotos</label>`:'';
-  return `<div class="fotos">${st.fotos.map(f=>`<div class="foto"><img src="${esc(f.prev)}" alt=""><button type="button" class="x" data-quitar="${f.id}">×</button>${f.estado?`<div class="st">${esc(f.estado)}</div>`:''}</div>`).join('')}${add}</div>`;},
+  return `<div class="fotos">${st.fotos.map(f=>`<div class="foto"><img src="${esc(f.prev)}" alt=""><button type="button" class="x" data-quitar="${f.id}">×</button>${f.estado?`<div class="st">${esc(f.estado)}</div>`:''}</div>`).join('')}${add}</div>
+  <label class="add" for="arqVid" style="display:inline-flex;width:auto;height:auto;padding:10px 14px;margin-top:12px;gap:6px;aspect-ratio:auto">🎬 Agregar video (opcional)</label>
+  <div style="font-size:13px;margin-top:6px">${(st.videos||[]).map(v=>`<div>🎬 ${esc(v.nombre)} — ${v.url?'<b style="color:#3a9d5d">enviado ✓</b>':v.error?`<b style="color:#c0392b">${esc(v.error)}</b>`:`enviando ${v.pct||0}%`}</div>`).join('')||'Un video corto de la prenda ayuda a vender. Hasta 3 videos de 300 MB.'}</div>`;},
  producto(){return `<label class="t" for="nombre">Nombre del producto</label><input type="text" id="nombre" maxlength="120" value="${esc(st.nombre)}" placeholder="Vestido largo">
   <div class="ej">Ejemplo: Conjunto de falda y blusa</div>
   <label class="t" for="desc">¿Cómo es el producto?</label><textarea id="desc" maxlength="4000" placeholder="Tela, si tiene forro, para qué ocasión...">${esc(st.descripcion)}</textarea>
@@ -130,7 +133,7 @@ const cuerpo={
   <div class="res"><small>Quieres recibir por pieza</small>R$ ${esc(st.recibir)}</div><div class="res"><small>Total de piezas</small>${total}</div>`;},
 };
 function validar(p){
- if(p==='fotos'){if(st.fotos.some(f=>f.estado==='Enviando...'))return 'Espera: las fotos todavía se están enviando.';if(st.fotos.filter(f=>f.url).length<2)return 'Agrega por lo menos 2 fotos.';}
+ if(p==='fotos'){if(st.fotos.some(f=>f.estado==='Enviando...'))return 'Espera: las fotos todavía se están enviando.';if((st.videos||[]).some(v=>!v.url&&!v.error))return 'Espera: el video todavía se está enviando.';if(st.fotos.filter(f=>f.url).length<2)return 'Agrega por lo menos 2 fotos.';}
  if(p==='producto'){if(st.nombre.trim().length<3)return 'Escribe el nombre del producto.';if(st.descripcion.trim().length<10)return 'Escribe cómo es el producto.';}
  if(p==='colores'&&!st.cores.length&&!st.sinColor)return 'Toca un color o toca "Este producto no tiene color".';
  if(p==='fotocolor'){const sin=st.cores.filter(c=>!st.fotos.some(f=>f.url&&f.cor===c));if(sin.length)return 'Falta la foto de: '+sin.map(nombreColor).join(', ')+'.';}
@@ -173,13 +176,23 @@ async function subir(archivos,cor){
   pintar();}
 }
 $('arq').addEventListener('change',e=>{const l=[...e.target.files].slice(0,15-st.fotos.length);e.target.value='';subir(l,'');});
+// video (13/11/2026): el servidor abre la sesión y el celular sube directo al Storage en partes de 8 MB
+$('arqVid').addEventListener('change',async e=>{const a=e.target.files[0];e.target.value='';if(!a)return;st.videos=st.videos||[];if(st.videos.length>=3)return;
+  const v={nombre:a.name||'video',tipo:a.type||'video/mp4',pct:0};st.videos.push(v);pintar();const PARTE=8*1024*1024;
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'video_sessao',t:T,tipo:v.tipo,tamanho:a.size})});const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'no se pudo enviar');
+    for(let ini=0;ini<a.size;ini+=PARTE){const fim=Math.min(a.size,ini+PARTE);let ok=false;
+      for(let t=0;t<3&&!ok;t++){try{const u=await fetch(d.sessao,{method:'PUT',headers:{'Content-Range':`bytes ${ini}-${fim-1}/${a.size}`},body:a.slice(ini,fim)});ok=u.status===308||u.ok;}catch(x){}if(!ok)await new Promise(z=>setTimeout(z,1500*(t+1)));}
+      if(!ok)throw new Error('se cayó el internet — intenta de nuevo');v.pct=Math.round(fim/a.size*100);pintar();}
+    v.url=d.url;v.tipo=d.tipo;guardar();}catch(x){v.error=x.message;}
+  pintar();});
 $('arqCor').addEventListener('change',e=>{const a=e.target.files[0];e.target.value='';if(a&&st.fotos.length<15)subir([a],corPendiente);});
 async function enviar(){
  enviando=true;error='';pintar();
  const estoque={};if(!unico())combos().forEach(k=>estoque[k]=st.stock[k]);
  const skus={};if(st.verSku&&!unico())combos().forEach(k=>{const v=String(st.skus[k]||'').trim();if(v)skus[k]=v;});
  const produto={skus,nome:st.nombre,descricao:st.descripcion,cores:st.cores,tamanhos:st.tams,liquido:st.recibir,estoque,estoqueUnico:unico()?st.stockUnico:'',marketplaces:mps,
-  observacoes:'Enviado pelo formulário em espanhol: nome e descrição estão em espanhol, traduzir antes de publicar.',fotos:st.fotos.filter(f=>f.url).map(f=>({url:f.url,cor:f.cor||null}))};
+  observacoes:'Enviado pelo formulário em espanhol: nome e descrição estão em espanhol, traduzir antes de publicar.',fotos:st.fotos.filter(f=>f.url).map(f=>({url:f.url,cor:f.cor||null})),videos:(st.videos||[]).filter(v=>v.url).map(v=>({url:v.url,nome:v.nombre,tipo:v.tipo}))};
  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'enviar',t:T,produto})});const d=await r.json();
   if(!d.ok){enviando=false;error='No se pudo enviar. Revisa los pasos o avisa a la LB.';pintar();return;}
   const nom=st.nombre.trim();st=nuevo();try{localStorage.removeItem(CLAVE);}catch(e){}enviando=false;

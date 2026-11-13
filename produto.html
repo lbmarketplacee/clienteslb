@@ -102,6 +102,9 @@ table.est input{width:80px;padding:7px}
       </div>
       <input type="file" id="arq" accept="image/*" multiple class="hidden">
       <div class="ex" id="fotosInfo"></div>
+      <label class="add" for="arqVid" style="display:inline-flex;width:auto;height:auto;padding:10px 14px;margin-top:12px;gap:8px;aspect-ratio:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Adicionar vídeo (opcional)</label>
+      <input type="file" id="arqVid" accept="video/*" class="hidden">
+      <div class="ex" id="videosInfo">Um vídeo curto mostrando a peça (vestida ou na mão) ajuda a vender. Até 3 vídeos, 300 MB cada.</div>
     </section>
 
     <section class="sec">
@@ -174,7 +177,7 @@ const API='https://lb-shopee-gmv.vercel.app/api/pedido-produto';
 const T=new URLSearchParams(location.search).get('t')||'';
 const MP_NOME={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok Shop',shein:'Shein'};
 const TAMS=['PP','P','M','G','GG','G1','G2','G3','Único'];
-const st={fotos:[],cores:[],tams:[],mps:[]};
+const st={fotos:[],cores:[],tams:[],mps:[],videos:[]};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -242,16 +245,31 @@ function renderEstoque(){
 }
 window.todos=()=>{const v=prompt('Quantas peças de cada variação?','20');if(v==null)return;document.querySelectorAll('.estq').forEach(i=>i.value=v);};
 
+// ---------- vídeo (13/11/2026): o servidor abre a sessão e o celular sobe direto pro Storage, em partes de 8 MB ----------
+const PARTE=8*1024*1024;
+function pintarVideos(){$('videosInfo').innerHTML=st.videos.length?st.videos.map(v=>`<div>🎬 ${esc(v.nome)} — ${v.url?'<b style="color:#3a9d5d">enviado ✓</b>':v.erro?`<b style="color:#c0392b">${esc(v.erro)}</b>`:`enviando ${v.pct||0}%`}</div>`).join(''):'Um vídeo curto mostrando a peça (vestida ou na mão) ajuda a vender. Até 3 vídeos, 300 MB cada.';}
+$('arqVid').addEventListener('change',async e=>{const a=e.target.files[0];e.target.value='';if(!a)return;
+  if(st.videos.length>=3){mostrarErros(['Até 3 vídeos.']);return;}
+  const v={nome:a.name||'vídeo',tipo:(a.type||'video/mp4'),pct:0};st.videos.push(v);pintarVideos();
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'video_sessao',t:T,tipo:v.tipo,tamanho:a.size})});const d=await r.json();
+    if(!d.ok)throw new Error(d.erro||'não deu pra enviar');
+    for(let ini=0;ini<a.size;ini+=PARTE){const fim=Math.min(a.size,ini+PARTE);let ok=false;
+      for(let t=0;t<3&&!ok;t++){try{const u=await fetch(d.sessao,{method:'PUT',headers:{'Content-Range':`bytes ${ini}-${fim-1}/${a.size}`},body:a.slice(ini,fim)});ok=u.status===308||u.ok;}catch(x){}if(!ok)await new Promise(z=>setTimeout(z,1500*(t+1)));}
+      if(!ok)throw new Error('a internet caiu no meio — tente de novo');v.pct=Math.round(fim/a.size*100);pintarVideos();}
+    v.url=d.url;v.tipo=d.tipo;}catch(x){v.erro=x.message;}
+  pintarVideos();});
+
 // ---------- enviar ----------
 $('form').addEventListener('submit',async e=>{
   e.preventDefault();
   if(st.fotos.some(f=>f.estado==='enviando...')){mostrarErros(['Espere as fotos terminarem de enviar.']);return;}
+  if(st.videos.some(v=>!v.url&&!v.erro)){mostrarErros(['Espere o vídeo terminar de enviar.']);return;}
   if(st.cores.length>1){const sem=st.cores.filter(c=>!st.fotos.some(f=>f.url&&f.cor===c));if(sem.length){mostrarErros([`Escolha a foto de cada cor (seção 3). Falta: ${sem.join(', ')}.`]);return;}}
   const estoque={};document.querySelectorAll('.estq').forEach(i=>{if(i.value!=='')estoque[i.dataset.k]=i.value;});
   const skus={};document.querySelectorAll('.skuq').forEach(i=>{if(i.value.trim())skus[i.dataset.k]=i.value.trim();});
   const produto={skus,nome:$('nome').value,descricao:$('descricao').value,material:$('material').value,sku:$('sku').value,cores:st.cores,tamanhos:st.tams,medidas:$('medidas').value,
     liquido:$('liquido').value,precoAtual:$('precoAtual').value,estoque,estoqueUnico:$('estUnico')?.value??'',peso:$('peso').value,embalagem:$('embalagem').value,codigoBarras:$('codigoBarras').value,
-    marketplaces:[...document.querySelectorAll('.mpck:checked')].map(i=>i.value),observacoes:$('observacoes').value,fotos:st.fotos.filter(f=>f.url).map(f=>({url:f.url,cor:f.cor||null}))};
+    marketplaces:[...document.querySelectorAll('.mpck:checked')].map(i=>i.value),observacoes:$('observacoes').value,fotos:st.fotos.filter(f=>f.url).map(f=>({url:f.url,cor:f.cor||null})),videos:st.videos.filter(v=>v.url).map(v=>({url:v.url,nome:v.nome,tipo:v.tipo}))};
   const b=$('enviar');b.disabled=true;b.textContent='Enviando...';
   try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'enviar',t:T,produto})});const d=await r.json();
     if(!d.ok){mostrarErros(d.erros||[d.erro||'Não deu certo.']);return;}
