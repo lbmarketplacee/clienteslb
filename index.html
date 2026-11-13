@@ -14321,11 +14321,17 @@ async function migTitulo(texto,usados){
     t=String(r.titulo||'').replace(/\s+/g,' ').trim();if(t&&!usados.has(t.toLowerCase()))break;}
   if(t)usados.add(t.toLowerCase());return t;
 }
+/* baixa a foto com novas tentativas: o CDN da Shopee devolve 503/504 quando baixamos muitas seguidas (AQUARIOS 13/11/2026) */
+async function fotoCarregar(url){
+  const base=String(url).replace(/^http:/,'https:'),id=(base.match(/\/file\/([^/?#]+)/)||[])[1];
+  const urls=[base,...(id&&/shopee|susercontent/.test(base)?[`https://down-br.img.susercontent.com/file/${id}`]:[]),base,base];let b=null,st='';
+  for(const [k,x] of urls.entries()){if(k>1)await new Promise(r=>setTimeout(r,2000*k));try{const r=await fetch(x);st=r.status;if(r.ok){const bl=await r.blob();if(/^image\//.test(bl.type)||bl.size>2000){b=bl;break;}}}catch(e){st=e.message;}}
+  if(!b)throw new Error(`foto não baixou (${st}): …${base.slice(-30)}`);const u=URL.createObjectURL(b);
+  return new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>err(new Error('foto não abriu: …'+base.slice(-30)));i.src=u;});}
 async function migJpg(url){
-  const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
-  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
+  const img=await fotoCarregar(url);
   const L=Math.min(1200,Math.max(img.width,img.height,500));const cv=document.createElement('canvas');cv.width=cv.height=L;const g=cv.getContext('2d');
-  g.fillStyle='#fff';g.fillRect(0,0,L,L);const e=Math.min(L/img.width,L/img.height);g.drawImage(img,(L-img.width*e)/2,(L-img.height*e)/2,img.width*e,img.height*e);URL.revokeObjectURL(u);
+  g.fillStyle='#fff';g.fillRect(0,0,L,L);const e=Math.min(L/img.width,L/img.height);g.drawImage(img,(L-img.width*e)/2,(L-img.height*e)/2,img.width*e,img.height*e);URL.revokeObjectURL(img.src);
   return cv.toDataURL('image/jpeg',0.92);
 }
 async function migAdsToken(c){try{return c.shopeeAdsShopId?await shopeeGarantirTokenValido(c,'ads'):null;}catch(e){return null;}}
@@ -14518,7 +14524,9 @@ async function pxOcultosShopee(c){
 }
 // ---------- SHEIN (11/10/2026): API lb-shopee-gmv/api/shein.js (preparar/imagem/publicar). Regras em lib/shein-produto.js ----------
 const SHEIN_API='https://lb-shopee-gmv.vercel.app/api/shein';
-async function sheinApi(c,acao,extra={}){const r=await fetch(SHEIN_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
+async function sheinApi(c,acao,extra={}){const r=await fetch(SHEIN_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});const t=await r.text();let j;try{j=JSON.parse(t);}catch(e){j=null;}
+  /* resposta sem ok/erro (erro da Vercel: limite de tamanho, tempo...) vira erro legível */
+  if(!j||(j.ok!==true&&!j.erro))return{...(j||{}),ok:false,erro:`${acao}: HTTP ${r.status} ${(j?.error?.message||j?.error?.code||t||'').toString().slice(0,200)}`};return j;}
 // mesmo cálculo de lib/shein-produto.js: comissão 20% + 7% de folga descontados do preço, termina em ,99
 const sheinPreco=liq=>{const b=Number(liq)/(1-0.20-0.07);if(!(b>0))return null;return Math.floor(b)+0.99>=b?Math.floor(b)+0.99:Math.floor(b)+1.99;};
 const sheinSem=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9/ ]+/g,' ').replace(/\s+/g,' ').trim();
@@ -14541,8 +14549,7 @@ function sheinSemBorda(img){
   return{x:l/k,y:t/k,w:(W-l-r)/k,h:(H-t-b)/k};
 }
 async function sheinJpg(url,formato='retrato'){
-  const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);
-  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=u;});
+  const img=await fotoCarregar(url);
   const [W,H]=typeof formato==='number'?[formato,formato]:formato==='quadrada'?[1200,1200]:[1340,1785];
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const s=sheinSemBorda(img);
@@ -14550,7 +14557,7 @@ async function sheinJpg(url,formato='retrato'){
   else{const e=Math.max(W/s.w,H/s.h),w=s.w*e,h=s.h*e;
     // corta igual dos lados; no vertical corta mais embaixo que em cima (não corta a cabeça da modelo)
     g.drawImage(img,s.x,s.y,s.w,s.h,(W-w)/2,(H-h)*0.2,w,h);}
-  URL.revokeObjectURL(u);return cv.toDataURL('image/jpeg',0.9);
+  URL.revokeObjectURL(img.src);return cv.toDataURL('image/jpeg',0.9);
 }
 // IA escolhe o valor da SHEIN quando o nome não bate (cor "Off white" → "Branco"; atributos obrigatórios: Material, Elasticidade...)
 async function sheinIA(perguntas,produto){
@@ -14707,8 +14714,11 @@ const pxCriar={
     // texto + 1ª foto (só texto às vezes volta vazio — corretor postural da MAVE, 11/10/2026)
     let prep=await sheinApi(c,'preparar',{titulo:P.titulo,imagem:P.fotos[0]?String(P.fotos[0]).replace(/^http:/,'https:'):undefined});
     if(!prep.ok)throw new Error(prep.erro||'não deu pra ler a SHEIN');
+    // sugestão com gênero trocado (colete feminino → "Colete Masculino", AQUARIOS 13/11/2026) = sem sugestão
+    if(prep.categoria){const fem=/feminin|mulher/i.test(P.titulo),masc=/masculin|homem/i.test(P.titulo),nc=String(prep.categoria.nome||'');
+      if((fem&&!masc&&/masculin|homem/i.test(nc))||(masc&&!fem&&/feminin|mulher/i.test(nc)))prep={...prep,categoria:null,generoTrocado:nc};}
     if(!prep.categoria){const reserva=(String(ctx.sheinCategoria||'').match(/#(\d+)\s*$/)||[])[1];
-      if(!reserva)throw new Error('a SHEIN não sugeriu categoria — escolha a "Categoria de reserva" no quadro da SHEIN');
+      if(!reserva)throw new Error(prep.generoTrocado?`a SHEIN sugeriu "${prep.generoTrocado}" (gênero errado) — escolha a "Categoria de reserva" no quadro da SHEIN`:'a SHEIN não sugeriu categoria — escolha a "Categoria de reserva" no quadro da SHEIN');
       prep=await sheinApi(c,'preparar',{categoryId:reserva});if(!prep.ok||!prep.categoria)throw new Error(prep.erro||'categoria de reserva inválida');}
     const A=prep.atributos||[];const aCor=A.find(a=>a.tipo===1&&a.principal),aTam=A.find(a=>a.tipo===1&&!a.principal);
     if(!aCor)throw new Error(`categoria "${prep.categoria.nome}" sem atributo principal`);
