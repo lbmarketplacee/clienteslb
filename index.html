@@ -1343,6 +1343,12 @@ body.modo-comercial .nav-grupo-itens{display:flex!important;flex-direction:colum
 body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
 body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):not([data-mlsub="qualidade"]){display:none!important}
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
+/* Login de conexão (16/11/2026): só os cards Shopee/ML/TikTok/SHEIN e só as abas de conexão */
+body.modo-conexao .nav-item:not([data-page="marketing"]),body.modo-conexao .nav-grupo-cab,body.modo-conexao #notifBtn,body.modo-conexao .topbar-actions,body.modo-conexao .cm-produtos-destaque{display:none!important}
+body.modo-conexao .nav-grupo-itens{display:flex!important;flex-direction:column}
+body.modo-conexao .cm-tool-card:not([data-cmtab="shopee"]):not([data-cmtab="mercadolivre"]):not([data-cmtab="tiktokshop"]):not([data-cmtab="shein"]){display:none!important}
+body.modo-conexao .shopee-subtab-btn:not([data-shopeesub="apis"]),body.modo-conexao .tiktok-subtab-btn:not([data-tiktoksub="gmv"]),body.modo-conexao .ml-subtab-btn:not([data-mlsub="gmv"]),body.modo-conexao [data-shtab]:not([data-shtab="con"]){display:none!important}
+body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
 .portal-aviso{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;line-height:1.5}
 .portal-aviso b{color:var(--gold)}
 .cd-bloco{border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin:6px 0}.cd-rot{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}.cd-txt{font-size:13.5px;line-height:1.5}
@@ -3747,7 +3753,9 @@ body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi","isalbmarketplace@gmail.com":"Isa","suporte@lbmarketplace.com.br":"Lídia"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Mirela","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi","isalbmarketplace@gmail.com":"Isa","suporte@lbmarketplace.com.br":"Lídia","conexoes@lbmarketplace.com.br":"Conexões LB"};
+/* 16/11/2026 (Lincoln): login só pra conectar as APIs dos clientes (abrir no navegador/perfil do cliente). Só vê os cards de conexão. */
+const CONEXAO_LB=['conexoes@lbmarketplace.com.br'];const ehConexaoLB=()=>CONEXAO_LB.includes(String(currentEmail||'').toLowerCase());
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
 // Quem tem acesso total (tudo que era "só Lincoln"): Lincoln + Caroline (pedido do Lincoln, 07/10/2026)
 const ADMIN_EMAILS=[LINCOLN_EMAIL,"caroline@lbmarketplace.com.br"];
@@ -3889,6 +3897,10 @@ function startListeners(){if(unsubC)return;
     if(USERS_MAP[currentEmail]&&!COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase()))try{onSnapshot(collection(db,'clientes'),sn=>{clientesCache=sn.docs.map(d=>({id:d.id,...d.data()}));},()=>{});}catch(e){}
     setTimeout(()=>{try{const b=document.querySelector('.nav-item[data-page="centralcom"]');b?.classList.remove('hidden');b?.click();}catch(e){}},700);
     return;}
+  if(ehConexaoLB()){document.body.classList.add('modo-conexao');
+    unsubC=onSnapshot(collection(db,"clientes"),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>String(x.nome||'').localeCompare(String(y.nome||'')));try{renderAll();}catch(e){console.warn('[conexao]',e);}},e=>console.error('[conexao]',e));
+    setTimeout(()=>{try{location.hash='#marketing';const b=document.querySelector('.nav-item[data-page="marketing"]');b?.click();}catch(e){}},900);
+    return;}
   if(portalClienteId()){document.body.classList.add('modo-portal');
     unsubC=onSnapshot(doc(db,"clientes",portalClienteId()),d=>{clientesCache=d.exists()?[{id:d.id,...d.data()}]:[];renderAll();portalAviso();},e=>console.error('[portal]',e));
     setTimeout(()=>{try{location.hash='#marketing';window.__irParaMarketing('mercadolivre');setTimeout(()=>{window.__mlSubTab('gmv');portalAviso();},700);}catch(e){}},900);
@@ -3968,7 +3980,7 @@ window.__pqResponder=async(id)=>{const q=window.__pq.lista.find(x=>x.id===id);co
   if(/(https?:\/\/|www\.|whats\s?app|instagram|@[a-z0-9-]+\.[a-z])/i.test(texto))return lbAvisar('Tire link/contato da resposta — o ML proíbe.');
   if(!(await lbConfirmar(`Enviar esta resposta no Mercado Livre da ${q?.cliente}?\n\n"${texto}"`)))return;
   try{const r=await (await fetch(PQ_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'responder',id,texto,executar:1})})).json();if(!r.ok)throw new Error(r.erro);window.__pq.lista=window.__pq.lista.filter(x=>x.id!==id);pqBadge();pqRender();lbAvisar('Resposta enviada ✅');}catch(e){lbAvisar('Não enviou: '+e.message);}};
-setTimeout(()=>{if(typeof isLincoln==='function'&&!document.body.classList.contains('modo-portal')&&!document.body.classList.contains('modo-comercial'))pqCarregar().catch(()=>{});},8000);
+setTimeout(()=>{if(typeof isLincoln==='function'&&!document.body.classList.contains('modo-portal')&&!document.body.classList.contains('modo-comercial')&&!document.body.classList.contains('modo-conexao'))pqCarregar().catch(()=>{});},8000);
 /* HELPERS */
 function parseDate(s){if(!s)return null;return new Date(s);}
 function fmtDate(s){if(!s)return null;const dt=parseDate(s);return s.includes('T')?dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):dt.toLocaleDateString('pt-BR');}
