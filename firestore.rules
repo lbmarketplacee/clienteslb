@@ -20,6 +20,10 @@ service cloud.firestore {
     function vendedor() {
       return request.auth != null && request.auth.token.email in ['guilherme@lbmarketplace.com.br', 'akemikimidesign@gmail.com', 'isalbmarketplace@gmail.com', 'suporte@lbmarketplace.com.br'];
     }
+    // Gestores do comercial (16/11/2026): trocam o dono e apagam leads no CRM — Lincoln, Carol, Felipe e Duda (sem acesso ao financeiro)
+    function gestorComercial() {
+      return request.auth != null && request.auth.token.email in ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br', 'felipesoares@potencialmidia.com', 'akemikimidesign@gmail.com'];
+    }
     function eu() { return request.auth.token.email; }
     // SDR (26/10/2026): a Isa fala com todos os leads — lê e atualiza os de qualquer dono, sem trocar o dono
     function sdrTodos() {
@@ -47,8 +51,8 @@ service cloud.firestore {
       // marca Compareceu) — só não trocam o dono (troca de dono = servidor ou diretoria)
       allow read: if diretoria() || sdrTodos() || vendedor() || equipe();
       allow create: if diretoria() || sdrTodos() || vendedor() || equipe();
-      allow update: if diretoria() || ((sdrTodos() || vendedor() || equipe()) && request.resource.data.donoEmail == resource.data.donoEmail);
-      allow delete: if diretoria();
+      allow update: if diretoria() || gestorComercial() || ((sdrTodos() || vendedor() || equipe()) && request.resource.data.donoEmail == resource.data.donoEmail);
+      allow delete: if diretoria() || gestorComercial();
     }
     // Duda/Akemi (freela, fora da equipe): painel comercial e o histórico das ações dela no CRM
     match /comercialBoard/{resto=**} { allow read, write: if comercialFreela(); }
