@@ -11801,6 +11801,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
       ${temMl?`<div class="field"><label>Código de barras / EAN (opcional — sem ele o ML recebe "não tem código cadastrado")</label><input type="text" inputmode="numeric" id="dirShGtin" placeholder="7891234567890"></div>
       <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>
       <div class="field"><label>Registro Inmetro (opcional — eletroportáteis, vem no selo da caixa)</label><input type="text" id="dirShInmetro" placeholder="CE-EL-074/23-F05-ACERT"></div>`:''}
+      ${temTt?`<div class="field"><label>Código ANATEL (eletrônico com Bluetooth/Wi-Fi/rádio — a TikTok exige; vem na caixa ou na etiqueta)</label><input type="text" id="dirShAnatel" placeholder="12345-21-12345"></div>`:''}
       <div class="field"><label>NCM (opcional — só se a loja emite nota pela Shopee e ela pedir; 8 dígitos, confirme com a cliente/contador)</label><input type="text" inputmode="numeric" id="dirShNcm" placeholder="ex.: 83011000"></div>
       <div class="field"><label>CEST (opcional — só se o NCM exigir; 7 dígitos)</label><input type="text" inputmode="numeric" id="dirShCest" placeholder="ex.: 1007700"></div>
       <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
@@ -12147,7 +12148,7 @@ window.__cpCriarTt=async(depois=false)=>{
   const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
   const skuBase=await cpSkuBase(c);
   const P={tituloTiktok:document.getElementById('dirShTituloTt')?.value.trim()||'',titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
-    skus:combos.map(op=>({op,liq,est,sku:cpSkuDe(skuBase,op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
+    skus:combos.map(op=>({op,liq,est,sku:cpSkuDe(skuBase,op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:'',anatel:document.getElementById('dirShAnatel')?.value.trim()||''};
   if(!depois&&!await lbConfirmar(`Criar no TikTok Shop\nLoja: ${c.nome}\n${combos.length} SKU(s), ${est} un. cada · preço pelas taxas do TikTok (${fmtR(dirPrecosTT(liq)?.venda)})\nVai pra análise da TikTok e entra no desconto fixo.`,{okTxt:'Criar no TikTok'}))return;
   if(btn&&!depois)btn.disabled=true;
   u.criandoTt=true;
@@ -12181,7 +12182,7 @@ window.__cpCriarSh=async(depois=false)=>{
   const combos=vars.length?vars.reduce((acc,v)=>acc.flatMap(a=>v.opcoes.map(o=>[...a,o.nome])),[[]]):[[]];
   const skuBase=await cpSkuBase(c);
   const P={tituloTiktok:document.getElementById('dirShTituloTt')?.value.trim()||'',titulo:document.getElementById('dirShTitulo')?.value||u.titulo,descricao:document.getElementById('dirShDesc').value.trim(),fotos:sel.map(x=>x.img).slice(0,9),vars,
-    skus:combos.map(op=>({op,liq,est,sku:cpSkuDe(skuBase,op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:''};
+    skus:combos.map(op=>({op,liq,est,sku:cpSkuDe(skuBase,op)})),peso,dims:{c:dim[0],l:dim[1],a:dim[2]},sku:skuBase,atributosTxt:u.material?`Material: ${u.material}`:'',anatel:document.getElementById('dirShAnatel')?.value.trim()||''};
   if(!depois&&!await lbConfirmar(`Criar na SHEIN\nLoja: ${c.nome}\n${combos.length} variação(ões), ${est} un. cada · 1 preço só (${fmtR(sheinPreco(liq))})\nVai pra análise da SHEIN.`,{okTxt:'Criar na SHEIN'}))return;
   if(btn&&!depois)btn.disabled=true;
   const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('cpSheinMed')?.value||'',sheinCategoria:document.getElementById('cpSheinCat')?.value||''};
@@ -14431,12 +14432,23 @@ const migTamLimpo=o=>String(o).replace(/\(.*?\)/g,' ').replace(/\b\d{2}\s*(?:-|a
 const migVesteDe=o=>{const m=String(o).match(/(\d{2})\D{1,6}(\d{2})/);return m?`${m[1]}/${m[2]}`:(String(o).match(/\b(3\d|4\d|5\d)\b/)?.[1]||'');};
 // atributos OBRIGATÓRIOS do TikTok pela IA: ids com prefixo T (a IA trata como obrigatório) e valores por índice
 // (ids de valor do TikTok têm até 19 dígitos — viram número no JSON e perdem precisão)
-async function mig3Atributos(atributos,produto){
-  const obrig=(atributos||[]).filter(a=>a.obrigatorio&&a.tipo!=='SALES_PROPERTY');if(!obrig.length)return[];
+async function mig3Atributos(atributos,produto,{anatel=''}={}){
+  // ANATEL (16/11/2026, fone Bluetooth da Brother Store): a categoria pergunta "Is ANATEL homologation code required" e, com "Sim",
+  // passa a exigir o código (12052182). Não dá pra inventar o código → usa o digitado; sem ele e com "Sim", para com aviso claro.
+  const pergAnatel=(atributos||[]).find(a=>/anatel/i.test(a.nome)&&/required|obrigat/i.test(a.nome));
+  const codAnatel=(atributos||[]).find(a=>/anatel/i.test(a.nome)&&a!==pergAnatel);
+  const fim=lista=>{
+    if(!pergAnatel)return lista;
+    const sim=(pergAnatel.valores||[]).find(v=>/^(sim|yes)/i.test(v.nome));
+    const escolhido=lista.find(x=>x.id===pergAnatel.id);const disseSim=!!(escolhido&&sim&&escolhido.valores?.[0]?.id===String(sim.id));
+    if(anatel&&codAnatel){const out=lista.filter(x=>x.id!==pergAnatel.id&&x.id!==codAnatel.id);if(sim)out.push({id:pergAnatel.id,valores:[{id:String(sim.id)}]});out.push({id:codAnatel.id,valores:[{name:anatel}]});return out;}
+    if(disseSim)throw new Error('a TikTok exige o código de homologação da ANATEL desse produto (eletrônico com Bluetooth/Wi-Fi/rádio). Ele vem na caixa ou na etiqueta (ex.: 12345-21-12345). Preencha "Código ANATEL" e clique em "Tentar de novo só no TikTok".');
+    return lista;};
+  const obrig=(atributos||[]).filter(a=>a.obrigatorio&&a.tipo!=='SALES_PROPERTY');if(!obrig.length)return fim([]);
   const arvore=obrig.map(a=>({id:'T'+a.id,nome:a.nome,livre:a.livre&&!a.valores.length,valores:a.valores.map((v,k)=>({id:String(k+1),nome:v.nome}))}));
   const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto,arvore})}).then(r=>r.json()).catch(()=>({}));
-  return (r.atributos||[]).map(s=>{const a=obrig.find(x=>'T'+x.id===String(s.id));if(!a)return null;
-    if(s.value_name)return{id:a.id,valores:[{name:String(s.value_name)}]};const v=a.valores[Number(s.value_id)-1];return v?{id:a.id,valores:[{id:String(v.id)}]}:null;}).filter(Boolean);
+  return fim((r.atributos||[]).map(s=>{const a=obrig.find(x=>'T'+x.id===String(s.id));if(!a)return null;
+    if(s.value_name)return{id:a.id,valores:[{name:String(s.value_name)}]};const v=a.valores[Number(s.value_id)-1];return v?{id:a.id,valores:[{id:String(v.id)}]}:null;}).filter(Boolean));
 }
 async function mig3PorNoDesconto(c,pid,venda){
   // loja sem desconto fixo marcado (VYM, 14/10/2026): procura um FIXED_PRICE longo na loja; se não tiver, cria "desconto fixo lb AAAAMMDD" (340 dias) já com o produto
@@ -14746,7 +14758,7 @@ const pxCriar={
     linha('TikTok: categoria...');
     const cat=await mig3Api(c,'produto_categoria',{titulo:P.titulo});if(!cat.ok)throw new Error(cat.erro);
     if(!cat.armazem)throw new Error('loja sem armazém de venda no TikTok');
-    const atributos=await mig3Atributos(cat.atributos,`${P.titulo}\n${String(P.descricao).slice(0,500)}`);
+    const atributos=await mig3Atributos(cat.atributos,`${P.titulo}\n${String(P.descricao).slice(0,500)}`,{anatel:P.anatel});
     const subir=async(url,uso)=>{const r=await mig3Api(c,'produto_imagem',{base64:await migJpg(url),uso});if(!r.ok)throw new Error('foto: '+r.erro);return r.uri;};
     const imagens=[];for(const u of P.fotos.slice(0,9)){linha(`TikTok: fotos ${imagens.length+1}/${Math.min(9,P.fotos.length)}`);imagens.push(await subir(u,'MAIN_IMAGE'));}
     if(!imagens.length)throw new Error('produto sem fotos');
