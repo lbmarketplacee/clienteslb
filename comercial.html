@@ -901,6 +901,9 @@ const tagCor = (t) => { let h = 0; for (const c of String(t)) h = (h * 31 + c.ch
 const tagEstilo = (t) => `color:${tagCor(t)};background:${tagCor(t)}1a;border-color:${tagCor(t)}40`;
 const tagsMini = (l) => (l.etiquetas || []).map((t) => `<span class="tg" style="${tagEstilo(t)}">${esc(t)}</span>`).join('');
 function todasTags() { const m = new Map(); for (const l of vendas()) for (const t of l.etiquetas || []) m.set(t, (m.get(t) || 0) + 1); return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR')); }
+// tipo de negócio do formulário (16/11/2026, Lincoln): Sou Fabricante / Sou Revendedor com estoque / Sou Distribuidor
+const TIPOS_NEGOCIO = [['fabricante', 'Fabricante'], ['revendedor', 'Revendedor com estoque'], ['distribuidor', 'Distribuidor']];
+function tipoNegocioDe(l) { const rt = l.respostasTypebot || {}; const v = String(rt.tipoNegocio || rt.TipoNegocio || ''); return /fabric/i.test(v) ? 'fabricante' : /revend/i.test(v) ? 'revendedor' : /distrib/i.test(v) ? 'distribuidor' : ''; }
 function passaFiltro(l) {
   const f = S.ff, h = hoje(), st = l.stage || 'novo', r = l.reuniaoMarcada, ini = M.ms(r?.inicio);
   if (f.tags.length && !f.tags.some((t) => (l.etiquetas || []).includes(t))) return false;
@@ -908,6 +911,7 @@ function passaFiltro(l) {
   if (f.perfil && (f.perfil === 'sem' ? !!l.perfil : l.perfil !== f.perfil)) return false;
   if (f.temp && (f.temp === 'sem' ? !!l.ia?.temperatura : !new RegExp(f.temp, 'i').test(l.ia?.temperatura || ''))) return false;
   if (f.origem && (l.origem || '') !== f.origem) return false;
+  if (f.tipo && (f.tipo === 'sem' ? !!tipoNegocioDe(l) : tipoNegocioDe(l) !== f.tipo)) return false;
   if (f.retorno === 'atrasado' && !(l.proximoContato && l.proximoContato < h)) return false;
   if (f.retorno === 'hoje' && l.proximoContato !== h) return false;
   if (f.retorno === 'sem' && l.proximoContato) return false;
@@ -921,12 +925,12 @@ function passaFiltro(l) {
   if (f.fechou && st === 'fechado' && !M.fechouNoPeriodo(l, f.fechou, h)) return false;
   return true;
 }
-const filtrosAtivos = () => S.ff.tags.length + ['etapa', 'perfil', 'temp', 'origem', 'retorno', 'reuniao', 'tent', 'fechou'].filter((k) => S.ff[k]).length;
+const filtrosAtivos = () => S.ff.tags.length + ['etapa', 'tipo', 'perfil', 'temp', 'origem', 'retorno', 'reuniao', 'tent', 'fechou'].filter((k) => S.ff[k]).length;
 function filtrosHtml(n) {
   const f = S.ff; const sel = (k, rot, ops) => `<select data-ff="${k}"><option value="">${rot}</option>${ops.map(([v, t]) => `<option value="${esc(v)}" ${f[k] === v ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
   const origens = [...new Set(vendas().map((l) => l.origem).filter(Boolean))].sort();
   const tags = todasTags();
-  return `<div class="f-bar">${sel('etapa', 'Etapa: todas', M.ETAPAS.map((e) => [e.key, e.label]))}${sel('perfil', 'Perfil: todos', [['ja_vende', 'Já vende'], ['quer_entrar', 'Quer entrar'], ['sem', 'Sem perfil']])}${sel('temp', 'Temperatura: todas', [['quente', 'Quente'], ['morno', 'Morno'], ['frio', 'Frio'], ['sem', 'Sem análise']])}${sel('retorno', 'Retorno: todos', [['atrasado', 'Atrasado'], ['hoje', 'Hoje'], ['sem', 'Sem retorno']])}${sel('reuniao', 'Reunião: todas', [['futura', 'Marcada'], ['confirmou', 'Confirmada'], ['semconf', 'Sem confirmação'], ['semstatus', 'Passou sem status'], ['semdata', 'Agendado sem data']])}${sel('tent', 'Tentativas: todas', [['0', 'Nenhuma'], ['3', '3 ou mais']])}${sel('origem', 'Origem: todas', origens.map((o) => [o, o]))}<span class="n">${n} lead(s)</span>${filtrosAtivos() ? '<button class="btn sm" id="fLimpar">Limpar filtros</button>' : ''}</div>
+  return `<div class="f-bar">${sel('etapa', 'Etapa: todas', M.ETAPAS.map((e) => [e.key, e.label]))}${sel('tipo', 'Negócio: todos', [...TIPOS_NEGOCIO, ['sem', 'Não respondeu']])}${sel('perfil', 'Perfil: todos', [['ja_vende', 'Já vende'], ['quer_entrar', 'Quer entrar'], ['sem', 'Sem perfil']])}${sel('temp', 'Temperatura: todas', [['quente', 'Quente'], ['morno', 'Morno'], ['frio', 'Frio'], ['sem', 'Sem análise']])}${sel('retorno', 'Retorno: todos', [['atrasado', 'Atrasado'], ['hoje', 'Hoje'], ['sem', 'Sem retorno']])}${sel('reuniao', 'Reunião: todas', [['futura', 'Marcada'], ['confirmou', 'Confirmada'], ['semconf', 'Sem confirmação'], ['semstatus', 'Passou sem status'], ['semdata', 'Agendado sem data']])}${sel('tent', 'Tentativas: todas', [['0', 'Nenhuma'], ['3', '3 ou mais']])}${sel('origem', 'Origem: todas', origens.map((o) => [o, o]))}<span class="n">${n} lead(s)</span>${filtrosAtivos() ? '<button class="btn sm" id="fLimpar">Limpar filtros</button>' : ''}</div>
   <div class="f-bar"><b style="font-size:12.5px">Tags:</b>${tags.map(([t, q]) => `<button class="tg ${f.tags.includes(t) ? '' : 'off'}" data-ftag="${esc(t)}" style="${tagEstilo(t)}">${esc(t)} · ${q}</button>`).join('') || '<span class="n">Nenhuma tag ainda. Crie na ficha do lead.</span>'}</div>`;
 }
 function leadsFunil() {
@@ -1601,7 +1605,7 @@ async function carregarMeta(forcar) {
 }
 // ================= RESPOSTAS DO FORMULÁRIO (31/10/2026, Lincoln: "igual o Typebot") =================
 // Cada lead que veio de formulário (próprio da LB em lbmarketplace.com.br/aplicacao ou o Typebot antigo) com as respostas.
-S.resp = S.resp || { q: '', st: 'todos', orig: 'todos', vende: 'todos' };
+S.resp = S.resp || { q: '', st: 'todos', orig: 'todos', vende: 'todos', tipo: 'todos' };
 function respDe(l) {
   const rt = l.respostasTypebot || {}; const v = (...ks) => { for (const k of ks) if (rt[k] && !/^\{\{/.test(rt[k])) return String(rt[k]); return ''; };
   const form = rt.formulario === 'lb-site' || /Formulário LB/.test(l.origem || '') ? 'Formulário LB' : 'Typebot';
@@ -1615,6 +1619,7 @@ function respostasLista() {
     .map((l) => ({ l, r: respDe(l) }))
     .filter(({ l, r }) => (f.st === 'todos' || (f.st === 'inc' ? r.incompleto : !r.incompleto))
       && (f.orig === 'todos' || r.form === f.orig)
+      && (!f.tipo || f.tipo === 'todos' || (f.tipo === 'sem' ? !tipoNegocioDe(l) : tipoNegocioDe(l) === f.tipo))
       && (f.vende === 'todos' || (f.vende === 'sim' ? /^sim/i.test(r.vende) : f.vende === 'nao' ? /^ainda|^n[aã]o/i.test(r.vende) : !r.vende))
       && (!q || [l.nome, l.whatsapp, l.email, r.tipo, r.onde].join(' ').toLowerCase().includes(q)))
     .sort((a, b) => M.criadoMs(b.l) - M.criadoMs(a.l));
@@ -1629,11 +1634,12 @@ function rResp() {
       <select id="respSt" style="width:auto;flex:0 0 auto"><option value="todos">Completos e incompletos</option><option value="comp">Só completos</option><option value="inc">Parou no meio</option></select>
       <select id="respOrig" style="width:auto;flex:0 0 auto"><option value="todos">Formulário LB e Typebot</option><option value="Formulário LB">Formulário LB</option><option value="Typebot">Typebot</option></select>
       <select id="respVende" style="width:auto;flex:0 0 auto"><option value="todos">Já vende: todos</option><option value="sim">Já vende</option><option value="nao">Quer começar</option><option value="vazio">Não respondeu</option></select>
+      <select id="respTipo" style="width:auto;flex:0 0 auto"><option value="todos">Negócio: todos</option>${TIPOS_NEGOCIO.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}<option value="sem">Não respondeu</option></select>
       <button class="btn sm ouro" id="respCsv">Baixar planilha</button></div></div>
     <div id="respKpi" class="grid g4" style="margin-top:12px"></div>
     <div class="card painel" style="margin-top:12px"><div class="tabw"><table class="tb"><thead><tr><th>Chegou</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Tipo de negócio</th><th>Onde vende</th><th>Já vende?</th><th>Origem</th><th>Status</th><th>Etapa</th></tr></thead><tbody id="respTb"></tbody></table></div><div id="respMais"></div></div>`;
-    const sync = () => { S.resp.q = $('#respQ').value; S.resp.st = $('#respSt').value; S.resp.orig = $('#respOrig').value; S.resp.vende = $('#respVende').value; respCorpo(); };
-    $('#respQ').addEventListener('input', sync); ['#respSt', '#respOrig', '#respVende'].forEach((k) => $(k).addEventListener('change', sync));
+    const sync = () => { S.resp.q = $('#respQ').value; S.resp.st = $('#respSt').value; S.resp.orig = $('#respOrig').value; S.resp.vende = $('#respVende').value; S.resp.tipo = $('#respTipo').value; respCorpo(); };
+    $('#respQ').addEventListener('input', sync); ['#respSt', '#respOrig', '#respVende', '#respTipo'].forEach((k) => $(k).addEventListener('change', sync));
     $('#respCsv').addEventListener('click', respCsv);
   }
   $('#respPer').innerHTML = chipsPeriodo();
