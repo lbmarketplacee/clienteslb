@@ -323,8 +323,8 @@ const CLOSERS = [['guilherme@lbmarketplace.com.br', 'Guilherme'], ['akemikimides
 const HORARIO = [9, 19]; // reuniões das 9h às 19h, de 30 em 30 min
 const HORARIO_SABADO = [9, 13]; // sábado das 9h às 13h (Lincoln 29/10/2026)
 // 30/10/2026: horário próprio de quem não segue o padrão — Duda só das 17h às 21h30, todo dia (sábado e domingo também)
-const HORARIO_PESSOA = { 'akemikimidesign@gmail.com': { todos: [17, 21.5] } };
-function horarioDe(email, sem) { const p = HORARIO_PESSOA[email]; if (p) return p.todos; if (sem === 0) return null; return sem === 6 ? HORARIO_SABADO : HORARIO; }
+const HORARIO_PESSOA = { 'akemikimidesign@gmail.com': { semana: [9, 18.5] } }; // Duda (16/11/2026): seg a sex das 9h às 18h30
+function horarioDe(email, sem) { const p = HORARIO_PESSOA[email]; if (p?.todos) return p.todos; if (p?.semana) return sem === 0 || sem === 6 ? null : p.semana; if (sem === 0) return null; return sem === 6 ? HORARIO_SABADO : HORARIO; }
 const MOTIVOS = ['Não respondeu mais', 'Achou caro / sem dinheiro agora', 'Não é o momento', 'Não qualificado (sem perfil)', 'Fechou com outra assessoria', 'Sem produto / estoque', 'Só queria informação', 'Outro'];
 
 const PAGINAS = {
@@ -391,6 +391,7 @@ const leadDaConv = (c) => leadPorTel.get(chaveTel(c.telefone || c.id)) || null;
 const convDoLead = (l) => { const k = chaveTel(l?.whatsapp); return k ? S.convs.find((c) => chaveTel(c.telefone || c.id) === k) : null; };
 const ehCliente = (c) => !!S.clientesTel[chaveTel(c.telefone || c.id)] || c.qualificacao === 'cliente';
 // 30/10/2026 (Lincoln): o Guilherme vê TODOS os agendados (pode chamar/ligar pra antecipar), mesmo os da Isa ou com reunião com outra pessoa
+const FUNIL_SO_MEUS = ['akemikimidesign@gmail.com']; // Duda (16/11/2026): o funil abre só com os leads dela
 const VE_TODOS_AGENDADOS = ['guilherme@lbmarketplace.com.br'];
 function meuLead(l) { if (!vendedor()) return true; if (VE_TODOS_AGENDADOS.includes(S.email) && l.stage === 'agendado') return true; return low(l.donoEmail) === S.email || low(l.reuniaoMarcada?.com) === S.email; }
 function minhaConv(c) { if (!vendedor()) return true; if (low(c.donoEmail) === S.email) return true; const l = leadDaConv(c); return !!l && meuLead(l); }
@@ -405,7 +406,7 @@ onAuthStateChanged(auth, (u) => {
   if (!u) { $('#login').classList.remove('hide'); $('#app').classList.add('hide'); return; }
   const em = low(u.email), q = EQUIPE[em];
   if (!q) { $('#loginErro').textContent = `${u.email} não tem acesso à Central Comercial.`; signOut(auth); return; }
-  S.email = q.email || em; S.nome = q.nome; S.papel = q.papel;
+  S.email = q.email || em; S.nome = q.nome; S.papel = q.papel; if (FUNIL_SO_MEUS.includes(S.email)) S.funilDono = 'eu';
   $('#login').classList.add('hide'); $('#app').classList.remove('hide');
   $('#euNome').textContent = S.nome; $('#euPapel').textContent = PAPEL_ROT[S.papel]; $('#euAv').textContent = iniciais(S.nome);
   montarNav(); iniciarDados();
