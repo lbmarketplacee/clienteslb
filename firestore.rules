@@ -71,6 +71,12 @@ service cloud.firestore {
       allow update: if request.auth != null && request.auth.token.email == 'roma@lbmarketplace.com.br'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mlAccessToken','mlRefreshToken','mlUserId','mlTokenExpiraEm','mlConectadoEm','gmvMlAutomatico','gmvMlAtualizadoEm']);
     }
+    // Login de conexão da LB (16/11/2026): só lê os clientes e grava a conexão das APIs (Shopee, ML, TikTok, SHEIN)
+    match /clientes/{id} {
+      allow read: if request.auth != null && request.auth.token.email == 'conexoes@lbmarketplace.com.br';
+      allow update: if request.auth != null && request.auth.token.email == 'conexoes@lbmarketplace.com.br'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['shopeeShopId','shopeeAccessToken','shopeeRefreshToken','shopeeTokenExpiraEm','shopeeConectadoEm','shopeeErpShopId','shopeeErpAccessToken','shopeeErpRefreshToken','shopeeErpTokenExpiraEm','shopeeErpConectadoEm','shopeeAdsShopId','shopeeAdsAccessToken','shopeeAdsRefreshToken','shopeeAdsTokenExpiraEm','shopeeAdsConectadoEm','shopeeMktShopId','shopeeMktAccessToken','shopeeMktRefreshToken','shopeeMktTokenExpiraEm','shopeeMktConectadoEm','shopeeProdutoShopId','shopeeProdutoAccessToken','shopeeProdutoRefreshToken','shopeeProdutoTokenExpiraEm','shopeeProdutoConectadoEm','shopeeShopName','shopeeErpShopName','mlAccessToken','mlRefreshToken','mlUserId','mlTokenExpiraEm','mlConectadoEm','mlNickname','tiktokAccessToken','tiktokRefreshToken','tiktokShopId','tiktokShopCipher','tiktokShopName','tiktokTokenExpiraEm','tiktokConectadoEm','tiktokRefreshExpiraEm','sheinOpenKeyId','sheinSecretKey','sheinConectadoEm','sheinConectadoPor','sheinSupplierId','atualizadoEm']);
+    }
     // (removido 12/10/2026: acesso do revisor da TikTok — o app já foi aprovado)
   }
 }
