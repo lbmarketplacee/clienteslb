@@ -1287,6 +1287,8 @@ function confirmacaoTag(l) {
 // A agenda é da conta lincoln@, por isso ele aparece como convidado em tudo. Reunião marcada pelo sistema com o Lincoln escolhido continua dele.
 const REUNIAO_LINCOLN_VAI_PARA = 'guilherme@lbmarketplace.com.br';
 function closersDoEvento(e) {
+  // reunião passada pra outra pessoa no CRM (ex.: Guilherme → Duda, 16/11/2026) vale mais que o convidado do evento
+  const lr = S.leads.find((x) => x.reuniaoMarcada?.eventoId === e.id); if (lr && CLOSERS.some((c) => c[0] === low(lr.reuniaoMarcada.com))) return [low(lr.reuniaoMarcada.com)];
   const at = (e.attendees || []).map((a) => low(a.email)); const cl = CLOSERS.filter(([em]) => at.includes(em)).map(([em]) => em);
   if (cl.length === 1 && cl[0] === 'lincoln@lbmarketplace.com.br' && !e.extendedProperties?.private?.leadId) return [REUNIAO_LINCOLN_VAI_PARA];
   return cl;
