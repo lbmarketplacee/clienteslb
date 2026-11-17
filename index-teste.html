@@ -5489,7 +5489,7 @@ const jrVendeu=c=>!!c.primeiraVendaEm||Object.values(c.gmvHistorico||{}).some(m=
 const jrTem=(c,m)=>(c.marketplaces||[]).includes(m)&&JR_CONEXAO[m](c);
 const JR_SINAIS={
   lead:c=>jrConectado(c)&&'loja conectada',fechou:c=>jrConectado(c)&&'loja conectada',boasvindas:c=>jrConectado(c)&&'loja conectada',acessos:c=>jrConectado(c)&&'loja conectada',
-  origem:c=>c.origemAquisicao&&'origem na ficha',
+  origem:c=>c.origemAquisicao?'origem na ficha':jrConectado(c)&&'loja conectada — falta a origem na ficha',
   revisaOnb:c=>jrConectado(c)&&'loja conectada (contrato e pagamento)',contrato:c=>jrConectado(c)&&'loja conectada (contrato e pagamento)',asaas:c=>jrConectado(c)&&'loja conectada (contrato e pagamento)',
   apresentacao:c=>jrConectado(c)&&'loja conectada',
   contas:c=>{const mps=(c.marketplaces||[]).filter(m=>JR_CONEXAO[m]);return mps.length&&mps.every(m=>JR_CONEXAO[m](c))&&'todas as contas conectadas';},
