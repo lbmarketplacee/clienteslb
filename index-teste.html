@@ -3898,11 +3898,7 @@ function startListeners(){if(unsubC)return;
     setTimeout(()=>{try{const b=document.querySelector('.nav-item[data-page="centralcom"]');b?.classList.remove('hidden');b?.click();}catch(e){}},700);
     return;}
   if(ehConexaoLB()){document.body.classList.add('modo-conexao');
-    const cxAviso=t=>{let el=document.getElementById('cxAviso');if(!el){el=document.createElement('div');el.id='cxAviso';el.style.cssText='position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:#2a1d00;border:1px solid #d4af37;color:#f5e6b0;padding:8px 14px;border-radius:10px;font-size:13px;z-index:9999;max-width:90vw';document.body.appendChild(el);}el.textContent=t;};
-    cxAviso('Carregando clientes…');
-    unsubC=onSnapshot(collection(db,"clientes"),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>String(x.nome||'').localeCompare(String(y.nome||'')));const erros=[];
-      for(const f of [()=>sgmvRenderizar(),()=>mlApiRenderizar(),()=>ttRenderizar(),()=>ttGmvRenderizar(),()=>cmRenderShein(),()=>cmRenderTudo()]){try{f();}catch(e){erros.push(String(e&&e.message||e).slice(0,80));}}
-      cxAviso(clientesCache.length+' clientes carregados'+(erros.length?' · erro na tela: '+erros.join(' | '):''));},e=>{console.error('[conexao]',e);cxAviso('Não consegui ler os clientes: '+(e&&e.code||e));});
+    unsubC=onSnapshot(collection(db,"clientes"),snap=>{clientesCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>String(x.nome||'').localeCompare(String(y.nome||'')));try{renderAll();}catch(e){console.warn('[conexao]',e);}},e=>console.error('[conexao]',e));
     setTimeout(()=>{try{location.hash='#marketing';const b=document.querySelector('.nav-item[data-page="marketing"]');b?.click();}catch(e){}},900);
     return;}
   if(portalClienteId()){document.body.classList.add('modo-portal');
@@ -5485,9 +5481,29 @@ const jrModelo=j=>j.tipo==='saida'?JR_SAIDA:JR_ETAPAS;
 const JR_CONEXAO={shopee:c=>c.shopeeErpShopId||c.shopeeMktShopId||c.shopeeShopId,ml:c=>c.mlAccessToken||c.mlUserId,tiktok:c=>c.tiktokShopCipher,shein:c=>c.sheinOpenKeyId};
 // Item resolvido sozinho pelo cadastro: marketplace não contratado = não se aplica; já conectado = feito.
 const JR_SO_COM={adsml:'ml',cupomTiktok:'tiktok'}; /* 09/11/2026: item que só existe pra loja com esse marketplace */
-function jrAuto(j,k){if(j.tipo==='saida'||(!JR_CONEXAO[k]&&!JR_SO_COM[k]))return null;const c=(clientesCache||[]).find(x=>x.id===j.clienteId);if(!c)return null;
-  if(JR_SO_COM[k])return (c.marketplaces||[]).includes(JR_SO_COM[k])?null:'na';
-  if(JR_CONEXAO[k](c))return 'ok';if(!(c.marketplaces||[]).includes(k))return 'na';return null;}
+// 17/11/2026 (Lincoln): a jornada anda sozinha pelo que já dá pra ver na loja. Loja conectada na API = contrato assinado e pago.
+const jrMs=v=>{if(v==null||v==='')return 0;if(typeof v==='number')return v<1e12?v*1000:v;if(v.seconds)return v.seconds*1000;const s=String(v);return Date.parse(/T\d\d:\d\d$/.test(s)?s+':00-03:00':s)||0;};
+const jrFuturo=v=>jrMs(v)>Date.now();
+const jrConectado=c=>Object.values(JR_CONEXAO).some(f=>f(c));
+const jrVendeu=c=>!!c.primeiraVendaEm||Object.values(c.gmvHistorico||{}).some(m=>(m?.shopee||0)+(m?.tiktok||0)+(m?.ml||0)>0);
+const jrTem=(c,m)=>(c.marketplaces||[]).includes(m)&&JR_CONEXAO[m](c);
+const JR_SINAIS={
+  lead:c=>jrConectado(c)&&'loja conectada',fechou:c=>jrConectado(c)&&'loja conectada',boasvindas:c=>jrConectado(c)&&'loja conectada',acessos:c=>jrConectado(c)&&'loja conectada',
+  origem:c=>c.origemAquisicao&&'origem na ficha',
+  revisaOnb:c=>jrConectado(c)&&'loja conectada (contrato e pagamento)',contrato:c=>jrConectado(c)&&'loja conectada (contrato e pagamento)',asaas:c=>jrConectado(c)&&'loja conectada (contrato e pagamento)',
+  apresentacao:c=>jrConectado(c)&&'loja conectada',
+  contas:c=>{const mps=(c.marketplaces||[]).filter(m=>JR_CONEXAO[m]);return mps.length&&mps.every(m=>JR_CONEXAO[m](c))&&'todas as contas conectadas';},
+  linkproduto:c=>(c.linkProdutosToken||jrVendeu(c))&&'link de produtos gerado',
+  anuncios:c=>jrVendeu(c)&&'a loja já vende',
+  padronizar:c=>{const ps=[['shopee','shopeeDescontoFixoId'],['tiktok','tiktokDescontoFixoId']].filter(([m])=>jrTem(c,m));return ps.length&&ps.every(([,f])=>c[f])&&'desconto fixo ativo';},
+  cupomTiktok:c=>jrFuturo(c.tiktokCupomFim)&&'cupom do TikTok ativo',
+  robos:c=>(jrFuturo(c.ofertaRelampagoShopeeCobertaAte)||jrFuturo(c.tiktokOfertaCobertaAte)||Date.now()-jrMs(c.mlOfertaUltimaVerificacao)<3*86400000)&&'relâmpago rodando',
+};
+function jrAutoInfo(j,k){if(j.tipo==='saida')return null;const c=(clientesCache||[]).find(x=>x.id===j.clienteId);if(!c)return null;
+  if(JR_SO_COM[k]&&!(c.marketplaces||[]).includes(JR_SO_COM[k]))return{st:'na',por:'sistema (não contratado)'};
+  if(JR_CONEXAO[k]){if(JR_CONEXAO[k](c))return{st:'ok',por:'sistema (já conectado)'};if(!(c.marketplaces||[]).includes(k))return{st:'na',por:'sistema (não contratado)'};return null;}
+  const m=JR_SINAIS[k]?.(c);return m?{st:'ok',por:'sistema ('+m+')'}:null;}
+function jrAuto(j,k){return jrAutoInfo(j,k)?.st||null;}
 const jrSt=(j,k)=>j.itens?.[k]?.st||jrAuto(j,k);
 function jrPrazo(j,etapaK){const et=jrModelo(j);const idx=et.findIndex(e=>e.k===etapaK);const e=et[idx];if(!e?.prazo)return null;
   let ini=j.criadoEm?.seconds||0;for(const ant of et.slice(0,idx))for(const[k] of ant.itens){const t=j.itens?.[k]?.em?.seconds;if(t&&t>ini)ini=t;}
@@ -6660,7 +6676,7 @@ function jrDetalhe(){const box=document.getElementById('jrDet');const j=jr.lista
     <button class="btn btn-ghost btn-sm" onclick="window.__jrConcluir('${j.id}')">Concluir jornada</button></div>
     ${j.tipo!=='saida'?`<div class="jr-estr"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="flex:1">Robô Estruturar loja</b><button class="btn btn-ghost btn-sm" onclick="window.__jrEstruturar('${j.id}',false)">Ver o que falta</button>${isLincoln()?`<button class="btn btn-gold btn-sm" onclick="window.__jrEstruturar('${j.id}',true)">Estruturar agora</button>`:''}</div>
       <div class="jr-meta" style="margin-top:2px">Lê a loja pelas APIs: põe os produtos no desconto fixo, cria o cupom, coloca no Ads e impulsiona. O que não tem API vira tarefa pra pessoa certa e a Jornada é marcada sozinha.</div><div id="jrEstrRes">${jrEstrHtml(((clientesCache||[]).find(c=>c.id===j.clienteId)||{}).estruturaUltima,true)}</div></div>`:''}
-    ${jrModelo(j).map(e=>`<div class="jr-etapa"><h4>${e.t}${e.prazo?` <span class="jr-meta">· prazo ${e.prazo} dia(s)</span>`:''}</h4>${e.chave?`<div class="jr-meta" style="margin:-2px 0 4px">Chave pra próxima etapa: <b style="color:var(--gold)">${esc(e.chave)}</b></div>`:''}${e.itens.map(([k,t,q])=>{const it={...(j.itens?.[k]||{})};const au=!it.st&&jrAuto(j,k);if(au){it.st=au;it.por=au==='ok'?'sistema (já conectado)':'sistema (não contratado)';}const cls=it.st==='ok'?'ok':it.st==='na'?'na':'';
+    ${jrModelo(j).map(e=>`<div class="jr-etapa"><h4>${e.t}${e.prazo?` <span class="jr-meta">· prazo ${e.prazo} dia(s)</span>`:''}</h4>${e.chave?`<div class="jr-meta" style="margin:-2px 0 4px">Chave pra próxima etapa: <b style="color:var(--gold)">${esc(e.chave)}</b></div>`:''}${e.itens.map(([k,t,q])=>{const it={...(j.itens?.[k]||{})};const au=!it.st&&jrAutoInfo(j,k);if(au){it.st=au.st;it.por=au.por;}const cls=it.st==='ok'?'ok':it.st==='na'?'na':'';
       return `<div class="jr-it ${cls} ${jr.filtro===q&&!it.st?'jr-minha':''}"><button class="jr-chk" title="Clique: feito → não se aplica → pendente" onclick="window.__jrMarcar('${j.id}','${k}')">${it.st==='ok'?'✓':it.st==='na'?'—':''}</button>
         <span><span class="t">${esc(t)}</span>${it.por?`<div class="jr-meta">${it.st==='na'?'não se aplica':'feito'} — ${esc(it.por)}${it.em?.seconds?' em '+new Date(it.em.seconds*1000).toLocaleDateString('pt-BR'):''}</div>`:''}
         <input placeholder="observação" value="${esc(it.obs||'')}" onchange="window.__jrObs('${j.id}','${k}',this.value)" style="margin-top:4px;width:100%;font-size:12px;padding:3px 6px;background:transparent;border:1px solid var(--border-soft);border-radius:6px;color:var(--text)"></span>
