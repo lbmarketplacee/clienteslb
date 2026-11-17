@@ -186,14 +186,17 @@ $('#btnGerar').onclick = async () => {
 // ---------- composição (texto e logo pelo sistema) ----------
 function montarPecas() {
   $('#pecas').innerHTML = PECAS.map((p) => `<div class="peca${p.larga ? ' larga' : ''}"><h4>${p.nome} <span>${p.w}×${p.h}px</span></h4><canvas id="cv_${p.id}" width="${p.w}" height="${p.h}"></canvas>
-    <div class="acoes"><button class="btn sec" data-g="${p.id}">Gerar de novo</button><button class="btn sec" data-t="${p.id}">Atualizar texto</button><button class="btn sec" data-d="${p.id}">Baixar PNG</button></div><div class="st" id="st_${p.id}"></div></div>`).join('');
+    <div class="acoes"><button class="btn sec" data-g="${p.id}">Gerar de novo</button><button class="btn sec" data-t="${p.id}">Atualizar texto</button><button class="btn sec" data-d="${p.id}">Baixar PNG</button><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)">Mostrar mais: cabeça <input type="range" min="0" max="100" value="${Math.round(fyPadrao(p) * 100)}" data-fy="${p.id}"> pés</label></div><div class="st" id="st_${p.id}"></div></div>`).join('');
   $('#pecas').querySelectorAll('[data-g]').forEach((b) => b.onclick = () => { if (!CLI) return alert('Escolha o cliente.'); gerarPeca(PECAS.find((p) => p.id === b.dataset.g)); });
   $('#pecas').querySelectorAll('[data-t]').forEach((b) => b.onclick = async () => { await carregarFontes(); desenhar(PECAS.find((p) => p.id === b.dataset.t)); });
+  $('#pecas').querySelectorAll('[data-fy]').forEach((r) => r.oninput = () => { const p = PECAS.find((q) => q.id === r.dataset.fy); p.fy = r.value / 100; if (IMG[p.id]) desenhar(p); });
   $('#pecas').querySelectorAll('[data-d]').forEach((b) => b.onclick = () => baixar(PECAS.find((p) => p.id === b.dataset.d)));
 }
 // fontes do Google só carregam quando usadas: garante antes de desenhar (senão a frase sai na letra padrão)
 async function carregarFontes() { const { serif, script } = fontes(); await Promise.all([`700 40px "${serif}"`, `400 40px "${script}"`, `600 40px "${script}"`, '700 20px Montserrat', '600 20px Montserrat'].map((f) => document.fonts.load(f).catch(() => null))); }
 async function redesenharTudo() { await carregarFontes(); PECAS.forEach((p) => { if (IMG[p.id]) desenhar(p); }); }
+// quanto do topo da foto aparece quando o recorte corta em cima/embaixo: perto de 0 = mostra a cabeça (antes 0,45 cortava a cabeça das modelos, 17/11/2026)
+function fyPadrao(p) { return p.fy ?? (p.id === 'ml_capa' ? 0.25 : p.texto === 'topo' ? 0.7 : p.texto === 'baixo' ? 0.3 : 0.15); }
 function cobrir(x, img, dx, dy, dw, dh, fy = 0.5, fx = 0.5) {
   const k = Math.max(dw / img.naturalWidth, dh / img.naturalHeight); const sw = dw / k, sh = dh / k;
   const sx = (img.naturalWidth - sw) * fx, sy = (img.naturalHeight - sh) * fy;
@@ -225,7 +228,7 @@ function desenhar(p) {
   x.clearRect(0, 0, w, h); const ims = IMG[p.id]; if (!ims) return;
   if (p.id === 'ml_capa') return capaMl(x, ims, w, h);
   const ladoTexto = p.texto; const larga = ladoTexto === 'esquerda' || ladoTexto === 'direita';
-  cobrir(x, ims[0], 0, 0, w, h, ladoTexto === 'topo' ? 0.7 : ladoTexto === 'baixo' ? 0.3 : 0.45, ladoTexto === 'esquerda' ? 0.75 : ladoTexto === 'direita' ? 0.25 : 0.5);
+  cobrir(x, ims[0], 0, 0, w, h, fyPadrao(p), ladoTexto === 'esquerda' ? 0.75 : ladoTexto === 'direita' ? 0.25 : 0.5);
   if (larga) {
     const tw = w * 0.42; const g = ladoTexto === 'esquerda' ? x.createLinearGradient(0, 0, tw * 1.25, 0) : x.createLinearGradient(w, 0, w - tw * 1.25, 0);
     g.addColorStop(0, rgba(c1, 0.97)); g.addColorStop(0.7, rgba(c1, 0.93)); g.addColorStop(1, rgba(c1, 0)); x.fillStyle = g; x.fillRect(0, 0, w, h);
@@ -246,7 +249,7 @@ function capaMl(x, ims, w, h) {
   const B = [{ t: 'cena', i: 0, w: 560 }, { t: 'logo', w: 360 }, { t: 'cena', i: 1, w: 560 }, { t: 'frase', w: 440 }];
   let px = 0;
   for (const b of B) {
-    if (b.t === 'cena') cobrir(x, ims[b.i] || ims[0], px, 0, b.w, h, 0.42);
+    if (b.t === 'cena') cobrir(x, ims[b.i] || ims[0], px, 0, b.w, h, fyPadrao({ id: 'ml_capa', fy: PECAS.find((q) => q.id === 'ml_capa')?.fy }));
     else { const g = x.createLinearGradient(px, 0, px + b.w, 0); g.addColorStop(0, c1); g.addColorStop(1, rgba(c1, 0.92)); x.fillStyle = g; x.fillRect(px, 0, b.w, h); }
     if (b.t === 'logo') {
       const d = LOGO ? logo(x, px + 56, h / 2, 76) : 0; x.textAlign = d ? 'left' : 'center'; x.textBaseline = 'middle';
