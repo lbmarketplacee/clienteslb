@@ -14398,7 +14398,10 @@ async function migMl(c,caminho){const token=await mlGarantirTokenValido(c);retur
 // anúncios do ML (status) com o líquido real de cada um
 async function migLerMl(c,status='active',passo=()=>{}){
   const ids=[];for(let off=0;off<1000;off+=50){const s=await migMl(c,`/users/${c.mlUserId}/items/search?status=${status}&limit=50&offset=${off}`);ids.push(...(s?.results||[]));if(!s||off+50>=(s.paging?.total||0))break;}
-  const itens=[];for(let i=0;i<ids.length;i+=20){passo(`Lendo anúncios do ML... ${Math.min(i+20,ids.length)}/${ids.length}`);const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(',')+'&include_attributes=all');itens.push(...(d||[]).map(x=>x.body).filter(Boolean));}
+  const itens=[];for(let i=0;i<ids.length;i+=20){passo(`Lendo anúncios do ML... ${Math.min(i+20,ids.length)}/${ids.length}`);let d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(',')+'&include_attributes=all');
+    // 1 anúncio "Resource deprecated" derruba o lote (Yashop/Catolis, 18/11/2026) → lê um por um
+    if(!Array.isArray(d)){d=[];for(const id of ids.slice(i,i+20)){const b=await migMl(c,'/items/'+id+'?include_attributes=all').catch(()=>null);if(b&&b.id)d.push({body:b});}}
+    itens.push(...d.map(x=>x.body).filter(Boolean));}
   const taxa={};
   for(const it of itens){const k=`${it.price}|${it.listing_type_id}|${it.category_id}`;
     if(taxa[k]==null){const lp=await migMl(c,`/sites/MLB/listing_prices?price=${it.price}&listing_type_id=${it.listing_type_id}&category_id=${it.category_id}`);taxa[k]=Number(lp?.sale_fee_amount??lp?.[0]?.sale_fee_amount);if(!(taxa[k]>=0))taxa[k]=migR2(it.price*0.14);}
@@ -14457,7 +14460,7 @@ async function migLerShopeeAtivos(c,token,passo){
 }
 async function migTitulosMl(c){
   const ids=[];for(const st of ['active','paused']){for(let off=0;off<1000;off+=50){const s=await migMl(c,`/users/${c.mlUserId}/items/search?status=${st}&limit=50&offset=${off}`);ids.push(...(s?.results||[]));if(!s||off+50>=(s.paging?.total||0))break;}}
-  const nomes=[];for(let i=0;i<ids.length;i+=20){const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(',')+'&attributes=id,title,family_name');nomes.push(...(d||[]).map(x=>x.body).filter(Boolean).flatMap(b=>[b.title,b.family_name].filter(Boolean)));}
+  const nomes=[];for(let i=0;i<ids.length;i+=20){const d=await migMl(c,'/items?ids='+ids.slice(i,i+20).join(',')+'&attributes=id,title,family_name');nomes.push(...(Array.isArray(d)?d:[]).map(x=>x.body).filter(Boolean).flatMap(b=>[b.title,b.family_name].filter(Boolean)));}
   return nomes;
 }
 async function mig3Api(c,acao,extra={}){const r=await fetch(TTP_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
