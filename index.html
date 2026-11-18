@@ -14505,7 +14505,7 @@ async function mig3PorNoDesconto(c,pid,venda){
    (comissão real +7%, 1 anúncio por cor+tamanho, ativos) · TikTok dirPrecosTT (desconto fixo do TikTok).
    P = {titulo, descricao, fotos:[url], vars:[{nome, tam, opcoes:[{nome, foto, veste}]}], skus:[{op:[...], liq, est, sku}], peso, dims:{c,l,a}, sku} */
 const PX_MP={shopee:'Shopee',ml:'Mercado Livre',tiktok:'TikTok',shein:'SHEIN'};
-const px={c:null,origem:'',destinos:[],linhas:[],criadosShopee:[],ttDesc:null};
+const px={c:null,cd:null,origem:'',destinos:[],linhas:[],criadosShopee:[],ttDesc:null}; // cd = loja de destino (18/11/2026: outra loja do mesmo dono, ex. Catolis → Aquários)
 const pxTem=(c,mp)=>mp==='shopee'?!!(c.shopeeErpShopId&&c.shopeeErpRefreshToken):mp==='ml'?!!(c.mlUserId&&c.mlRefreshToken):mp==='shein'?!!c.sheinOpenKeyId:!!(c.tiktokShopCipher&&c.tiktokAccessToken);
 const pxTexto=h=>String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|li|div|h\d)>/gi,'\n').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim();
 const pxEhTam=n=>/tamanho|size/i.test(String(n||''));
@@ -14904,10 +14904,11 @@ function pxRender(){
       <div class="px-rota-col"><span>Cliente</span><select id="pxLoja" onchange="window.__pxLoja()"><option value="">Escolha…</option>${pxOpcoesLojas()}</select></div>
       <div class="px-rota-col"><span>De</span><div class="mp-pick" id="pxOrigens"><span style="font-size:12.5px;color:var(--text-dim);padding:10px 0">escolha o cliente</span></div><input type="hidden" id="pxOrigem"></div>
       <div class="px-seta"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-      <div class="px-rota-col"><span>Para</span><div class="mp-pick" id="pxDestinos"></div></div>
+      <div class="px-rota-col"><span>Para</span><select id="pxLojaDest" onchange="window.__pxLoja()" style="margin-bottom:6px"><option value="">a mesma loja</option>${pxOpcoesLojas()}</select><div class="mp-pick" id="pxDestinos"></div></div>
       <button class="btn btn-gold" style="margin-left:auto" onclick="window.__pxLer()">Ler produtos</button>
     </div>
-    <div class="field" style="margin-top:10px"><label>Anúncio recém-publicado não aparece? Cole o ID da Shopee (opcional, vários separados por vírgula)</label><input id="pxIdsExtra" placeholder="ex.: 23595374625" inputmode="numeric"></div></div>
+    <div class="field" style="margin-top:10px"><label>Anúncio recém-publicado não aparece? Cole o ID da Shopee (opcional, vários separados por vírgula)</label><input id="pxIdsExtra" placeholder="ex.: 23595374625" inputmode="numeric"></div>
+    <label class="ot-check" id="pxCapaBox" style="display:none;margin-top:8px"><input type="checkbox" id="pxCapaNova" checked> Capa nova com IA (outra loja: título novo sempre; a capa troca pela foto gerada)</label></div>
     <div id="pxSheinBox"></div>
     <div id="pxStatus" class="saude-vazio" style="margin-top:14px"></div><div id="pxLista" class="prod-lista"></div><div id="pxAcoes"></div>`;
 }
@@ -14927,6 +14928,11 @@ window.__pxLoja=()=>{
   const falta=['shopee','ml','tiktok','shein'].filter(m=>!pxTem(c,m)).map(m=>m==='shopee'&&c.shopeeMktShopId?'Shopee (só o app antigo — conectar o ERP)':PX_MP[m]);
   if(tem.length+(pxTem(c,'shein')?1:0)<2||!tem.length){so.value='';sob.innerHTML=`<span style="font-size:12.5px;color:#e0a352;padding:10px 0">Pra copiar precisa de 2 marketplaces conectados. ${tem.length?`Conectado: ${tem.map(m=>PX_MP[m]).join(', ')}. `:''}Falta conectar: ${falta.join(', ')}.</span>`;sd.innerHTML='';return;}const atual=tem.includes(so.value)?so.value:tem[0];so.value=atual;
   sob.innerHTML=tem.map(m=>`<label><input type="radio" name="pxOrigemR" value="${m}" ${m===atual?'checked':''} onchange="document.getElementById('pxOrigem').value=this.value;window.__pxLoja()">${mpIco(m)} ${PX_MP[m]}</label>`).join('');
+  const cdId=document.getElementById('pxLojaDest')?.value||'';const cd=cdId&&cdId!==c.id?(clientesCache||[]).find(x=>x.id===cdId):null;
+  document.getElementById('pxCapaBox').style.display=cd?'':'none';
+  if(cd){const temD=['shopee','ml','tiktok','shein'].filter(m=>pxTem(cd,m));
+    sd.innerHTML=temD.length?temD.map(m=>`<label><input type="checkbox" class="pxDest" value="${m}" ${m==='shein'?'':'checked'} onchange="window.__pxSheinBox()">${mpIco(m)} ${PX_MP[m]} <small style="opacity:.7">(${esc(cd.nome)})</small></label>`).join(''):`<span style="font-size:12.5px;color:#e0a352">${esc(cd.nome)} não tem marketplace conectado.</span>`;
+    window.__pxSheinBox();px.linhas=[];px.criadosShopee=[];['pxLista','pxAcoes','pxStatus'].forEach(i=>document.getElementById(i).innerHTML='');return;}
   sd.innerHTML=[...tem,...(pxTem(c,'shein')?['shein']:[])].filter(m=>m!==atual).map(m=>`<label><input type="checkbox" class="pxDest" value="${m}" ${m==='shein'?'':'checked'} onchange="window.__pxSheinBox()">${mpIco(m)} ${PX_MP[m]}</label>`).join('');
   window.__pxSheinBox();
   px.linhas=[];px.criadosShopee=[];['pxLista','pxAcoes','pxStatus'].forEach(i=>document.getElementById(i).innerHTML='');
@@ -14943,24 +14949,26 @@ window.__pxLer=async()=>{
   const origem=document.getElementById('pxOrigem').value;const destinos=[...document.querySelectorAll('.pxDest:checked')].map(x=>x.value);
   if(!destinos.length){showToast('Marque pelo menos 1 destino.');return;}
   const st=document.getElementById('pxStatus'),passo=t=>st.textContent=t;
-  Object.assign(px,{c,origem,destinos,linhas:[],criadosShopee:[],ttDesc:null});document.getElementById('pxLista').innerHTML='';document.getElementById('pxAcoes').innerHTML='';
+  const cdId=document.getElementById('pxLojaDest')?.value||'';const cd=(cdId&&cdId!==c.id?(clientesCache||[]).find(x=>x.id===cdId):null)||c;
+  Object.assign(px,{c,cd,origem,destinos,linhas:[],criadosShopee:[],ttDesc:null});document.getElementById('pxLista').innerHTML='';document.getElementById('pxAcoes').innerHTML='';
   try{
     const rows=await pxLer[origem].listar(c,passo);
     // o que já existe em cada destino: títulos + ligações gravadas pelo sistema
     const chaves={};
     for(const d of destinos){passo(`Conferindo o que já está ${d==='ml'?'no':'na'} ${PX_MP[d]}...`);
-      if(d==='shopee')chaves[d]=await migNomesShopee(c,await shopeeGarantirTokenValido(c,'erp'));
-      if(d==='ml')chaves[d]=await migTitulosMl(c);
-      if(d==='tiktok'){const r=await mig3Api(c,'produtos');chaves[d]=(r.produtos||[]).map(p=>p.titulo);}
-      if(d==='shein'){const t=[];for(let pg=1;pg<=5;pg++){const r=await sheinApi(c,'produtos',{pagina:pg});if(!r.ok)break;for(const p of r.produtos||[])for(const k of p.skcList||[])for(const x of k.skcTitle||[])t.push(x.title);if(pg*10>=(r.total||0))break;}chaves[d]=t;}}
+      if(d==='shopee')chaves[d]=await migNomesShopee(cd,await shopeeGarantirTokenValido(cd,'erp'));
+      if(d==='ml')chaves[d]=await migTitulosMl(cd);
+      if(d==='tiktok'){const r=await mig3Api(cd,'produtos');chaves[d]=(r.produtos||[]).map(p=>p.titulo);}
+      if(d==='shein'){const t=[];for(let pg=1;pg<=5;pg++){const r=await sheinApi(cd,'produtos',{pagina:pg});if(!r.ok)break;for(const p of r.produtos||[])for(const k of p.skcList||[])for(const x of k.skcTitle||[])t.push(x.title);if(pg*10>=(r.total||0))break;}chaves[d]=t;}}
     const lig=c.produtosLigados||{};const mlSh=c.migracaoMlShopee||{};const shTt=c.migracaoShopeeTiktok||{};
-    const ligado=(row,d)=>{if(lig[`${origem}_${row.id}`]?.[d])return true;
+    const ligado=(row,d)=>{if(cd!==c)return !!(cd.produtosLigados||{})[`copia_${c.id}_${origem}_${row.id}`]?.[d]; // outra loja: só o que o sistema já copiou
+      if(lig[`${origem}_${row.id}`]?.[d])return true;
       if(origem==='ml'&&d==='shopee')return (row.ids||[]).some(i=>mlSh[i]);
       if(origem==='shopee'&&d==='ml')return Object.values(mlSh).map(String).includes(row.id);
       if(origem==='shopee'&&d==='tiktok')return Object.values(shTt).map(String).includes(row.id);
       if(origem==='tiktok'&&d==='shopee')return !!shTt[row.id];return false;};
     px.linhas=rows.map((r,i)=>{const existe={},sel={};for(const d of destinos){existe[d]=ligado(r,d)?'ligado pelo sistema':pxParecido(r.titulos,chaves[d]);sel[d]=!existe[d]&&r.estoque>0;}return{...r,i,existe,sel,st:{}};});
-    if(destinos.includes('shopee')&&origem!=='shopee'){
+    if(destinos.includes('shopee')&&origem!=='shopee'&&cd===c){
       passo('Conferindo anúncios criados que ficaram ocultos na Shopee...');
       try{const ocultos=await pxOcultosShopee(c);const ja=new Set();
         for(const [itemId,v] of Object.entries(c.shopeePendentesPublicar||{}))if(ocultos.has(String(itemId))){px.criadosShopee.push({itemId:Number(itemId),venda:v.venda,titulo:v.titulo});ja.add(String(itemId));}
@@ -14985,7 +14993,7 @@ function pxRenderLista(){
   const n=px.linhas.reduce((t,x)=>t+px.destinos.filter(d=>x.sel[d]&&!/^ok/.test(x.st[d]||'')).length,0),cri=px.criadosShopee.length;
   document.getElementById('pxAcoes').innerHTML=`<div class="cat-acoes prod-acoes"><span><b>${n}</b> cópia(s) marcadas</span><button class="btn btn-gold btn-sm" onclick="window.__pxCopiar()">Copiar marcados</button>
     ${cri?`<button class="btn btn-gold btn-sm" onclick="window.__pxPublicarShopee()">Publicar ${cri} na Shopee + desconto fixo + Ads</button>`:''}
-    ${px.destinos.includes('tiktok')&&Object.keys(px.c?.tiktokDescontoPendente||{}).length?`<button class="btn btn-ghost btn-sm" onclick="window.__pxDescontoTT()">Pôr pendentes no desconto do TikTok</button>`:''}</div>`;
+    ${px.destinos.includes('tiktok')&&Object.keys((px.cd||px.c)?.tiktokDescontoPendente||{}).length?`<button class="btn btn-ghost btn-sm" onclick="window.__pxDescontoTT()">Pôr pendentes no desconto do TikTok</button>`:''}</div>`;
 }
 /* ---------- Produtos → Pedidos dos clientes (08/10/2026) ----------
    Link por cliente (clientes.linkProdutosToken) → clienteslb/produto.html?t=TOKEN. A cliente manda fotos, descrição, variações,
@@ -15128,35 +15136,40 @@ window.__pxTab=t=>{document.querySelectorAll('.px-tab-btn').forEach(b=>b.classLi
 window.__pxIrDiretor=()=>{window.__cmVoltar();document.querySelector('.cm-tool-card[data-cmtab="diretor"]')?.click();};
 window.__pxSel=(i,d)=>{const x=px.linhas.find(y=>y.i===i);if(x){x.sel[d]=!x.sel[d];pxRenderLista();}};
 window.__pxCopiar=async()=>{
-  const c=px.c;const fila=px.linhas.filter(x=>px.destinos.some(d=>x.sel[d]&&!/^ok/.test(x.st[d]||'')));if(!c||!fila.length){showToast('Marque ao menos 1 cópia.');return;}
+  const c=px.c,cd=px.cd||px.c,outra=cd!==c;const fila=px.linhas.filter(x=>px.destinos.some(d=>x.sel[d]&&!/^ok/.test(x.st[d]||'')));if(!c||!fila.length){showToast('Marque ao menos 1 cópia.');return;}
+  const capaNova=outra&&!!document.getElementById('pxCapaNova')?.checked;
   const resumo=px.destinos.map(d=>`${PX_MP[d]}: ${fila.filter(x=>x.sel[d]).length}`).join(' · ');
-  if(!window.__pxSimular&&!await lbConfirmar(`Copiar da ${PX_MP[px.origem]} da ${c.nome}?\n${resumo}\nShopee nasce oculta; ML já ativo; TikTok e SHEIN vão pra análise.`,{okTxt:'Copiar'}))return;
+  if(!window.__pxSimular&&!await lbConfirmar(`Copiar da ${PX_MP[px.origem]} da ${c.nome}${outra?` pra ${cd.nome}`:''}?\n${resumo}${capaNova?'\nCapa nova com IA em cada produto.':''}\nShopee nasce oculta; ML já ativo; TikTok e SHEIN vão pra análise.`,{okTxt:'Copiar'}))return;
   const st=document.getElementById('pxStatus');const ctx={simular:!!window.__pxSimular,sheinMedidas:document.getElementById('pxSheinMedidas')?.value||'',sheinCategoria:document.getElementById('pxSheinCat')?.value||''};
   for(const x of fila){
     let P;try{P=await pxLer[px.origem].detalhar(c,x,t=>{st.textContent=`${x.nome.slice(0,50)}: ${t}`;});if(!P.skus.length)throw new Error('sem variação com preço');
       if(!c.skuCliente){ // loja com SKU próprio (Roma): leva só o que veio da origem, não gera nada
       if(!ctx.simular&&!P.sku&&!P.skus.some(s=>s.sku))P.sku=await lbCodigoNovo(c); // sem SKU na origem → Código LB
-      if(P.sku)for(const s of P.skus)if(!s.sku)s.sku=lbSkuVar(P.sku,...s.op);}}
+      if(P.sku)for(const s of P.skus)if(!s.sku)s.sku=lbSkuVar(P.sku,...s.op);}
+      // outra loja (18/11/2026, Catolis → Aquários): capa nova pela IA no lugar da 1ª foto (o título já é refeito em cada destino)
+      if(capaNova&&P.fotos[0]&&!ctx.simular){st.textContent=`${x.nome.slice(0,50)}: capa nova (IA)...`;
+        const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'capa_variacao',produto:P.titulo,imagem:await migJpg(P.fotos[0]),opcao:'capa do anúncio',marketplace:'shopee',formato:'1:1'})}).then(r=>r.json()).catch(()=>({}));
+        if(r.imagem)P.fotos=[r.imagem,...P.fotos.slice(1)];else throw new Error('capa nova: '+(r.erro||'a IA não gerou'));}}
     catch(e){for(const d of px.destinos)if(x.sel[d])x.st[d]='erro: '+e.message;pxRenderLista();console.error(e);continue;}
     for(const d of px.destinos){if(!x.sel[d]||/^ok/.test(x.st[d]||''))continue;
       const linha=t=>{x.st[d]=String(t).replace(/<[^>]+>/g,'');st.textContent=`${x.nome.slice(0,50)} → ${PX_MP[d]}: ${x.st[d]}`;pxRenderLista();};
-      try{const r=await pxCriar[d](c,P,linha,ctx);x.st[d]='ok: '+r.msg;x.sel[d]=false;
-        if(r.id&&!ctx.simular){await updateDoc(doc(db,'clientes',c.id),{[`produtosLigados.${px.origem}_${x.id}.${d}`]:r.id}).catch(()=>{});
-          await log(c.id,c.nome,`cópia ${PX_MP[px.origem]} → ${PX_MP[d]}`,`${x.nome} (${x.id}) → ${[].concat(r.id).join(', ')} · ${r.msg}`);}}
+      try{const r=await pxCriar[d](cd,P,linha,ctx);x.st[d]='ok: '+r.msg;x.sel[d]=false;
+        if(r.id&&!ctx.simular){await updateDoc(doc(db,'clientes',cd.id),{[outra?`produtosLigados.copia_${c.id}_${px.origem}_${x.id}.${d}`:`produtosLigados.${px.origem}_${x.id}.${d}`]:r.id}).catch(()=>{});
+          await log(cd.id,cd.nome,`cópia ${PX_MP[px.origem]}${outra?` da ${c.nome}`:''} → ${PX_MP[d]}`,`${x.nome} (${x.id}) → ${[].concat(r.id).join(', ')} · ${r.msg}`);}}
       catch(e){x.st[d]='erro: '+e.message;console.error(e);}
       pxRenderLista();}
   }
   st.textContent=ctx.simular?'Simulação pronta (nada criado).':`Pronto.${px.criadosShopee.length?' Shopee: confira os ocultos no Seller Center e clique em Publicar.':''}${px.destinos.includes('ml')?' Ads do ML: coloque na campanha "LB ROAS 20" pelo painel do ML.':''}`;
 };
 window.__pxPublicarShopee=async()=>{
-  const c=px.c;if(!c||!px.criadosShopee.length)return;
+  const c=px.cd||px.c;if(!c||!px.criadosShopee.length)return;
   if(!await lbConfirmar(`Publicar ${px.criadosShopee.length} anúncio(s) na Shopee da ${c.nome}?\nVão pro ar, entram no desconto fixo e no Shopee Ads (ROAS 20).`,{okTxt:'Publicar'}))return;
   const st=document.getElementById('pxStatus');
   try{
     const token=await shopeeGarantirTokenValido(c,'erp');const descId=await migDescontoId(c,token);const tAds=await migAdsToken(c);const res=[];
     const falhou=[];
     for(const it of px.criadosShopee){st.textContent=`Publicando ${it.titulo.slice(0,50)}...`;
-      if(it.venda==null&&it.row){try{it.venda=pxVendaShopee(await pxLer[px.origem].detalhar(c,it.row,()=>{}));}catch(e){res.push(`${it.itemId}: sem preço (${e.message})`);falhou.push(it);continue;}}
+      if(it.venda==null&&it.row){try{it.venda=pxVendaShopee(await pxLer[px.origem].detalhar(px.c,it.row,()=>{}));}catch(e){res.push(`${it.itemId}: sem preço (${e.message})`);falhou.push(it);continue;}}
       const p=await dirShApi('produto_publicar',c,token,{item_id:it.itemId,gtin:''});
       if(p.ok)await updateDoc(doc(db,'clientes',c.id),{[`shopeePendentesPublicar.${it.itemId}`]:deleteField()}).catch(()=>{});else falhou.push(it);
       const d=p.ok?await migDesconto(c,token,descId,it.itemId,typeof it.venda==='object'?{precos_por_opcao:it.venda}:{preco:it.venda}):'não publicado';
@@ -15166,7 +15179,7 @@ window.__pxPublicarShopee=async()=>{
   }catch(e){st.textContent='Erro: '+e.message;}
 };
 window.__pxDescontoTT=async()=>{
-  const c=px.c;const pend=Object.entries(c?.tiktokDescontoPendente||{});if(!pend.length)return;
+  const c=px.cd||px.c;const pend=Object.entries(c?.tiktokDescontoPendente||{});if(!pend.length)return;
   const st=document.getElementById('pxStatus');const res=[];
   for(const [pid,venda] of pend){st.textContent=`Desconto fixo do TikTok: ${pid}...`;const d=await mig3PorNoDesconto(c,pid,venda);res.push(`${pid}: ${d}`);
     if(d==='ok'){await updateDoc(doc(db,'clientes',c.id),{[`tiktokDescontoPendente.${pid}`]:deleteField()}).catch(()=>{});delete c.tiktokDescontoPendente[pid];}}
