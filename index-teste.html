@@ -5192,7 +5192,7 @@ function waFichaRender(c,forcar){
   el.dataset.conv=c.id;el.classList.remove('hidden');
   const tp=waTipoConversa(c);const lead=waLeadDaConversa(c);const k=waChaveTel(c.telefone||c.id);
   const cli=tp.tipo==='cliente'?(clientesCache||[]).find(x=>x.ativo!==false&&['whatsappAvisos','whatsappContrato','telefone','whatsapp','celular'].some(f=>waChaveTel(x[f])===k)):null;
-  const etq=`<div class="wa-fc-bloco"><div class="wa-fc-tit">Etiquetas</div><div class="wa-etqs">${(c.etiquetas||[]).map(e=>`<span class="wa-etq">${esc(e)}<button title="Tirar" onclick="window.__waEtiqueta('${esc(e).replace(/'/g,"\\'")}',false)">×</button></span>`).join('')}<input id="waEtqNova" placeholder="+ etiqueta" list="waEtqLista" onkeydown="if(event.key==='Enter'){event.preventDefault();window.__waEtiqueta(this.value,true)}"><datalist id="waEtqLista">${[...new Set(whatsappConversasCache.flatMap(x=>x.etiquetas||[]))].map(e=>`<option value="${esc(e)}">`).join('')}</datalist></div></div>`;
+  const etq=`<div class="wa-fc-bloco"><div class="wa-fc-tit">Etiquetas</div><div class="wa-etqs">${(c.etiquetas||[]).map(e=>`<span class="wa-etq">${esc(e)}<button title="Tirar" onclick="window.__waEtiqueta('${jsq(e)}',false)">×</button></span>`).join('')}<input id="waEtqNova" placeholder="+ etiqueta" list="waEtqLista" onkeydown="if(event.key==='Enter'){event.preventDefault();window.__waEtiqueta(this.value,true)}"><datalist id="waEtqLista">${[...new Set(whatsappConversasCache.flatMap(x=>x.etiquetas||[]))].map(e=>`<option value="${esc(e)}">`).join('')}</datalist></div></div>`;
   const st=waStatus(c);const stTxt={responder:'Esperando a nossa resposta',aguardando:'Esperando o contato',resolvida:'Resolvida'}[st.status];
   let corpo='';
   if(lead){
@@ -8200,7 +8200,7 @@ function ttGmvRenderizar(){
         <span class="cadastro-doc-pill ok">${CM_ICO.ok} Conectado</span>
         <span style="font-size:13px;color:var(--text-dim)">GMV: ${fmtR(Number(c.tiktokGmv)||0)}</span>
         <button class="btn btn-ghost btn-sm cm-conectar" onclick="window.__tiktokAtualizarGmv('${c.id}')">${CM_ICO.reconectar} Atualizar GMV</button>
-        <button class="btn btn-ghost btn-sm cm-conectar" title="Autorizar de novo (libera as permissões novas do app)" onclick="window.__tiktokConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">${CM_ICO.conectar} Reconectar</button>
+        <button class="btn btn-ghost btn-sm cm-conectar" title="Autorizar de novo (libera as permissões novas do app)" onclick="window.__tiktokConectar('${c.id}','${jsq(c.nome)}')">${CM_ICO.conectar} Reconectar</button>
       </div>`;
   const linhaOff=c=>{
     const nomeEsc=jsq(c.nome);
@@ -8353,7 +8353,7 @@ function adsRenderizar(){
       <span class="sgmv-status-pill ${conectado?'on':'off'}">${conectado?'✓ Conectado':'Pendente'}</span>
       ${conectado
         ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarSaldoAds('${c.id}')">Atualizar</button>`
-        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}','ads')">Conectar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${jsq(c.nome)}','ads')">Conectar</button>`
       }
     </div>`;
   }).join('');
@@ -8779,7 +8779,7 @@ function sgmvRenderizar(){
       ${conectado
         ?`<button class="btn btn-ghost btn-sm" onclick="window.__shopeeAtualizarGmv('${c.id}')">Atualizar</button>
         `
-        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${esc(c.nome).replace(/'/g,"\\'")}')">Conectar</button>`
+        :`<button class="btn btn-gold btn-sm" onclick="window.__shopeeConectar('${c.id}','${jsq(c.nome)}')">Conectar</button>`
       }
     </div>`;
   }).join('');
@@ -12955,7 +12955,7 @@ function crmLeadFormHtml(){
     ${lead?crmLinhaTempoHtml(lead):''}
     <div class="lead-form-actions">
       ${lead?`<button class="btn-delete-lead" onclick="window.__crmDeleteLead('${lead.id}')">Excluir lead</button>`:''}
-      ${lead?`<button class="btn-cancel" onclick="window.__hist('${lead.id}','${esc(lead.nome).replace(/'/g,"\\'")}')" style="margin-right:auto">Ver histórico</button>`:''}
+      ${lead?`<button class="btn-cancel" onclick="window.__hist('${lead.id}','${jsq(lead.nome)}')" style="margin-right:auto">Ver histórico</button>`:''}
       <button class="btn-cancel" onclick="window.__crmToggleForm(false)">Cancelar</button>
       <button class="btn-save" onclick="window.__crmSubmitForm()">${lead?'Salvar alterações':'Adicionar lead'}</button>
     </div>
@@ -13928,7 +13928,7 @@ function crmKanbanHtml(){
           const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
           return `
           <div class="kcard" draggable="true" ondragstart="window.__crmDragStart('${l.id}')" onclick="window.__crmOpenEdit('${l.id}')">
-            <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}${l.respostasTypebot&&Object.keys(l.respostasTypebot).length?`<span class="wa-btn" title="Tem respostas do Typebot">📋</span>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></div>
+            <div class="kname">${esc(l.nome)}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}${l.respostasTypebot&&Object.keys(l.respostasTypebot).length?`<span class="wa-btn" title="Tem respostas do Typebot">📋</span>`:''}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${jsq(l.nome)}')" title="Ver histórico">🕒</span></div>
             <div class="kmeta" style="opacity:.75;font-size:11px">📅 ${esc(crmLabelEntrada(l.createdDate))}${l.donoNome?` · <b style="color:var(--gold)">${esc(l.donoNome)}</b>`:' · <span style="color:var(--amber)">sem dono</span>'}</div>
             ${(()=>{const a=crmAcompanhamento(l);return a.texto?`<div class="kfollow ${a.tipo}">${esc(a.texto)}</div>`:'';})()}
             ${l.stage==='perdido'&&l.motivoPerda?`<div class="kfollow perda">${esc(l.motivoPerda)}</div>`:''}
@@ -13962,7 +13962,7 @@ function crmListHtml(){
         const nichoLabel = l.nicho === 'Outros' && l.nichoOutro ? l.nichoOutro : l.nicho;
         const partes = (l.createdDate||'').split('-');
         return `<tr onclick="window.__crmOpenEdit('${l.id}')">
-          <td>${esc(l.nome)} ${crmPerfilTag(l)}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${esc(l.nome).replace(/'/g,"\\'")}')" title="Ver histórico">🕒</span></td>
+          <td>${esc(l.nome)} ${crmPerfilTag(l)}<span class="wa-btn" onclick="event.stopPropagation();window.__hist('${l.id}','${jsq(l.nome)}')" title="Ver histórico">🕒</span></td>
           <td>${esc(l.donoNome||'—')}</td>
           <td>${esc(l.whatsapp||'—')}${l.whatsapp?`<a href="${crmWhatsLink(l.whatsapp)}" target="_blank" onclick="event.stopPropagation()" class="wa-btn" title="Abrir WhatsApp">💬</a>`:''}</td>
           <td>${esc(nichoLabel||'—')}</td>
