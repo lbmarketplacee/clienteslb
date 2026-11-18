@@ -15318,7 +15318,7 @@ const otLer={
 // detalhe na hora de gerar: descrição atual, fotos atuais (ids/uris + url da capa) e formato
 const otDetalhe={
   async shopee(c,x){const token=await shopeeGarantirTokenValido(c,'erp');const b=(await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_item_base_info',query:{item_id_list:String(x.it.id)}}))?.response?.item_list?.[0];
-    return{desc:String(b?.description||''),fotos:b?.image?.image_id_list||[],capaUrl:b?.image?.image_url_list?.[0]||x.it.foto,ratio:b?.image?.image_ratio||'1:1',descBloqueada:b?.description_type==='extended'};},
+    return{desc:String(b?.description||''),fotos:b?.image?.image_id_list||[],capaUrl:b?.image?.image_url_list?.[0]||x.it.foto,ratio:b?.image?.image_ratio||'1:1',descBloqueada:b?.description_type==='extended',categoria:b?.category_id,atributos:b?.attribute_list||[]};},
   async ml(c,x){const d=await migMl(c,`/items/${x.it.id}/description`);const capaUrl=x.it.foto;
     const ratio=await otRatioDe(capaUrl);return{desc:String(d?.plain_text||''),fotos:x.it.fotos,capaUrl,ratio};},
   async tiktok(c,x){const r=await mig3Api(c,'produto_ler',{id:x.it.id});if(!r.ok)throw new Error(r.erro);const p=r.produto;
@@ -15334,6 +15334,7 @@ const otAplicarMp={
     if(mud.titulo)m.item_name=mud.titulo.slice(0,120);if(mud.descricao)m.description=mud.descricao;
     if(mud.capa){const up=await dirShApi('produto_upload_imagem',c,token,{imagemBase64:await vidJpeg(mud.capa),ratio:x.det.ratio});if(!up.ok||!up.image_id)return{ok:false,erro:'capa: '+up.erro};m.image={image_id_list:[up.image_id,...x.det.fotos.slice(1)],image_ratio:x.det.ratio};}
     if(mud.fotosAntes)m.image={image_id_list:mud.fotosAntes,image_ratio:x.det.ratio};
+    if(mud.atributos)m.attribute_list=mud.atributos;
     const r=await dirShApi('produto_atualizar',c,token,{item_id:x.it.id,mudancas:m});return{ok:r.ok,erro:r.erro,fotos:m.image?.image_id_list};},
   // família inteira: descrição em todos os anúncios; capa nos que usam a mesma foto de capa (mesma cor); título só no anúncio único
   async ml(c,x,mud){const token=await mlGarantirTokenValido(c);const anuncios=x.it.anuncios||[{id:x.it.id,fotos:x.det.fotos}];
@@ -15383,13 +15384,15 @@ window.__otRender=()=>{
       <label style="font-size:12px;display:flex;gap:5px;align-items:center" ${travaTit?`title="${it.up?'Anúncio do modelo novo do ML: o título é montado pelo próprio ML':'Anúncio com venda: o ML não deixa trocar o título'}"`:''}><input type="checkbox" ${x.tit?'checked':''} ${travaTit?'disabled':''} onchange="window.__otMarca(${x.i},'tit',this.checked)"> Título</label>
       <label style="font-size:12px;display:flex;gap:5px;align-items:center" ${it.descTipo==='extended'?'title="Descrição com imagens — não dá pra trocar por texto"':''}><input type="checkbox" ${x.desc?'checked':''} ${it.descTipo==='extended'?'disabled':''} onchange="window.__otMarca(${x.i},'desc',this.checked)"> Descrição</label>
       <label style="font-size:12px;display:flex;gap:5px;align-items:center" title="Capa nova com IA a partir da foto atual (~R$ 0,37). Substitui só a 1ª foto."><input type="checkbox" ${x.capa?'checked':''} onchange="window.__otMarca(${x.i},'capa',this.checked)"> Capa (IA)</label>
+      ${ot.mp==='shopee'?`<label style="font-size:12px;display:flex;gap:5px;align-items:center" title="Completa a ficha técnica (material, gola, manga, estampa...) só com valores da lista da Shopee"><input type="checkbox" ${x.esp?'checked':''} onchange="window.__otMarca(${x.i},'esp',this.checked)"> Especificações</label>`:''}
       <div class="cat-num" style="min-width:130px"><small>Situação</small>${esc(x.st||'—')}${x.antes?` <a href="#" style="color:var(--gold)" onclick="event.preventDefault();window.__otDesfazer(${x.i})">desfazer</a>`:''}</div>
     </div>${x.sug?`<div style="padding:4px 12px 12px 76px;display:grid;gap:8px">
       ${x.tit&&x.sug.titulo?`<div><small style="color:var(--text-dim)">Título — antes: ${esc(it.nome)}</small><input type="text" maxlength="${ot.mp==='ml'?60:ot.mp==='tiktok'?255:120}" value="${esc(x.sug.titulo)}" style="width:100%" onchange="window.__otEdita(${x.i},'titulo',this.value)"><small style="color:var(--text-dim)">${x.sug.titulo.length} caracteres</small></div>`:''}
       ${x.desc&&x.sug.descricao!=null?`<div><small style="color:var(--text-dim)">Descrição nova (antes: ${(x.det?.desc||'').length} caracteres)</small><textarea style="width:100%;min-height:130px" onchange="window.__otEdita(${x.i},'descricao',this.value)">${esc(x.sug.descricao)}</textarea></div>`:''}
       ${x.capa&&x.sug.capa?`<div style="display:flex;gap:12px;align-items:flex-end"><div><small style="color:var(--text-dim)">Capa atual</small><br><img src="${esc(x.det?.capaUrl||it.foto)}" style="width:120px;border-radius:8px;border:1px solid var(--border)"></div><div><small style="color:var(--gold)">Capa nova (${esc(x.det?.ratio||'')})</small><br><img src="${x.sug.capa}" style="width:120px;border-radius:8px;border:2px solid var(--gold)"></div><button class="btn btn-ghost btn-sm" onclick="window.__otNovaCapa(${x.i})">Gerar outra</button></div>`:''}
+      ${x.esp&&x.sug.espNovas?`<div><small style="color:var(--text-dim)">Especificações (${x.det?.atributos?.length||0} preenchidas hoje)</small><div style="font-size:12.5px">${x.sug.espNovas.length?x.sug.espNovas.map(e=>`<span style="display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:10px;border:1px solid var(--gold)">${esc(e)}</span>`).join(''):'nada novo pra preencher'}</div></div>`:''}
     </div>`:''}</div>`;}).join('')}</div>`;
-  const marc=ot.itens.filter(x=>x.tit||x.desc||x.capa),comSug=marc.filter(x=>x.sug&&!/^ok/.test(x.st));
+  const marc=ot.itens.filter(x=>x.tit||x.desc||x.capa||x.esp),comSug=marc.filter(x=>x.sug&&!/^ok/.test(x.st));
   document.getElementById('otAcoes').innerHTML=ot.itens.length?`<div class="cat-acoes prod-acoes"><span><b>${marc.length}</b> anúncio(s) marcados · ${comSug.length} com sugestão pronta</span>
     <button class="btn btn-ghost btn-sm" onclick="window.__otGerar()">Gerar sugestões (IA)</button>
     ${comSug.length?`<button class="btn btn-gold btn-sm" onclick="window.__otAplicar()">Aplicar ${comSug.length} no ${OT_MP[ot.mp]}</button>`:''}</div>`:'';
@@ -15402,11 +15405,29 @@ async function otGerarCapa(x){
   if(!r.imagem)throw new Error('capa: '+(r.erro||'a IA não gerou'));
   x.sug.capa=r.imagem;
 }
+// Especificações da Shopee (18/11/2026, Tha Oli — Lincoln: "por as especificações em todos"): lê a árvore da categoria,
+// a IA completa SÓ os que estão vazios (valores da lista; obrigatório = mais provável, opcional = só com certeza) e mantém os de hoje
+const otArvores={};
+const otAtribUpdate=l=>(l||[]).map(a=>({attribute_id:a.attribute_id,attribute_value_list:(a.attribute_value_list||[]).map(v=>({value_id:v.value_id||0,...(v.original_value_name?{original_value_name:v.original_value_name}:{}),...(v.value_unit?{value_unit:v.value_unit}:{})}))}));
+async function otGerarEsp(c,x){
+  const cat=x.det?.categoria;if(!cat)throw new Error('anúncio sem categoria');
+  const pt=y=>(y.multi_lang||[]).find(m=>/pt/i.test(m.language))?.value||y.name||y.display_value_name||y.original_value_name;
+  if(!otArvores[cat]){const token=await shopeeGarantirTokenValido(c,'erp');const r=await dirShApi('produto_ler_api',c,token,{caminho:'/api/v2/product/get_attribute_tree',query:{category_id_list:String(cat),language:'pt-br'}});
+    otArvores[cat]=(r?.response?.list?.[0]?.attribute_tree||[]).map(a=>({id:a.attribute_id,nome:pt(a),obrigatorio:!!a.mandatory,valores:(a.attribute_value_list||[]).map(v=>({id:v.value_id,nome:pt(v)}))}));}
+  const arv=otArvores[cat];const tem=new Set((x.det.atributos||[]).filter(a=>(a.attribute_value_list||[]).length).map(a=>String(a.attribute_id)));
+  const faltam=arv.filter(a=>!tem.has(String(a.id))&&a.valores.length);
+  let novos=[];
+  if(faltam.length){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${x.sug?.titulo||x.it.nome}\n${String(x.sug?.descricao||x.det.desc||'').slice(0,1200)}`,arvore:faltam})}).then(r=>r.json()).catch(()=>({}));
+    novos=(r.atributos||[]).filter(a=>a.attribute_id&&!tem.has(String(a.attribute_id)));}
+  novos=(await shGarantirObrigatorios(arv,novos,x.it.nome)).filter(a=>!tem.has(String(a.attribute_id)));
+  const nome=a=>{const t=arv.find(y=>String(y.id)===String(a.attribute_id));const v=t?.valores.find(y=>String(y.id)===String(a.attribute_value_list?.[0]?.value_id));return `${t?.nome||a.attribute_id}: ${v?.nome||a.attribute_value_list?.[0]?.original_value_name||''}`;};
+  x.sug.espNovas=novos.map(nome);x.sug.atributos=[...otAtribUpdate(x.det.atributos),...novos];
+}
 // foto de outro site (CDN do marketplace) → baixa como blob antes (Image direto suja o canvas) e mantém a proporção
 async function otJpeg(url){const b=await fetch(String(url).replace(/^http:/,'https:')).then(r=>r.blob());const u=URL.createObjectURL(b);try{return await vidJpeg(u);}finally{URL.revokeObjectURL(u);}}
 window.__otNovaCapa=async i=>{const x=ot.itens.find(y=>y.i===i);if(!x)return;x.st='gerando outra capa...';window.__otRender();try{await otGerarCapa(x);x.st='sugestão pronta';}catch(e){x.st='erro: '+e.message.slice(0,60);}window.__otRender();};
 window.__otGerar=async()=>{
-  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&!x.sug).slice(0,25);if(!c||!fila.length){showToast('Marque título, descrição ou capa em algum anúncio.');return;}
+  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa||x.esp)&&!x.sug).slice(0,25);if(!c||!fila.length){showToast('Marque título, descrição ou capa em algum anúncio.');return;}
   const st=document.getElementById('otStatus');const usados=new Set(ot.itens.map(x=>String(x.it.nome).toLowerCase()));
   for(const [k,x] of fila.entries()){st.textContent=`Gerando ${k+1}/${fila.length}: ${x.it.nome.slice(0,50)}...`;x.st='gerando...';window.__otRender();
     try{
@@ -15422,19 +15443,20 @@ window.__otGerar=async()=>{
         if(x.desc){const bul=(r.bullets||[]).map(b=>ot.mp==='ml'?String(b).replace(/^[✓✔•]\s*/,'- '):b);x.sug.descricao=[...bul,'',String(r.descricao||'').trim()].join('\n').trim().slice(0,4900)||x.det.desc;}
       }
       if(x.capa)await otGerarCapa(x);
+      if(x.esp&&ot.mp==='shopee')await otGerarEsp(c,x);
       x.st='sugestão pronta';
     }catch(e){x.st='erro: '+e.message.slice(0,70);x.sug=null;}
     window.__otRender();}
   st.textContent='Confira as sugestões (dá pra editar) e clique em "Aplicar".';
 };
 window.__otAplicar=async()=>{
-  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa)&&x.sug&&!/^ok/.test(x.st));if(!fila.length)return;
+  const c=ot.c;const fila=ot.itens.filter(x=>(x.tit||x.desc||x.capa||x.esp)&&x.sug&&!/^ok/.test(x.st));if(!fila.length)return;
   if(!await lbConfirmar(`Aplicar ${fila.length} anúncio(s) no ${OT_MP[ot.mp]} da ${c.nome}?\nO que está lá hoje fica salvo — dá pra desfazer depois.${ot.mp==='tiktok'||ot.mp==='shein'?`\nNo ${OT_MP[ot.mp]} vai pra análise; a versão atual segue no ar até aprovar.`:''}`,{okTxt:'Aplicar'}))return;
   const st=document.getElementById('otStatus');let ok=0;
   for(const x of fila){st.textContent=`Aplicando ${x.it.nome.slice(0,50)}...`;
-    const mud={};if(x.tit&&x.sug.titulo)mud.titulo=x.sug.titulo;if(x.desc&&x.sug.descricao)mud.descricao=x.sug.descricao;if(x.capa&&x.sug.capa)mud.capa=x.sug.capa;
+    const mud={};if(x.tit&&x.sug.titulo)mud.titulo=x.sug.titulo;if(x.desc&&x.sug.descricao)mud.descricao=x.sug.descricao;if(x.capa&&x.sug.capa)mud.capa=x.sug.capa;if(x.esp&&x.sug.atributos&&x.sug.espNovas?.length)mud.atributos=x.sug.atributos;
     if(!Object.keys(mud).length){x.st='nada pra aplicar';continue;}
-    const antes={...(mud.titulo?{titulo:x.it.nome}:{}),...(mud.descricao?{descricao:ot.mp==='tiktok'?x.det.descHtml:x.det.desc}:{}),...(mud.capa&&ot.mp!=='ml'?{fotosAntes:x.det.fotos}:{})};
+    const antes={...(mud.titulo?{titulo:x.it.nome}:{}),...(mud.descricao?{descricao:ot.mp==='tiktok'?x.det.descHtml:x.det.desc}:{}),...(mud.capa&&ot.mp!=='ml'?{fotosAntes:x.det.fotos}:{}),...(mud.atributos?{atributos:otAtribUpdate(x.det.atributos)}:{})};
     try{const r=await otAplicarMp[ot.mp](c,x,mud);if(ot.mp==='ml'&&x.det.fotosAntesPorItem)antes.fotosAntes=x.det.fotosAntesPorItem;
       if(r.ok){ok++;x.st=ot.mp==='tiktok'||ot.mp==='shein'?'ok: enviado pra análise':ot.mp==='ml'&&(x.it.anuncios||[]).length>1?`ok: ${(x.it.anuncios||[]).length} anúncios da família`:'ok: atualizado';x.antes=antes;if(mud.titulo)x.it.nome=mud.titulo;if(r.fotos)x.det.fotos=r.fotos;if(mud.capa)x.det.capaUrl=mud.capa;
         // o Firestore recusa campo undefined ("Unsupported field value: undefined") — limpa antes de gravar
