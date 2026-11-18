@@ -308,22 +308,22 @@ const EQUIPE = {
   'suporte@lbmarketplace.com.br': { nome: 'Lídia', papel: 'sdr' },
   'isalbmarketplace@gmail.com': { nome: 'Isa', papel: 'sdr', email: 'suporte@lbmarketplace.com.br' },
   'guilherme@lbmarketplace.com.br': { nome: 'Guilherme', papel: 'vendedor' },
-  'mirela@lbmarketplace.com.br': { nome: 'Duda', papel: 'gestor' }, // 18/11/2026: o Workspace da Mirella virou da Duda — mesmos leads
+  'duda@lbmarketplace.com.br': { nome: 'Duda', papel: 'gestor' }, // 18/11/2026: o Workspace da Mirella virou da Duda — mesmos leads
 };
 const PAPEL_ROT = { gestor: 'Gestor comercial', sdr: 'SDR', vendedor: 'Vendedor(a)' };
 const TIME = [
   { email: 'suporte@lbmarketplace.com.br', nome: 'Lídia', papel: 'SDR' },
   { email: 'guilherme@lbmarketplace.com.br', nome: 'Guilherme', papel: 'Vendedor' },
-  { email: 'mirela@lbmarketplace.com.br', nome: 'Duda', papel: 'Vendedora' },
+  { email: 'duda@lbmarketplace.com.br', nome: 'Duda', papel: 'Vendedora' },
   { email: 'felipesoares@potencialmidia.com', nome: 'Felipe', papel: 'Vendedor' },
   { email: 'lincoln@lbmarketplace.com.br', nome: 'Lincoln', papel: 'Gestor' },
 ];
 // quem faz reunião (agenda da LB): o horário livre é calculado por pessoa
-const CLOSERS = [['guilherme@lbmarketplace.com.br', 'Guilherme'], ['mirela@lbmarketplace.com.br', 'Duda'], ['felipesoares@potencialmidia.com', 'Felipe'], ['lincoln@lbmarketplace.com.br', 'Lincoln']]; // Carol saiu (16/11/2026): não faz reunião de closer
+const CLOSERS = [['guilherme@lbmarketplace.com.br', 'Guilherme'], ['duda@lbmarketplace.com.br', 'Duda'], ['felipesoares@potencialmidia.com', 'Felipe'], ['lincoln@lbmarketplace.com.br', 'Lincoln']]; // Carol saiu (16/11/2026): não faz reunião de closer
 const HORARIO = [9, 19]; // reuniões das 9h às 19h, de 30 em 30 min
 const HORARIO_SABADO = [9, 13]; // sábado das 9h às 13h (Lincoln 29/10/2026)
 // 30/10/2026: horário próprio de quem não segue o padrão — Duda só das 17h às 21h30, todo dia (sábado e domingo também)
-const HORARIO_PESSOA = { 'mirela@lbmarketplace.com.br': { semana: [9, 18.5] } }; // Duda (16/11/2026): seg a sex das 9h às 18h30
+const HORARIO_PESSOA = { 'duda@lbmarketplace.com.br': { semana: [9, 18.5] } }; // Duda (16/11/2026): seg a sex das 9h às 18h30
 function horarioDe(email, sem) { const p = HORARIO_PESSOA[email]; if (p?.todos) return p.todos; if (p?.semana) return sem === 0 || sem === 6 ? null : p.semana; if (sem === 0) return null; return sem === 6 ? HORARIO_SABADO : HORARIO; }
 const MOTIVOS = ['Não respondeu mais', 'Achou caro / sem dinheiro agora', 'Não é o momento', 'Não qualificado (sem perfil)', 'Fechou com outra assessoria', 'Sem produto / estoque', 'Só queria informação', 'Outro'];
 
@@ -391,11 +391,11 @@ const leadDaConv = (c) => leadPorTel.get(chaveTel(c.telefone || c.id)) || null;
 const convDoLead = (l) => { const k = chaveTel(l?.whatsapp); return k ? S.convs.find((c) => chaveTel(c.telefone || c.id) === k) : null; };
 const ehCliente = (c) => !!S.clientesTel[chaveTel(c.telefone || c.id)] || c.qualificacao === 'cliente';
 // 30/10/2026 (Lincoln): o Guilherme vê TODOS os agendados (pode chamar/ligar pra antecipar), mesmo os da Isa ou com reunião com outra pessoa
-const FUNIL_SO_MEUS = ['mirela@lbmarketplace.com.br']; // Duda (16/11/2026): o funil abre só com os leads dela
+const FUNIL_SO_MEUS = ['duda@lbmarketplace.com.br']; // Duda (16/11/2026): o funil abre só com os leads dela
 const VE_TODOS_AGENDADOS = ['guilherme@lbmarketplace.com.br'];
 // 16/11/2026 (Lincoln): Novo e Em contato ficam abertos pra todo mundo (ver, ligar, mandar mensagem, marcar reunião);
 // alterar (mover etapa, tags, nota, contrato, responsável, retorno) nessas etapas só Lincoln, Felipe e Carol.
-const EDITA_INICIO = ['lincoln@lbmarketplace.com.br', 'felipesoares@potencialmidia.com', 'caroline@lbmarketplace.com.br', 'mirela@lbmarketplace.com.br'];
+const EDITA_INICIO = ['lincoln@lbmarketplace.com.br', 'felipesoares@potencialmidia.com', 'caroline@lbmarketplace.com.br', 'duda@lbmarketplace.com.br'];
 const etapaAberta = (l) => ['novo', 'contato'].includes(l?.stage || 'novo');
 /* 17/11/2026 (Lincoln: a Lídia não punha tag e o Gui não movia de Em contato pra Agendado): a SDR mexe em todos; o vendedor nos leads dele */
 const SDR_EDITA = ['suporte@lbmarketplace.com.br', 'isalbmarketplace@gmail.com'];
@@ -1379,7 +1379,7 @@ function rAgenda() {
   el.querySelectorAll('[data-slot]').forEach((b) => (b.onclick = () => { const [d, h, em] = b.dataset.slot.split('|'); escolherLeadPraSlot(d, h, em); }));
 }
 // ---------- 30/10/2026 (Lincoln): agenda tradicional (semana em grade) com filtros ----------
-const COR_CLOSER = { 'guilherme@lbmarketplace.com.br': '#2563eb', 'mirela@lbmarketplace.com.br': '#db2777', 'felipesoares@potencialmidia.com': '#0d9488', 'lincoln@lbmarketplace.com.br': '#b45309', 'caroline@lbmarketplace.com.br': '#7c3aed' };
+const COR_CLOSER = { 'guilherme@lbmarketplace.com.br': '#2563eb', 'duda@lbmarketplace.com.br': '#db2777', 'felipesoares@potencialmidia.com': '#0d9488', 'lincoln@lbmarketplace.com.br': '#b45309', 'caroline@lbmarketplace.com.br': '#7c3aed' };
 const agVistaBtns = () => `<div class="chips"><button class="chip ${S.agVista !== 'semana' ? 'on' : ''}" data-agvista="lista">Lista</button><button class="chip ${S.agVista === 'semana' ? 'on' : ''}" data-agvista="semana">Semana</button></div><button class="btn sm ouro" id="agMarcar">Marcar reunião</button>`;
 function ligarVista(el) { const bm = el.querySelector('#agMarcar'); if (bm) bm.onclick = () => escolherLeadPraSlot('', '', vendedor() ? S.email : (S.agFQuem && S.agFQuem !== 'todos' ? S.agFQuem : REUNIAO_LINCOLN_VAI_PARA)); el.querySelectorAll('[data-agvista]').forEach((b) => (b.onclick = () => { S.agVista = b.dataset.agvista; gravarLS('cmAgVista', S.agVista); rAgenda(); })); }
 const agTagOk = (e) => !S.agFTag || (leadDoEvento(e)?.etiquetas || []).includes(S.agFTag);
