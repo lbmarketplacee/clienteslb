@@ -1950,10 +1950,8 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
         <div class="toolbar" style="margin-bottom:16px">
           <span style="font-size:12px;color:var(--text-dim);align-self:center;margin-right:4px">Gerenciado por:</span>
           <button class="chip active" data-resp2="todos">Todos</button>
-          <button class="chip" data-resp2="lincoln@lbmarketplace.com.br">Lincoln</button>
-          <button class="chip" data-resp2="guilherme@lbmarketplace.com.br">Guilherme</button>
           <button class="chip" data-resp2="caroline@lbmarketplace.com.br">Caroline</button>
-          <button class="chip" data-resp2="duda@lbmarketplace.com.br">Duda</button>
+          <button class="chip" data-resp2="suporte@lbmarketplace.com.br">Lídia</button>
           <span style="width:1px;background:var(--border);margin:0 4px"></span>
           <button class="chip" id="chipMostrarInativos">Mostrar Inativos</button>
         </div>
@@ -3275,7 +3273,7 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
         <button type="button" class="chip-toggle" data-val="shein">Shein</button>
       </div></div>
       <div class="field"><label>Responsável pelo cliente (cuida de todos os marketplaces dele)</label>
-        <select id="fResponsavelGeral"><option value="">— Ninguém —</option><option value="lincoln@lbmarketplace.com.br">Lincoln</option><option value="guilherme@lbmarketplace.com.br">Guilherme</option><option value="caroline@lbmarketplace.com.br">Caroline</option><option value="duda@lbmarketplace.com.br">Duda</option></select>
+        <select id="fResponsavelGeral"><option value="">— Ninguém —</option><option value="caroline@lbmarketplace.com.br">Caroline</option><option value="suporte@lbmarketplace.com.br">Lídia</option></select>
       </div>
       <div class="form-row">
         <div class="field"><label>Encerramento Desconto Fixo</label><input type="datetime-local" id="fDesconto"></div>
@@ -4057,7 +4055,8 @@ if(docs&&(docs.docFrente||docs.docVerso||docs.docCnpj)){
   fDocsLista.innerHTML=itensDocs.map(i=>`<a href="${i.u}" target="_blank" class="btn btn-ghost btn-sm">📄 ${i.l}</a>`).join('');
 }else{fDocsWrap.style.display='none';fDocsLista.innerHTML='';}
 const resp=c?.responsaveisPorMarketplace||{};
-document.getElementById('fResponsavelGeral').value=c?.responsavelGeral||resp.shopee||resp.ml||resp.tiktok||resp.shein||'';
+/* 18/11/2026 (Lincoln): gestor do cliente = só Carol ou Lídia; cliente NOVO já vem com a Lídia. Responsável antigo de fora da lista continua aparecendo na edição. */
+{const sel=document.getElementById('fResponsavelGeral');const atual=c?(c.responsavelGeral||resp.shopee||resp.ml||resp.tiktok||resp.shein||''):'suporte@lbmarketplace.com.br';sel.querySelectorAll('option[data-extra]').forEach(o=>o.remove());if(atual&&![...sel.options].some(o=>o.value===atual)){const o=document.createElement('option');o.value=atual;o.dataset.extra='1';o.textContent=(USERS_MAP[atual]||atual)+' (antigo)';sel.appendChild(o);}sel.value=atual;}
 shopeeAtualizarStatusModal(c);shopeeAdsAtualizarStatusModal(c);tiktokAtualizarStatusModal(c);clientModalOverlay.classList.remove('hidden');}
 document.querySelectorAll('#clientForm .chip-toggle').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
 document.getElementById('openNewClientBtn').addEventListener('click',()=>openClientModal(null));
