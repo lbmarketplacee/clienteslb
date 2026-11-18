@@ -3753,7 +3753,7 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
 <div id="toast"></div>
 <script type="module">
 const firebaseConfig={apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"};
-const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Duda","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","akemikimidesign@gmail.com":"Akemi","isalbmarketplace@gmail.com":"Isa","suporte@lbmarketplace.com.br":"Lídia","conexoes@lbmarketplace.com.br":"Conexões LB"};
+const USERS_MAP={"lincoln@lbmarketplace.com.br":"Lincoln","guilherme@lbmarketplace.com.br":"Guilherme","caroline@lbmarketplace.com.br":"Caroline","mirela@lbmarketplace.com.br":"Duda","felipesoares@potencialmidia.com":"Felipe","roma@lbmarketplace.com.br":"Roma Aviamentos","mirela@lbmarketplace.com.br":"Akemi","isalbmarketplace@gmail.com":"Isa","suporte@lbmarketplace.com.br":"Lídia","conexoes@lbmarketplace.com.br":"Conexões LB"};
 /* 16/11/2026 (Lincoln): login só pra conectar as APIs dos clientes (abrir no navegador/perfil do cliente). Só vê os cards de conexão. */
 const CONEXAO_LB=['conexoes@lbmarketplace.com.br'];const ehConexaoLB=()=>CONEXAO_LB.includes(String(currentEmail||'').toLowerCase());
 const LINCOLN_EMAIL="lincoln@lbmarketplace.com.br";
@@ -3889,7 +3889,7 @@ const PORTAL_CLIENTES={'roma@lbmarketplace.com.br':'X6EXAnrhX3J1MCKvt3Mw'};
 const portalClienteId=()=>PORTAL_CLIENTES[currentEmail]||null;
 // Freela do comercial (Akemi, 15/10/2026): só a tela Comercial & Marketing (Marketing, Comercial, Tráfego Meta, CRM de Leads).
 // Não carrega clientes/tarefas/robôs — as regras do Firestore também só liberam comercialBoard, comercialDiario e crmLeads.
-const COMERCIAL_FREELA=['akemikimidesign@gmail.com','isalbmarketplace@gmail.com'];
+const COMERCIAL_FREELA=['isalbmarketplace@gmail.com']; /* 18/11/2026: Duda saiu do Gmail e usa o mirela@ (sistema todo) */
 const ehFreelaComercial=()=>COMERCIAL_FREELA.includes(String(currentEmail||'').toLowerCase())||['felipesoares@potencialmidia.com'].includes(String(currentEmail||'').toLowerCase()); /* Lídia (suporte@) usa o sistema todo desde 13/11/2026 (Lincoln) */
 function startListeners(){if(unsubC)return;
   if(ehFreelaComercial()){location.replace('/comercial.html');return; // 29/10/2026: o comercial mora na página própria
@@ -4245,7 +4245,7 @@ initGoogle();
 const IA_ENDPOINT='https://lbiagerador.vercel.app/api/gerar';
 
 /* ================= COMERCIAL & MARKETING (restrito) ================= */
-const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com','isalbmarketplace@gmail.com','suporte@lbmarketplace.com.br'];
+const COMERCIAL_EMAILS=['lincoln@lbmarketplace.com.br','felipesoares@potencialmidia.com','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','mirela@lbmarketplace.com.br','isalbmarketplace@gmail.com','suporte@lbmarketplace.com.br'];
 const isComercialAllowed=()=>COMERCIAL_EMAILS.includes(currentEmail);
 setInterval(()=>{const b=document.getElementById('navCentralCom');if(b&&currentEmail)b.classList.toggle('hidden',!isComercialAllowed());},2000);
 let comEntriesCache=[],comMetasCache=null,comMesAtual='';
@@ -12699,7 +12699,7 @@ let crmLeads = [];
 let crmView = 'kanban';
 let crmFilter = {search:'', stage:'all', origem:'all', tipoServico:'all', nicho:'all', periodo:'all', acomp:'all', dono:'all', etiqueta:'all', ordem:(()=>{try{return localStorage.getItem('crmOrdem')||'novos';}catch(e){return 'novos';}})()};
 // Vendedores (15/10/2026, Lincoln): Guilherme e Duda fazem SDR + fechamento; R$ 500 por fechamento. Lista em configuracoes/comercial (padrão abaixo).
-const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'akemikimidesign@gmail.com',nome:'Duda'},{email:'suporte@lbmarketplace.com.br',nome:'Lídia'}];
+const CRM_VENDEDORES=[{email:'lincoln@lbmarketplace.com.br',nome:'Lincoln'},{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme'},{email:'mirela@lbmarketplace.com.br',nome:'Duda'},{email:'suporte@lbmarketplace.com.br',nome:'Lídia'}];
 const CRM_COMISSAO=500;
 const crmEhVendedor=()=>CRM_VENDEDORES.some(v=>v.email===String(currentEmail||'').toLowerCase());
 // 26/10/2026 (Lincoln): a Isa (SDR) fala com TODOS os leads — vê e atualiza os de qualquer dono (não troca o dono)
@@ -12969,7 +12969,7 @@ function crmPerfilTag(l){const t=l.ia?.temperatura;const tt=t?`<span class="ktag
 // ===== Gravador de reunião (22/10/2026, Lincoln): grava o Meet pelo navegador em 2 trilhas (microfone = vendedor, áudio da aba = cliente),
 // em pedaços de 5 min transcritos pelo Gemini durante a reunião; no fim a Claude analisa contra o Roteiro da Reunião Comercial LB.
 // O andamento fica salvo no lead (reuniaoAndamento) — se a aba fechar, dá pra analisar o que já foi transcrito.
-const REU_EQUIPE=['lincoln@lbmarketplace.com.br','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','akemikimidesign@gmail.com','isalbmarketplace@gmail.com','suporte@lbmarketplace.com.br'];
+const REU_EQUIPE=['lincoln@lbmarketplace.com.br','caroline@lbmarketplace.com.br','guilherme@lbmarketplace.com.br','mirela@lbmarketplace.com.br','isalbmarketplace@gmail.com','suporte@lbmarketplace.com.br'];
 const REU_PEDACO_MS=5*60*1000;
 const REU_US_SEG=0.000035; // Gemini Flash: ~32 tokens/s de áudio (estimativa pro contador iaUso)
 let reu=null;
@@ -13313,7 +13313,7 @@ function crmComparativo(leads,vendedores,mes,{gastoMeta=null,ticket=null}={}){
 }
 
 // ---------- CRM profissional — telas ----------
-const CRM_PAPEL={'guilherme@lbmarketplace.com.br':'Closer do tráfego','akemikimidesign@gmail.com':'SDR · prospecção ativa e orgânico','suporte@lbmarketplace.com.br':'SDR · todos os leads novos','isalbmarketplace@gmail.com':'SDR · todos os leads novos'};
+const CRM_PAPEL={'guilherme@lbmarketplace.com.br':'Closer do tráfego','mirela@lbmarketplace.com.br':'SDR · prospecção ativa e orgânico','suporte@lbmarketplace.com.br':'SDR · todos os leads novos','isalbmarketplace@gmail.com':'SDR · todos os leads novos'};
 const crmEu=()=>String(currentEmail||'').toLowerCase();
 const crmSouVendedor=()=>crmEhVendedor()&&!isLincoln();
 let crmAba='funil'; // funil | painel | lincoln
@@ -13718,7 +13718,7 @@ window.__crmJuntar=async tel=>{const g=crmLeads.filter(l=>crmTel(l.whatsapp)===t
 // ===== CENTRAL COMERCIAL (29/10/2026, Lincoln: "um sistema dentro do sistema, só pro comercial — Isa, Duda e Felipe só veem isso; tem que ser muito foda")
 // Junta numa tela: fila do dia (quem chamar agora), conversas do WhatsApp, funil (CRM), agenda da semana, placar e marketing/tráfego.
 // As conversas, o funil e o painel de marketing são os MESMOS do sistema — a tela pega emprestado (move os blocos pra cá e devolve ao sair).
-const CC_SO=['suporte@lbmarketplace.com.br','akemikimidesign@gmail.com','felipesoares@potencialmidia.com','isalbmarketplace@gmail.com'];
+const CC_SO=['suporte@lbmarketplace.com.br','felipesoares@potencialmidia.com','isalbmarketplace@gmail.com'];
 const ccSoComercial=()=>CC_SO.includes(String(currentEmail||'').toLowerCase());
 let ccAba='fila',ccEscopo='meu',ccAgenda={de:null,eventos:null,erro:null,carregando:false},ccIniciado=false,ccTimer=null;
 const ccEu=()=>String(currentEmail||'').toLowerCase();
