@@ -90,7 +90,7 @@ const SHOPEE = 'https://lb-shopee-gmv.vercel.app/api/shopee';
 const $ = (s) => document.querySelector(s);
 // dentro do sistema (aba da Central de Marketing) não mostra o cabeçalho próprio; só Lincoln e Carol usam (12/11/2026)
 const EMBED = new URLSearchParams(location.search).get('embed') === '1'; if (EMBED) document.querySelector('header').style.display = 'none';
-const DIRETORIA = ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br'];
+const DIRETORIA = ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br', 'suporte@lbmarketplace.com.br']; // + Lídia (suporte), 18/11/2026
 // mesmas medidas do lib/decoracao.js (lb-diretor-criativo)
 const PECAS = [
   { id: 'ml_capa', nome: 'Capa Mercado Livre', w: 1920, h: 100, larga: true },
