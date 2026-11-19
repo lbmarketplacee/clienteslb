@@ -47,6 +47,7 @@ tr.atras td{background:rgba(224,87,74,.12)}
 .dia.hoje{border-color:var(--ouro)}
 .dia .n{font-size:12px;color:var(--sub)}
 .dia .ev{font-size:11.5px;background:var(--card2);border-radius:6px;padding:3px 5px;margin-top:4px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid var(--ouro)}
+.modal[hidden],[hidden]{display:none!important}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;justify-content:center;padding:30px 16px;overflow:auto;z-index:20}
 .caixa{background:var(--card);border:1px solid var(--borda);border-radius:14px;max-width:760px;width:100%;padding:18px}
 .caixa h2{font-family:Oswald,sans-serif;margin:0 0 6px;font-size:20px}
@@ -57,6 +58,8 @@ tr.atras td{background:rgba(224,87,74,.12)}
 .btn-ouro{background:var(--ouro);border:0;color:#1a1408;padding:10px 18px;border-radius:999px;font-weight:700;cursor:pointer;font:inherit}
 .login{max-width:380px;margin:12vh auto;text-align:center;padding:0 16px}
 .login h1{font-family:Oswald,sans-serif}
+body.embed .topo{display:none}
+body.embed .wrap{padding-top:12px}
 @media (max-width:640px){.mes{gap:3px}.dia{min-height:64px;padding:3px}.dia .ev{font-size:10px}}
 </style>
 </head>
@@ -94,6 +97,7 @@ import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/fi
 const firebaseConfig = { apiKey: "AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE", authDomain: "lb-gestao-clientes.firebaseapp.com", projectId: "lb-gestao-clientes", storageBucket: "lb-gestao-clientes.firebasestorage.app", messagingSenderId: "344033285587", appId: "1:344033285587:web:fbdae7d44eaf5bac760b26" };
 const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
 const $ = (s) => document.querySelector(s);
+if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const celular = () => /Android|iPhone|iPad/i.test(navigator.userAgent);
 const STATUS = ['Aguardando conteúdo', 'Em produção', 'Para revisão', 'Feed do cliente', 'Ajuste', 'Aprovado', 'Agendado', 'Postado'];
