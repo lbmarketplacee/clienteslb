@@ -1280,7 +1280,7 @@ async function sincronizarAgenda() {
       const l = leadDoEvento(e); if (!l || !['novo', 'contato', 'agendado'].includes(l.stage || 'novo')) continue;
       const r = l.reuniaoMarcada; if (r?.eventoId === e.id && M.ms(r.inicio) === ini) continue;
       if (r?.inicio && M.ms(r.inicio) > Date.now() && r.eventoId !== e.id) continue; // já tem outra reunião futura marcada pelo sistema
-      const cl = closersDoEvento(e); const com = cl.find((x) => x !== 'lincoln@lbmarketplace.com.br') || REUNIAO_LINCOLN_VAI_PARA;
+      const cl = closersDoEvento(e); const com = cl.find((x) => x !== 'lincoln@lbmarketplace.com.br') || donoDaReuniao(l);
       const p = ['novo', 'contato'].includes(l.stage || 'novo') ? mudancaEtapa(l, 'agendado') : { atividades: [...(l.atividades || [])] };
       p.atividades.push({ tipo: 'nota', quando: Date.now(), por: 'Agenda', nota: `Reunião na agenda: ${new Date(ini).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` });
       p.reuniaoMarcada = { inicio: new Date(ini).toISOString(), fim: e.end?.dateTime ? new Date(e.end.dateTime).toISOString() : new Date(ini + 30 * 60000).toISOString(), eventoId: e.id, meet: e.hangoutLink || '', com, comNome: CLOSERS.find((c) => c[0] === com)?.[1] || '', por: 'Agenda Google', em: r?.em || Date.now(), origem: 'agenda' };
@@ -1306,8 +1306,14 @@ function closersDoEvento(e) {
   // reunião passada pra outra pessoa no CRM (ex.: Guilherme → Duda, 16/11/2026) vale mais que o convidado do evento
   const lr = S.leads.find((x) => x.reuniaoMarcada?.eventoId === e.id); if (lr && CLOSERS.some((c) => c[0] === low(lr.reuniaoMarcada.com))) return [low(lr.reuniaoMarcada.com)];
   const at = (e.attendees || []).map((a) => low(a.email)); const cl = CLOSERS.filter(([em]) => at.includes(em)).map(([em]) => em);
-  if (cl.length === 1 && cl[0] === 'lincoln@lbmarketplace.com.br' && !e.extendedProperties?.private?.leadId) return [REUNIAO_LINCOLN_VAI_PARA];
+  if (cl.length === 1 && cl[0] === 'lincoln@lbmarketplace.com.br' && !e.extendedProperties?.private?.leadId) return [donoDaReuniao(leadDoEvento(e))];
   return cl;
+}
+// 19/11/2026 (Lincoln: "todos os agendados ficam no nome do Guilherme, mas pode ser da Duda"): reunião marcada pela página do Google
+// fica com o DONO do lead quando ele faz reunião (Duda, Guilherme, Felipe); sem dono que faça reunião → Guilherme.
+function donoDaReuniao(l) {
+  const d = low(l?.donoEmail || '');
+  return d && d !== 'lincoln@lbmarketplace.com.br' && CLOSERS.some((c) => c[0] === d) ? d : REUNIAO_LINCOLN_VAI_PARA;
 }
 function meuEvento(e) { if (!vendedor()) return true; const cl = closersDoEvento(e); return cl.length ? cl.includes(S.email) : S.email === REUNIAO_LINCOLN_VAI_PARA; }
 function leadDoEvento(e) {
