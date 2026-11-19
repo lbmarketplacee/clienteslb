@@ -38,12 +38,14 @@ service cloud.firestore {
 
     // Tudo do sistema: equipe — MENOS financeiro, RH e gastos pessoais
     match /{colecao}/{resto=**} {
-      allow read, write: if equipe() && !(colecao in ['financeiroLB', 'colaboradoras', 'gastosFixos', 'gastosHistorico', 'lbMarketing', 'crmLeads']);
+      allow read, write: if equipe() && !(colecao in ['financeiroLB', 'colaboradoras', 'gastosFixos', 'gastosHistorico', 'lbMarketing', 'crmLeads', 'conteudoLB']);
     }
     // Financeiro da LB e RH: só Lincoln e Carol
     match /financeiroLB/{resto=**} { allow read, write: if diretoria(); }
     match /colaboradoras/{resto=**} { allow read, write: if diretoria(); }
     match /lbMarketing/{resto=**} { allow read, write: if diretoria(); }
+    // Calendário editorial da LB (19/11/2026): vem do sistema da Potencial pelo servidor; a equipe só lê
+    match /conteudoLB/{resto=**} { allow read: if equipe(); allow write: if false; }
     // CRM separado por vendedor (21/10/2026): Lincoln e Carol veem tudo; cada vendedor só lê/edita os leads em que é o dono
     // e não troca o dono (quem troca é a diretoria). Robôs/webhooks usam a conta de serviço (não passam por aqui).
     match /crmLeads/{id} {
