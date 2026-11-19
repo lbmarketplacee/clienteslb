@@ -12012,7 +12012,9 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const base=['BRAND','MODEL','SIZE_GRID_ID','SIZE_GRID_ROW_ID','ITEM_CONDITION','GTIN',...idsVar,...(u.material?['MAIN_MATERIAL']:[])];
   const tratado=id=>base.includes(id)||/^(SELLER_PACKAGE_|FILTRABLE_)/.test(id); // IS_* obrigatório (IS_SPORTIVE, Killachay 07/10/2026) vai pra IA
   const obrig=attrs.filter(a=>a.tags?.required&&!a.tags?.hidden&&!a.tags?.read_only&&!tratado(a.id));
-  const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:a.name,livre:true});
+  // medida obrigatória (ex.: Altura em Travesseiros MLB1611, FB Travesseiros 19/11/2026): diz pra IA que é número + unidade
+  const unidadeDe=a=>a.value_type==='number_unit'?(a.default_unit||a.allowed_units?.[0]?.id||'cm'):'';
+  const paraIA=obrig.map(a=>(a.values||[]).length?{id:a.id,nome:a.name,valores:a.values.map(v=>({id:v.id,nome:v.name}))}:{id:a.id,nome:unidadeDe(a)?`${a.name} (número + unidade, ex.: "15 ${unidadeDe(a)}" — medida do PRODUTO pela descrição/título; se não souber, estime pelo tipo de produto)`:a.name,livre:true});
   linhaMl('ML: preenchendo a ficha técnica...');
   let ia=[];if(paraIA.length){const r=await iaFetch(DIRETOR_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao:'atributos_shopee',produto:`${familia}\n${u.produto}\nMaterial: ${u.material||'-'}${u.cores.length?`\n${u.nome1}: ${u.cores.join(', ')}`:''}${u.tamanhos.length?`\n${u.nome2}: ${u.tamanhos.map(t=>t.tam).join(', ')}`:''}`,arvore:paraIA})}).then(r=>r.json()).catch(()=>({}));ia=r.atributos||[];}
   const genero=ia.find(a=>a.id==='GENDER');const extras=ia.filter(a=>a.id!=='GENDER');
@@ -12022,6 +12024,13 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const skuMl=String(sku||'').trim();
   for(const id of ['PART_NUMBER','MPN'])if(paraIA.some(a=>a.id===id)&&!extras.some(e=>e.id===id)&&skuMl)extras.push({id,value_name:skuMl.slice(0,60)});
   // o que ficou SEM valor depois da IA e dos padrões (o ML pode preencher sozinho — conferir no anúncio)
+  // medida que a IA não soube → tamanho da embalagem (cm) / peso (kg), melhor que o ML recusar o anúncio
+  const dimDe={HEIGHT:dim?.a,WIDTH:dim?.l,LENGTH:dim?.c,DEPTH:dim?.c};
+  for(const a of obrig.filter(a=>a.value_type==='number_unit'&&!extras.some(e=>e.id===a.id))){
+    const u2=unidadeDe(a);
+    if(dimDe[a.id]>0&&/cm|mm|m$/.test(u2))extras.push({id:a.id,value_name:`${u2==='mm'?dimDe[a.id]*10:dimDe[a.id]} ${u2}`});
+    else if(/WEIGHT/.test(a.id)&&peso>0)extras.push({id:a.id,value_name:/^g$/.test(u2)?`${Math.round(peso*1000)} g`:`${peso} kg`});
+  }
   // código de barras: categoria com GTIN obrigatório/condicional (ex.: Modeladores de Cachos MLB44076, visto ao vivo 07/10/2026)
   // → manda o EAN informado ou, sem ele, o motivo "O produto não tem código cadastrado" (senão o ML recusa)
   const aGtin=attrs.find(a=>a.id==='GTIN'),aMotivo=attrs.find(a=>a.id==='EMPTY_GTIN_REASON');const gtinCod=String(spec.gtin||'').replace(/\D/g,'');
