@@ -14611,7 +14611,7 @@ const pxLer={
       if(px.ttDesc==null){px.ttDesc={};if(c.tiktokDescontoFixoId){const d=await mig3Api(c,'detalhe',{id:c.tiktokDescontoFixoId}).catch(()=>({}));for(const x of d.produtos||[])if(x.preco>0)px.ttDesc[x.id]=x.preco;}}
       const sk=p.skus||[];const nomesVar=(sk[0]?.sales_attributes||[]).map(a=>a.name);
       const vars=nomesVar.map((nome,k)=>{const tam=pxEhTam(nome);const ops=[];
-        for(const s of sk){const a=(s.sales_attributes||[])[k];if(a&&!ops.some(o=>o.nome===a.value_name))ops.push({nome:String(tam?migTamLimpo(a.value_name):a.value_name).slice(0,30),veste:tam?migVesteDe(a.value_name):'',foto:k===0?(a.sku_img?.urls?.[0]||null):null,_orig:a.value_name});}
+        for(const s of sk){const a=(s.sales_attributes||[])[k];if(a&&!ops.some(o=>o._orig===a.value_name))ops.push({nome:String(tam?migTamLimpo(a.value_name):a.value_name).slice(0,30),veste:tam?migVesteDe(a.value_name):'',foto:k===0?(a.sku_img?.urls?.[0]||null):null,_orig:a.value_name});}
         return{nome:String(nome).slice(0,30),tam,opcoes:ops};});
       const skus=sk.map(s=>{const venda=px.ttDesc[row.id]||Number(s.price?.sale_price||s.price?.tax_exclusive_price)||0;
         return{op:(s.sales_attributes||[]).map((a,k)=>vars[k]?.opcoes.find(o=>o._orig===a.value_name)?.nome),liq:venda?dirLiquidoTT(venda):0,est:(s.inventory||[]).reduce((t,w)=>t+(Number(w.quantity)||0),0),sku:s.seller_sku||''};}).filter(s=>s.op.every(Boolean)&&s.liq>0);
