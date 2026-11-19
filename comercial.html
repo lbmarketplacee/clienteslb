@@ -1146,7 +1146,7 @@ function recBox(l) {
   if (REC && REC.leadId === l.id) topo = `<div class="lin"><span class="rec-status" style="color:#e0525a;font-weight:700">${recTxt()}</span>${REC.parando ? '' : '<button class="btn sm vm" data-rec="parar">Parar e analisar</button>'}</div>`;
   else if (REC) topo = `<div class="lin"><span class="tag">Gravando a reunião de ${esc(REC.nome)} — pare aquela antes.</span></div>`;
   else if (and?.falas?.length) topo = `<div class="lin"><span class="tag la">Gravação interrompida (${and.falas.length} falas salvas)</span><button class="btn sm ouro" data-rec="analisar">Analisar o que foi salvo</button><button class="btn sm" data-rec="descartar">Descartar</button></div>${and.video?.url ? recVideoHtml({ video: and.video }) : ''}`;
-  else topo = `<div class="lin"><button class="btn sm vm" data-rec="gravar">● Gravar reunião (Meet)</button><span style="font-size:12px;opacity:.7">Chrome do computador · avise o cliente que está gravando</span></div>${and?.video?.url ? recVideoHtml({ video: and.video }) : ''}`;
+  else topo = `<div class="lin"><button class="btn sm vm" data-rec="gravar">● Gravar reunião (Meet)</button><span style="font-size:12px;opacity:.7">${navigator.mediaDevices?.getDisplayMedia ? 'Chrome do computador' : 'pelo microfone (Meet no alto-falante)'} · avise o cliente que está gravando</span></div>${and?.video?.url ? recVideoHtml({ video: and.video }) : ''}`;
   const it = lista.map((r) => { const a = r.analise || {}; return `<details style="margin-top:8px"><summary style="cursor:pointer"><b>${new Date(r.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</b> · ${recRel(r.duracaoSeg || 0)} · ${esc(r.vendedor || '')} · nota ${a.nota ?? '-'} · chance ${a.chanceFechar ?? '-'}%</summary><div class="ia-box" style="margin-top:6px">${esc(a.resumo || '')}${a.proximoPasso ? `<br><b>Próximo passo:</b> ${esc(a.proximoPasso)}` : ''}${(a.melhorar || []).length ? `<br><b>Melhorar:</b> ${a.melhorar.map(esc).join(' · ')}` : ''}${a.mensagemFollowUp ? `<br><b>WhatsApp:</b> ${esc(a.mensagemFollowUp)} <button class="btn sm" data-rec="copiar" data-txt="${esc(a.mensagemFollowUp)}">Copiar</button>` : ''}</div></details>${recVideoHtml(r)}`; }).join('');
   return `<h4>Gravação da reunião</h4>${topo}${it}`;
 }
@@ -1164,11 +1164,11 @@ async function recEnviar(blob, quem, offset, duracao) {
 }
 function recPedaco() {
   if (!REC) return; const ini = Date.now(); const off = (ini - REC.inicio) / 1000;
-  for (const [quem, st] of [['vendedor', REC.mic], ['cliente', REC.aba]]) {
-    const tipo = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
-    const rec = new MediaRecorder(st, { mimeType: tipo, audioBitsPerSecond: 32000 }); const partes = [];
+  for (const [quem, st] of (REC.soMic ? [['misto', REC.mic]] : [['vendedor', REC.mic], ['cliente', REC.aba]])) {
+    const tipo = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || ''; // Safari (iPad) = audio/mp4
+    const rec = new MediaRecorder(st, { ...(tipo ? { mimeType: tipo } : {}), audioBitsPerSecond: 32000 }); const partes = [];
     rec.ondataavailable = (e) => { if (e.data?.size) partes.push(e.data); };
-    rec.onstop = () => recEnviar(new Blob(partes, { type: 'audio/webm' }), quem, off, (Date.now() - ini) / 1000);
+    rec.onstop = () => { const t = (rec.mimeType || tipo || 'audio/webm').split(';')[0]; recEnviar(new Blob(partes, { type: t }), quem, off, (Date.now() - ini) / 1000); };
     rec.start(); REC.recs[quem] = rec;
   }
 }
@@ -1194,7 +1194,19 @@ async function recAcao(l, a, btn) {
     if (a === 'analisar') { const g = l.reuniaoAndamento; toast('Analisando a reunião…'); const fim = Math.max(...g.falas.map((x) => x.f || x.t || 0)); await recAnalisar(l, { falas: g.falas, inicio: g.inicio, vendedor: g.vendedor || S.nome, duracaoSeg: Math.max(fim, (g.atualizadoEm - g.inicio) / 1000 || 0) }); return toast('Reunião analisada.'); }
     if (a === 'gravar') {
       if (REC) return toast('Já tem uma reunião sendo gravada.');
-      if (!navigator.mediaDevices?.getDisplayMedia || !window.MediaRecorder) return alert('Esse navegador não grava. Use o Chrome no computador.');
+      if (!window.MediaRecorder || !navigator.mediaDevices?.getUserMedia) return alert('Esse navegador não grava. Use o Chrome no computador.');
+      // iPad/celular: o Safari não captura o áudio do Meet → grava só o microfone (Meet no alto-falante, sem fone). 19/11/2026
+      const soMic = !navigator.mediaDevices.getDisplayMedia;
+      if (soMic) {
+        if (!confirm('Gravar pelo microfone deste aparelho\n\n1. Deixe o Meet no ALTO-FALANTE (sem fone), com volume alto.\n2. Permita o microfone.\n3. Avise o cliente que a reunião está sendo gravada.\n4. Deixe esta tela aberta até parar (não bloqueie o iPad).\n\nA IA separa o que você falou e o que o cliente falou.')) return;
+        let mic = null;
+        try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } }); }
+        catch (e) { return alert(/Permission|NotAllowed/.test(e.name + e.message) ? 'Gravação cancelada (permissão do microfone negada).' : 'Não deu pra gravar: ' + e.message); }
+        REC = { leadId: l.id, nome: l.nome || 'lead', vendedor: S.nome, inicio: Date.now(), soMic: true, abaStream: null, micStream: mic, aba: null, mic: new MediaStream(mic.getAudioTracks()), recs: {}, falas: [], segAudio: 0, feitos: 0, pendentes: 0, erros: 0, parando: false };
+        await updateDoc(doc(db, 'crmLeads', l.id), { reuniaoAndamento: { inicio: REC.inicio, vendedor: REC.vendedor, falas: [], segAudio: 0, atualizadoEm: Date.now() } }).catch(() => { });
+        recPedaco(); REC.troca = setInterval(recTrocar, REC_PEDACO); REC.relogio = setInterval(recTick, 1000);
+        window.addEventListener('beforeunload', recSair); toast('Gravando pelo microfone.'); return;
+      }
       if (!confirm('Gravar a reunião do Meet\n\n1. Deixe o Meet aberto em OUTRA aba deste Chrome.\n2. Na janela que vai abrir escolha "Guia do Chrome" → a aba do Meet e deixe LIGADO "Compartilhar áudio da guia".\n3. Permita o microfone.\n4. Avise o cliente que a reunião está sendo gravada.\n\nNão feche esta aba até parar a gravação.')) return;
       let aba = null, mic = null;
       try {
@@ -1213,7 +1225,7 @@ async function recAcao(l, a, btn) {
       if (!REC || REC.parando) return; const g = REC; g.parando = true; clearInterval(g.troca);
       Object.values(g.recs).forEach((r) => { try { r.stop(); } catch (e) { } });
       g.salvandoVideo = true; recTick(); const videoSalvo = vidFinalizar(g);
-      g.abaStream.getTracks().forEach((t) => t.stop()); g.micStream.getTracks().forEach((t) => t.stop()); recTick();
+      g.abaStream?.getTracks().forEach((t) => t.stop()); g.micStream.getTracks().forEach((t) => t.stop()); recTick();
       await videoSalvo; g.salvandoVideo = false;
       await new Promise((r) => setTimeout(r, 600));
       for (let i = 0; i < 600 && g.pendentes > 0; i++) await new Promise((r) => setTimeout(r, 500));
