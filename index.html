@@ -11630,10 +11630,10 @@ function dirGuiaTamanhos(lista,subtitulo){
 // Medidas da GUIA sem digitar (Lincoln, 07/10/2026): o que a cliente informou vale; o que faltar de busto/cintura/quadril vem da
 // régua brasileira pelo "veste" ou pela letra (mesma régua da tabela do ML). Marca t.ref quando usou a régua.
 function dirMedidasGuia(lista){
-  const LETRA={PP:'34',P:'34/36',M:'38/40',GG:'46/48',G1:'50',G:'42/44'};
+  const LETRA={PP:'34',P:'34/36',M:'38/40',GG:'46/48',G1:'50',EXG:'50',XG:'50',EG:'50',G:'42/44'};
   const faixa=(a,b)=>a===b?String(a):`${a}-${b}`;
   return (lista||[]).filter(t=>t.tam&&!t.erro).map(t=>{
-    const c={...t.campos};const tl=String(t.tam).trim().toUpperCase().match(/^(PP|P|M|GG|G1|G)(?![A-Z0-9])/)?.[1];
+    const c={...t.campos};const tl=String(t.tam).trim().toUpperCase().match(/^(PP|P|M|GG|G1|EXG|XG|EG|G)(?![A-Z0-9])/)?.[1];
     const veste=c.Veste||(/^\d{2}$/.test(String(t.tam).trim())?String(t.tam).trim():LETRA[tl]);
     const ns=(String(veste||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
     let ref=false;
@@ -11974,12 +11974,12 @@ function dirMedidasMl(t){
   const c=t.campos||{};
   if(n(c.Busto)){const m={CHEST_CIRCUMFERENCE_FROM:n(c.Busto)};if(n(c.Cintura))m.WAIST_CIRCUMFERENCE_FROM=n(c.Cintura);if(n(c.Quadril))m.HIP_CIRCUMFERENCE_FROM=n(c.Quadril);return{medidas:m,fonte:'cliente'};}
   // só a letra (P/M/G) sem medida nem "veste": régua brasileira usada na Killachay/Djan (M = 38/40, G = 42/44; P e PP extrapolados −4 cm)
-  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44',GG:'46/48',G1:'50',U:'36/42','ÚNICO':'36/42',UNICO:'36/42'};const tl=String(t.tam||'').trim().toUpperCase().match(/^(PP|P|M|GG|G1|G|ÚNICO|UNICO|U)(?![A-Z0-9À-Ú])/)?.[1];const letra=LETRA[tl]||'';
+  const LETRA={PP:'34',P:'34/36',M:'38/40',G:'42/44',GG:'46/48',G1:'50',XG:'50',EXG:'50',EG:'50',U:'36/42','ÚNICO':'36/42',UNICO:'36/42'};const tl=String(t.tam||'').trim().toUpperCase().match(/^(PP|P|M|GG|G1|EXG|XG|EG|G|ÚNICO|UNICO|U)(?![A-Z0-9À-Ú])/)?.[1];const letra=LETRA[tl]||'';
   const numeros=(v)=>(String(v||'').match(/\d{2}/g)||[]).map(Number).filter(x=>DIR_ABNT[x]);
   // "veste" digitado que a régua não entende (ex.: "M: veste M") → cai na régua pela letra em vez de travar
   let ns=numeros(c.Veste);if(!ns.length)ns=numeros(letra);
   // plus size sem medida: só o busto (obrigatório no ML) por tabela de referência brasileira — cintura/quadril não são inventados
-  const PLUS={G2:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
+  const PLUS={G2:[118,122],XGG:[118,122],EXGG:[118,122],EGG:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
   if(!ns.length&&pl)return{medidas:{CHEST_CIRCUMFERENCE_FROM:pl[0],CHEST_CIRCUMFERENCE_TO:pl[1]},fonte:'referência plus size'};
   if(!ns.length)return null;
   const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
