@@ -14478,7 +14478,7 @@ async function migTitulosMl(c){
   return nomes;
 }
 async function mig3Api(c,acao,extra={}){const r=await fetch(TTP_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
-const migTamLimpo=o=>{const t=String(o).replace(/\(.*?\)/g,' ').replace(/\b\d{2}\s*(?:-|a|ao|\/|até)\s*\d{2}\b/gi,' ').replace(/veste/gi,' ').replace(/\s+/g,' ').trim()||String(o).trim();return /^tamanho\s+[uú]nico$/i.test(t)?'Único':t;}; /* 18/11/2026 (D'GALA): o ML só aceita "Único" na tabela de medidas */
+const migTamLimpo=o=>{const t=String(o).replace(/\(.*?\)/g,' ').replace(/\b\d{2}\s*(?:-|a|ao|\/|até|ate)\s*\d{2}\b/gi,' ').replace(/veste/gi,' ').replace(/\s+/g,' ').trim()||String(o).trim();return /^(tam(anho)?\.?\s*)?[uú]nico$|^u$|^tu$/i.test(t)?'Único':t;}; /* 18/11/2026 (D'GALA): o ML só aceita "Único" na tabela de medidas */
 const migVesteDe=o=>{const m=String(o).match(/(\d{2})\D{1,6}(\d{2})/);return m?`${m[1]}/${m[2]}`:(String(o).match(/\b(3\d|4\d|5\d)\b/)?.[1]||'');};
 // atributos OBRIGATÓRIOS do TikTok pela IA: ids com prefixo T (a IA trata como obrigatório) e valores por índice
 // (ids de valor do TikTok têm até 19 dígitos — viram número no JSON e perdem precisão)
