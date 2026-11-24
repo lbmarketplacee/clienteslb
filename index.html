@@ -14863,7 +14863,8 @@ const pxCriar={
     // tamanho (SKU)
     let tams=[];
     if(vT){if(!aTam)throw new Error(`categoria "${prep.categoria.nome}" não tem tamanho`);
-      tams=vT.opcoes.map(o=>{const n=migTamLimpo(o.nome);const id=sheinAcharValor(aTam.valores,n)||(/^(u|unico|tamanho unico)$/i.test(sheinSem(n))?(aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)))||{}).id:null);
+      const TAM_ALIAS={EXG:['XG','G1','GGG','XGG','2XL','1XL'],XG:['EXG','G1','GGG','1XL'],EG:['XG','EXG','G1','GGG'],XGG:['EXGG','G2','2XL','XXG'],EXGG:['XGG','G2','2XL'],G1:['XG','EXG','GGG'],G2:['XGG','EXGG','2XL']};
+      tams=vT.opcoes.map(o=>{const n=migTamLimpo(o.nome);const id=sheinAcharValor(aTam.valores,n)||(TAM_ALIAS[String(n).toUpperCase()]||[]).map(a=>sheinAcharValor(aTam.valores,a)).find(Boolean)||(/^(u|unico|tamanho unico)$/i.test(sheinSem(n))?(aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)))||{}).id:null);
         return{nome:o.nome,valueId:id,custom:!id&&podeProprio(aTam.id)?n.slice(0,50):null,campos:o.campos||{},veste:o.veste||(/^(u|un|tu|unico|tamanho unico|one size)$|unic/i.test(sheinSem(n))?'36/42':undefined)};});
       const sem=tams.filter(t=>!t.valueId&&!t.custom).map(t=>t.nome);if(sem.length)throw new Error(`tamanho sem equivalente na SHEIN: ${sem.join(', ')}`);}
     else if(aTam?.obrigatorio){const u=aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)));if(!u)throw new Error('a categoria exige tamanho e o produto não tem');tams=[{nome:'Único',valueId:u.id,campos:{},veste:'36/42'}];}
