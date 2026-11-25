@@ -14929,7 +14929,7 @@ function pxOpcoesLojas(){const n=c=>['shopee','ml','tiktok','shein'].filter(m=>p
 function pxRender(){
   const el=document.getElementById('pxPainel');if(!el)return;
   if(el.dataset.pronto){const sel=document.getElementById('pxLoja');if(sel){const v=sel.value;sel.innerHTML='<option value="">Escolha…</option>'+pxOpcoesLojas();sel.value=v;}return;}
-  if(!isLincoln()){el.innerHTML='<div class="saude-vazio">Só Lincoln e Carol.</div>';return;}
+  if(!podeProdutos()){el.innerHTML='<div class="saude-vazio">Só Lincoln, Carol e Lídia.</div>';return;}
   el.dataset.pronto='1';
   el.innerHTML=`<div class="prod-box"><div class="prod-box-tit"><span class="prod-num">1</span><h3>De onde pra onde</h3></div><p class="prod-nota">Escolha o cliente, de onde copiar e pra onde (um ou mais). O preço sai do <b>mesmo valor a receber</b> da origem, com as regras de cada marketplace. Shopee nasce oculta (depois "Publicar"), ML já ativo, TikTok e SHEIN passam por análise.</p>
     <div class="px-rota">
@@ -15226,7 +15226,7 @@ const pt={c:null,desc:null,linhas:[]};
 async function ptApi(c,acao,extra={}){const r=await fetch(TTP_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,clienteId:c.id,...extra})});return r.json();}
 function ptRender(){
   const el=document.getElementById('ptPainel');if(!el||el.dataset.pronto)return;
-  if(!isLincoln()){el.innerHTML='<div class="saude-vazio">Só Lincoln e Carol.</div>';return;}
+  if(!podeProdutos()){el.innerHTML='<div class="saude-vazio">Só Lincoln, Carol e Lídia.</div>';return;}
   el.dataset.pronto='1';
   const lojas=(clientesCache||[]).filter(c=>c.ativo!==false&&c.tiktokShopCipher&&c.tiktokAccessToken).sort((a,b)=>a.nome.localeCompare(b.nome));
   el.innerHTML=`<div class="prod-box"><div class="prod-box-tit">${mpIco('tiktok',22)}<h3>TikTok Shop — produtos fora do desconto fixo</h3></div>
