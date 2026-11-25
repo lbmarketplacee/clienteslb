@@ -14866,6 +14866,12 @@ const pxCriar={
       const TAM_ALIAS={EXG:['XG','G1','GGG','XGG','2XL','1XL'],XG:['EXG','G1','GGG','1XL'],EG:['XG','EXG','G1','GGG'],XGG:['EXGG','G2','2XL','XXG'],EXGG:['XGG','G2','2XL'],G1:['XG','EXG','GGG'],G2:['XGG','EXGG','2XL']};
       tams=vT.opcoes.map(o=>{const n=migTamLimpo(o.nome);const id=sheinAcharValor(aTam.valores,n)||(TAM_ALIAS[String(n).toUpperCase()]||[]).map(a=>sheinAcharValor(aTam.valores,a)).find(Boolean)||(/^(u|unico|tamanho unico)$/i.test(sheinSem(n))?(aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)))||{}).id:null);
         return{nome:o.nome,valueId:id,custom:!id&&podeProprio(aTam.id)?n.slice(0,50):null,campos:o.campos||{},veste:o.veste||(/^(u|un|tu|unico|tamanho unico|one size)$|unic/i.test(sheinSem(n))?'36/42':undefined)};});
+      // 24/11/2026 (Lina): categoria sem "Único"/"EXG" e sem tamanho próprio → a IA escolhe o equivalente na lista da SHEIN (igual às cores)
+      const semT=tams.map((t,i)=>(!t.valueId&&!t.custom)?i:-1).filter(i=>i>=0);
+      if(semT.length){linha('SHEIN: escolhendo os tamanhos...');const r=await sheinIA(semT.map(i=>({nome:`Tamanho da SHEIN equivalente a "${tams[i].nome}" (roupa feminina brasileira; Único = veste 36 ao 42; EXG/XG = plus)`,valores:aTam.valores})),produtoTxt);
+        semT.forEach((i,k)=>{if(r[k]?.id)tams[i].valueId=r[k].id;});}
+      const repT=tams.map(t=>t.valueId||('c:'+t.custom)).filter((v,i,a)=>a.indexOf(v)!==i);
+      if(repT.length)throw new Error('dois tamanhos caíram no mesmo tamanho da SHEIN — confira os tamanhos na origem');
       const sem=tams.filter(t=>!t.valueId&&!t.custom).map(t=>t.nome);if(sem.length)throw new Error(`tamanho sem equivalente na SHEIN: ${sem.join(', ')}`);}
     else if(aTam?.obrigatorio){const u=aTam.valores.find(v=>/unico|one size/i.test(sheinSem(v.nome)));if(!u)throw new Error('a categoria exige tamanho e o produto não tem');tams=[{nome:'Único',valueId:u.id,campos:{},veste:'36/42'}];}
     // tabela de medidas: o que a origem tiver + quadro "Medidas pra SHEIN" + régua BR (busto/cintura/quadril pelo veste)
