@@ -14893,6 +14893,10 @@ const pxCriar={
     const skus=P.skus.map(s=>{const cor=vC?s.op[P.vars.indexOf(vC)]:cores[0].nome,tam=vT?s.op[P.vars.indexOf(vT)]:(tams[0]?.nome||null);
       let sku=String(s.sku||[base,cor,tam].filter(x=>x&&x!=='(cor do produto)').join('-')).replace(/\s+/g,'').toUpperCase().slice(0,190);while(usados.has(sku))sku+='X';usados.add(sku);
       return{cor,tam,preco:sheinPreco(s.liq),estoque:s.est,sku};});
+    // 24/11/2026 (Lina): a SHEIN exige o MESMO grupo de tamanhos em todas as cores → combinação que falta na origem entra com estoque 0
+    if(vC&&vT){const tem=new Set(skus.map(s=>s.cor+'|'+s.tam));for(const c of cores)for(const t of tams){if(tem.has(c.nome+'|'+t.nome))continue;
+      const irma=skus.find(s=>s.tam===t.nome)||skus.find(s=>s.cor===c.nome)||skus[0];let sku=[base,c.nome,t.nome].join('-').replace(/\s+/g,'').toUpperCase().slice(0,190);while(usados.has(sku))sku+='X';usados.add(sku);
+      skus.push({cor:c.nome,tam:t.nome,preco:irma?.preco,estoque:0,sku});}}
     if(skus.some(s=>!s.preco))throw new Error('não consegui calcular o preço');
     const vendas=[...new Set(skus.map(s=>s.preco))];
     const spec={categoryId:prep.categoria.id,productTypeId:prep.categoria.pt,titulo:String(P.titulo).slice(0,prep.padrao?.tituloMax||190),tituloMax:prep.padrao?.tituloMax||190,descricao:String(P.descricao||'').slice(0,5000),
