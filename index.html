@@ -11837,7 +11837,7 @@ function dirShopeeRender(alvoId='cpPasso2',lojaId=''){
       ${temMl?`<div class="field"><label>Código de barras / EAN (opcional — sem ele o ML recebe "não tem código cadastrado")</label><input type="text" inputmode="numeric" id="dirShGtin" placeholder="7891234567890"></div>
       <div class="field"><label>Marca no ML (opcional — padrão: nome da loja; use a marca real se for produto de marca, ex.: Fogomax)</label><input type="text" id="dirShMarcaMl" placeholder="nome da loja"></div>
       <div class="field"><label>Registro Inmetro (opcional — eletroportáteis, vem no selo da caixa)</label><input type="text" id="dirShInmetro" placeholder="CE-EL-074/23-F05-ACERT"></div>`:''}
-      ${temTt?`<div class="field"><label>Código ANATEL (eletrônico com Bluetooth/Wi-Fi/rádio — a TikTok exige; vem na caixa ou na etiqueta)</label><input type="text" id="dirShAnatel" placeholder="12345-21-12345"></div>`:''}
+      <div class="field"><label>Código ANATEL (eletrônico com Bluetooth/Wi-Fi/rádio — Shopee e TikTok exigem; vem na caixa ou na etiqueta)</label><input type="text" id="dirShAnatel" placeholder="12345-21-12345"></div>
       <div class="field"><label>NCM (opcional — só se a loja emite nota pela Shopee e ela pedir; 8 dígitos, confirme com a cliente/contador)</label><input type="text" inputmode="numeric" id="dirShNcm" placeholder="ex.: 83011000"></div>
       <div class="field"><label>CEST (opcional — só se o NCM exigir; 7 dígitos)</label><input type="text" inputmode="numeric" id="dirShCest" placeholder="ex.: 1007700"></div>
       <div class="field"><label>Peso com embalagem (kg)</label><input type="text" id="dirShPeso" placeholder="0,5"></div>
@@ -12283,10 +12283,18 @@ async function dirShAcharPorNome(c,token,titulo){
 // e, se ainda faltar, usa "No/Não" quando existir.
 async function shGarantirObrigatorios(arvore,atributos,produto){
   // 23/10/2026 (Lincoln): "Contém Bluetooth/Wireless/RF" vai SEMPRE "Não" (Go Braz: cooler e aspirador recusados) — mesmo se a IA escolher outro valor
-  const NAO=/^(no|não|nao)$/i, BT=/bluetooth|wireless|\brf\b|radiofrequ|sem fio/i;
+  const NAO=/^(no|não|nao)$/i, SIM=/^(yes|sim)$/i, BT=/bluetooth|wireless|\brf\b|radiofrequ|sem fio/i;
+  // 25/11/2026 (AQUARIOS, fone L80 Pro): com Código ANATEL preenchido o produto TEM rádio → "Sim" e o código vai no "Registration ID" (a Shopee exige)
+  const anatel=(document.getElementById('dirShAnatel')?.value||'').trim();
   atributos=(atributos||[]).slice();
-  for(const a of (arvore||[]).filter(a=>BT.test(a.nome||''))){
-    const v=(a.valores||[]).find(x=>NAO.test(String(x.nome).trim()));if(!v)continue;
+  for(const a of (arvore||[]).filter(a=>/registration\s*id|anatel|homolog/i.test(a.nome||''))){
+    if(!anatel)continue;
+    atributos=atributos.filter(x=>String(x.attribute_id)!==String(a.id));
+    const v=(a.valores||[]).length?(a.valores.find(x=>SIM.test(String(x.nome).trim()))):null;
+    atributos.push(v?{attribute_id:Number(a.id),attribute_value_list:[{value_id:Number(v.id)}]}:{attribute_id:Number(a.id),attribute_value_list:[{value_id:0,original_value_name:anatel.slice(0,60)}]});
+  }
+  for(const a of (arvore||[]).filter(a=>BT.test(a.nome||'')&&!/registration\s*id|anatel|homolog/i.test(a.nome||''))){
+    const v=(a.valores||[]).find(x=>(anatel?SIM:NAO).test(String(x.nome).trim()));if(!v)continue;
     atributos=atributos.filter(x=>String(x.attribute_id)!==String(a.id));
     atributos.push({attribute_id:Number(a.id),attribute_value_list:[{value_id:Number(v.id)}]});
   }
