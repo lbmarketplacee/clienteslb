@@ -53,7 +53,9 @@ service cloud.firestore {
       // marca Compareceu) — só não trocam o dono (troca de dono = servidor ou diretoria)
       allow read: if diretoria() || sdrTodos() || vendedor() || equipe();
       allow create: if diretoria() || sdrTodos() || vendedor() || equipe();
-      allow update: if diretoria() || gestorComercial() || ((sdrTodos() || vendedor() || equipe()) && request.resource.data.donoEmail == resource.data.donoEmail);
+      allow update: if diretoria() || gestorComercial() || ((sdrTodos() || vendedor() || equipe()) && request.resource.data.donoEmail == resource.data.donoEmail)
+        // 25/11/2026: vendedor/SDR ASSUME um lead de Novo/Em contato pra si mesmo (botão "Assumir este lead")
+        || ((sdrTodos() || vendedor() || equipe()) && resource.data.get('stage', 'novo') in ['novo', 'contato'] && request.resource.data.donoEmail == request.auth.token.email);
       allow delete: if diretoria() || gestorComercial();
     }
     // Duda/Akemi (freela, fora da equipe): painel comercial e o histórico das ações dela no CRM
