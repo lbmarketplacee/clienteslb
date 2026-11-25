@@ -14869,7 +14869,7 @@ const pxCriar={
       // 24/11/2026 (Lina): categoria sem "Único"/"EXG" e sem tamanho próprio → a IA escolhe o equivalente na lista da SHEIN (igual às cores)
       const semT=tams.map((t,i)=>(!t.valueId&&!t.custom)?i:-1).filter(i=>i>=0);
       if(semT.length){linha('SHEIN: escolhendo os tamanhos...');const r=await sheinIA(semT.map(i=>({nome:`Tamanho da SHEIN equivalente a "${tams[i].nome}" (roupa feminina brasileira; Único = veste 36 ao 42; EXG/XG = plus)`,valores:aTam.valores})),produtoTxt);
-        semT.forEach((i,k)=>{if(r[k]?.id)tams[i].valueId=r[k].id;});}
+        semT.forEach((i,k)=>{if(r[k]?.id){tams[i].valueId=r[k].id;tams[i].viaIA=true;}});}
       const repT=tams.map(t=>t.valueId||('c:'+t.custom)).filter((v,i,a)=>a.indexOf(v)!==i);
       if(repT.length)throw new Error('dois tamanhos caíram no mesmo tamanho da SHEIN — confira os tamanhos na origem');
       const sem=tams.filter(t=>!t.valueId&&!t.custom).map(t=>t.nome);if(sem.length)throw new Error(`tamanho sem equivalente na SHEIN: ${sem.join(', ')}`);}
@@ -14913,7 +14913,11 @@ const pxCriar={
     for(const [i,x] of cores.entries()){const foto=x.foto||P.fotos[0];if(!foto)throw new Error('produto sem foto');linha(`SHEIN: foto da cor ${i+1}/${cores.length}`);
       const principal=await subir(foto,1);spec.cores[i].imagens={principal,detalhes,quadrada:await subir(foto,5),cor:cores.length>1?await subir(foto,6):null};}
     linha('SHEIN: publicando...');
-    const r=await sheinApi(c,'publicar',{spec});if(!r.ok)throw new Error(r.erro);
+    let r=await sheinApi(c,'publicar',{spec});
+    // 24/11/2026 (Lina): tamanho escolhido pela IA (ex.: EXG) caiu noutro grupo de tamanhos da SHEIN → publica sem ele
+    if(!r.ok&&/mesmo grupo de especifica/i.test(r.erro||'')){const fora=new Set(tams.filter(t=>t.viaIA).map(t=>t.nome));
+      if(fora.size&&fora.size<tams.length){linha(`SHEIN: sem o tamanho ${[...fora].join(', ')} (não tem par na SHEIN)...`);spec.tamanhos=spec.tamanhos.filter(t=>!fora.has(t.nome));spec.skus=spec.skus.filter(s=>!fora.has(s.tam));r=await sheinApi(c,'publicar',{spec});}}
+    if(!r.ok)throw new Error(r.erro);
     return{id:String(r.spu),msg:`enviado pra análise da SHEIN · ${r.spu} · ${vendas.map(fmtR).join('/')}${r.avisos?.length?` · aviso: ${r.avisos[0]}`:''}`};
   }
 };
