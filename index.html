@@ -12000,7 +12000,7 @@ function dirMedidasMl(t){
   // "veste" digitado que a régua não entende (ex.: "M: veste M") → cai na régua pela letra em vez de travar
   let ns=numeros(c.Veste);if(!ns.length)ns=numeros(letra);
   // plus size sem medida: só o busto (obrigatório no ML) por tabela de referência brasileira — cintura/quadril não são inventados
-  const PLUS={G2:[118,122],XGG:[118,122],EXGG:[118,122],EGG:[118,122]};const pl=PLUS[String(t.tam||'').toUpperCase()];
+  const PLUS={G2:[118,122],XGG:[118,122],EXGG:[118,122],EGG:[118,122],G3:[124,128],G4:[130,134],G5:[136,140]};const pl=PLUS[String(t.tam||'').toUpperCase()];
   if(!ns.length&&pl)return{medidas:{CHEST_CIRCUMFERENCE_FROM:pl[0],CHEST_CIRCUMFERENCE_TO:pl[1]},fonte:'referência plus size'};
   if(!ns.length)return null;
   const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
