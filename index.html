@@ -1887,7 +1887,6 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
     <div class="content">
       <!-- ===== PÁGINA: DASHBOARD ===== -->
       <div class="page active" id="page-dashboard">
-        <div class="panel" id="dashJornada" style="display:none;margin-bottom:16px"></div>
         <div class="summary-grid">
           <div class="summary-card metric-card glow-gold"><div class="sc-top"><div class="sc-icon gold metric-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="sc-label">Clientes<br>Ativos</div></div></div><div class="sc-value metric-value" id="sumTotal">0</div><div class="sc-foot" id="sumTotalFoot">&nbsp;</div></div>
           <div class="summary-card metric-card glow-coral" style="cursor:pointer" onclick="window.__irParaMarketing('shopee','descontos')" title="Clique pra ver e corrigir"><div class="sc-top"><div class="sc-icon amber metric-icon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg></div><div><div class="sc-label">Descontos<br>Vencendo 7d</div></div></div><div class="sc-value metric-value" id="sumDesconto">0</div><div class="sc-foot" id="sumDescontoFoot">&nbsp;</div></div>
@@ -5768,25 +5767,6 @@ window.__clbAvisoDoDia=clbAvisoDoDia;
 setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail])setTimeout(()=>clbAvisoDoDia(),2500);}},3000);},5000);
 async function jrSincInicial(){try{const sn=await getDocs(collection(db,'jornadas'));await jrSincTarefas(sn.docs.map(d=>({id:d.id,...d.data()})));}catch(e){console.warn('[jornada → tarefas] inicial',e);}}
 setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(!PORTAL_CLIENTES?.[currentEmail]&&currentEmail!=='felipesoares@potencialmidia.com')jrSincInicial();}},3000);},2000);
-/* 26/11/2026 (Lincoln: "cliente novo, falta entregar… acaba passando batido"): Dashboard → "Clientes novos — o que falta entregar".
-   Jornadas abertas com a etapa atual, dias parados (sem item marcado; vermelho com 2+), o que falta na etapa e de quem. Mesmas regras da Jornada (jrStatus/jrSt). */
-let dashJrLista=null,dashJrUnsub=null;
-function dashJrUltimo(j){let u=j.criadoEm?.seconds||0;for(const it of Object.values(j.itens||{})){const t=it?.em?.seconds||0;if(t>u)u=t;}return u;}
-function renderDashJornada(){const el=document.getElementById('dashJornada');if(!el||!dashJrLista)return;
-  const ativos=new Set((clientesCache||[]).filter(c=>c.ativo!==false).map(c=>c.id));
-  const linhas=dashJrLista.filter(j=>!j.concluida&&(j.tipo==='saida'||ativos.has(j.clienteId))).map(j=>{const s=jrStatus(j);const e=jrModelo(j).find(x=>x.k===s.etapa);
-    const falta=e?e.itens.filter(([k])=>!jrSt(j,k)):[];const ult=dashJrUltimo(j);const dias=ult?Math.floor((Date.now()/1000-ult)/86400):0;
-    return{j,etapa:e?e.t:'Tudo feito — falta concluir',falta,dias,parado:falta.length>0&&dias>=(s.etapa==='primeiromes'?35:2)};}).sort((a,b)=>(b.parado-a.parado)||(b.dias-a.dias));
-  if(!linhas.length){el.style.display='none';return;}
-  const parados=linhas.filter(x=>x.parado).length;
-  el.style.display='';
-  el.innerHTML=`<div class="panel-head"><h3>Clientes novos — o que falta entregar</h3><span class="p-sub">${linhas.length} em andamento${parados?` · <b style="color:var(--red)">${parados} parado(s) há 2+ dias</b>`:''}</span><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="document.querySelector('[data-page=&quot;jornada&quot;]')?.click()">Abrir Jornada</button></div>
-    <div class="table-wrap"><table style="width:100%;font-size:12.5px"><thead><tr><th style="text-align:left">Cliente</th><th style="text-align:left">Etapa</th><th>Parado</th><th style="text-align:left">O que falta</th></tr></thead><tbody>${linhas.slice(0,15).map(x=>`<tr style="cursor:pointer" onclick="document.querySelector('[data-page=&quot;jornada&quot;]')?.click();setTimeout(()=>window.__jrAbrir&&window.__jrAbrir('${x.j.id}'),400)">
-      <td><b>${esc(x.j.nome||'')}</b>${x.j.tipo==='saida'?' <span class="jr-pill">saída</span>':''}</td><td>${esc(x.etapa)}</td>
-      <td style="text-align:center;${x.parado?'color:var(--red);font-weight:700':''}">${x.dias}d</td>
-      <td>${x.falta.length?x.falta.slice(0,4).map(([,t,q])=>`${esc(t)} <span class="jr-pill ${q}">${q}</span>`).join('<br>')+(x.falta.length>4?`<br><span style="color:var(--text-dim)">+${x.falta.length-4}</span>`:''):'<span style="color:var(--text-dim)">Tudo marcado — concluir a jornada</span>'}</td></tr>`).join('')}</tbody></table></div>${linhas.length>15?`<div class="jr-meta" style="margin-top:6px">+${linhas.length-15} cliente(s) — veja todos na Jornada.</div>`:''}`;}
-setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(PORTAL_CLIENTES?.[currentEmail]||!USERS_MAP[currentEmail]||currentEmail==='felipesoares@potencialmidia.com'||currentEmail==='conexoes@lbmarketplace.com.br')return;
-  try{dashJrUnsub=onSnapshot(collection(db,'jornadas'),sn=>{dashJrLista=sn.docs.map(d=>({id:d.id,...d.data()}));renderDashJornada();},e=>console.warn('[dashboard jornada]',e));setInterval(renderDashJornada,10*60000);}catch(e){console.warn('[dashboard jornada]',e);}}},3000);},2500);
 
 /* ============== CENTRAL DA LOJA — Fase 1 (15/10/2026, Lincoln: organizar por loja, não por marketplace) ==============
    Escolhe o cliente uma vez: vendas do mês, estrutura (robô Estruturar), promoções/robôs por marketplace, o que pede atenção
