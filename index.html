@@ -5776,14 +5776,14 @@ function renderDashJornada(){const el=document.getElementById('dashJornada');if(
   const ativos=new Set((clientesCache||[]).filter(c=>c.ativo!==false).map(c=>c.id));
   const linhas=dashJrLista.filter(j=>!j.concluida&&(j.tipo==='saida'||ativos.has(j.clienteId))).map(j=>{const s=jrStatus(j);const e=jrModelo(j).find(x=>x.k===s.etapa);
     const falta=e?e.itens.filter(([k])=>!jrSt(j,k)):[];const ult=dashJrUltimo(j);const dias=ult?Math.floor((Date.now()/1000-ult)/86400):0;
-    return{j,etapa:e?e.t:'Tudo feito — falta concluir',falta,dias};}).sort((a,b)=>b.dias-a.dias);
+    return{j,etapa:e?e.t:'Tudo feito — falta concluir',falta,dias,parado:falta.length>0&&dias>=(s.etapa==='primeiromes'?35:2)};}).sort((a,b)=>(b.parado-a.parado)||(b.dias-a.dias));
   if(!linhas.length){el.style.display='none';return;}
-  const parados=linhas.filter(x=>x.dias>=2&&x.falta.length).length;
+  const parados=linhas.filter(x=>x.parado).length;
   el.style.display='';
   el.innerHTML=`<div class="panel-head"><h3>Clientes novos — o que falta entregar</h3><span class="p-sub">${linhas.length} em andamento${parados?` · <b style="color:var(--red)">${parados} parado(s) há 2+ dias</b>`:''}</span><span style="flex:1"></span><button class="btn btn-ghost btn-sm" onclick="document.querySelector('[data-page=&quot;jornada&quot;]')?.click()">Abrir Jornada</button></div>
     <div class="table-wrap"><table style="width:100%;font-size:12.5px"><thead><tr><th style="text-align:left">Cliente</th><th style="text-align:left">Etapa</th><th>Parado</th><th style="text-align:left">O que falta</th></tr></thead><tbody>${linhas.slice(0,15).map(x=>`<tr style="cursor:pointer" onclick="document.querySelector('[data-page=&quot;jornada&quot;]')?.click();setTimeout(()=>window.__jrAbrir&&window.__jrAbrir('${x.j.id}'),400)">
       <td><b>${esc(x.j.nome||'')}</b>${x.j.tipo==='saida'?' <span class="jr-pill">saída</span>':''}</td><td>${esc(x.etapa)}</td>
-      <td style="text-align:center;${x.dias>=2&&x.falta.length?'color:var(--red);font-weight:700':''}">${x.dias}d</td>
+      <td style="text-align:center;${x.parado?'color:var(--red);font-weight:700':''}">${x.dias}d</td>
       <td>${x.falta.length?x.falta.slice(0,4).map(([,t,q])=>`${esc(t)} <span class="jr-pill ${q}">${q}</span>`).join('<br>')+(x.falta.length>4?`<br><span style="color:var(--text-dim)">+${x.falta.length-4}</span>`:''):'<span style="color:var(--text-dim)">Tudo marcado — concluir a jornada</span>'}</td></tr>`).join('')}</tbody></table></div>${linhas.length>15?`<div class="jr-meta" style="margin-top:6px">+${linhas.length-15} cliente(s) — veja todos na Jornada.</div>`:''}`;}
 setTimeout(()=>{const t=setInterval(()=>{if(typeof currentEmail!=='undefined'&&currentEmail&&(clientesCache||[]).length){clearInterval(t);if(PORTAL_CLIENTES?.[currentEmail]||!USERS_MAP[currentEmail]||currentEmail==='felipesoares@potencialmidia.com'||currentEmail==='conexoes@lbmarketplace.com.br')return;
   try{dashJrUnsub=onSnapshot(collection(db,'jornadas'),sn=>{dashJrLista=sn.docs.map(d=>({id:d.id,...d.data()}));renderDashJornada();},e=>console.warn('[dashboard jornada]',e));setInterval(renderDashJornada,10*60000);}catch(e){console.warn('[dashboard jornada]',e);}}},3000);},2500);
