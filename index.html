@@ -12023,8 +12023,8 @@ function dirMedidasMl(t){
   const PLUS={G2:[118,122],XGG:[118,122],EXGG:[118,122],EGG:[118,122],G3:[124,128],G4:[130,134],G5:[136,140]};const pl=PLUS[String(t.tam||'').toUpperCase()];
   if(!ns.length&&pl)return{medidas:{CHEST_CIRCUMFERENCE_FROM:pl[0],CHEST_CIRCUMFERENCE_TO:pl[1]},fonte:'referência plus size'};
   if(!ns.length)return null;
-  const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
-  return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:numeros(c.Veste).length?'ABNT':'referência BR pela letra'};
+  const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];const f=a===b?3:0;/* um número só ("P - 36"): de = até o ML recusa ("Duplicated measure", Suely 26/11) → faixa de 3 cm */
+  return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto+f,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura+f,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril+f},fonte:numeros(c.Veste).length?'ABNT':'referência BR pela letra'};
 }
 async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,...corpo})});return r.json();}
 // Motor de criação no Mercado Livre (padrão LB): categoria (prefere a que a loja já usa), ficha obrigatória pela IA, tabela de
