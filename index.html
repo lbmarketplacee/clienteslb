@@ -3797,6 +3797,27 @@ const isLincoln=()=>ADMIN_EMAILS.includes(currentEmail);
 const podeProdutos=()=>isLincoln()||currentEmail==='suporte@lbmarketplace.com.br'; // 18/11/2026: Lídia (suporte) cria anúncio, vê pedidos dos clientes e faz decoração
 // Login do Firebase pro backend saber quem chamou (ações dos robôs exigem).
 const authHeaders=async()=>auth.currentUser?{Authorization:`Bearer ${await auth.currentUser.getIdToken()}`}:{};
+/* 26/11/2026 (auditoria A4/A5): toda chamada aos backends de marketplace (Shopee, ML, TikTok) sai com o login do sistema,
+   e chamada GET que leva access_token/refresh_token na URL vira POST com os dados no corpo (token fora da URL, dos logs e do histórico).
+   Os backends passam a exigir login nessas ações. Callbacks de conexão e a taxa pública do ML continuam abertos lá. */
+const LB_MP_APIS=['https://lb-shopee-gmv.vercel.app/api/shopee','https://lb-mercadolivre.vercel.app/api/mercadolivre','https://lb-tiktok-shop.vercel.app/api/tiktok-shop'];
+const __fetchOrig=window.fetch.bind(window);
+window.fetch=async(entrada,opc)=>{
+  try{
+    const url=typeof entrada==='string'?entrada:(entrada&&entrada.url)||'';
+    const base=url.split('?')[0];
+    if(typeof entrada!=='string'||!LB_MP_APIS.includes(base))return __fetchOrig(entrada,opc);
+    const o={...(opc||{})};const h=new Headers(o.headers||{});
+    if(!h.has('Authorization')){const a=await authHeaders();if(a.Authorization)h.set('Authorization',a.Authorization);}
+    const metodo=String(o.method||'GET').toUpperCase();const q=url.includes('?')?new URLSearchParams(url.slice(url.indexOf('?')+1)):null;
+    if(metodo==='GET'&&q&&(q.has('access_token')||q.has('refresh_token'))){
+      const corpo={};for(const [k,v] of q.entries())corpo[k]=v;
+      h.set('Content-Type','application/json');
+      return __fetchOrig(base,{...o,method:'POST',headers:h,body:JSON.stringify(corpo)});
+    }
+    return __fetchOrig(url,{...o,headers:h});
+  }catch(e){return __fetchOrig(entrada,opc);}
+};
 let clientesCache=[],gmvCache=[],contratosCache=[];
 let filtroMp="todos",filtroResp="todos",busca="",currentUser="",currentEmail="",mostrarInativos=false;
 let gmvChart=null,gmvLineChart=null,gmvDonutChart=null,firstTableRender=true;
@@ -11985,7 +12006,7 @@ function dirMedidasMl(t){
   const a=DIR_ABNT[Math.min(...ns)],b=DIR_ABNT[Math.max(...ns)];
   return{medidas:{CHEST_CIRCUMFERENCE_FROM:a.busto,CHEST_CIRCUMFERENCE_TO:b.busto,WAIST_CIRCUMFERENCE_FROM:a.cintura,WAIST_CIRCUMFERENCE_TO:b.cintura,HIP_CIRCUMFERENCE_FROM:a.quadril,HIP_CIRCUMFERENCE_TO:b.quadril},fonte:numeros(c.Veste).length?'ABNT':'referência BR pela letra'};
 }
-async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST',headers:{'Content-Type':'application/json',...(login?await authHeaders():{})},body:JSON.stringify({acao,...corpo})});return r.json();}
+async function dirMl(acao,corpo,login){const r=await fetch(ML_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao,...corpo})});return r.json();}
 // Motor de criação no Mercado Livre (padrão LB): categoria (prefere a que a loja já usa), ficha obrigatória pela IA, tabela de
 // medidas (régua BR / ficha do domínio), preço pela comissão real (ml_preco, 7% de folga), 1 anúncio por cor+tamanho (User
 // Products), marca = nome da loja, já ATIVOS. Usado pelo Criar Produtos e pela migração Shopee → ML.

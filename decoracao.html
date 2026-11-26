@@ -145,8 +145,8 @@ $('#btnShopee').onclick = async () => {
   if (!d.shopeeErpAccessToken) return alert('Esse cliente não tem a Shopee (ERP) conectada. Envie as fotos.');
   $('#btnShopee').disabled = true; $('#btnShopee').textContent = 'Lendo…';
   try {
-    const q = new URLSearchParams({ acao: 'catalogo_listar', app: 'erp', access_token: d.shopeeErpAccessToken, shop_id: d.shopeeErpShopId, offset: '0', status: 'NORMAL' });
-    const r = await (await fetch(SHOPEE + '?' + q, { headers: { Authorization: 'Bearer ' + await token() } })).json();
+    const q = { acao: 'catalogo_listar', app: 'erp', access_token: d.shopeeErpAccessToken, shop_id: d.shopeeErpShopId, offset: '0', status: 'NORMAL' };
+    const r = await (await fetch(SHOPEE, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await token() }, body: JSON.stringify(q) })).json();
     const itens = (r.itens || []).sort((a, b) => (b.vendas || 0) - (a.vendas || 0)).slice(0, 8);
     for (const it of itens) { const u = it.foto || it.imagem || it.imagens?.[0]; if (!u) continue; try { const b = await (await fetch(u)).blob(); FOTOS.push({ src: await reduzir(await paraDataUrl(b)), on: FOTOS.filter((x) => x.on).length < 4 }); } catch (e) {} }
     if (!itens.length) alert('Não achei anúncios ativos na Shopee dele.');
