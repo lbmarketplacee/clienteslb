@@ -12018,7 +12018,10 @@ async function mlCriarProduto(c,spec,linhaMl=()=>{}){
   const token=await mlGarantirTokenValido(c);
   const ler=async caminho=>(await dirMl('ler_api',{access_token:token,caminho})).data;
   linhaMl('ML: escolhendo a categoria...');
-  const dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(familia));let cat=Array.isArray(dd)?dd[0]:null;
+  let dd=null;
+  // o ML às vezes não devolve nada pro título inteiro (ou a leitura falha na hora): tenta de novo, depois com menos palavras e com o nome do produto
+  for(const q of [familia,familia,String(familia||'').split(/\s+/).slice(0,4).join(' '),u?.produto,u?.nome1].filter(x=>String(x||'').trim())){dd=await ler('/sites/MLB/domain_discovery/search?q='+encodeURIComponent(q)).catch(()=>null);if(Array.isArray(dd)&&dd.length)break;}
+  let cat=Array.isArray(dd)?dd[0]:null;
   // o ML pode ter várias categorias com o MESMO nome (ex.: "Pontas de Eixos" de caminhão, de carro...): prefere a que a loja já usa
   if(Array.isArray(dd)&&dd.length>1){for(const op of dd.slice(0,4)){const q=await ler(`/users/${c.mlUserId}/items/search?category=${op.category_id}&status=active&limit=1`);if((q?.paging?.total||0)>0){cat=op;break;}}}
   if(!cat)throw new Error('o ML não sugeriu categoria pro nome');
