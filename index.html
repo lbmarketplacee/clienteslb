@@ -3327,6 +3327,7 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
           <button class="chip" data-tfpessoa="Guilherme">Guilherme</button>
           <button class="chip" data-tfpessoa="Caroline">Caroline</button>
           <button class="chip" data-tfpessoa="Duda">Duda</button>
+          <button class="chip" data-tfpessoa="Lídia">Lídia</button>
         </div>
         <div class="kanban-board">
           <div class="kanban-col" data-coluna="afazer">
@@ -3597,12 +3598,14 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
             <option value="guilherme@lbmarketplace.com.br">Guilherme</option>
             <option value="caroline@lbmarketplace.com.br">Caroline</option>
             <option value="duda@lbmarketplace.com.br">Duda</option>
+            <option value="suporte@lbmarketplace.com.br">Lídia</option>
             <option value="varias">Várias colaboradoras ao mesmo tempo</option>
           </select>
           <div class="chip-toggle-group hidden" id="tfVariasWrap" style="margin-top:8px">
             <button type="button" class="chip-toggle" data-resp-varias="guilherme@lbmarketplace.com.br">Guilherme</button>
             <button type="button" class="chip-toggle" data-resp-varias="caroline@lbmarketplace.com.br">Caroline</button>
             <button type="button" class="chip-toggle" data-resp-varias="duda@lbmarketplace.com.br">Duda</button>
+            <button type="button" class="chip-toggle" data-resp-varias="suporte@lbmarketplace.com.br">Lídia</button>
           </div>
         </div>
         <div class="field"><label>Cliente vinculado (opcional)</label>
@@ -4607,7 +4610,7 @@ document.querySelectorAll('[data-tfpessoa]').forEach(b=>b.addEventListener('clic
 }));
 // Tipos de tarefa da equipe (Lincoln, 07/10/2026): cor + prazo padrão em dias (null = sem prazo automático)
 const TF_TIPOS={produto:{label:'Produto novo',cor:'#a855f7',prazo:2},pedido:{label:'Pedido do cliente',cor:'#3b82f6',prazo:1},reclamacao:{label:'Reclamação / dúvida',cor:'#ef4444',prazo:0},ajuste:{label:'Ajuste na loja',cor:'#f59e0b',prazo:2},interno:{label:'Interno',cor:'#94a3b8',prazo:null}};
-const TF_CORES_PESSOA={Lincoln:'#d4a94a',Guilherme:'#3b82f6',Caroline:'#ec4899',Duda:'#a855f7'};
+const TF_CORES_PESSOA={Lincoln:'#d4a94a',Guilherme:'#3b82f6',Caroline:'#ec4899',Duda:'#a855f7','Lídia':'#14b8a6'}; /* 27/11/2026: Lídia nas tarefas */
 function tfAvatarHtml(nomePessoa,tam=22){
   const f=USER_FOTOS[nomePessoa];
   if(f)return `<img class="tf-av" src="${f}" title="${esc(nomePessoa)}" style="width:${tam}px;height:${tam}px">`;
@@ -4660,7 +4663,7 @@ function tfOrdenar(lista){
 window.__tfPessoa=(n)=>{tarefaPessoaFiltro=n;tfAtualizarLista();tfRenderBoard();};
 function tfRenderResumoEquipe(){
   const bar=document.getElementById('tfPessoaFiltroBar');if(!bar||tarefaView!=='atribuidas')return;
-  const pessoas=['Guilherme','Caroline','Duda','Lincoln'].filter(n=>USERS_MAP&&Object.values(USERS_MAP).includes(n));
+  const pessoas=['Guilherme','Caroline','Lídia','Duda','Lincoln'].filter(n=>USERS_MAP&&Object.values(USERS_MAP).includes(n));
   const abertas=todasTarefasCache.filter(t=>t.coluna!=='feito'&&t.responsavelEmail&&t.responsavelEmail!==currentEmail);
   const card=(n,label,lista)=>{const atr=lista.filter(t=>tfDiffDias(t.prazo)!==null&&tfDiffDias(t.prazo)<0).length,hj=lista.filter(t=>tfDiffDias(t.prazo)===0).length;
     return `<button class="tf-pessoa ${tarefaPessoaFiltro===n?'on':''}" onclick="window.__tfPessoa('${n}')">${n==='todos'?'<span class="tf-av" style="width:34px;height:34px;background:#334155;font-size:14px">★</span>':tfAvatarHtml(n,34)}<span><b>${label}</b><small>${lista.length} aberta(s)${atr?` · <em class="atr">${atr} atrasada(s)</em>`:''}${hj?` · <em class="hj">${hj} hoje</em>`:''}</small></span></button>`;};
