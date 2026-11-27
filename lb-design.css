@@ -127,7 +127,7 @@ html body .sc-icon svg,html body .metric-icon svg{width:15px!important;height:15
 html body .sc-label,html body .metric-label{font-size:12.5px!important;text-transform:none!important;letter-spacing:0!important;color:var(--ds-text-2)!important;font-weight:500!important}
 html body .sc-label-line{display:none!important}
 html body .sc-value,html body .metric-value{font-size:28px!important;font-weight:600!important;color:var(--ds-text)!important;background:none!important;-webkit-text-fill-color:currentColor!important}
-html body .sc-value.green{color:var(--ds-text)!important;font-size:24px!important}
+html body .sc-value.green{color:var(--ds-text)!important;font-size:clamp(15px,1.3vw,24px)!important}
 html body .sc-foot,html body .metric-hint{font-size:12px!important;color:var(--ds-text-3)!important;font-weight:500}
 html body .sc-foot .ok{color:var(--ds-text-3)!important}
 html body .sc-foot .ok::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ds-pos);margin-right:6px;vertical-align:1px}
