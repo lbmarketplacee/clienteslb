@@ -12610,6 +12610,15 @@ window.__dirShCriar=async()=>{
       const g=await dirGuiaIA(lista,u.fotos?.[0]?.imagem||u.reais?.[0]||null,u.produto||'');
       if(g){const gid=await subir(g,'guia de tamanhos');dados.guiaTamanhos=gid;if(dados.imagens.length<9&&!dados.imagens.includes(gid))dados.imagens.push(gid);r=await dirShApi('produto_criar',c,token,{dados});}
     }
+    /* 27/11/2026: Shopee recusou a imagem da guia ("upload a more standard size chart image") → refaz só com a tabela (fundo branco, sem foto); se recusar de novo, cria sem guia */
+    if(!r.ok&&/standard size chart/i.test(`${r.erro||''}`)&&dados.guiaTamanhos){
+      passo('A Shopee recusou a imagem da guia — refazendo a guia só com a tabela...');
+      const velha=dados.guiaTamanhos;dados.imagens=dados.imagens.filter(x=>x!==velha);
+      const linhas=dirMedidasGuia(u.tamanhos?.length?u.tamanhos:[{tam:'Único',campos:{Veste:'36/42'}}]);
+      const g2=linhas.length?await dirGuiaTamanhos(linhas,linhas.some(t=>t.ref)?'Medidas do corpo em cm · referência padrão brasileiro':''):null;
+      if(g2){const gid=await subir(g2,'guia de tamanhos (tabela)');dados.guiaTamanhos=gid;if(dados.imagens.length<9)dados.imagens.push(gid);r=await dirShApi('produto_criar',c,token,{dados});}
+      if(!r.ok&&/standard size chart/i.test(`${r.erro||''}`)){passo('Criando sem guia de tamanhos...');const gg=dados.guiaTamanhos;delete dados.guiaTamanhos;dados.imagens=dados.imagens.filter(x=>x!==gg);r=await dirShApi('produto_criar',c,token,{dados});}
+    }
     // "This product duplicates another" = já foi criado num clique anterior → segue com o que existe (não cria outro)
     if(!r.ok&&/duplicates another/i.test(`${r.erro||''}`)){
       passo('Esse anúncio já existe na loja (clique anterior) — procurando ele pra seguir...');
