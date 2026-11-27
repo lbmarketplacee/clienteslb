@@ -270,6 +270,8 @@ html[data-theme="dark"] .av{color:#e8c77a}
 .tema-btn{display:flex;align-items:center;gap:9px;width:100%;margin:auto 0 6px;padding:9px 11px;border-radius:10px;border:1px solid #27272a;background:none;color:#a1a1aa;font-size:12.5px;text-align:left}
 .tema-btn:hover{color:#fff}.tema-btn svg{width:16px;height:16px;flex:none}
 html[data-theme="light"] .tema-btn{border-color:var(--line);color:var(--dim)}html[data-theme="light"] .tema-btn:hover{color:var(--txt)}
+.tema-mini{display:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--dim);align-items:center;justify-content:center;padding:0}.tema-mini svg{width:17px;height:17px}@media (max-width:900px){.tema-mini{display:flex}}
+html[data-theme="dark"] .mob-bar{border-top:1px solid #27272a}
 .tema-btn .t-sol{display:none}html[data-theme="dark"] .tema-btn .t-sol{display:block}html[data-theme="dark"] .tema-btn .t-lua{display:none}
 </style>
 </head>
@@ -310,7 +312,7 @@ html[data-theme="light"] .tema-btn{border-color:var(--line);color:var(--dim)}htm
 </script>
 
   <main>
-    <div class="topo"><div><h2 id="tTit"></h2><div class="sub" id="tSub"></div></div><div class="dir"><span class="vivo">ao vivo</span></div></div>
+    <div class="topo"><div><h2 id="tTit"></h2><div class="sub" id="tSub"></div></div><div class="dir"><button class="tema-mini" type="button" onclick="window.__lbTemaTrocar()" title="Modo claro/escuro" aria-label="Modo claro/escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button><span class="vivo">ao vivo</span></div></div>
     <div class="conteudo" id="conteudo">
       <section class="pg" id="pg-dia"></section>
       <section class="pg" id="pg-dash"></section>
