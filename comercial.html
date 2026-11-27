@@ -1805,15 +1805,15 @@ function rCamp() {
   ligCamp();
 }
 // ---------- campanha de Black (29/10/2026): WhatsApp (template) + e-mail (Gmail da LB) pros leads que não fecharam ----------
-const CAMP_ID = 'black2026', AGENDA_LINK = 'https://calendar.app.google/F8wE9MPLohSN5wDs9';
-const CAMP_ASSUNTO = (n) => `${n ? n + ', u' : 'U'}ma condição especial de Black Friday na LB Marketplace`;
+const CAMP_ID = 'blackDia2026', /* 27/11/2026: dia da Black (a de 30/10 era black2026) */ AGENDA_LINK = 'https://calendar.app.google/F8wE9MPLohSN5wDs9';
+const CAMP_ASSUNTO = (n) => `${n ? n + ', h' : 'H'}oje é Black Friday na LB Marketplace`;
 function campEmailHtml(nome) {
   const n = esc(String(nome || '').trim().split(/\s+/)[0] || '');
   return `<div style="background:#0E0C09;padding:32px 16px;font-family:Arial,Helvetica,sans-serif"><div style="max-width:560px;margin:0 auto;background:#17140F;border:1px solid #2E271D;border-radius:14px;overflow:hidden">
 <div style="padding:28px 28px 8px;text-align:center"><div style="font-family:Georgia,serif;font-size:34px;font-weight:bold;color:#D4AF5A">LB</div><div style="letter-spacing:4px;font-size:11px;color:#B8AE99">MARKETPLACE · ASSESSORIA</div></div>
-<div style="padding:12px 28px 8px;color:#F6F1E6"><p style="font-size:13px;letter-spacing:3px;color:#D4AF5A;font-weight:bold;margin:0 0 10px">BLACK FRIDAY LB</p>
+<div style="padding:12px 28px 8px;color:#F6F1E6"><p style="font-size:13px;letter-spacing:3px;color:#D4AF5A;font-weight:bold;margin:0 0 10px">HOJE É BLACK FRIDAY</p>
 <h1 style="font-family:Georgia,serif;font-size:26px;line-height:1.25;margin:0 0 14px;color:#F6F1E6">${n ? n + ', a' : 'A'} sua loja pode fechar o ano vendendo de verdade.</h1>
-<p style="font-size:15px;line-height:1.6;color:#C9C0AE;margin:0 0 14px">Liberamos uma <b style="color:#F6F1E6">condição especial de Black Friday</b> pra quem quiser colocar a loja nas mãos da equipe da LB e fechar com a gente agora em novembro. É por tempo limitado.</p>
+<p style="font-size:15px;line-height:1.6;color:#C9C0AE;margin:0 0 14px">Hoje é Black Friday e a LB está com uma <b style="color:#F6F1E6">condição especial</b> pra quem quiser colocar a loja nas mãos da nossa equipe.</p>
 <p style="font-size:15px;line-height:1.6;color:#C9C0AE;margin:0 0 6px">O que a nossa equipe faz pela sua loja na Shopee, no Mercado Livre, no TikTok Shop e na Shein:</p>
 <p style="font-size:15px;line-height:1.7;color:#C9C0AE;margin:0 0 16px">· anúncios que aparecem e convertem<br>· desconto, cupom e oferta relâmpago todo dia<br>· Ads acompanhado de perto e preço com lucro<br>· relatório todo mês do que foi feito</p>
 <div style="background:#0E0C09;border-radius:10px;padding:14px 16px;margin:0 0 18px"><p style="font-size:13px;color:#D4AF5A;font-weight:bold;margin:0 0 6px">RESULTADOS REAIS DE CLIENTES</p><p style="font-size:14px;line-height:1.6;color:#C9C0AE;margin:0">Yashop: de 30 pra 479 pedidos em um mês<br>Aconsull: de R$ 3,1 mil pra R$ 172 mil no mês<br>Roma Aviamentos: 2,6x no Mercado Livre</p></div>
@@ -1836,7 +1836,7 @@ async function campanhaHtml() {
   const stRot = { APPROVED: '<span class="tag ve">aprovado</span>', PENDING: '<span class="tag la">em análise na Meta</span>', REJECTED: '<span class="tag vm">recusado</span>' }[st] || '<span class="tag">ainda não enviado pra Meta</span>';
   box.innerHTML = `<div class="grid g2">
   <div class="card painel"><h3>WhatsApp</h3><div class="ds">Template de marketing (a Meta cobra cerca de R$ 0,35 por mensagem). Status: ${stRot}</div>
-    <div class="bal lead" style="max-width:100%;background:#f7f5f1;margin-bottom:12px">Oi, {nome}! Aqui é da LB Marketplace. Liberamos uma condição especial de Black Friday pra quem quiser colocar a loja nas mãos da nossa equipe e fechar com a gente agora em novembro. É por tempo limitado. Toca no botão e escolhe um horário pra conversar com o nosso especialista.<div style="border-top:1px solid #ddd;margin-top:8px;padding-top:6px;text-align:center;color:#2563eb;font-weight:600">Quero aproveitar ↗</div></div>
+    <div class="bal lead" style="max-width:100%;background:#f7f5f1;margin-bottom:12px">Oi, {nome}! Hoje é Black Friday e a LB Marketplace está com uma condição especial pra quem quiser colocar a loja nas mãos da nossa equipe (Shopee, Mercado Livre, TikTok Shop e Shein). Toca no botão e escolhe um horário pra conversar com um especialista. É gratuito.<div style="border-top:1px solid #ddd;margin-top:8px;padding-top:6px;text-align:center;color:#2563eb;font-weight:600">Quero aproveitar ↗</div></div>
     <p style="font-size:13px;margin:0 0 10px"><b>${N(r.total)}</b> leads vão receber${r.fora ? ` · fora: ${r.fora.fechado} fecharam, ${r.fora.cliente} já são clientes, ${r.fora.repetido} repetidos, ${r.fora.semTelefone} sem WhatsApp, ${r.fora.parar} pediram pra parar, ${r.fora.jaRecebeu} já receberam` : ''}</p>
     <div class="chips">${!st ? '<button class="btn" id="cpTpl">Enviar template pra aprovação</button>' : ''}<input type="text" id="cpTel" placeholder="seu WhatsApp pro teste" style="max-width:200px"><button class="btn" id="cpTeste" ${st !== 'APPROVED' ? 'disabled' : ''}>Mandar teste</button><button class="btn ouro" id="cpZap" ${st !== 'APPROVED' || !r.total ? 'disabled' : ''}>Disparar WhatsApp (${N(r.total)})</button></div></div>
   <div class="card painel"><h3>E-mail</h3><div class="ds">Sai do Gmail da LB (lincoln@lbmarketplace.com.br, nome "LB Marketplace"), sem custo. Assunto: “${esc(CAMP_ASSUNTO('Ana'))}”</div>
