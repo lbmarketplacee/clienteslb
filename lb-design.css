@@ -195,7 +195,7 @@ html body .summary-card,html body .panel,html body .cm-tool-card,html body .nav-
 /* ---------- ajustes do Dashboard (1ª revisão) ---------- */
 html body .sc-top{min-width:0}
 html body .sc-label{min-width:0;line-height:1.3!important}
-html body .sc-value,html body .metric-value{font-size:clamp(17px,1.55vw,28px)!important;white-space:nowrap}
+html body .sc-value,html body .metric-value{font-size:clamp(16px,1.35vw,28px)!important;white-space:nowrap;letter-spacing:-.03em!important}
 html body .donut-center .dc-val{font-size:16px!important;white-space:nowrap}
 html body .metric-spark polyline,html body .metric-spark path,html body .sc-spark polyline,html body .sc-spark path{stroke:var(--ds-accent)!important}
 html body .nav-grupo-cab{border-radius:var(--ds-radius-sm)!important;color:var(--ds-text-2)!important;font-size:13.5px!important;font-weight:500!important;padding:8px 10px!important;gap:10px!important;background:transparent!important;border:1px solid transparent!important}
