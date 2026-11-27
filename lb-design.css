@@ -1,0 +1,193 @@
+/* =====================================================================
+   LB — Design system (27/11/2026)
+   Carrega POR ÚLTIMO (fim do <body>). Só visual: neutros com leve tom
+   quente, dourado só como destaque, Inter com números tabulares, bordas
+   de 1 px, raio 10 px, sem degradê, sem glow, sem caixa alta em título.
+   Tela nova: usar as variáveis --ds-* (ou as antigas --bg/--text/... que
+   apontam pra elas). Nunca cor fixa de fundo/texto.
+   ===================================================================== */
+
+/* ---------- tokens: escuro (padrão do sistema) ---------- */
+:root{
+  --ds-bg:#0c0c0b;
+  --ds-surface:#141413;
+  --ds-surface-2:#1a1918;
+  --ds-hover:#1f1e1c;
+  --ds-border:#262523;
+  --ds-border-strong:#34332f;
+  --ds-text:#ecebe7;
+  --ds-text-2:#a3a19a;
+  --ds-text-3:#6f6d67;
+  --ds-accent:#c9a24a;
+  --ds-accent-soft:rgba(201,162,74,.12);
+  --ds-accent-text:#d9b563;
+  --ds-on-accent:#15130e;
+  --ds-pos:#4fae73;
+  --ds-neg:#e06258;
+  --ds-warn:#d39a45;
+  --ds-grid:rgba(255,255,255,.06);
+  --ds-shadow:0 1px 2px rgba(0,0,0,.35);
+  --ds-shadow-pop:0 12px 32px -8px rgba(0,0,0,.55);
+  --ds-radius:10px;
+  --ds-radius-sm:7px;
+  --ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+
+  /* as variáveis antigas passam a seguir o design system */
+  --bg:var(--ds-bg);--bg-sidebar:var(--ds-bg);--bg-card:var(--ds-surface);--bg-card2:var(--ds-surface-2);
+  --text:var(--ds-text);--text-dim:var(--ds-text-2);--text-dim2:var(--ds-text-3);
+  --border:var(--ds-border);--border-soft:var(--ds-border);--border-strong:var(--ds-border-strong);
+  --gold:var(--ds-accent);--gold-soft:var(--ds-accent-soft);--gold-dim:var(--ds-border-strong);--gold-bright:var(--ds-accent-text);
+  --bg-input:var(--ds-bg);--bg-soft:var(--ds-surface-2);--bg-chip:var(--ds-surface-2);
+  --bg-page:var(--ds-bg);--bg-page-glow-1:transparent;--bg-page-glow-2:transparent;
+  --card-grad:var(--ds-surface);--side-grad:var(--ds-bg);
+  --border-hair:var(--ds-border);--border-hair-strong:var(--ds-border-strong);--border-accent:var(--ds-border-strong);
+  --text-primary:var(--ds-text);--text-secondary:var(--ds-text-2);--text-muted:var(--ds-text-3);
+  --shadow-card:var(--ds-shadow);
+}
+
+/* ---------- tokens: claro ---------- */
+html[data-theme="light"]{
+  --ds-bg:#f7f6f3;
+  --ds-surface:#ffffff;
+  --ds-surface-2:#f3f2ee;
+  --ds-hover:#f0eee9;
+  --ds-border:#e6e4de;
+  --ds-border-strong:#d6d3cb;
+  --ds-text:#1b1a17;
+  --ds-text-2:#64625c;
+  --ds-text-3:#8e8b84;
+  --ds-accent:#9a7a2c;
+  --ds-accent-soft:rgba(154,122,44,.09);
+  --ds-accent-text:#86681f;
+  --ds-on-accent:#ffffff;
+  --ds-pos:#2f7d4c;
+  --ds-neg:#c0392b;
+  --ds-warn:#a86a10;
+  --ds-grid:rgba(20,18,12,.07);
+  --ds-shadow:0 1px 2px rgba(20,18,12,.05);
+  --ds-shadow-pop:0 12px 32px -10px rgba(20,18,12,.18);
+  --bg:var(--ds-bg);--bg-sidebar:var(--ds-surface);--bg-card:var(--ds-surface);--bg-card2:var(--ds-surface-2);
+  --text:var(--ds-text);--text-dim:var(--ds-text-2);--text-dim2:var(--ds-text-3);
+  --border:var(--ds-border);--border-soft:var(--ds-border);--border-strong:var(--ds-border-strong);
+  --gold:var(--ds-accent);--gold-soft:var(--ds-accent-soft);--gold-dim:var(--ds-border-strong);--gold-bright:var(--ds-accent-text);
+  --bg-input:var(--ds-surface);--bg-soft:var(--ds-surface-2);--bg-chip:var(--ds-surface-2);
+  --bg-page:var(--ds-bg);--card-grad:var(--ds-surface);--side-grad:var(--ds-surface);
+  --border-hair:var(--ds-border);--border-hair-strong:var(--ds-border-strong);--border-accent:var(--ds-border-strong);
+  --text-primary:var(--ds-text);--text-secondary:var(--ds-text-2);--text-muted:var(--ds-text-3);
+  --shadow-card:var(--ds-shadow);
+}
+
+/* ---------- base ---------- */
+html body{background:var(--ds-bg)!important;color:var(--ds-text);font-family:var(--ds-font);-webkit-font-smoothing:antialiased;font-feature-settings:'cv11','ss01'}
+html body h1,html body h2,html body h3,html body h4{font-family:var(--ds-font)!important;text-transform:none!important;letter-spacing:-.015em!important;font-weight:600}
+html body .page-title,html body .cl-header-simple h3,html body .cm-secao-titulo h3,html body .notif-panel-head,html body .com-kpi-section h3,html body .ia-right-panel h3,html body .calc-result-title,html body .security-banner-title,html body .nav-premium h4{text-transform:none!important;letter-spacing:-.015em!important;font-family:var(--ds-font)!important}
+html body .sc-value,html body .metric-value,html body .dc-val,html body .cob-resumo b,html body .cc-count,html body .cb-value,html body .cl-progress-pct,html body .sgmv-valor .num,html body .perf-pvalue,html body .kpi-value{font-family:var(--ds-font)!important;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+html body ::selection{background:var(--ds-accent-soft)}
+
+/* ---------- menu lateral ---------- */
+html body .sidebar{background:var(--ds-bg)!important;border-right:1px solid var(--ds-border)!important;box-shadow:none!important}
+html[data-theme="light"] body .sidebar{background:var(--ds-surface)!important}
+html body .sidebar-logo{padding-bottom:18px!important;border-bottom:1px solid var(--ds-border)!important;margin-bottom:10px}
+html body .nav-item{border-radius:var(--ds-radius-sm)!important;border:1px solid transparent!important;color:var(--ds-text-2)!important;font-weight:500;font-size:13.5px;padding:8px 10px!important;gap:10px!important;transform:none!important;box-shadow:none!important;background:transparent!important}
+html body .nav-item svg{width:17px!important;height:17px!important;stroke-width:1.75;opacity:.85}
+html body .nav-item:hover{background:var(--ds-hover)!important;color:var(--ds-text)!important}
+html body .nav-item.active{background:var(--ds-surface-2)!important;color:var(--ds-text)!important;border-color:var(--ds-border)!important;box-shadow:inset 2px 0 0 var(--ds-accent)!important}
+html[data-theme="light"] body .nav-item.active{background:var(--ds-surface-2)!important}
+html body .nav-item.active svg{opacity:1;color:var(--ds-accent)}
+html body .lj-novo{background:transparent!important;color:var(--ds-accent-text)!important;border:1px solid var(--ds-border-strong)!important;font-weight:600;letter-spacing:.02em;font-size:10px}
+html body .nav-pend,html body .notif-badge{background:var(--ds-neg)!important;box-shadow:none!important;color:#fff!important}
+html body .drive-status,html body .tema-btn{background:transparent!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius-sm)!important;color:var(--ds-text-2)!important;box-shadow:none!important;font-weight:500!important}
+html body .drive-status:hover,html body .tema-btn:hover{background:var(--ds-hover)!important;color:var(--ds-text)!important}
+html body .status-dot,html body .drive-dot{box-shadow:none!important}
+html body .nav-user{border-top:1px solid var(--ds-border)!important}
+html body .nav-user .avatar{box-shadow:none!important}
+html body .nav-grupo-titulo,html body .sidebar-group-label{color:var(--ds-text-3)!important}
+
+/* ---------- topo ---------- */
+html body .topbar{background:transparent!important;border-bottom:1px solid var(--ds-border)!important}
+html body .welcome h1{font-size:24px!important;font-weight:600!important;letter-spacing:-.02em!important;color:var(--ds-text)!important;background:none!important;-webkit-text-fill-color:currentColor!important}
+html body .welcome p{color:var(--ds-text-2)!important;font-size:13.5px}
+html body .notif-btn{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius-sm)!important;box-shadow:none!important;color:var(--ds-text-2)!important}
+
+/* ---------- botões ---------- */
+html body .btn{border-radius:var(--ds-radius-sm)!important;letter-spacing:0!important;font-weight:550;box-shadow:none!important;text-transform:none}
+html body .btn-gold{background:var(--ds-accent)!important;color:var(--ds-on-accent)!important;border:1px solid var(--ds-accent)!important}
+html body .btn-gold:hover{filter:brightness(1.06)}
+html body .btn-gold::before,html body .btn-gold::after{display:none!important}
+html body .btn-ghost{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text)!important}
+html body .btn-ghost:hover{background:var(--ds-hover)!important;border-color:var(--ds-border-strong)!important}
+
+/* ---------- cartões de métrica (Dashboard) ---------- */
+html body .summary-grid{gap:12px!important}
+html body .summary-card,html body .metric-card{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius)!important;box-shadow:var(--ds-shadow)!important;backdrop-filter:none!important;padding:18px 20px!important;transform:none!important;animation:none!important}
+html body .summary-card:hover,html body .metric-card:hover{border-color:var(--ds-border-strong)!important}
+html body .sc-top{gap:10px!important;margin-bottom:14px!important}
+html body .sc-icon,html body .metric-icon{width:28px!important;height:28px!important;border-radius:7px!important;background:var(--ds-surface-2)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text-2)!important;box-shadow:none!important;margin:0!important}
+html body .sc-icon svg,html body .metric-icon svg{width:15px!important;height:15px!important;stroke-width:1.75}
+html body .sc-label,html body .metric-label{font-size:12.5px!important;text-transform:none!important;letter-spacing:0!important;color:var(--ds-text-2)!important;font-weight:500!important}
+html body .sc-label-line{display:none!important}
+html body .sc-value,html body .metric-value{font-size:28px!important;font-weight:600!important;color:var(--ds-text)!important;background:none!important;-webkit-text-fill-color:currentColor!important}
+html body .sc-value.green{color:var(--ds-text)!important;font-size:24px!important}
+html body .sc-foot,html body .metric-hint{font-size:12px!important;color:var(--ds-text-3)!important;font-weight:500}
+html body .sc-foot .ok{color:var(--ds-text-3)!important}
+html body .sc-foot .ok::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ds-pos);margin-right:6px;vertical-align:1px}
+html body .sc-foot .down{color:var(--ds-neg)!important}
+html body .sc-foot .up{color:var(--ds-pos)!important}
+html body .metric-spark{opacity:.8}
+
+/* ---------- painéis ---------- */
+html body .panel,html body .chart-card,html body .donut-card,html body .cm-secao,html body .cv-card{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius)!important;box-shadow:var(--ds-shadow)!important;backdrop-filter:none!important}
+html body .panel-head h3{font-size:14px!important;font-weight:600!important;text-transform:none!important;letter-spacing:-.005em!important;color:var(--ds-text)!important}
+html body .panel-head .p-sub{color:var(--ds-text-3)!important;font-size:12px!important}
+html body .donut-center .dc-label{text-transform:none!important;letter-spacing:0!important;color:var(--ds-text-3)!important;font-size:11.5px}
+html body .donut-center .dc-val{font-size:20px!important;font-weight:600!important;color:var(--ds-text)!important}
+html body .dl-dot{box-shadow:none!important;width:8px!important;height:8px!important;border-radius:2px!important}
+html body .dl-name{font-weight:500!important;color:var(--ds-text)!important;font-size:13px!important}
+html body .dl-val{color:var(--ds-text-3)!important;font-variant-numeric:tabular-nums}
+html body .dl-pct{font-weight:600!important;color:var(--ds-text)!important;font-variant-numeric:tabular-nums}
+html body .perf-icon,html body .kpi-icon{width:30px!important;height:30px!important;border-radius:7px!important;background:var(--ds-surface-2)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text-2)!important}
+html body .perf-icon svg{width:15px!important;height:15px!important}
+html body .perf-plabel{color:var(--ds-text-2)!important;font-size:12.5px!important}
+html body .perf-pvalue{font-size:20px!important;font-weight:600!important;color:var(--ds-text)!important}
+
+/* ---------- busca, filtros e tabela ---------- */
+html body .search-box,html body .search-input{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius-sm)!important;box-shadow:none!important}
+html body .search-box input{background:transparent!important;border:none!important}
+html body .chip,html body .filter-chip{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius-sm)!important;color:var(--ds-text-2)!important;font-weight:500!important;box-shadow:none!important}
+html body .chip:hover,html body .filter-chip:hover{color:var(--ds-text)!important;border-color:var(--ds-border-strong)!important}
+html body .chip.active,html body .filter-chip.active{background:var(--ds-text)!important;color:var(--ds-bg)!important;border-color:var(--ds-text)!important}
+html body .table-wrap{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius)!important;box-shadow:var(--ds-shadow)!important;overflow:hidden}
+html body .table-wrap thead th,html body .data-table thead th{background:var(--ds-surface)!important;font-size:12px!important;font-weight:500!important;text-transform:none!important;letter-spacing:0!important;color:var(--ds-text-3)!important;border-bottom:1px solid var(--ds-border)!important}
+html body .table-wrap tbody td{border-bottom:1px solid var(--ds-border)!important;color:var(--ds-text)}
+html body .table-wrap tbody tr:hover td{background:var(--ds-hover)!important}
+html body .table-wrap tbody tr:last-child td{border-bottom:none!important}
+html body .cl-avatar,html body .client-avatar{box-shadow:none!important}
+
+/* ---------- cabeçalho das páginas ---------- */
+html body .page-head-icon{width:36px!important;height:36px!important;border-radius:8px!important;background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text-2)!important;box-shadow:none!important}
+html body .page-head-icon svg{width:18px!important;height:18px!important}
+html body .page-title{font-size:22px!important;font-weight:600!important;color:var(--ds-text)!important}
+html body .page-sub{color:var(--ds-text-2)!important;font-size:13.5px}
+html body .com-lock-badge{background:var(--ds-surface-2)!important;color:var(--ds-text-2)!important;border:1px solid var(--ds-border)!important;font-weight:500;letter-spacing:0;text-transform:none}
+
+/* ---------- Central de Marketing: cartões de ferramenta ---------- */
+html body .cm-tool-card{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:var(--ds-radius)!important;box-shadow:var(--ds-shadow)!important;transform:none!important}
+html body .cm-tool-card:hover{border-color:var(--ds-border-strong)!important;background:var(--ds-hover)!important}
+html body .cm-tool-titulo{font-family:var(--ds-font)!important;text-transform:none!important;letter-spacing:-.01em!important;font-weight:600!important;color:var(--ds-text)!important}
+html body .cm-tool-desc{color:var(--ds-text-2)!important}
+html body .cm-tool-tag{background:transparent!important;border:1px solid var(--ds-border)!important;color:var(--ds-text-3)!important;text-transform:none!important;letter-spacing:0!important;font-weight:500!important}
+html body .cm-tool-ico,html body .cm-secao-ico,html body .marca{box-shadow:none!important}
+html body .cm-secao-titulo h3{color:var(--ds-text)!important;font-size:17px!important}
+
+/* ---------- formulários, modais, abas ---------- */
+html body input,html body textarea,html body select{border-radius:var(--ds-radius-sm)}
+html body input:focus,html body textarea:focus,html body select:focus{border-color:var(--ds-accent)!important;box-shadow:0 0 0 3px var(--ds-accent-soft)!important}
+html body .modal,html body .modal-content,html body .notif-panel{background:var(--ds-surface)!important;border:1px solid var(--ds-border)!important;border-radius:12px!important;box-shadow:var(--ds-shadow-pop)!important}
+html body .notif-panel-head{color:var(--ds-text)!important;font-size:14px!important;font-weight:600!important}
+html body .sub-bar,html body .tabs{border-color:var(--ds-border)!important}
+html body .sub-tab.active,html body .tab.active{color:var(--ds-text)!important;border-color:var(--ds-accent)!important}
+html body .prod-tab{box-shadow:none!important}
+
+/* ---------- movimento contido ---------- */
+html body .summary-card,html body .panel,html body .cm-tool-card,html body .nav-item,html body .chip{transition:background-color .12s ease,border-color .12s ease,color .12s ease!important}
+@media (prefers-reduced-motion:reduce){html body *{animation:none!important;transition:none!important}}
