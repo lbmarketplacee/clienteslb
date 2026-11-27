@@ -191,3 +191,28 @@ html body .prod-tab{box-shadow:none!important}
 /* ---------- movimento contido ---------- */
 html body .summary-card,html body .panel,html body .cm-tool-card,html body .nav-item,html body .chip{transition:background-color .12s ease,border-color .12s ease,color .12s ease!important}
 @media (prefers-reduced-motion:reduce){html body *{animation:none!important;transition:none!important}}
+
+/* ---------- ajustes do Dashboard (1ª revisão) ---------- */
+html body .sc-top{min-width:0}
+html body .sc-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html body .sc-label br{display:none}
+html body .sc-value,html body .metric-value{font-size:clamp(19px,1.75vw,28px)!important;overflow:hidden;text-overflow:ellipsis}
+html body .donut-center .dc-val{font-size:16px!important;white-space:nowrap}
+html body .metric-spark polyline,html body .metric-spark path,html body .sc-spark polyline,html body .sc-spark path{stroke:var(--ds-accent)!important}
+html body .nav-grupo-cab{border-radius:var(--ds-radius-sm)!important;color:var(--ds-text-2)!important;font-size:13.5px!important;font-weight:500!important;padding:8px 10px!important;gap:10px!important;background:transparent!important;border:1px solid transparent!important}
+html body .nav-grupo-cab:hover{background:var(--ds-hover)!important;color:var(--ds-text)!important}
+html body .nav-grupo-cab>svg:first-child{width:17px!important;height:17px!important;stroke-width:1.75;opacity:.85}
+/* tabela de clientes */
+html body .cli-avatar{background:var(--ds-surface-2)!important;color:var(--ds-text-2)!important;border:1px solid var(--ds-border)!important;box-shadow:none!important;font-weight:600!important;font-size:12px!important;width:34px!important;height:34px!important;border-radius:8px!important}
+html body .cli-name{font-weight:550!important;color:var(--ds-text)!important;font-size:13.5px!important}
+html body .cli-email{color:var(--ds-text-3)!important;font-size:12px!important}
+html body .cli-gmv{color:var(--ds-text-2)!important;font-size:12px!important}
+html body .cli-gmv *{color:inherit!important}
+html body .mp-badges{display:flex!important;flex-wrap:wrap!important;gap:4px!important;max-width:220px}
+html body .mp-badge{background:var(--ds-surface-2)!important;border:1px solid var(--ds-border)!important;color:var(--ds-text-2)!important;border-radius:6px!important;font-weight:500!important;font-size:11.5px!important;padding:2px 7px!important;box-shadow:none!important;white-space:nowrap}
+html body .saldo-val{font-variant-numeric:tabular-nums;font-weight:500!important;color:var(--ds-text)!important}
+html body .edit-meta{color:var(--ds-text-3)!important;font-size:12px!important}
+html body .icon-act{background:transparent!important;border:1px solid var(--ds-border)!important;color:var(--ds-text-2)!important;border-radius:7px!important;box-shadow:none!important}
+html body .icon-act:hover{background:var(--ds-hover)!important;color:var(--ds-text)!important;border-color:var(--ds-border-strong)!important}
+html body .icon-act.danger:hover{color:var(--ds-neg)!important}
+html body .sc-spark{display:none!important} /* era desenho fixo, não era dado real */
