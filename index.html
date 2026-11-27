@@ -1381,6 +1381,34 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
 #page-dre .cv-val b[style],#page-dre .cm-item b[style]{color:var(--text)!important}
 #page-dre .fin-neg{color:#d46b6b!important}#page-dre .fin-pos{color:#7fb894!important}
 #page-dre .cm-secao{border-color:var(--border)}
+/* 27/11/2026 (Lincoln: "cara de code, pode ser fundo branco, letras melhores"): Financeiro LB em tema claro, tipo banco */
+#page-dre{--fx-bg:#f6f4ef;--fx-card:#ffffff;--fx-txt:#1d1b17;--fx-dim:#6f685c;--fx-borda:#e6e1d6;--fx-ouro:#a8812f;background:var(--fx-bg);color:var(--fx-txt);border-radius:18px;padding:26px 28px!important;font-family:Inter,system-ui,-apple-system,sans-serif}
+#page-dre *{font-family:inherit}
+#page-dre .page-title,#page-dre h2,#page-dre h3,#page-dre h4{font-family:Inter,system-ui,sans-serif!important;text-transform:none!important;letter-spacing:-.2px!important;color:var(--fx-txt)!important;font-weight:650}
+#page-dre .page-title{font-size:24px!important}#page-dre h3{font-size:17px!important}
+#page-dre .page-sub,#page-dre small,#page-dre .cv-sub,#page-dre p{color:var(--fx-dim)!important}
+#page-dre .page-head-icon{background:#efe7d4!important;color:var(--fx-ouro)!important;border:none!important;box-shadow:none!important}
+#page-dre .com-lock-badge{background:#f1ece1;color:var(--fx-dim);border:1px solid var(--fx-borda)}
+#page-dre .fin-fluxo>div,#page-dre .cv-card,#page-dre .cm-secao,#page-dre .fcm-pess>div{background:var(--fx-card)!important;border:1px solid var(--fx-borda)!important;box-shadow:0 1px 2px rgba(30,25,15,.05)}
+#page-dre .cm-secao{border-radius:14px;padding:18px 20px}
+#page-dre .fin-fluxo b,#page-dre .cv-card .cv-letra,#page-dre .fcm-pess b{color:var(--fx-txt)!important;font-weight:700}
+#page-dre .fin-fluxo>div:first-child b{color:var(--fx-ouro)!important}
+#page-dre .fin-barra{background:#ece6d8}#page-dre .fin-barra i{background:var(--fx-ouro)}
+#page-dre .fin-abas{border-color:var(--fx-borda)}
+#page-dre .fin-abas button{color:var(--fx-dim);border-color:var(--fx-borda);background:#fff;font-weight:600}
+#page-dre .fin-abas button.on{color:var(--fx-txt);border-color:var(--fx-ouro);box-shadow:inset 0 -2px 0 var(--fx-ouro)}
+#page-dre .fin-abas button span{background:#e7ddc7;color:var(--fx-txt)}
+#page-dre input,#page-dre select,#page-dre textarea{background:#fff!important;color:var(--fx-txt)!important;border:1px solid var(--fx-borda)!important}
+#page-dre .btn-gold{background:var(--fx-ouro)!important;color:#fff!important;border:none!important;box-shadow:none!important}
+#page-dre .btn-ghost{background:#fff!important;color:var(--fx-txt)!important;border:1px solid var(--fx-borda)!important}
+#page-dre .cm-item,#page-dre .cv-linha{border-color:var(--fx-borda)!important;color:var(--fx-txt)}
+#page-dre .cv-nome b,#page-dre .cm-item .nome,#page-dre b{color:var(--fx-txt)}
+#page-dre .empty-state{color:var(--fx-dim)}
+#page-dre .fin-alerta{background:#fbf3e3;border-color:#ecd9b0;color:var(--fx-txt)}
+#page-dre .fin-neg{color:#b4423a!important}
+#page-dre .fcm-tab th{color:var(--fx-dim);border-color:var(--fx-borda)}#page-dre .fcm-tab td{border-color:var(--fx-borda)}
+#page-dre .fcm-st{border-color:var(--fx-borda);color:var(--fx-dim);background:#faf8f3}#page-dre .fcm-st.pago{background:#eef6ef;border-color:#cfe5d3;color:#2f6b3d}
+#page-dre details{border-color:var(--fx-borda)}
 .fcm-tab{width:100%;border-collapse:collapse;font-size:13px}.fcm-tab th{text-align:left;font-weight:600;color:var(--text-dim);font-size:11.5px;padding:8px 10px;border-bottom:1px solid var(--border)}.fcm-tab td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}.fcm-tab td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fcm-st{font-size:11.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--border);color:var(--text-dim);white-space:nowrap}.fcm-st.pago{color:var(--text);border-color:var(--gold)}
 .fcm-pess{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:0 0 16px}.fcm-pess>div{border:1px solid var(--border);border-radius:10px;padding:12px 14px}.fcm-pess small{display:block;color:var(--text-dim);font-size:11.5px}.fcm-pess b{font-size:20px;font-weight:700}
