@@ -1820,14 +1820,19 @@ function campEmailHtml(nome) {
 <div style="text-align:center;margin:0 0 22px"><a href="${AGENDA_LINK}" style="display:inline-block;background:#D4AF5A;color:#17140F;text-decoration:none;font-weight:bold;font-size:15px;padding:14px 26px;border-radius:999px">Quero aproveitar a condição</a><p style="font-size:12px;color:#8C8473;margin:10px 0 0">Escolha um horário pra conversar com um especialista. É gratuito.</p></div></div>
 <div style="padding:14px 28px 22px;border-top:1px solid #2E271D;font-size:11px;line-height:1.6;color:#7A7262">LB Marketplace Assessoria · Av. Paulicéia, 1013, Sala 12 · Caieiras/SP<br>Você recebeu este e-mail porque deixou seu contato no formulário da LB. Não quer mais receber? Responda este e-mail com SAIR.</div></div></div>`;
 }
+function campNota(l) {
+  let n = 0; const t = String(l.respostasTypebot?.tipoNegocio || l.tipoNegocio || ''), tp = String(l.ia?.temperatura || '');
+  if (['compareceu', 'negociacao'].includes(l.stage)) n += 100; if (/quente/i.test(tp)) n += 90; if (l.stage === 'agendado') n += 80;
+  if (/fabric|confec|produ/i.test(t)) n += 50; if (/morno/i.test(tp)) n += 10; if (l.stage === 'perdido') n -= 40; return n;
+}
 function campEmails() {
   const vistos = new Set(); const out = [];
   for (const l of vendas()) {
     if (l.stage === 'fechado' || l.followupParar || l.emailSair || l.campanhas?.[CAMP_ID + 'Email']) continue;
     const e = String(l.email || '').trim().toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e) || vistos.has(e)) continue;
-    vistos.add(e); out.push({ id: l.id, nome: l.nome || '', email: e });
+    vistos.add(e); out.push({ id: l.id, nome: l.nome || '', email: e, nota: campNota(l) });
   }
-  return out;
+  return out.sort((a, b) => b.nota - a.nota); /* 27/11/2026: o Gmail só manda ~100/dia → fabricantes e quentes primeiro */
 }
 async function campanhaHtml() {
   const box = document.getElementById('campBox'); if (!box) return;
