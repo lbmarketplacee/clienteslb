@@ -14481,8 +14481,10 @@ async function migTitulo(texto,usados){
 /* baixa a foto com novas tentativas: o CDN da Shopee devolve 503/504 quando baixamos muitas seguidas (AQUARIOS 13/11/2026) */
 async function fotoCarregar(url){
   const base=String(url).replace(/^http:/,'https:'),id=(base.match(/\/file\/([^/?#]+)/)||[])[1];
-  const urls=[base,...(id&&/shopee|susercontent/.test(base)?[`https://down-br.img.susercontent.com/file/${id}`]:[]),base,base];let b=null,st='';
-  for(const [k,x] of urls.entries()){if(k>1)await new Promise(r=>setTimeout(r,2000*k));try{const r=await fetch(x);st=r.status;if(r.ok){const bl=await r.blob();if(/^image\//.test(bl.type)||bl.size>2000){b=bl;break;}}}catch(e){st=e.message;}}
+  /* 27/11/2026 (Moras TikTok→ML): o CDN do TikTok (ibyteimg) devolve 530 às vezes — mais tentativas com espera maior */
+  const tt=/ibyteimg|tiktokcdn/.test(base);
+  const urls=[base,...(id&&/shopee|susercontent/.test(base)?[`https://down-br.img.susercontent.com/file/${id}`]:[]),base,base,...(tt?[base,base,base]:[])];let b=null,st='';
+  for(const [k,x] of urls.entries()){if(k>1)await new Promise(r=>setTimeout(r,(tt?3000:2000)*k));try{const r=await fetch(x);st=r.status;if(r.ok){const bl=await r.blob();if(/^image\//.test(bl.type)||bl.size>2000){b=bl;break;}}}catch(e){st=e.message;}}
   if(!b)throw new Error(`foto não baixou (${st}): …${base.slice(-30)}`);const u=URL.createObjectURL(b);
   return new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>err(new Error('foto não abriu: …'+base.slice(-30)));i.src=u;});}
 async function migJpg(url){
