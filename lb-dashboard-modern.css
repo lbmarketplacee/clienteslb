@@ -28,8 +28,8 @@
   --bg-card-hover:#15151b;
 
   /* bordas */
-  --border-hair:rgba(255,255,255,0.08);
-  --border-hair-strong:rgba(255,255,255,0.14);
+  --border-hair:rgba(var(--tint,255,255,255),0.08);
+  --border-hair-strong:rgba(var(--tint,255,255,255),0.14);
   --border-accent:rgba(212,169,74,0.35);
 
   /* texto */
@@ -51,7 +51,7 @@
   --radius-sm:8px;
   --radius-md:12px;
   --radius-lg:16px;
-  --shadow-card:0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -12px rgba(0,0,0,0.6);
+  --shadow-card:0 1px 0 rgba(var(--tint,255,255,255),0.05) inset, 0 8px 24px -12px rgba(0,0,0,0.6);
 }
 
 /* ---------- 3. BASE DA PÁGINA ---------- */
@@ -80,7 +80,7 @@ h1,h2,h3,.brand-title{
 
 /* ---------- 4. SIDEBAR ---------- */
 .sidebar{
-  background:linear-gradient(180deg, #0b0b0f, #08080b);
+  background:var(--side-grad,linear-gradient(180deg, #0b0b0f, #08080b));
   border-right:1px solid var(--border-hair);
 }
 
@@ -90,7 +90,7 @@ h1,h2,h3,.brand-title{
   transition:background .15s ease, color .15s ease, transform .15s ease;
 }
 .sidebar-item:hover{
-  background:rgba(255,255,255,0.04);
+  background:rgba(var(--tint,255,255,255),0.04);
   color:var(--text-primary);
   transform:translateX(2px);
 }
@@ -138,7 +138,7 @@ h1,h2,h3,.brand-title{
 
 /* ---------- 5. TOPO (botões Histórico, Migrar, Importar) ---------- */
 .topbar-btn{
-  background:rgba(255,255,255,0.03);
+  background:rgba(var(--tint,255,255,255),0.03);
   border:1px solid var(--border-hair);
   border-radius:var(--radius-sm);
   color:var(--text-primary);
@@ -146,7 +146,7 @@ h1,h2,h3,.brand-title{
 }
 .topbar-btn:hover{
   border-color:var(--border-hair-strong);
-  background:rgba(255,255,255,0.06);
+  background:rgba(var(--tint,255,255,255),0.06);
 }
 .topbar-btn.primary{
   background:linear-gradient(135deg,var(--gold-bright),var(--gold));
@@ -161,7 +161,7 @@ h1,h2,h3,.brand-title{
 
 .notif-bell{
   position:relative;
-  background:rgba(255,255,255,0.03);
+  background:rgba(var(--tint,255,255,255),0.03);
   border:1px solid var(--border-hair);
   border-radius:var(--radius-sm);
 }
@@ -181,7 +181,7 @@ h1,h2,h3,.brand-title{
    conforme a categoria do dado (não decorativo — mesma cor = mesma família de métrica) */
 .metric-card{
   position:relative;
-  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  background:var(--card-grad,linear-gradient(160deg, rgba(var(--tint,255,255,255),0.045), rgba(var(--tint,255,255,255),0.015)));
   border:1px solid var(--border-hair);
   border-radius:var(--radius-md);
   padding:18px 20px;
@@ -197,7 +197,7 @@ h1,h2,h3,.brand-title{
 .metric-card.glow-teal{ box-shadow:0 0 34px -10px rgba(79,214,196,0.24) inset, var(--shadow-card); }
 .metric-card.glow-purple{ box-shadow:0 0 34px -10px rgba(155,126,240,0.24) inset, var(--shadow-card); }
 .metric-card.glow-coral{ box-shadow:0 0 34px -10px rgba(240,114,90,0.24) inset, var(--shadow-card); }
-.metric-card.glow-neutral{ box-shadow:0 0 20px -10px rgba(255,255,255,0.08) inset, var(--shadow-card); }
+.metric-card.glow-neutral{ box-shadow:0 0 20px -10px rgba(var(--tint,255,255,255),0.08) inset, var(--shadow-card); }
 
 .metric-card.highlight{
   border-color:var(--border-accent);
@@ -248,7 +248,7 @@ h1,h2,h3,.brand-title{
 
 /* ---------- 7. GRÁFICO GMV ACUMULADO (linha) ---------- */
 .chart-card{
-  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  background:var(--card-grad,linear-gradient(160deg, rgba(var(--tint,255,255,255),0.045), rgba(var(--tint,255,255,255),0.015)));
   border:1px solid var(--border-hair);
   border-radius:var(--radius-lg);
   padding:22px 24px;
@@ -274,7 +274,7 @@ h1,h2,h3,.brand-title{
 
 /* ---------- 8. DONUT GMV POR MARKETPLACE ---------- */
 .donut-card{
-  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  background:var(--card-grad,linear-gradient(160deg, rgba(var(--tint,255,255,255),0.045), rgba(var(--tint,255,255,255),0.015)));
   border:1px solid var(--border-hair);
   border-radius:var(--radius-lg);
   padding:22px 24px;
@@ -318,7 +318,7 @@ h1,h2,h3,.brand-title{
 .kpi-row:last-child{ border-bottom:none; }
 .kpi-icon{
   width:32px;height:32px;border-radius:8px;
-  background:rgba(255,255,255,0.04);
+  background:rgba(var(--tint,255,255,255),0.04);
   border:1px solid var(--border-hair);
   display:flex;align-items:center;justify-content:center;
   color:var(--text-secondary);
@@ -328,7 +328,7 @@ h1,h2,h3,.brand-title{
 
 /* ---------- 10. BUSCA E FILTROS DE CLIENTE ---------- */
 .search-input{
-  background:rgba(255,255,255,0.03);
+  background:rgba(var(--tint,255,255,255),0.03);
   border:1px solid var(--border-hair);
   border-radius:var(--radius-sm);
   color:var(--text-primary);
@@ -341,7 +341,7 @@ h1,h2,h3,.brand-title{
 }
 
 .filter-chip{
-  background:rgba(255,255,255,0.03);
+  background:rgba(var(--tint,255,255,255),0.03);
   border:1px solid var(--border-hair);
   border-radius:100px;
   color:var(--text-secondary);
@@ -386,7 +386,7 @@ h1,h2,h3,.brand-title{
   transition:background .12s ease;
 }
 .data-table tbody tr:hover{
-  background:rgba(255,255,255,0.025);
+  background:rgba(var(--tint,255,255,255),0.025);
 }
 
 /* badge de marketplace dentro da tabela */
@@ -409,3 +409,11 @@ h1,h2,h3,.brand-title{
 .page-enter{
   animation:lb-fade-up .4s ease both;
 }
+
+/* ===== Tema claro (27/11/2026): só vale com data-theme="light" no <html> ===== */
+html[data-theme="light"]{--gold:#a8812f;--gold-bright:#8a6a24;--gold-dim:#b8975a;--bg-page:#f6f4ef;--bg-page-glow-1:transparent;--bg-page-glow-2:transparent;--bg-card:#ffffff;--bg-card-2:#faf8f3;--bg-card-hover:#faf7f0;--border-hair:#e6e1d6;--border-hair-strong:#d6cdbb;--border-accent:#a8812f66;--text-primary:#1d1b17;--text-secondary:#6f685c;--text-muted:#8f887b;--purple:#6d4fd6;--purple-bright:#5b3fc4;--teal:#17877b;--teal-bright:#127066;--coral:#c4472f;--amber:#a86b0c;--green:#2e8049;--red:#c0392b;--shadow-card:0 1px 2px rgba(30,25,15,.05),0 2px 8px rgba(30,25,15,.04);--card-grad:#ffffff;--side-grad:#ffffff}
+html[data-theme="light"] .welcome-title{background:none!important;-webkit-background-clip:border-box;background-clip:border-box;color:var(--text-primary)!important;-webkit-text-fill-color:var(--text-primary)}
+html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] .brand-title,html[data-theme="light"] .welcome-title{font-family:Inter,system-ui,sans-serif!important;text-transform:none!important;letter-spacing:-.01em!important}
+html[data-theme="light"] .metric-card[class*="glow-"]{box-shadow:var(--shadow-card)}
+html[data-theme="light"] .metric-icon{box-shadow:none!important}
+html[data-theme="light"] .metric-value{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--text-primary)}
