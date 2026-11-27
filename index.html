@@ -1368,6 +1368,23 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
 .fin-barra{height:10px;border-radius:99px;background:#ffffff14;overflow:hidden;margin:4px 0 6px}.fin-barra i{display:block;height:100%;background:#10b981}
 .fin-alerta{border:1px solid #ef444466;background:#ef444412;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 @media(max-width:700px){.fin-fluxo{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* 27/11/2026: Financeiro LB sóbrio — cartões neutros, números na cor do texto, vermelho/verde só no sinal, dourado só no destaque */
+#page-dre .fin-abas button.on{background:transparent;color:var(--text);border-color:var(--gold);box-shadow:inset 0 -2px 0 var(--gold)}
+#page-dre .fin-abas button span{background:var(--text-dim);color:var(--bg,#111)}
+#page-dre .fin-fluxo>div,#page-dre .cv-card{border-color:var(--border)!important;background:rgba(255,255,255,.015);border-radius:10px}
+#page-dre .fin-fluxo b,#page-dre .cv-card .cv-letra{color:var(--text)!important;font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:22px!important;letter-spacing:-.3px}
+#page-dre .fin-fluxo small,#page-dre .cv-sub{text-transform:none;font-size:11.5px}
+#page-dre .fin-fluxo>div:first-child b{color:var(--gold)!important}
+#page-dre .fin-barra i{background:var(--gold)}
+#page-dre .fin-alerta{border-color:var(--border);background:rgba(255,255,255,.02)}
+#page-dre details summary{color:var(--text)!important;font-weight:600}
+#page-dre .cv-val b[style],#page-dre .cm-item b[style]{color:var(--text)!important}
+#page-dre .fin-neg{color:#d46b6b!important}#page-dre .fin-pos{color:#7fb894!important}
+#page-dre .cm-secao{border-color:var(--border)}
+.fcm-tab{width:100%;border-collapse:collapse;font-size:13px}.fcm-tab th{text-align:left;font-weight:600;color:var(--text-dim);font-size:11.5px;padding:8px 10px;border-bottom:1px solid var(--border)}.fcm-tab td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}.fcm-tab td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fcm-st{font-size:11.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--border);color:var(--text-dim);white-space:nowrap}.fcm-st.pago{color:var(--text);border-color:var(--gold)}
+.fcm-pess{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:0 0 16px}.fcm-pess>div{border:1px solid var(--border);border-radius:10px;padding:12px 14px}.fcm-pess small{display:block;color:var(--text-dim);font-size:11.5px}.fcm-pess b{font-size:20px;font-weight:700}
+.fcm-form{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:10px 0}.fcm-form label{font-size:11.5px;color:var(--text-dim);display:flex;flex-direction:column;gap:4px}.fcm-form input,.fcm-form select{background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:inherit;min-width:120px}
 .cv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
 .cv-card{border:1px solid;border-radius:12px;padding:12px 14px;cursor:pointer}
 .cv-letra{font-family:Oswald,sans-serif;font-size:22px;font-weight:600}.cv-num{font-weight:600;font-size:14px}.cv-sub{font-size:12px;color:var(--text-dim);margin-top:2px}
@@ -2562,10 +2579,11 @@ body.modo-conexao .sub-grupo:not(:first-child){display:none!important}
             <button class="btn btn-gold btn-sm" onclick="window.__dreAtualizar()">Atualizar</button>
           </div>
         </div>
-        <div class="fin-abas" id="finAbas"><button type="button" data-fintab="resumo" class="on">Resumo do mês</button><button type="button" data-fintab="deve">Quem deve <span id="finAbaDeveN"></span></button><button type="button" data-fintab="custos">Custos</button><button type="button" data-fintab="contrato">Contrato</button></div>
+        <div class="fin-abas" id="finAbas"><button type="button" data-fintab="resumo" class="on">Resumo do mês</button><button type="button" data-fintab="deve">Quem deve <span id="finAbaDeveN"></span></button><button type="button" data-fintab="custos">Custos</button><button type="button" data-fintab="comissoes">Comissões</button><button type="button" data-fintab="contrato">Contrato</button></div>
         <div class="fin-sec" data-finsec="resumo"><div id="finLB"></div></div>
         <div class="fin-sec hidden" data-finsec="deve"><div id="finConcWrap"></div><div id="finProx7"></div><div class="panel hidden" id="dashCobrancas" style="margin:18px 0 0"></div></div>
         <div class="fin-sec hidden" data-finsec="custos"><div id="finCustosWrap"></div></div>
+        <div class="fin-sec hidden" data-finsec="comissoes"><div id="finComWrap"><div class="empty-state" style="padding:16px">Carregando…</div></div></div>
         <div class="fin-antigo hidden">
         <div class="sgmv-summary">
           <div class="summary-card metric-card glow-teal"><div class="sc-top"><div class="sc-icon green metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="sc-label">Recebido<br>(no Asaas)</div></div></div><div class="sc-value green metric-value" id="dreReceita">R$ 0</div></div>
@@ -5402,7 +5420,7 @@ let finCustos=[];
 function finLucroHtml(r){
   const L=r.lucro,c=r.lucroCfg||{};
   const campo=(id,rot,val,dica)=>`<label style="flex:1;min-width:170px;font-size:12px;color:var(--text-dim)">${rot}<input id="${id}" value="${val==null?'':lbFmtValorBR(val)}" inputmode="decimal" placeholder="${dica||''}" style="display:block;width:100%;margin-top:4px;background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:inherit"></label>`;
-  const corV=v=>v>=0?'#10b981':'#ef4444';
+  const corV=v=>v>=0?'var(--text)':'#d46b6b';
   return `<div class="cm-secao"><h3 style="margin-bottom:6px">Lucro real do mês</h3><p style="font-size:12px;color:var(--text-dim);margin:0 0 10px">Parte do dinheiro que entrou de verdade, não da mensalidade cadastrada. Sem valor digitado, usa o recebido no Asaas.</p>
     <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px">${campo('finRecebido','Entrou no mês (todas as contas)',c.recebidoInformado,'usa o Asaas')}${campo('finComissoes','Comissões do mês',c.comissoes)}${campo('finRetirada','Sua retirada por mês',c.retirada)}<button class="btn btn-gold btn-sm" onclick="window.__finLucroSalvar()">Salvar</button></div>
     ${L?`<div class="fin-fluxo"><div><small>Entrou</small><b>${fmtR(L.recebido)}</b><small>${c.recebidoInformado!=null?'informado':'recebido no Asaas'}</small></div><div style="border-color:#ef444466"><small>Gastos</small><b style="color:#ef4444">${fmtR(L.custos+L.comissoes)}</b><small>custos ${fmtR(L.custos)} · comissões ${fmtR(L.comissoes)}</small></div><div><small>Lucro líquido</small><b style="color:${corV(L.liquido)}">${fmtR(L.liquido)}</b><small>${L.margem!=null?`margem ${String(L.margem).replace('.',',')}%`:''}</small></div><div style="border-color:${corV(L.livre)}66"><small>Lucro livre</small><b style="color:${corV(L.livre)}">${fmtR(L.livre)}</b><small>depois da retirada ${fmtR(L.retirada)} e da reserva ${fmtR(L.reserva)} (${L.reservaPct}%)</small></div></div>`:'<div class="empty-state" style="padding:12px">Informe quanto entrou no mês.</div>'}</div>`;
@@ -5420,8 +5438,9 @@ async function finRender(){
   try{
     const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'financeiro_lb',mes:mesIn?.value})})).json();
     if(!r.ok)throw new Error(r.erro);
+    window.__finUltimo=r;
     finCustos=r.custos.itens.filter(i=>!i.automatico).map(i=>({...i}));
-    const cor=r.resultado>=0?'#10b981':'#ef4444';
+    const cor=r.resultado>=0?'var(--text)':'#d46b6b';
     const card=(rot,val,sub,c)=>`<div class="cv-card" style="border-color:${c||'var(--border)'}"><div class="cv-sub">${rot}</div><div class="cv-letra" style="font-size:24px;color:${c||'inherit'}">${val}</div><div class="cv-sub">${sub||''}</div></div>`;
     const prev=r.receitaPrevista||0,rec=r.recebidoAsaas||0,pct=prev?Math.min(100,Math.round(rec/prev*100)):0;
     el.innerHTML=`<div id="finAlerta"></div>
@@ -5474,6 +5493,7 @@ window.__finAba=(k)=>{
   document.querySelectorAll('#finAbas button').forEach(b=>b.classList.toggle('on',b.dataset.fintab===k));
   document.querySelectorAll('#page-dre .fin-sec').forEach(s=>s.classList.toggle('hidden',s.dataset.finsec!==k));
   try{localStorage.setItem('finAba',k);}catch(e){}
+  if(k==='comissoes')finComRender();
 };
 document.getElementById('finAbas')?.addEventListener('click',e=>{const b=e.target.closest('button[data-fintab]');if(b)window.__finAba(b.dataset.fintab);});
 try{const k=localStorage.getItem('finAba');if(k&&k!=='resumo')setTimeout(()=>window.__finAba(k),0);}catch(e){}
@@ -5490,8 +5510,73 @@ window.__finSalvar=async()=>{
   try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'custos_salvar',custos:lista})})).json();if(!r.ok)throw new Error(r.erro);showToast('Custos salvos.');finRender();}
   catch(e){showToast('Erro ao salvar: '+e.message);}
 };
+/* ===== Comissões (27/11/2026, Lincoln: "controle de comissões pagas dos closers, SDR e da Carol") =====
+   financeiroLB/comissoes {regras} + financeiroLB/comissoes/lancamentos/{id} {mes, email, nome, papel, ref, leadId, valor, status pendente|pago, pagoEm, criadoEm}
+   "Buscar fechamentos do CRM": closer = quem fez a reunião (reuniaoMarcada.com) ou o dono do lead; SDR = quem trouxe o lead (dono inicial/anterior = SDR). */
+const FCM_PESSOAS=[{email:'guilherme@lbmarketplace.com.br',nome:'Guilherme',papel:'closer'},{email:'duda@lbmarketplace.com.br',nome:'Duda',papel:'closer'},{email:'suporte@lbmarketplace.com.br',nome:'Lídia',papel:'sdr'},{email:'caroline@lbmarketplace.com.br',nome:'Carol',papel:'gestao'}];
+const FCM_PAPEL={closer:'Closer',sdr:'SDR',gestao:'Gestão',outro:'Outro'};
+const FCM_SDR=['suporte@lbmarketplace.com.br','isalbmarketplace@gmail.com'];
+let fcm={regras:{closer:500,sdr:0,carolFixo:0},lanc:[]};
+const fcmRef=()=>doc(db,'financeiroLB','comissoes');
+async function finComRender(){
+  const el=document.getElementById('finComWrap');if(!el)return;
+  const mes=document.getElementById('dreMesInput')?.value||new Date(Date.now()-3*3600000).toISOString().slice(0,7);
+  el.innerHTML='<div class="empty-state" style="padding:16px">Carregando…</div>';
+  try{
+    const r=await getDoc(fcmRef());fcm.regras={...fcm.regras,...(r.exists()?r.data().regras||{}:{})};
+    const q=await getDocs(query(collection(db,'financeiroLB','comissoes','lancamentos'),where('mes','==',mes)));
+    fcm.lanc=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')||String(a.ref||'').localeCompare(String(b.ref||'')));
+  }catch(e){el.innerHTML=`<div class="empty-state" style="padding:16px">Não consegui ler as comissões: ${esc(e.message)}</div>`;return;}
+  const [ano,m]=mes.split('-');const nomeMes=new Date(+ano,+m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const tot=fcm.lanc.reduce((a,x)=>{a.total+=x.valor||0;if(x.status==='pago')a.pago+=x.valor||0;return a;},{total:0,pago:0});
+  const porPessoa={};for(const x of fcm.lanc){const k=x.email||x.nome;porPessoa[k]=porPessoa[k]||{nome:x.nome,papel:x.papel,total:0,pago:0,n:0};porPessoa[k].total+=x.valor||0;porPessoa[k].n++;if(x.status==='pago')porPessoa[k].pago+=x.valor||0;}
+  const opPess=FCM_PESSOAS.map(p=>`<option value="${p.email}">${p.nome} (${FCM_PAPEL[p.papel]})</option>`).join('')+'<option value="">Outra pessoa…</option>';
+  el.innerHTML=`<div class="cm-secao">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:12px"><h3 style="margin:0">Comissões de ${esc(nomeMes)}</h3><span style="font-size:12.5px;color:var(--text-dim)">total ${fmtR(tot.total)} · pago ${fmtR(tot.pago)} · <b style="color:var(--text)">a pagar ${fmtR(tot.total-tot.pago)}</b></span>
+      <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="window.__fcmCrm()">Buscar fechamentos do CRM</button><button class="btn btn-ghost btn-sm" onclick="window.__fcmLucro()">Levar o pago pro Lucro do mês</button></span></div>
+    <div class="fcm-pess">${Object.values(porPessoa).map(p=>`<div><small>${esc(p.nome)} · ${FCM_PAPEL[p.papel]||''}</small><b>${fmtR(p.total)}</b><small>${p.n} lançamento(s) · pago ${fmtR(p.pago)} · falta ${fmtR(p.total-p.pago)}</small></div>`).join('')||'<div style="grid-column:1/-1;color:var(--text-dim);font-size:13px">Nenhum lançamento neste mês. Use "Buscar fechamentos do CRM" ou lance à mão abaixo.</div>'}</div>
+    ${fcm.lanc.length?`<div style="overflow-x:auto"><table class="fcm-tab"><thead><tr><th>Pessoa</th><th>Função</th><th>Referência</th><th class="n">Valor</th><th>Situação</th><th></th></tr></thead><tbody>${fcm.lanc.map(x=>`<tr><td>${esc(x.nome||'')}</td><td>${FCM_PAPEL[x.papel]||esc(x.papel||'')}</td><td>${esc(x.ref||'')}</td><td class="n">${fmtR(x.valor||0)}</td><td>${x.status==='pago'?`<span class="fcm-st pago">pago ${x.pagoEm?String(x.pagoEm).split('-').reverse().join('/'):''}</span>`:'<span class="fcm-st">a pagar</span>'}</td><td class="n">${x.status==='pago'?`<button class="btn btn-ghost btn-sm" onclick="window.__fcmPago('${x.id}',false)">Desfazer</button>`:`<button class="btn btn-gold btn-sm" onclick="window.__fcmPago('${x.id}',true)">Marcar pago</button>`} <button class="btn btn-ghost btn-sm" title="Excluir" onclick="window.__fcmDel('${x.id}')">✕</button></td></tr>`).join('')}</tbody></table></div>`:''}
+    <h4 style="margin:18px 0 4px;font-size:13px">Lançar à mão</h4>
+    <div class="fcm-form"><label>Pessoa<select id="fcmPessoa" onchange="document.getElementById('fcmOutro').style.display=this.value?'none':''">${opPess}</select></label><label id="fcmOutro" style="display:none">Nome<input id="fcmNome" placeholder="Nome"></label><label>Referência<input id="fcmRef" placeholder="Ex.: fechamento Loja X, bônus, comissão do ERP"></label><label>Valor (R$)<input id="fcmValor" inputmode="decimal" placeholder="500,00" style="min-width:100px"></label><button class="btn btn-gold btn-sm" onclick="window.__fcmAdd()">Lançar</button></div>
+  </div>
+  <div class="cm-secao" style="margin-top:14px"><h3 style="margin-bottom:6px">Regras</h3><p style="font-size:12px;color:var(--text-dim);margin:0 0 6px">Usadas no "Buscar fechamentos do CRM". Valor zero = não gera lançamento.</p>
+    <div class="fcm-form"><label>Closer — por fechamento (R$)<input id="fcmRegCloser" inputmode="decimal" value="${lbFmtValorBR(fcm.regras.closer||0)}"></label><label>SDR — por fechamento que ela trouxe (R$)<input id="fcmRegSdr" inputmode="decimal" value="${lbFmtValorBR(fcm.regras.sdr||0)}"></label><label>Carol — valor fixo no mês (R$)<input id="fcmRegCarol" inputmode="decimal" value="${lbFmtValorBR(fcm.regras.carolFixo||0)}"></label><button class="btn btn-ghost btn-sm" onclick="window.__fcmRegras()">Salvar regras</button></div>
+    <p style="font-size:11.5px;color:var(--text-dim);margin:4px 0 0">Os 30% da Carol no ERP já caem sozinhos na carteira dela pelo split do Asaas — não entram aqui.</p></div>`;
+}
+window.__fcmRegras=async()=>{const v=id=>lbValorBR(document.getElementById(id)?.value||'0')||0;fcm.regras={closer:v('fcmRegCloser'),sdr:v('fcmRegSdr'),carolFixo:v('fcmRegCarol')};try{await setDoc(fcmRef(),{regras:fcm.regras,atualizadoEm:Date.now(),por:currentEmail},{merge:true});showToast('Regras salvas.');}catch(e){showToast('Erro: '+e.message);}};
+window.__fcmAdd=async()=>{
+  const mes=document.getElementById('dreMesInput')?.value;const em=document.getElementById('fcmPessoa').value;const p=FCM_PESSOAS.find(x=>x.email===em);
+  const nome=p?p.nome:document.getElementById('fcmNome').value.trim();const valor=lbValorBR(document.getElementById('fcmValor').value||'0');const ref=document.getElementById('fcmRef').value.trim();
+  if(!nome||!(valor>0)){showToast('Escolha a pessoa e o valor.');return;}
+  try{await addDoc(collection(db,'financeiroLB','comissoes','lancamentos'),{mes,email:em||null,nome,papel:p?.papel||'outro',ref,valor,status:'pendente',criadoEm:Date.now(),por:currentEmail,origem:'manual'});finComRender();}catch(e){showToast('Erro: '+e.message);}
+};
+window.__fcmPago=async(id,pago)=>{try{await updateDoc(doc(db,'financeiroLB','comissoes','lancamentos',id),pago?{status:'pago',pagoEm:new Date(Date.now()-3*3600000).toISOString().slice(0,10),pagoPor:currentEmail}:{status:'pendente',pagoEm:null});finComRender();}catch(e){showToast('Erro: '+e.message);}};
+window.__fcmDel=async(id)=>{if(!await lbConfirmar('Excluir esse lançamento de comissão?'))return;try{await deleteDoc(doc(db,'financeiroLB','comissoes','lancamentos',id));finComRender();}catch(e){showToast('Erro: '+e.message);}};
+window.__fcmCrm=async()=>{
+  const mes=document.getElementById('dreMesInput')?.value;const R=fcm.regras;
+  try{
+    const s=await getDocs(query(collection(db,'crmLeads'),where('stage','==','fechado')));
+    const ms=v=>v?.toMillis?v.toMillis():(v?.seconds?v.seconds*1000:Date.parse(v||''));
+    const doMes=s.docs.map(d=>({id:d.id,...d.data()})).filter(l=>{const t=ms(l.fechadoEm);return t&&new Date(t-3*3600000).toISOString().slice(0,7)===mes;});
+    const novos=[];
+    for(const l of doMes){
+      const closer=String(l.reuniaoMarcada?.com||l.donoEmail||'').toLowerCase();const pc=FCM_PESSOAS.find(x=>x.email===closer);
+      if(pc&&R.closer>0)novos.push({id:`${mes}_${l.id}_closer`,email:pc.email,nome:pc.nome,papel:'closer',ref:`Fechou ${l.nome||'lead'}${l.valorContrato?` (${fmtR(l.valorContrato)}/mês)`:''}`,leadId:l.id,valor:R.closer});
+      const sdr=[l.donoInicial,l.donoAnterior].map(x=>String(x||'').toLowerCase()).find(x=>FCM_SDR.includes(x))||(/l[ií]dia|isa\b/i.test(String(l.reuniaoMarcada?.por||''))?'suporte@lbmarketplace.com.br':'');
+      if(sdr&&R.sdr>0)novos.push({id:`${mes}_${l.id}_sdr`,email:'suporte@lbmarketplace.com.br',nome:'Lídia',papel:'sdr',ref:`Trouxe ${l.nome||'lead'} (fechou)`,leadId:l.id,valor:R.sdr});
+    }
+    if(R.carolFixo>0)novos.push({id:`${mes}_carol_fixo`,email:'caroline@lbmarketplace.com.br',nome:'Carol',papel:'gestao',ref:'Comissão fixa do mês',valor:R.carolFixo});
+    const ja=new Set(fcm.lanc.map(x=>x.id));const add=novos.filter(x=>!ja.has(x.id));
+    for(const x of add){const {id,...d}=x;await setDoc(doc(db,'financeiroLB','comissoes','lancamentos',id),{...d,mes,status:'pendente',criadoEm:Date.now(),por:currentEmail,origem:'crm'});}
+    showToast(add.length?`${add.length} comissão(ões) lançada(s) a partir de ${doMes.length} fechamento(s).`:`Nada novo: ${doMes.length} fechamento(s) no mês, já lançados.`);finComRender();
+  }catch(e){showToast('Erro: '+e.message);}
+};
+window.__fcmLucro=async()=>{
+  const pago=fcm.lanc.filter(x=>x.status==='pago').reduce((a,x)=>a+(x.valor||0),0);const u=window.__finUltimo?.lucroCfg||{};
+  try{const r=await (await fetch('https://lb-shopee-gmv.vercel.app/api/agentes',{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify({acao:'lucro_salvar',mes:document.getElementById('dreMesInput')?.value,recebido:u.recebidoInformado==null?'':u.recebidoInformado,comissoes:pago,retirada:u.retirada||0})})).json();if(!r.ok)throw new Error(r.erro);showToast(`Lucro do mês atualizado com ${fmtR(pago)} de comissões pagas.`);finRender();}catch(e){showToast('Erro: '+e.message);}
+};
 document.querySelector('.nav-item[data-page="dre"]')?.addEventListener('click',()=>setTimeout(()=>{finRender();const m=document.getElementById('dreMesInput');if(m?.value)window.__dreAtualizar?.();},150));
-document.getElementById('dreMesInput')?.addEventListener('change',()=>finRender());
+document.getElementById('dreMesInput')?.addEventListener('change',()=>{finRender();if(!document.querySelector('[data-finsec="comissoes"]')?.classList.contains('hidden'))finComRender();});
 /* ================= JORNADA DO CLIENTE (13/10/2026, Lincoln: "tipo Notion — quem faz o quê e em que etapa") =================
    Coleção jornadas/{id} {clienteId, nome, tipo:'entrada'|'saida', itens:{k:{st:'ok'|'na', por, em, obs}}, criadoEm, criadoPor, concluida}.
    Modelo fixo em JR_ETAPAS (responsáveis decididos pelo Lincoln). Item: pendente → feito (✓) → não se aplica (—) → pendente. */
