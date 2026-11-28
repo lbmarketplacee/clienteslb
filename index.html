@@ -6765,7 +6765,7 @@ function ljAf(c){if(!lj.af||lj.af.id!==c.id)lj.af={id:c.id};return lj.af;}
 function ljAfHtml(c){const A=ljAf(c);const con=!!c.tiktokAfShopCipher;
   const prods=(lj.prod?.linhas||[]).filter(l=>l.tt).map(l=>`<option value="${esc(l.tt.id)}">${esc(String(l.tt.titulo||l.nome).slice(0,70))}</option>`).join('');
   const R=A.r;
-  const corpo=!con?`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>Afiliados ainda não conectados nesta loja</b><small>É uma autorização à parte (app LB MARKETPLACE Afiliados). Entre na conta TikTok Seller DESTA loja e aceite.</small></span><button class="btn btn-gold btn-sm" onclick="window.__ljAfConectar()">Conectar afiliados</button></div>`
+  const corpo=!con?`<div class="lj-alerta at"><span class="lj-dot at"></span><span><b>Afiliados ainda não conectados nesta loja</b><small>É uma autorização à parte (app LB MARKETPLACE Afiliados). Conecte em Central de Marketing → TikTok → Conexão e GMV (botão Afiliados), com a conta TikTok Seller DESTA loja.</small></span><button class="btn btn-gold btn-sm" onclick="window.__ljAfConectar()">Ir pra Conexão do TikTok</button></div>`
    :A.carregando?'<div class="lj-vazio" style="padding:14px"><div class="lj-spin"></div>Lendo planos e pedidos de afiliados…</div>'
    :A.erro?`<div class="lj-alerta ruim"><span class="lj-dot ruim"></span><span><b>Não deu pra ler</b><small>${esc(A.erro)}</small></span><button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Tentar de novo</button></div>`
    :!R?`<div class="lj-lin"><span class="lj-dot ok"></span><span><b>Conectado — ${esc(c.tiktokAfShopName||'')}</b><small>planos de afiliados, criadores e vendas por afiliado</small></span></div><button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Ver afiliados</button>`
@@ -6783,7 +6783,9 @@ function ljAfHtml(c){const A=ljAf(c);const con=!!c.tiktokAfShopCipher;
       <button class="btn btn-gold btn-sm" onclick="window.__ljAfCriar()" ${isLincoln()?'':'disabled title="Só Lincoln e Carol"'}>Pôr no plano</button>
       <button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Atualizar</button></div>`;
   return `<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>${mpIco('tiktok',18)} Afiliados do TikTok</h3><span class="p-sub">criadores divulgam os produtos com carrinho laranja e ganham comissão por venda</span></div>${corpo}</div>`;}
-window.__ljAfConectar=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;
+window.__ljAfConectar=()=>window.__irParaMarketing('tiktokshop','gmv');
+/* conexão do app de afiliados fica na lista de conexão do TikTok (Central de Marketing → TikTok → Conexão), igual ERP/Ads da Shopee (27/11/2026) */
+window.__ttAfConectar=async(id)=>{const c=(clientesCache||[]).find(x=>x.id===id);if(!c)return;
   try{const r=await (await fetch(`${LJ_AF_API}?acao=link&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);
     lbAvisar(`Vai abrir a autorização do TikTok.\n\nO navegador precisa estar logado na conta TikTok Seller da ${c.nome} (se estiver em outra loja, saia antes ou use janela anônima COM o sistema logado).`);window.open(r.url,'_blank');}catch(e){showToast('Erro: '+e.message);}};
 window.__ljAfLer=async()=>{const c=(clientesCache||[]).find(x=>x.id===lj.id);if(!c)return;const A=ljAf(c);A.carregando=true;A.erro=null;ljRender();
@@ -8411,6 +8413,7 @@ function ttGmvRenderizar(){
         <span style="font-size:13px;color:var(--text-dim)">GMV: ${fmtR(Number(c.tiktokGmv)||0)}</span>
         <button class="btn btn-ghost btn-sm cm-conectar" onclick="window.__tiktokAtualizarGmv('${c.id}')">${CM_ICO.reconectar} Atualizar GMV</button>
         <button class="btn btn-ghost btn-sm cm-conectar" title="Autorizar de novo (libera as permissões novas do app)" onclick="window.__tiktokConectar('${c.id}','${jsq(c.nome)}')">${CM_ICO.conectar} Reconectar</button>
+        ${cmApiSlot(!!c.tiktokAfShopCipher,'Afiliados',`window.__ttAfConectar('${c.id}')`)}
       </div>`;
   const linhaOff=c=>{
     const nomeEsc=jsq(c.nome);
