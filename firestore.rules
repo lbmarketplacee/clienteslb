@@ -24,6 +24,9 @@ service cloud.firestore {
     function gestorComercial() {
       return request.auth != null && request.auth.token.email in ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br', 'felipesoares@potencialmidia.com', 'duda@lbmarketplace.com.br'];
     }
+    function cofreLB() {
+      return request.auth != null && request.auth.token.email in ['lincoln@lbmarketplace.com.br', 'caroline@lbmarketplace.com.br', 'suporte@lbmarketplace.com.br'];
+    }
     function eu() { return request.auth.token.email; }
     // SDR (26/10/2026): a Isa fala com todos os leads — lê e atualiza os de qualquer dono, sem trocar o dono
     function sdrTodos() {
@@ -38,10 +41,14 @@ service cloud.firestore {
 
     // Tudo do sistema: equipe — MENOS financeiro, RH e gastos pessoais
     match /{colecao}/{resto=**} {
-      allow read, write: if equipe() && !(colecao in ['financeiroLB', 'colaboradoras', 'gastosFixos', 'gastosHistorico', 'lbMarketing', 'crmLeads', 'conteudoLB']);
+      allow read, write: if equipe() && !(colecao in ['financeiroLB', 'colaboradoras', 'gastosFixos', 'gastosHistorico', 'lbMarketing', 'crmLeads', 'conteudoLB', 'cofre', 'cofreAcessos', 'cofreLog']);
     }
     // Financeiro da LB e RH: só Lincoln e Carol
     match /financeiroLB/{resto=**} { allow read, write: if diretoria(); }
+    // Acessos dos clientes (27/11/2026): só Lincoln, Carol e Lídia. Senhas cifradas com a senha-mestra; cofreLog = quem viu (não se apaga)
+    match /cofre/{resto=**} { allow read: if cofreLB(); allow write: if diretoria(); }
+    match /cofreAcessos/{resto=**} { allow read, write: if cofreLB(); }
+    match /cofreLog/{id} { allow create: if cofreLB(); allow read: if diretoria(); }
     match /colaboradoras/{resto=**} { allow read, write: if diretoria(); }
     match /lbMarketing/{resto=**} { allow read, write: if diretoria(); }
     // Calendário editorial da LB (19/11/2026): vem do sistema da Potencial pelo servidor; a equipe só lê

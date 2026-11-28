@@ -1340,7 +1340,7 @@ body.modo-portal .nav-item:not([data-page="marketing"]){display:none!important}
 body.modo-comercial .nav-item:not([data-page="centralcom"]),body.modo-comercial .nav-grupo-cab,body.modo-comercial #notifBtn,body.modo-comercial .topbar-actions{display:none!important}
 body.modo-comercial .nav-grupo-itens{display:flex!important;flex-direction:column}
 /* 29/10/2026 (Lincoln): Conversas WhatsApp e Comercial & Marketing moram na Central Comercial (/comercial.html) */
-.nav-item[data-page="whatsapp"],.nav-item[data-page="comercial"],.nav-item[data-page="desempenho"]{display:none!important}
+.nav-item[data-page="calendario"],.nav-item[data-page="checklisthub"]{display:none!important} /* 27/11/2026: viraram abas de Minha rotina e Jornada */
 body.modo-portal .cm-tool-card:not([data-cmtab="mercadolivre"]),body.modo-portal .cm-produtos-destaque,body.modo-portal #notifBtn,body.modo-portal .topbar-actions{display:none!important}
 body.modo-portal .ml-subtab-btn:not([data-mlsub="gmv"]):not([data-mlsub="ads"]):not([data-mlsub="qualidade"]){display:none!important}
 body.modo-portal [onclick*="__mlAbrirCupomConfig"]{display:none!important}
@@ -1902,23 +1902,20 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
     <nav class="nav-section">
       <button class="nav-item sidebar-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</button>
 
-      <button class="nav-item sidebar-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minhas Tarefas</button>
+      <button class="nav-item sidebar-item" data-page="tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Minha rotina</button>
       <button class="nav-item sidebar-item" data-page="calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Calendário da LB</button>
       <button class="nav-item sidebar-item" data-page="loja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/><path d="M10 20v-4h4v4"/></svg> Central da Loja <span class="lj-novo">novo</span></button>
       <button class="nav-item sidebar-item" data-page="jornada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="19" cy="15" r="3"/></svg> Jornada do cliente</button>
       <button class="nav-item sidebar-item" data-page="marketing" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Central de Marketing<span class="nav-pend" id="mktNavBadge" title="Pedidos de produto novos"></span></button>
       <button class="nav-item sidebar-item" data-page="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Clientes</button>
-      <button class="nav-item sidebar-item" data-page="desempenho" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg> Desempenho</button>
       <button class="nav-item sidebar-item hidden" id="navCentralCom" onclick="window.open('/comercial.html','_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Central Comercial</button>
-      <button class="nav-item sidebar-item" data-page="whatsapp" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Conversas WhatsApp<span id="waNavBadge" style="display:none;position:absolute;top:6px;right:10px;background:#25D366;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;align-items:center;justify-content:center;line-height:1"></span></button>
       <button class="nav-item sidebar-item" data-page="cadastros" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Cadastros<span class="nav-pend" id="cadNavBadge"></span></button>
+      <button class="nav-item sidebar-item hidden" data-page="acessos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Acessos dos clientes</button>
       <button class="nav-item sidebar-item" data-page="calculadora"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg> Calculadora</button>
       <button class="nav-item sidebar-item" data-page="checklisthub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Checklist</button>
       <button class="nav-item sidebar-item" data-page="reunioes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/></svg> Reuniões</button>
       <button class="nav-item sidebar-item" data-page="links"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Links Úteis</button>
       
-      <button class="nav-item sidebar-item locked" data-page="comercial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Comercial &amp; Marketing 🔒</button>
-      <button class="nav-item sidebar-item locked hidden" data-page="rh" id="navRhBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Financeiro RH 🔒</button>
       <button class="nav-item sidebar-item locked hidden" data-page="dre" id="navDreBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> Financeiro LB 🔒</button>
       <button class="nav-item sidebar-item locked hidden" data-page="lbmk" id="navLbmkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.9H22l-6 4.4 2.3 7-6.3-4.5L5.7 20.3 8 13.3 2 8.9h7.6z"/></svg> LB Marketing 🔒</button>
       
@@ -2072,153 +2069,9 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
         </div>
       </div>
       <!-- ===== PÁGINA: DESEMPENHO ===== -->
-      <div class="page" id="page-desempenho">
-        <div class="page-head">
-          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Desempenho</h2><p class="page-sub">Evolução de GMV e Ads.</p></div>
-        </div>
-        <div class="perf-cards">
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sc-label">GMV Total<br>Registrado</div></div><div class="sc-value green" id="perfGmvTotal">R$ 0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div><div class="sc-label">Total Gasto<br>em Ads</div></div><div class="sc-value" style="color:var(--amber)" id="perfAdsTotal">R$ 0</div></div>
-          <div class="summary-card"><div class="sc-top"><div class="sc-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="sc-label">Meses com<br>Dados</div></div><div class="sc-value" style="color:var(--gold)" id="perfMeses">0</div></div>
-        </div>
-        <div class="chart-wrap"><div class="panel-head"><h3 style="color:var(--gold);font-family:'Oswald',sans-serif;font-size:20px;text-transform:none">Evolução de GMV Mensal</h3></div><canvas id="gmvChart" style="max-height:280px;"></canvas></div>
-        <div class="perf-table-wrap">
-          <table class="perf-table">
-            <thead><tr><th>Mês</th><th>GMV Total</th><th>Ads Total</th><th>ROI Ads</th><th>Clientes</th><th>Variação</th></tr></thead>
-            <tbody id="perfTableBody"></tbody>
-          </table>
-        </div>
-      </div>
       <!-- ===== PÁGINA: CONTRATOS ===== -->
-      <div class="page" id="page-contratos">
-        <div class="page-head">
-          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Contratos</h2><p class="page-sub">Indicações e aprovações.</p></div>
-        </div>
-        <div class="commission-grid">
-          <div class="commission-card"><div class="cc-name">Lincoln</div><div class="cc-ring"><div class="cc-count" id="ccLincoln">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos este mês</div></div>
-          <div class="commission-card"><div class="cc-name">Guilherme</div><div class="cc-ring"><div class="cc-count" id="ccGuilherme">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos indicados</div></div>
-          <div class="commission-card"><div class="cc-name">Caroline</div><div class="cc-ring"><div class="cc-count" id="ccCaroline">0</div></div><svg class="cc-spark" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,16 20,14 40,15 60,8 80,10 100,3" fill="none" stroke="var(--gold)" stroke-width="2"/></svg><div class="cc-label">contratos indicados</div></div>
-        </div>
-        <div style="display:flex;justify-content:flex-end;margin-bottom:20px;"><button class="btn btn-gold btn-sm" id="openNovoContratoBtn">+ Propor Novo Contrato</button></div>
-                <div class="contratos-section"><h3>Aguardando Aprovação</h3><div id="contratosPendentes"><div class="empty-state" style="padding:20px">Nenhum pendente.</div></div></div>
-        <div class="contratos-section"><h3>Aprovados</h3><div id="contratosAprovados"><div class="empty-state" style="padding:20px">Nenhum aprovado ainda.</div></div></div>
-        <div class="contratos-section"><h3>Reprovados</h3><div id="contratosReprovados"><div class="empty-state" style="padding:20px">Nenhum reprovado.</div></div></div>
-        
-      </div>
       <!-- ===== PÁGINA: CADASTROS RECEBIDOS ===== -->
-            <div class="page" id="page-whatsapp">
-        <div class="page-head">
-          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Conversas WhatsApp</h2><p class="page-sub">Leads e clientes separados: em Leads a IA responde as primeiras mensagens; em Clientes ficam as respostas aos avisos (saldo do Ads, cobrança, resumo).</p></div>
-        </div>
 
-        <div class="wa-crm-wrap">
-          <div class="wa-crm-list">
-            <div class="wa-crm-list-top">
-              <input type="text" id="waBusca" placeholder="Buscar nome, telefone ou mensagem..." style="padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px" oninput="window.__waRenderizarComFiltro()">
-              <div class="wa-tipo-tabs" id="waTipoTabs" role="tablist" aria-label="Tipo de conversa">
-                <button type="button" class="wa-tipo-tab active" data-watipo="lead" onclick="window.__waFiltrarTipo('lead')">Leads <b id="waTipoQtdLead"></b></button>
-                <button type="button" class="wa-tipo-tab" data-watipo="cliente" onclick="window.__waFiltrarTipo('cliente')">Clientes <b id="waTipoQtdCliente"></b></button>
-                <button type="button" class="wa-tipo-tab" data-watipo="todas" onclick="window.__waFiltrarTipo('todas')">Todas</button>
-              </div>
-              <div class="wa-fila" id="waFila">
-                <button type="button" class="on" data-wafila="abertas" onclick="window.__waFila('abertas')">Abertas</button>
-                <button type="button" data-wafila="responder" onclick="window.__waFila('responder')">Responder <b id="waFilaResp"></b></button>
-                <button type="button" data-wafila="minhas" onclick="window.__waFila('minhas')">Minhas</button>
-                <button type="button" data-wafila="semdono" onclick="window.__waFila('semdono')">Sem dono</button>
-                <button type="button" data-wafila="resolvidas" onclick="window.__waFila('resolvidas')">Resolvidas</button>
-              </div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap" id="waFiltroModo">
-                <button class="btn btn-gold btn-sm wa-filtro-btn active" data-wafiltro="todas" onclick="window.__waFiltrarModo('todas')">Todas</button>
-                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="aguardando_humano" onclick="window.__waFiltrarModo('aguardando_humano')">Aguardando <span id="waContadorPendentes" class="tt-status-pill atrasada" style="margin-left:2px">0</span></button>
-                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="auto" onclick="window.__waFiltrarModo('auto')">IA</button>
-                <button class="btn btn-ghost btn-sm wa-filtro-btn" data-wafiltro="humano" onclick="window.__waFiltrarModo('humano')">Você</button>
-              </div>
-              <select onchange="window.__waFiltrarPeriodo(this.value)" style="font-size:11.5px;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
-                <option value="all">Última msg: todas</option>
-                <option value="hoje">Hoje</option>
-                <option value="ontem">Ontem</option>
-                <option value="7dias">Últimos 7 dias</option>
-                <option value="30dias">Últimos 30 dias</option>
-              </select>
-              <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim);cursor:pointer">
-                <input type="checkbox" id="waEsconderNaoQualificado" onchange="window.__waRenderizarComFiltro()"> Esconder "Não qualificado"
-              </label>
-            </div>
-            <div class="wa-crm-list-scroll" id="whatsappConversasLista"><div class="empty-state" style="padding:20px">Nenhuma conversa ainda.</div></div>
-          </div>
-          <div class="wa-crm-chat">
-            <div class="wa-crm-chat-empty" id="waChatEmpty">👈 Selecione uma conversa pra começar</div>
-            <div id="waChatAtiva" class="hidden" style="display:none;flex-direction:column;height:100%">
-              <div class="wa-crm-chat-header">
-                <div class="wa-avatar" id="waChatAvatar">?</div>
-                <div class="wa-crm-chat-header-info">
-                  <div class="wa-crm-chat-nome" id="waChatNome">Conversa</div>
-                  <div class="wa-crm-chat-sub" id="waModalTelefone"></div>
-                </div>
-                <span class="tt-status-pill" id="waModalModoBadge"></span>
-                <select id="waChatQualifSelect" onchange="window.__waSalvarQualificacaoAtiva(this.value)" style="font-size:12px;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
-                  <option value="">Não avaliado</option>
-                  <option value="qualificado">Qualificado</option>
-                  <option value="nao_qualificado">Não qualificado</option>
-                  <option value="cliente">Virou cliente</option>
-                </select>
-                <select id="waChatDono" class="wa-dono-sel" title="Dono da conversa" onchange="window.__waDefinirDono(this.value)"></select>
-                <button class="btn btn-ghost btn-sm" id="waResolverBtn" onclick="window.__waResolver()" title="Marcar como resolvida (volta sozinha se o contato escrever de novo)">Resolver</button>
-                <button class="btn btn-ghost btn-sm" onclick="window.__waVirarTarefa()" title="Criar uma tarefa pra equipe a partir desta conversa">Virar tarefa</button>
-                <button class="btn btn-ghost btn-sm" id="waFichaBtn" onclick="window.__waFichaAlternar()" title="Mostrar/esconder a ficha do contato">Ficha</button>
-                <button class="icon-act" onclick="window.__waFecharChat()" aria-label="Fechar" title="Fechar conversa">✕</button>
-              </div>
-              <div id="waModalMensagens" class="wa-crm-chat-body"></div>
-              <div class="wa-janela-aviso hidden" id="waJanelaAviso">
-                <span>Fora da janela de 24h: o WhatsApp só deixa enviar <b>template aprovado</b> até o lead responder.</span>
-                <button class="btn btn-gold btn-sm" onclick="window.__waTemplateAbrir()">Enviar template</button>
-              </div>
-              <div class="wa-crm-chat-input">
-                <div class="wa-rr-wrap">
-                  <button class="wa-rr-btn" id="waRRBtn" title="Respostas rápidas (ou digite / )" onclick="window.__waRRAlternar()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></button>
-                  <div class="wa-rr-painel hidden" id="waRRPainel"></div>
-                </div>
-                <button class="wa-ico-btn" title="Mandar foto, PDF, áudio ou vídeo" onclick="document.getElementById('waArquivo').click()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
-                <input type="file" id="waArquivo" class="hidden" accept="image/*,application/pdf,audio/*,video/mp4,.doc,.docx,.xls,.xlsx,.csv,.txt" onchange="window.__waAnexo(this)">
-                <button class="wa-ico-btn" id="waNotaBtn" title="Nota interna (o contato não vê)" onclick="window.__waModoNota()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></button>
-                <textarea id="waModalTexto" rows="1" placeholder="Mensagem · / respostas rápidas · Shift+Enter pula linha"></textarea>
-                <button class="wa-ico-btn wa-ia-btn" id="waSugerirBtn" title="A IA escreve a resposta (o que estiver digitado vira o pedido, ex.: chama pra reunião amanhã)" onclick="window.__waSugerir()">✨</button>
-                <button class="wa-ico-btn" title="Agendar esta mensagem" onclick="window.__waAgendar()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
-                <button class="wa-crm-send-btn" id="waModalEnviarBtn" title="Enviar">➤</button>
-              </div>
-              <div style="padding:0 14px 12px">
-                <button class="btn btn-ghost btn-sm" id="waModalAssumirBtn" style="width:100%">Assumir Conversa (para a IA)</button>
-              </div>
-            </div>
-          </div>
-          <aside class="wa-ficha hidden" id="waFicha"></aside>
-        </div>
-      </div>
-
-      <div class="page" id="page-centralcom">
-        <div class="cc-hero">
-          <div class="cc-hero-esq"><div class="cc-selo"><i></i> AO VIVO</div><h2>Central Comercial</h2><p id="ccOla">Olá</p></div>
-          <div class="cc-meta" id="ccMeta"></div>
-        </div>
-        <div class="cc-kpis" id="ccKpis"></div>
-        <div class="cc-tabs">
-          <button class="cc-tab on" data-cc="fila" onclick="window.__ccAba('fila')"><b>Fila do dia</b><span>quem chamar agora</span><i data-n="fila"></i></button>
-          <button class="cc-tab" data-cc="conversas" onclick="window.__ccAba('conversas')"><b>Conversas</b><span>WhatsApp da LB</span><i data-n="conversas"></i></button>
-          <button class="cc-tab" data-cc="funil" onclick="window.__ccAba('funil')"><b>Funil</b><span>CRM de leads</span></button>
-          <button class="cc-tab" data-cc="agenda" onclick="window.__ccAba('agenda')"><b>Agenda</b><span>reuniões da semana</span></button>
-          <button class="cc-tab" data-cc="placar" onclick="window.__ccAba('placar')"><b>Placar</b><span>metas e ranking</span></button>
-          <button class="cc-tab" data-cc="marketing" onclick="window.__ccAba('marketing')"><b>Marketing</b><span>tráfego e diário</span></button>
-        </div>
-        <div class="cc-pane on" data-cc="fila"><div class="cc-escopo"><button data-v="meu" onclick="window.__ccEscopo('meu')">Meus leads</button><button data-v="todos" onclick="window.__ccEscopo('todos')">Todos</button></div><div id="ccFila"></div></div>
-        <div class="cc-pane" data-cc="conversas" id="ccPaneConversas"></div>
-        <div class="cc-pane" data-cc="funil" id="ccPaneFunil"></div>
-        <div class="cc-pane" data-cc="agenda"><div id="ccAgenda"></div></div>
-        <div class="cc-pane" data-cc="placar"><div id="ccPlacar"></div></div>
-        <div class="cc-pane" data-cc="marketing" id="ccPaneMarketing"></div>
-      </div>
 
       <div class="page" id="page-cadastros">
         <div class="page-head">
@@ -2568,33 +2421,6 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
           <div class="security-banner-emblem">LB</div>
         </div>
       </div>
-      <div class="page" id="page-comercial">
-        <div class="page-head">
-          <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-          <div class="page-head-text"><h2 class="page-title">Comercial &amp; Marketing <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Acompanhamento diário de tráfego, funil e vendas — acesso exclusivo Lincoln e Gestor.</p></div>
-        </div>
-        <div class="brd-app">
-  <div class="brd-tabs">
-    <button class="brd-tab active" id="brd-tab-marketing" onclick="brdSwitchBoard('marketing')">Marketing</button>
-    <button class="brd-tab" id="brd-tab-comercial" onclick="brdSwitchBoard('comercial')">Comercial</button>
-    <button class="brd-tab" id="brd-tab-trafego" onclick="brdSwitchBoard('trafego')">Tráfego Meta (ao vivo)</button>
-    <button class="brd-tab" id="brd-tab-crm" onclick="brdSwitchBoard('crm')">CRM de Leads</button>
-  </div>
-  <div id="brd-board-marketing" class="brd-board active"></div>
-  <div id="brd-board-comercial" class="brd-board com"></div>
-  <div id="board-crm" class="brd-board crm"></div>
-  <div id="brd-board-trafego" class="brd-board"><p style="font-size:12.5px;color:var(--text-dim);margin:0 0 10px">Conta CA 01 - LB Marketplace A/M, lida direto da Meta · cruzada com o CRM e com os clientes marcados com origem "Meta Ads". Mudanças nos anúncios só com aprovação no Escritório.</p><div class="cat-filtros" id="mtPeriodos"></div><div id="mtCorpo"></div></div>
-</div>
-
-      </div>
-      <div class="page" id="page-rh">
-  <div class="page-head">
-    <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-    <div class="page-head-text"><h2 class="page-title">Financeiro RH <span class="com-lock-badge">🔒 Restrito</span></h2><p class="page-sub">Salários, faltas, férias e décimo terceiro — pagamento via Asaas.</p></div>
-    <button class="btn btn-gold btn-sm" style="margin-left:auto" onclick="window.__rhNovaColaboradora()">+ Colaboradora</button>
-  </div>
-  <div id="rhLista"></div>
-</div>
 
 <div class="modal-overlay hidden" id="rhModalOverlay">
   <div class="modal" style="max-width:480px">
@@ -3312,6 +3138,7 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
   <div id="jrCorpo"><div class="empty-state" style="padding:20px">Carregando…</div></div>
   <div id="jrDet"></div>
 </div>
+<div class="page" id="page-acessos"><div id="acRoot"></div></div>
 <div class="page" id="page-tarefas">
         <div class="page-head">
           <div class="page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
@@ -4018,7 +3845,7 @@ function abrirPaginaDaUrl(){
   if(pg==='perguntas'){window.__irParaMarketing('perguntas');return;}
   if(pg==='caleditorial'){window.__irParaMarketing('caleditorial');return;} /* 27/11/2026: saiu do menu, mora na Central de Marketing */
   const btn=[...document.querySelectorAll('.nav-item')].find(b=>b.dataset.page===pg);
-  if(btn&&!btn.classList.contains('hidden')&&btn.offsetParent!==null)btn.click();
+  if(btn&&(['calendario','checklisthub'].includes(pg)||(!btn.classList.contains('hidden')&&btn.offsetParent!==null)))btn.click();
 }
 let unsubC=null,unsubG=null,unsubCt=null;
 // Portal do cliente: e-mail da cliente → o cadastro dela. Ela só vê o card do Mercado Livre da própria loja
@@ -4060,14 +3887,14 @@ function atualizarTopbar(pg){
   ver('openMigBtn',pg==='clientes'&&isLincoln());
   ver('importInitialBtn',pg==='clientes'&&isLincoln());
 }
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(['whatsapp','comercial','crm'].includes(b.dataset.page)){try{whatsappIniciar();}catch(e){}}if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;try{window.__ccAoNavegar(pg);}catch(e){}document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minhas Tarefas','Seu quadro pessoal de tarefas.'],calendario:['Calendário da LB','Rotinas fixas da operação, dias de escritório e datas do varejo.'],caleditorial:['Calendário editorial','Posts da LB feitos pela gerente de marketing no sistema da Potencial — aqui a equipe acompanha.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],centralcom:['Central Comercial','Fila do dia, conversas, funil, agenda e placar — tudo do comercial num lugar só.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser;document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='calendario')clbIniciar();if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{if(['whatsapp','comercial','crm'].includes(b.dataset.page)){try{whatsappIniciar();}catch(e){}}if(b.dataset.page){history.replaceState(null,'','#'+b.dataset.page);atualizarTopbar(b.dataset.page);}document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');const pg=b.dataset.page;try{window.__ccAoNavegar(pg);}catch(e){}document.getElementById('page-'+pg).classList.add('active');const titles={dashboard:['Bem-vindo de volta, '+currentUser+'! 👋','Aqui está o resumo geral da sua operação.'],clientes:['Clientes','Sua carteira completa.'],desempenho:['Desempenho','Evolução de GMV e Ads.'],contratos:['Contratos','Indicações e aprovações.'],cadastros:['Cadastros Recebidos','Cadastros do link público de onboarding.'],calculadora:['Calculadora','Precificação interna.'],checklisthub:['Checklist','Acompanhe as etapas de configuração das lojas.'],links:['Links Úteis','Links oficiais da LB.'],reunioes:['Reuniões','Grave qualquer reunião — a IA faz a ata.'],comercial:['Comercial & Marketing','Painel restrito de KPIs diários.'],loja:['Central da Loja','Tudo de um cliente num lugar só: vendas, estrutura, promoções e o que pede atenção.'],jornada:['Jornada do cliente','Do contrato à operação: em que etapa cada cliente está e quem faz o quê.'],tarefas:['Minha rotina','Suas tarefas e o calendário da LB.'],acessos:['Acessos dos clientes','Logins e senhas das lojas — só Lincoln, Carol e Lídia. Quem vê fica registrado.'],calendario:['Calendário da LB','Rotinas fixas da operação, dias de escritório e datas do varejo.'],caleditorial:['Calendário editorial','Posts da LB feitos pela gerente de marketing no sistema da Potencial — aqui a equipe acompanha.'],gastos:['Gastos Mensais','Custos fixos e histórico de pagamentos.'],marketing:['Central de Marketing','Ofertas, descontos, cupons e devoluções — tudo em um lugar.'],rh:['Financeiro RH','Salários, faltas, férias e décimo terceiro.'],lbmk:['LB Marketing','Agência de marketing com equipe de IA — separada da LB Marketplace.'],dre:['Financeiro LB','Quanto entra, quanto sai e quanto sobra — só Lincoln e Carol.'],whatsapp:['Conversas WhatsApp','Leads que entraram em contato pelo WhatsApp da LB.'],centralcom:['Central Comercial','Fila do dia, conversas, funil, agenda e placar — tudo do comercial num lugar só.'],perguntas:['Perguntas ML','Perguntas dos compradores no Mercado Livre — a IA escreve a resposta, a equipe confere e envia.']};if(pg==='dashboard'){document.getElementById('welcomeBox').style.display='';document.getElementById('welcomeTitle').innerHTML='Bem-vindo de volta, '+currentUser;document.getElementById('welcomeSub').textContent='Aqui está o resumo geral da sua operação.';}else{document.getElementById('welcomeBox').style.display='none';document.getElementById('welcomeTitle').textContent=titles[pg][0];document.getElementById('welcomeSub').textContent=titles[pg][1];}if(pg==='desempenho')renderPerformanceTab();if(pg==='contratos')renderContratosTab();if(pg==='dashboard')renderDashCharts();if(pg==='comercial')brdIniciar();if(pg==='rh')rhIniciar();if(pg==='lbmk')lbmkIniciar();if(pg==='jornada')jrIniciar();if(pg==='calendario')clbIniciar();if(pg==='acessos'){try{window.__acIniciar();}catch(e){console.error(e);}}if(pg==='loja')ljIniciar();if(pg==='whatsapp')whatsappIniciar();if(pg==='reunioes')rgIniciar();window.scrollTo(0,0);fecharMenuMobile();}));
 
 // ===== Menu agrupado (15/10/2026, Lincoln: "muita coisa na esquerda") — só REAGRUPA os botões que já existem (cliques,
 // permissões e telas continuam iguais); grupo some se nenhum item dele estiver liberado pra pessoa. Estado aberto/fechado no localStorage.
 const NAV_GRUPOS=[
-  {id:'clientes',rot:'Clientes',depois:'loja',ico:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',itens:[['clientes','Carteira'],['jornada','Jornada do cliente'],['cadastros','Cadastros recebidos']]} /* 03/11/2026: Desempenho saiu do menu (Lincoln) */,
-  {id:'ferramentas',rot:'Ferramentas',depois:'whatsapp',ico:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',itens:[['calculadora','Calculadora'],['checklisthub','Checklist'],['links','Links Úteis'],['reunioes','Reuniões']]},
-  {id:'restrita',rot:'Área restrita',depois:null,ico:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',itens:[['comercial','Comercial & Marketing'],['rh','Financeiro RH'],['dre','Financeiro LB'],['lbmk','LB Marketing']]},
+  {id:'clientes',rot:'Clientes',depois:'loja',ico:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',itens:[['clientes','Carteira'],['loja','Central da Loja'],['jornada','Jornada do cliente'],['cadastros','Cadastros recebidos'],['acessos','Acessos dos clientes']]} /* 03/11/2026: Desempenho saiu do menu (Lincoln) */,
+  {id:'ferramentas',rot:'Ferramentas',depois:'whatsapp',ico:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',itens:[['calculadora','Calculadora'],['reunioes','Reuniões'],['links','Links Úteis']]},
+  {id:'restrita',rot:'Área restrita',depois:null,ico:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',itens:[['dre','Financeiro LB'],['lbmk','LB Marketing']]},
 ];
 function navMontarGrupos(){
   const nav=document.querySelector('.nav-item[data-page="dashboard"]')?.parentElement;if(!nav||nav.dataset.agrupado)return;nav.dataset.agrupado='1';
@@ -4082,8 +3909,8 @@ function navMontarGrupos(){
     box.querySelector('.nav-grupo-cab').addEventListener('click',()=>{box.classList.toggle('aberto');aberto[g.id]=box.classList.contains('aberto');try{localStorage.setItem('navGrupos',JSON.stringify(aberto));}catch(e){}});
   }
   // ordem: Dashboard · Tarefas · Central da Loja · [Clientes] · Todas as lojas · Conversas · [Ferramentas] · [Área restrita]
-  const ordem=['dashboard','tarefas','calendario','loja','#clientes','marketing','whatsapp','#ferramentas','#restrita'];
-  for(const k of ordem){const el=k[0]==='#'?nav.querySelector(`.nav-grupo[data-grupo="${k.slice(1)}"]`):nav.querySelector(`:scope > .nav-item[data-page="${k}"]`);if(el)nav.appendChild(el);}
+  const ordem=['dashboard','tarefas','#clientes','marketing','@navCentralCom','#ferramentas','#restrita','calendario','checklisthub']; /* 27/11/2026: menu enxuto (Lincoln) */
+  for(const k of ordem){const el=k[0]==='@'?document.getElementById(k.slice(1)):k[0]==='#'?nav.querySelector(`.nav-grupo[data-grupo="${k.slice(1)}"]`):nav.querySelector(`:scope > .nav-item[data-page="${k}"]`);if(el)nav.appendChild(el);}
   navGruposAtualizar();new MutationObserver(navGruposAtualizar).observe(nav,{subtree:true,attributes:true,attributeFilter:['class','style']});
 }
 function navGruposAtualizar(){
@@ -4092,6 +3919,20 @@ function navGruposAtualizar(){
     const sumir=!vis.length;if(g.style.display!==(sumir?'none':''))g.style.display=sumir?'none':'';
     const ativo=itens.some(b=>b.classList.contains('active'));g.classList.toggle('tem-ativo',ativo);if(ativo&&!g.classList.contains('aberto'))g.classList.add('aberto');});}
 navMontarGrupos();
+
+/* ===== Abas dentro de uma tela (27/11/2026, menu enxuto): Minha rotina = Tarefas + Calendário da LB; Jornada = Jornada + Checklist.
+   Os botões do menu de Calendário e Checklist continuam no DOM (escondidos) e são clicados pelas abas, então tudo funciona igual. */
+const PG_ABAS=[{pai:'tarefas',abas:[['tarefas','Tarefas'],['calendario','Calendário da LB']]},{pai:'jornada',abas:[['jornada','Jornada do cliente'],['checklisthub','Checklist das lojas']]}];
+function pgAbasMontar(){for(const g of PG_ABAS){for(const [pg] of g.abas){const page=document.getElementById('page-'+pg);if(!page||page.querySelector(':scope > .pg-abas'))continue;const bar=document.createElement('div');bar.className='pg-abas';bar.innerHTML=g.abas.map(([a,r])=>`<button type="button" class="pg-aba${a===pg?' on':''}" data-alvo="${a}">${r}</button>`).join('');bar.addEventListener('click',e=>{const b=e.target.closest('[data-alvo]');if(!b||b.classList.contains('on'))return;document.querySelector(`.nav-item[data-page="${b.dataset.alvo}"]`)?.click();});page.prepend(bar);}
+  for(const [pg] of g.abas){if(pg===g.pai)continue;document.querySelector(`.nav-item[data-page="${pg}"]`)?.addEventListener('click',()=>{document.querySelector(`.nav-item[data-page="${g.pai}"]`)?.classList.add('active');try{navGruposAtualizar();}catch(e){}});}}}
+pgAbasMontar();
+/* ===== Central de Marketing em blocos (27/11/2026) — só reordena os cartões e põe um título por bloco; título some se nenhum cartão do bloco aparece */
+const CM_BLOCOS=[['Marketplaces',['shopee','mercadolivre','perguntas','tiktokshop','shein']],['Produtos e criação',['criarprodutos','decoracao','diretor']],['Pós-venda e relatórios',['devolucao','relatorio']],['Da LB',['caleditorial','escritorio','whatsapp']]];
+function cmBlocosMontar(){const g=document.getElementById('cmCardGrid');if(!g||g.dataset.blocos)return;g.dataset.blocos='1';const cards=[...g.querySelectorAll(':scope > .cm-tool-card')];const usados=new Set();
+  for(const [tit,tabs] of CM_BLOCOS){const h=document.createElement('div');h.className='cm-bloco-tit';h.textContent=tit;g.appendChild(h);for(const t of tabs){const c=cards.find(x=>x.dataset.cmtab===t);if(c){g.appendChild(c);usados.add(c);}}}
+  cards.filter(c=>!usados.has(c)).forEach(c=>g.appendChild(c));cmBlocosAtualizar();new MutationObserver(cmBlocosAtualizar).observe(g,{subtree:true,attributes:true,attributeFilter:['class','style']});}
+function cmBlocosAtualizar(){document.querySelectorAll('#cmCardGrid > .cm-bloco-tit').forEach(h=>{let n=h.nextElementSibling,vis=false;while(n&&!n.classList.contains('cm-bloco-tit')){if(getComputedStyle(n).display!=='none'){vis=true;break;}n=n.nextElementSibling;}const d=vis?'':'none';if(h.style.display!==d)h.style.display=d;});}
+cmBlocosMontar();
 
 /* ===== PERGUNTAS DO ML (20/10/2026) — a Claude escreve o rascunho, a equipe confere e envia ===== */
 const PQ_API='https://lb-shopee-gmv.vercel.app/api/perguntas-ml';
@@ -4242,9 +4083,9 @@ function perfMesesAuto(){
 function gmvPorMes(){const byMes={};gmvCache.forEach(g=>{if(!byMes[g.mes])byMes[g.mes]={gmv:0,ads:0,clients:new Set(),mp:null};byMes[g.mes].gmv+=Number(g.gmv)||0;byMes[g.mes].ads+=Number(g.gastoAds)||0;byMes[g.mes].clients.add(g.clienteId);});
 for(const [mes,porCli] of Object.entries(perfMesesAuto())){const b=(byMes[mes]||={gmv:0,ads:0,clients:new Set(),mp:null});for(const [cid,v] of Object.entries(porCli)){if(b.clients.has(cid))continue;const t=v.shopee+v.tiktok+v.ml;if(!t&&!v.ads)continue;b.gmv+=t;b.ads+=v.ads||0;b.clients.add(cid);b.mp=b.mp||{shopee:0,tiktok:0,ml:0};b.mp.shopee+=v.shopee;b.mp.tiktok+=v.tiktok;b.mp.ml+=v.ml;b.auto=true;}}
 return byMes;}
-function renderPerformanceTab(){const byMes=gmvPorMes();const meses=Object.keys(byMes).sort();const gt=Object.values(byMes).reduce((a,m)=>a+m.gmv,0);const at=Object.values(byMes).reduce((a,m)=>a+m.ads,0);animateTo(document.getElementById('perfGmvTotal'),gt,v=>fmtR(v));animateTo(document.getElementById('perfAdsTotal'),at,v=>fmtR(v));animateTo(document.getElementById('perfMeses'),meses.length,v=>Math.round(v));const el=document.getElementById('gmvChart');if(!el)return;const ctx=el.getContext('2d');if(gmvChart)gmvChart.destroy();gmvChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(fmtMes),datasets:[{label:'GMV',data:meses.map(m=>byMes[m].gmv),backgroundColor:'rgba(92,184,138,0.7)',borderColor:'#5cb88a',borderWidth:1.5,borderRadius:6},{label:'Gasto Ads',data:meses.map(m=>byMes[m].ads),backgroundColor:'rgba(224,163,82,0.65)',borderColor:'#e0a352',borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#a8a39a',font:{family:'Inter',size:12}}}},scales:{x:{ticks:{color:'#a8a39a'},grid:{color:'#2a261c'}},y:{ticks:{color:'#a8a39a',callback:v=>fmtR(v)},grid:{color:'#2a261c'}}}}});const tbody=document.getElementById('perfTableBody');if(!meses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">Nenhum dado registrado ainda.</td></tr>';return;}tbody.innerHTML=meses.slice().reverse().map((m,i,arr)=>{const d=byMes[m];const roi=d.ads>0?(d.gmv/d.ads).toFixed(1)+'x':'—';const prev=arr[i+1]?byMes[arr[i+1]]:null;let var_='—';const _h=new Date();const emAndamento=m===`${_h.getFullYear()}-${String(_h.getMonth()+1).padStart(2,'0')}`;if(emAndamento)var_='<span style="color:var(--text-dim);font-size:12px">mês em andamento</span>';else if(prev&&prev.gmv>0){const p=((d.gmv-prev.gmv)/prev.gmv*100).toFixed(1);var_=`<span class="${p>=0?'trend-up':'trend-down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span>`;}return`<tr><td><b>${fmtMes(m)}</b>${d.auto?'<div style="font-size:10.5px;color:var(--text-dim)">automático pelas APIs</div>':''}</td><td style="color:var(--green);font-weight:600">${fmtR(d.gmv)}${d.mp?`<div style="font-size:10.5px;color:var(--text-dim);font-weight:400">Shopee ${fmtR(d.mp.shopee)} · TikTok ${fmtR(d.mp.tiktok)} · ML ${fmtR(d.mp.ml)}</div>`:''}</td><td style="color:var(--amber)">${fmtR(d.ads)}</td><td>${roi}</td><td>${d.clients.size}</td><td>${var_}</td></tr>`;}).join('');}
+function renderPerformanceTab(){if(!document.getElementById('page-desempenho'))return;/* 27/11/2026: tela apagada */const byMes=gmvPorMes();const meses=Object.keys(byMes).sort();const gt=Object.values(byMes).reduce((a,m)=>a+m.gmv,0);const at=Object.values(byMes).reduce((a,m)=>a+m.ads,0);animateTo(document.getElementById('perfGmvTotal'),gt,v=>fmtR(v));animateTo(document.getElementById('perfAdsTotal'),at,v=>fmtR(v));animateTo(document.getElementById('perfMeses'),meses.length,v=>Math.round(v));const el=document.getElementById('gmvChart');if(!el)return;const ctx=el.getContext('2d');if(gmvChart)gmvChart.destroy();gmvChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(fmtMes),datasets:[{label:'GMV',data:meses.map(m=>byMes[m].gmv),backgroundColor:'rgba(92,184,138,0.7)',borderColor:'#5cb88a',borderWidth:1.5,borderRadius:6},{label:'Gasto Ads',data:meses.map(m=>byMes[m].ads),backgroundColor:'rgba(224,163,82,0.65)',borderColor:'#e0a352',borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#a8a39a',font:{family:'Inter',size:12}}}},scales:{x:{ticks:{color:'#a8a39a'},grid:{color:'#2a261c'}},y:{ticks:{color:'#a8a39a',callback:v=>fmtR(v)},grid:{color:'#2a261c'}}}}});const tbody=document.getElementById('perfTableBody');if(!meses.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">Nenhum dado registrado ainda.</td></tr>';return;}tbody.innerHTML=meses.slice().reverse().map((m,i,arr)=>{const d=byMes[m];const roi=d.ads>0?(d.gmv/d.ads).toFixed(1)+'x':'—';const prev=arr[i+1]?byMes[arr[i+1]]:null;let var_='—';const _h=new Date();const emAndamento=m===`${_h.getFullYear()}-${String(_h.getMonth()+1).padStart(2,'0')}`;if(emAndamento)var_='<span style="color:var(--text-dim);font-size:12px">mês em andamento</span>';else if(prev&&prev.gmv>0){const p=((d.gmv-prev.gmv)/prev.gmv*100).toFixed(1);var_=`<span class="${p>=0?'trend-up':'trend-down'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</span>`;}return`<tr><td><b>${fmtMes(m)}</b>${d.auto?'<div style="font-size:10.5px;color:var(--text-dim)">automático pelas APIs</div>':''}</td><td style="color:var(--green);font-weight:600">${fmtR(d.gmv)}${d.mp?`<div style="font-size:10.5px;color:var(--text-dim);font-weight:400">Shopee ${fmtR(d.mp.shopee)} · TikTok ${fmtR(d.mp.tiktok)} · ML ${fmtR(d.mp.ml)}</div>`:''}</td><td style="color:var(--amber)">${fmtR(d.ads)}</td><td>${roi}</td><td>${d.clients.size}</td><td>${var_}</td></tr>`;}).join('');}
 /* CONTRATOS */
-function renderContratosTab(){notifRecalcular();const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccGuilherme',aprovMes.filter(c=>c.indicadoPor==='Guilherme').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${jsq(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${jsq(c.nomeCliente)}')">✗ Reprovar</button>`:(c.status==='aprovado'?`<button class="icon-btn" onclick="window.__copiarDadosContrato('${c.id}')" title="Copiar dados pra gerar o contrato">Copiar dados</button>`:'');return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} em ${fmtMes(c.mes)}, ${dt}${c.obs?` — ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
+function renderContratosTab(){notifRecalcular();if(!document.getElementById('page-contratos'))return;/* 27/11/2026: tela apagada */const hoje=new Date();const ma=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;const aprov=contratosCache.filter(c=>c.status==='aprovado');const pend=contratosCache.filter(c=>c.status==='pendente');const reprov=contratosCache.filter(c=>c.status==='reprovado');const aprovMes=aprov.filter(c=>c.mes===ma);const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};setTxt('ccLincoln',aprovMes.filter(c=>c.indicadoPor==='Lincoln').length);setTxt('ccGuilherme',aprovMes.filter(c=>c.indicadoPor==='Guilherme').length);setTxt('ccCaroline',aprovMes.filter(c=>c.indicadoPor==='Caroline').length);const rCI=c=>{const dt=c.timestamp?new Date(c.timestamp.seconds*1000).toLocaleDateString('pt-BR'):'...';const sc={pendente:'st-pendente',aprovado:'st-aprovado',reprovado:'st-reprovado'}[c.status]||'';const sl={pendente:'Pendente',aprovado:'Aprovado',reprovado:'Reprovado'}[c.status]||'';const ac=c.status==='pendente'&&isLincoln()?`<button class="icon-btn success" onclick="window.__aprov('${c.id}','${jsq(c.nomeCliente)}')">✓ Aprovar</button><button class="icon-btn danger" onclick="window.__reprov('${c.id}','${jsq(c.nomeCliente)}')">✗ Reprovar</button>`:(c.status==='aprovado'?`<button class="icon-btn" onclick="window.__copiarDadosContrato('${c.id}')" title="Copiar dados pra gerar o contrato">Copiar dados</button>`:'');return`<div class="contrato-item"><span class="contrato-status ${sc}">${sl}</span><div class="ct-info"><div class="ct-nome">${esc(c.nomeCliente)}</div><div class="ct-meta">Indicado por ${c.indicadoPor} em ${fmtMes(c.mes)}, ${dt}${c.obs?` — ${esc(c.obs)}`:''}</div></div><div class="ct-actions">${ac}</div></div>`;};const setH=(id,arr,def)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.join(''):`<div class="empty-state" style="padding:20px">${def}</div>`;};setH('contratosPendentes',pend.map(rCI),'Nenhum pendente.');setH('contratosAprovados',aprov.slice(0,20).map(rCI),'Nenhum aprovado ainda.');setH('contratosReprovados',reprov.slice(0,10).map(rCI),'Nenhum reprovado.');}
 window.__copiarDadosContrato=(id)=>{
   const c=contratosCache.find(x=>x.id===id);
   if(!c){showToast('Contrato não encontrado.');return;}
@@ -4263,7 +4104,7 @@ Observações: ${c.obs||'—'}`;
 window.__aprov=async(id,nm)=>{if(!isLincoln()){showToast('Apenas Lincoln e Carol pode aprovar.');return;}try{await updateDoc(doc(db,"contratos",id),{status:'aprovado',aprovadoPor:currentUser,aprovadoEm:serverTimestamp()});showToast(`✅ Contrato de "${nm}" aprovado!`);}catch{showToast('Erro.');}};
 window.__reprov=async(id,nm)=>{if(!isLincoln()){showToast('Apenas Lincoln e Carol pode reprovar.');return;}try{await updateDoc(doc(db,"contratos",id),{status:'reprovado',reprovadoPor:currentUser,reprovadoEm:serverTimestamp()});showToast(`❌ Contrato de "${nm}" reprovado.`);}catch{showToast('Erro.');}};
 const contratoModalOverlay=document.getElementById('contratoModalOverlay');
-document.getElementById('openNovoContratoBtn').addEventListener('click',()=>{document.getElementById('ctNome').value='';document.getElementById('ctObs').value='';const h=new Date();document.getElementById('ctMes').value=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}`;contratoModalOverlay.classList.remove('hidden');});
+document.getElementById('openNovoContratoBtn')?.addEventListener('click',()=>{document.getElementById('ctNome').value='';document.getElementById('ctObs').value='';const h=new Date();document.getElementById('ctMes').value=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}`;contratoModalOverlay.classList.remove('hidden');});
 document.getElementById('cancelContratoModal').addEventListener('click',()=>contratoModalOverlay.classList.add('hidden'));
 document.getElementById('saveContratoBtn').addEventListener('click',async()=>{const n=document.getElementById('ctNome').value.trim();const m=document.getElementById('ctMes').value;const o=document.getElementById('ctObs').value.trim();if(!n){showToast('Informe o nome.');return;}if(!m){showToast('Informe o mês.');return;}try{await addDoc(collection(db,"contratos"),{nomeCliente:n,indicadoPor:currentUser,mes:m,obs:o,status:'pendente',timestamp:serverTimestamp()});showToast('Enviado para aprovação!');contratoModalOverlay.classList.add('hidden');}catch{showToast('Erro ao enviar.');}});
 /* IMPORTAR */
@@ -4321,6 +4162,74 @@ document.getElementById('openMigBtn')?.addEventListener('click',async()=>{if(!va
 const tot=migDados.reduce((a,d)=>a+d.rows.length,0);const ok=migDados.reduce((a,d)=>a+d.rows.filter(r=>r.ok).length,0);document.getElementById('migResumo').innerHTML=`<b>${migDados.length}</b> cliente(s) com <b>${tot}</b> acesso(s) encontrados, sendo <span class="mig-ok">${ok} completos</span> e <span class="mig-bad">${tot-ok} para conferir</span>`;migOverlay.classList.remove('hidden');});
 document.getElementById('migCancelBtn').addEventListener('click',()=>migOverlay.classList.add('hidden'));
 document.getElementById('migConfirmBtn').addEventListener('click',async()=>{if(!vaultKey){showToast('Cofre fechado.');return;}showToast('Gravando no cofre...');let n=0;for(const d of migDados){try{const rows=d.rows.map(r=>({plataforma:r.plataforma||'Acesso',email:r.email,senha:r.senha}));const blob=await cifrar(vaultKey,JSON.stringify(rows));await updateDoc(doc(db,"clientes",d.id),{acessosCof:blob});n++;}catch(e){console.error(e);}}await log('migracao','Migração','edição',`${n} cliente(s) migrados para o cofre por ${currentUser}.`);showToast(`🔐 ${n} cliente(s) migrados para o cofre!`);migOverlay.classList.add('hidden');});
+/* ===== ACESSOS DOS CLIENTES — cofre novo (27/11/2026, Lincoln: só Lincoln, Carol e Lídia) =====
+   Mesma senha-mestra e mesma cifra (AES-GCM). Grava em cofreAcessos/{clienteId} {blob, plataformas, atualizadoEm/Por}
+   (regra: só os 3). Formato do blob: {v:2, slots:{shopee:{login,senha,codigo,obs},...}, outros:[{nome,login,senha,codigo,obs}]}.
+   Lê o formato antigo (lista [{plataforma,email,senha}] em clientes.acessosCof) e, ao salvar, tira do cadastro do cliente.
+   Quem revela ou copia fica em cofreLog. Fecha sozinho depois de 15 min parado. */
+const COFRE_EMAILS=['lbgestaomarketplace@gmail.com','lincoln@lbmarketplace.com.br','caroline@lbmarketplace.com.br','suporte@lbmarketplace.com.br'];
+const podeCofre=()=>isLincoln()||COFRE_EMAILS.includes(String(currentEmail||'').toLowerCase());
+window.__podeCofre=()=>podeCofre();
+const AC_SLOTS=[['shopee','Shopee'],['ml','Mercado Livre'],['tiktok','TikTok Shop'],['shein','SHEIN'],['upseller','UpSeller'],['email','E-mail da loja']];
+const ac={cli:'',busca:'',dados:null,meta:{},lido:false,timer:null,obsAberta:false};
+function acSlotDe(p){const s=String(p||'').toLowerCase();if(s.includes('upseller'))return'upseller';if(s.includes('gmail')||s.includes('e-mail')||s.includes('email')||s.includes('hotmail')||s.includes('outlook'))return'email';return detectMp(p)||'';}
+function acDoAntigo(rows){const d={v:2,slots:{},outros:[]};(rows||[]).forEach(r=>{const k=acSlotDe(r.plataforma);const item={login:r.email||'',senha:r.senha||'',codigo:'',obs:''};if(k&&!d.slots[k])d.slots[k]=item;else d.outros.push({nome:r.plataforma||'Acesso',...item});});return d;}
+function acVazio(x){return !x||(!x.login&&!x.senha&&!x.codigo&&!x.obs);}
+function acPlataformas(d){const p=Object.keys(d.slots||{}).filter(k=>!acVazio(d.slots[k]));(d.outros||[]).forEach(o=>{if(!acVazio(o))p.push('outro');});return [...new Set(p)];}
+async function acCarregarMeta(){try{const s=await getDocs(collection(db,'cofreAcessos'));ac.meta={};s.forEach(d=>{ac.meta[d.id]=d.data();});ac.lido=true;}catch(e){console.warn('cofreAcessos',e);ac.lido='erro';}}
+function acPlatsCliente(c){const m=ac.meta[c.id];if(m&&m.plataformas)return m.plataformas;return null;}
+function acToque(){clearTimeout(ac.timer);ac.timer=setTimeout(()=>{vaultKey=null;ac.dados=null;showToast('Cofre fechado (15 min sem uso).');acRender();},15*60*1000);}
+async function acLog(acao,plataforma){try{const c=clientesCache.find(x=>x.id===ac.cli);await addDoc(collection(db,'cofreLog'),{acao,plataforma,clienteId:ac.cli,cliente:c?.nome||'',quem:currentUser,email:currentEmail,em:serverTimestamp()});}catch(e){console.warn('cofreLog',e);}}
+async function acAbrirCliente(id){ac.cli=id;ac.dados=null;ac.obsAberta=false;acRender();if(!vaultKey)return;const c=clientesCache.find(x=>x.id===id);let blob=null;try{const s=await getDoc(doc(db,'cofreAcessos',id));if(s.exists())blob=s.data().blob;}catch(e){}if(!blob&&c?.acessosCof)blob=c.acessosCof;let d={v:2,slots:{},outros:[]};if(blob){try{const j=JSON.parse(await decifrar(vaultKey,blob));d=Array.isArray(j)?acDoAntigo(j):{v:2,slots:j.slots||{},outros:j.outros||[]};}catch(e){showToast('Não foi possível ler os acessos deste cliente.');}}ac.dados=d;acToque();acRender();}
+function acLerForm(){const d={v:2,slots:{},outros:[]};document.querySelectorAll('#acForm [data-slot]').forEach(box=>{const g=n=>box.querySelector(`[data-f="${n}"]`)?.value.trim()||'';const item={login:g('login'),senha:g('senha'),codigo:g('codigo'),obs:g('obs')};const k=box.dataset.slot;if(k==='outro'){const nome=g('nome');if(nome||!acVazio(item))d.outros.push({nome:nome||'Acesso',...item});}else if(!acVazio(item))d.slots[k]=item;});return d;}
+async function acSalvar(){if(!vaultKey||!ac.cli)return;const d=acLerForm();const c=clientesCache.find(x=>x.id===ac.cli);try{const blob=await cifrar(vaultKey,JSON.stringify(d));const plataformas=acPlataformas(d);await setDoc(doc(db,'cofreAcessos',ac.cli),{blob,plataformas,cliente:c?.nome||'',atualizadoEm:serverTimestamp(),atualizadoPor:currentUser});ac.meta[ac.cli]={plataformas,atualizadoPor:currentUser,atualizadoEm:{toDate:()=>new Date()}};if(c?.acessosCof){try{await updateDoc(doc(db,'clientes',ac.cli),{acessosCof:deleteField()});}catch(e){}}await log(ac.cli,c?.nome||'','edição',`Acessos do cofre atualizados por ${currentUser}.`);ac.dados=d;acLog('salvou','');showToast('Acessos salvos.');acRender();}catch(e){console.error(e);showToast(String(e.code||'').includes('permission')?'O Firestore recusou: falta o Lincoln publicar a regra do cofre.':'Erro ao salvar acessos.');}}
+function acCampo(k,rot,x,ehOutro){x=x||{};const id='ac_'+k+'_'+Math.random().toString(36).slice(2,7);return `<div class="ac-slot${acVazio(x)?' vazio':''}" data-slot="${ehOutro?'outro':k}"><div class="ac-slot-cab">${ehOutro?`<input data-f="nome" class="ac-nome" placeholder="Nome (ex.: Shopee 2ª loja, Bling)" value="${esc(x.nome||'')}">`:`<span class="ac-slot-ico">${k==='upseller'||k==='email'?'':(MP_ICON[k]||'')}</span><b>${rot}</b>`}${ehOutro?'<button type="button" class="btn btn-ghost btn-sm" onclick="this.closest(\'.ac-slot\').remove()">Remover</button>':''}</div>
+<div class="ac-linha"><label>Login</label><input data-f="login" value="${esc(x.login||'')}" autocomplete="off" placeholder="e-mail ou usuário"><button type="button" class="btn btn-ghost btn-sm" onclick="window.__acCopiar(this,'login')">Copiar</button></div>
+<div class="ac-linha"><label>Senha</label><input data-f="senha" id="${id}" type="password" value="${esc(x.senha||'')}" autocomplete="new-password"><button type="button" class="btn btn-ghost btn-sm" onclick="window.__acVer(this,'${id}')">Ver</button><button type="button" class="btn btn-ghost btn-sm" onclick="window.__acCopiar(this,'senha')">Copiar</button></div>
+<div class="ac-linha"><label>Código vai pra</label><input data-f="codigo" value="${esc(x.codigo||'')}" placeholder="de quem é o celular/e-mail que recebe o código de 2 etapas"></div>
+<div class="ac-linha"><label>Obs.</label><input data-f="obs" value="${esc(x.obs||'')}" placeholder="opcional"></div></div>`;}
+function acNomeSlot(btn){const box=btn.closest('.ac-slot');if(box.dataset.slot==='outro')return box.querySelector('[data-f=nome]')?.value||'outro';return (AC_SLOTS.find(s=>s[0]===box.dataset.slot)||[0,box.dataset.slot])[1];}
+window.__acVer=(btn,id)=>{const i=document.getElementById(id);if(!i)return;const vai=i.type==='password';i.type=vai?'text':'password';btn.textContent=vai?'Esconder':'Ver';if(vai&&i.value)acLog('revelou senha',acNomeSlot(btn));acToque();};
+window.__acCopiar=async(btn,f)=>{const v=btn.closest('.ac-slot').querySelector(`[data-f="${f}"]`)?.value||'';if(!v){showToast('Está vazio.');return;}try{await navigator.clipboard.writeText(v);showToast('Copiado!');}catch{showToast('Não foi possível copiar.');}acLog('copiou '+f,acNomeSlot(btn));acToque();};
+window.__acOutro=()=>{const f=document.getElementById('acOutros');if(f)f.insertAdjacentHTML('beforeend',acCampo('outro','',{},true));};
+window.__acSalvar=()=>acSalvar();
+window.__acCli=id=>acAbrirCliente(id);
+window.__acBusca=v=>{ac.busca=v;acRenderLista();};
+window.__acFechar=()=>{vaultKey=null;ac.dados=null;clearTimeout(ac.timer);acRender();};
+window.__acAbrirCofre=async()=>{const senha=document.getElementById('acMestra')?.value||'';const msg=document.getElementById('acMsg');if(senha.length<6){msg.textContent='A senha-mestra tem pelo menos 6 caracteres.';return;}msg.textContent='Abrindo…';try{const cfg=await carregarCfg();if(!cfg){msg.textContent='Cofre ainda não criado.';return;}const k=await deriveKey(senha,cfg.salt);const ok=await decifrar(k,cfg.check).catch(()=>null);if(ok!=='LB_COFRE_OK'){msg.textContent='Senha-mestra incorreta.';return;}vaultKey=k;acToque();acLog('abriu o cofre','');if(ac.cli)acAbrirCliente(ac.cli);else acRender();}catch(e){msg.textContent='Erro ao abrir o cofre.';}};
+/* senhas soltas nas observações: traz pro formulário (sem salvar) e deixa limpar as observações à mão */
+window.__acTrazerObs=()=>{const c=clientesCache.find(x=>x.id===ac.cli);const rows=parseObs(c?.observacoes).filter(r=>r.email||r.senha);if(!rows.length){showToast('Nada reconhecido nas observações.');return;}const atual=acLerForm();const novo=acDoAntigo(rows);for(const k in novo.slots){if(acVazio(atual.slots[k]))atual.slots[k]=novo.slots[k];else atual.outros.push({nome:k,...novo.slots[k]});}atual.outros.push(...novo.outros);ac.dados=atual;acRender();showToast('Trazido pro formulário. Confira e clique em Salvar.');};
+window.__acObsEditar=()=>{ac.obsAberta=true;acRender();};
+window.__acObsSalvar=async()=>{const t=document.getElementById('acObsTxt')?.value??'';const c=clientesCache.find(x=>x.id===ac.cli);try{await updateDoc(doc(db,'clientes',ac.cli),{observacoes:t,ultimaEdicaoPor:currentUser,ultimaEdicaoEm:serverTimestamp()});if(c)c.observacoes=t;await log(ac.cli,c?.nome||'','edição',`Observações limpas (senhas passadas pro cofre) por ${currentUser}.`);ac.obsAberta=false;showToast('Observações salvas.');acRender();}catch(e){showToast('Erro ao salvar as observações.');}};
+function acSoltas(c){const t=String(c.observacoes||'');if(!/senha|password|\bpass\b/i.test(t))return 0;return Math.max(1,parseObs(t).filter(r=>r.senha).length);}
+function acRenderLista(){const el=document.getElementById('acLista');if(!el)return;const q=(ac.busca||'').toLowerCase();const lista=clientesCache.filter(c=>c.ativo!==false&&c.status!=='inativo').filter(c=>!q||String(c.nome||'').toLowerCase().includes(q)).sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));
+  el.innerHTML=lista.map(c=>{const p=acPlatsCliente(c);const mps=(c.marketplaces||[]);const falta=p?mps.filter(m=>!p.includes(m)):[];const solta=acSoltas(c);
+    const sel=p?(p.length?p.map(k=>`<span class="ac-chip">${esc((AC_SLOTS.find(s=>s[0]===k)||[0,k==='outro'?'Outro':k])[1])}</span>`).join(''):'<span class="ac-chip falta">nada salvo</span>'):(c.acessosCof?'<span class="ac-chip">salvo (formato antigo)</span>':'<span class="ac-chip falta">nada salvo</span>');
+    return `<button type="button" class="ac-item${c.id===ac.cli?' on':''}" onclick="window.__acCli('${c.id}')"><b>${esc(c.nome)}</b><span class="ac-chips">${sel}${falta.map(m=>`<span class="ac-chip falta">sem ${esc((AC_SLOTS.find(s=>s[0]===m)||[0,m])[1])}</span>`).join('')}${solta?'<span class="ac-chip alerta">senha nas observações</span>':''}</span></button>`;}).join('')||'<div class="ac-vazio">Nenhum cliente.</div>';}
+function acRender(){const root=document.getElementById('acRoot');if(!root)return;const fo=document.getElementById('acForm');if(fo&&ac.dados&&fo.dataset.cli===ac.cli)ac.dados=acLerForm();
+  if(!podeCofre()){root.innerHTML='<div class="card" style="padding:20px">Só Lincoln, Carol e Lídia abrem os acessos dos clientes.</div>';return;}
+  const soltas=clientesCache.filter(c=>c.ativo!==false&&c.status!=='inativo'&&acSoltas(c)).length;
+  const c=clientesCache.find(x=>x.id===ac.cli);let dir='';
+  if(!vaultKey){dir=`<div class="ac-trava"><h3>Cofre fechado</h3><p>Digite a senha-mestra da LB. Ela não é salva e o cofre fecha sozinho depois de 15 minutos parado.</p><input type="password" id="acMestra" placeholder="Senha-mestra" autocomplete="off" onkeydown="if(event.key==='Enter')window.__acAbrirCofre()"><div id="acMsg" class="ac-msg"></div><button type="button" class="btn btn-gold" onclick="window.__acAbrirCofre()">Abrir cofre</button></div>`;}
+  else if(!c){dir='<div class="ac-trava"><h3>Escolha um cliente</h3><p>Busque na lista ao lado.</p></div>';}
+  else if(!ac.dados){dir='<div class="ac-trava"><p>Abrindo…</p></div>';}
+  else{const d=ac.dados;const m=ac.meta[c.id];const quando=m?.atualizadoEm?.toDate?m.atualizadoEm.toDate().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'';const solta=acSoltas(c);
+    dir=`<div class="ac-cab"><div><h3>${esc(c.nome)}</h3><span class="ac-sub">${quando?`Atualizado por ${esc(m.atualizadoPor||'')} em ${quando}`:'Ainda sem acessos no cofre novo'}</span></div><div class="ac-acoes"><button type="button" class="btn btn-ghost btn-sm" onclick="window.__acFechar()">Fechar cofre</button><button type="button" class="btn btn-gold btn-sm" onclick="window.__acSalvar()">Salvar</button></div></div>
+    ${solta?`<div class="ac-aviso">As observações do cadastro têm ${solta} login(s) com senha em texto aberto (a equipe toda lê). <button type="button" class="btn btn-ghost btn-sm" onclick="window.__acTrazerObs()">Trazer pro cofre</button> <button type="button" class="btn btn-ghost btn-sm" onclick="window.__acObsEditar()">Limpar observações</button></div>`:''}
+    ${ac.obsAberta?`<div class="ac-obs"><label>Observações do cadastro — apague as senhas e salve</label><textarea id="acObsTxt" rows="8">${esc(c.observacoes||'')}</textarea><div class="ac-acoes"><button type="button" class="btn btn-ghost btn-sm" onclick="window.__acObsCancelar()">Cancelar</button><button type="button" class="btn btn-gold btn-sm" onclick="window.__acObsSalvar()">Salvar observações</button></div></div>`:''}
+    <div id="acForm" data-cli="${c.id}"><div class="ac-grade">${AC_SLOTS.map(([k,r])=>acCampo(k,r,d.slots[k])).join('')}</div><div id="acOutros" class="ac-grade">${(d.outros||[]).map(o=>acCampo('outro','',o,true)).join('')}</div><button type="button" class="btn btn-ghost btn-sm" onclick="window.__acOutro()">+ Outro acesso</button></div>`;}
+  root.innerHTML=`<div class="ac-wrap"><aside class="ac-lado"><input class="ac-busca" placeholder="Buscar cliente" value="${esc(ac.busca)}" oninput="window.__acBusca(this.value)">${soltas?`<div class="ac-resumo">${soltas} cliente(s) com senha solta nas observações</div>`:''}<div id="acLista" class="ac-lista"></div>${isLincoln()?'<button type="button" class="btn btn-ghost btn-sm ac-logbtn" onclick="window.__acVerLog()">Quem viu os acessos</button>':''}<div id="acLog"></div></aside><section class="ac-dir" oninput="window.__acToque()">${dir}</section></div>`;
+  acRenderLista();}
+window.__acObsCancelar=()=>{ac.obsAberta=false;acRender();};
+window.__acToque=()=>{if(vaultKey)acToque();};
+window.__acVerLog=async()=>{const el=document.getElementById('acLog');if(!el)return;el.innerHTML='<div class="ac-sub">Carregando…</div>';try{const s=await getDocs(query(collection(db,'cofreLog'),orderBy('em','desc'),limit(60)));el.innerHTML='<div class="ac-logl">'+s.docs.map(d=>{const x=d.data();const t=x.em?.toDate?x.em.toDate().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'';return `<div><b>${esc(x.quem)}</b> ${esc(x.acao)}${x.plataforma?' · '+esc(x.plataforma):''}${x.cliente?' · '+esc(x.cliente):''}<span>${t}</span></div>`;}).join('')+'</div>'||'<div class="ac-sub">Nada ainda.</div>';}catch(e){el.innerHTML='<div class="ac-sub">Sem permissão ou regra ainda não publicada.</div>';}};
+async function acIniciar(){if(!podeCofre()){acRender();return;}if(!ac.lido)await acCarregarMeta();acRender();if(ac.cli&&vaultKey&&!ac.dados)acAbrirCliente(ac.cli);}
+window.__acIniciar=acIniciar;
+/* o cadeado da Carteira e da ficha agora abre a tela nova */
+window.__vault=(id)=>{ac.cli=id;ac.dados=null;document.querySelector('.nav-item[data-page="acessos"]')?.click();};
+function acPermissoes(){document.body.classList.toggle('sem-cofre',!podeCofre());const b=document.querySelector('.nav-item[data-page="acessos"]');if(b)b.classList.toggle('hidden',!podeCofre());}
+setInterval(()=>{if(currentEmail)acPermissoes();},2000);
+
 
 /* ================= GOOGLE DRIVE ================= */
 const GOOGLE_CLIENT_ID='745640594764-fvh6dmevj6eehqtgid0npvp46l82n0jm.apps.googleusercontent.com';
