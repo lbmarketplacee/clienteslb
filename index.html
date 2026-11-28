@@ -3158,6 +3158,7 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
             <div class="sub-grupo"><span class="sub-grupo-label">Conexão</span><div class="sub-grupo-btns"><button class="btn btn-gold btn-sm tiktok-subtab-btn active" data-tiktoksub="gmv" onclick="window.__tiktokSubTab('gmv')">Conexão e GMV</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Catálogo</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="produtos" onclick="window.__tiktokSubTab('produtos')">Produtos</button></div></div>
             <div class="sub-grupo"><span class="sub-grupo-label">Promoções</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="promocoes" onclick="window.__tiktokSubTab('promocoes')">Gerenciar promoções</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="oferta" onclick="window.__tiktokSubTab('oferta')">Oferta Relâmpago</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="descontos" onclick="window.__tiktokSubTab('descontos')">Descontos</button></div></div>
+            <div class="sub-grupo"><span class="sub-grupo-label">Afiliados</span><div class="sub-grupo-btns"><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="afpainel" onclick="window.__tiktokSubTab('afpainel')">Painel</button><button class="btn btn-ghost btn-sm tiktok-subtab-btn" data-tiktoksub="afmsg" onclick="window.__tiktokSubTab('afmsg')">Mensagens</button></div></div>
           </div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="gmv">
@@ -3168,6 +3169,8 @@ html[data-theme="light"] .cc-anel:before{background:var(--bg-card)}
           </div>
           <div class="tt-list" id="ttGmvLista"></div>
           </div>
+          <div class="tiktok-subpanel" data-tiktoksubpanel="afpainel" style="display:none"><div id="afPainelRoot"></div></div>
+          <div class="tiktok-subpanel" data-tiktoksubpanel="afmsg" style="display:none"><div id="afMsgRoot"></div></div>
 
           <div class="tiktok-subpanel" data-tiktoksubpanel="produtos" style="display:none">
             <div class="sgmv-summary">
@@ -6784,6 +6787,62 @@ function ljAfHtml(c){const A=ljAf(c);const con=!!c.tiktokAfShopCipher;
       <button class="btn btn-ghost btn-sm" onclick="window.__ljAfLer()">Atualizar</button></div>`;
   return `<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>${mpIco('tiktok',18)} Afiliados do TikTok</h3><span class="p-sub">criadores divulgam os produtos com carrinho laranja e ganham comissão por venda</span></div>${corpo}</div>`;}
 window.__ljAfConectar=()=>window.__irParaMarketing('tiktokshop','gmv');
+/* ---------- Central de Afiliados (card TikTok → grupo Afiliados: Painel e Mensagens, 27/11/2026) ---------- */
+const af={painel:null,carregando:false,erro:null,msg:{loja:'',status:'UNREPLIED',lista:null,conv:null,msgs:null,carregando:false,erro:null}};
+async function afApi(corpo){const r=await fetch(LJ_AF_API,{method:'POST',headers:{'Content-Type':'application/json',...await authHeaders()},body:JSON.stringify(corpo)});const j=await r.json().catch(()=>({ok:false,erro:'HTTP '+r.status}));if(!j.ok&&!j.simulado)throw new Error(j.erro||'erro');return j;}
+function afPainelRender(){const el=document.getElementById('afPainelRoot');if(!el)return;
+  if(!af.painel&&!af.carregando&&!af.erro){window.__afPainelLer();return;}
+  if(af.carregando){el.innerHTML='<div class="empty-state" style="padding:24px">Lendo os afiliados de todas as lojas…</div>';return;}
+  if(af.erro){el.innerHTML=`<div class="empty-state" style="padding:20px">Não deu pra ler: ${esc(af.erro)}<br><br><button class="btn btn-ghost btn-sm" onclick="window.__afPainelLer()">Tentar de novo</button></div>`;return;}
+  const P=af.painel,L=[...P.lojas].sort((a,b)=>(b.alertas?.length||0)-(a.alertas?.length||0)||(b.vendas||0)-(a.vendas||0));
+  const tot=L.reduce((t,l)=>({v:t.v+(l.vendas||0),c:t.c+(l.comissao||0),p:t.p+(l.pedidos||0),m:t.m+(l.semResposta||0),x:t.x+(l.problemas?.length||0)}),{v:0,c:0,p:0,m:0,x:0});
+  const linha=l=>`<div class="panel" style="margin-top:12px;padding:16px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><div><b style="font-size:15px">${esc(l.nome)}</b> <span class="lj-sub">${esc(l.loja||'')}</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${l.semResposta?`<button class="btn btn-gold btn-sm" onclick="window.__afAbrirMsgs('${l.clienteId}')">Responder ${l.semResposta} criador(es)</button>`:''}<button class="btn btn-ghost btn-sm" onclick="window.__ljAbrir&&window.__ljAbrir('${l.clienteId}')">Central da Loja</button></div></div>
+    ${(l.erros||[]).length?`<div class="lj-sub" style="color:var(--red);margin-top:6px">${esc(l.erros.join(' · '))}</div>`:''}
+    <div class="summary-grid" style="margin-top:12px"><div class="summary-card"><div class="sc-label">Vendas por afiliados (30d)</div><div class="sc-value">${fmtR(l.vendas||0)}</div><div class="sc-foot">${l.pedidos||0} pedido(s) · comissão ${fmtR(l.comissao||0)}</div></div>
+      <div class="summary-card"><div class="sc-label">Criadores vendendo</div><div class="sc-value">${l.criadores||0}</div><div class="sc-foot">${l.top?`top: @${esc(l.top.criador)} ${fmtR(l.top.vendas)}`:'nenhum ainda'}</div></div>
+      <div class="summary-card"><div class="sc-label">Produtos no plano aberto</div><div class="sc-value">${l.noPlano??'—'}</div><div class="sc-foot">${l.autoAdd===false?'produto novo NÃO entra sozinho':l.autoAdd?'produto novo entra sozinho':''}</div></div>
+      <div class="summary-card"><div class="sc-label">Mensagens de criadores</div><div class="sc-value">${l.semResposta||0}</div><div class="sc-foot">sem resposta · ${l.naoLidas||0} não lidas</div></div></div>
+    ${(l.alertas||[]).length?`<div style="margin-top:10px">${l.alertas.map(a=>`<div class="lj-lin"><span class="lj-dot at"></span><span>${esc(a)}</span></div>`).join('')}</div>`:'<div class="lj-sub" style="margin-top:8px">Tudo certo nos afiliados.</div>'}
+    ${(l.problemas||[]).length?`<details style="margin-top:8px"><summary class="lj-sub" style="cursor:pointer">Ver os ${l.problemas.length} produto(s) com problema no plano</summary>${l.problemas.map(x=>`<div class="lj-lin"><span class="lj-dot ruim"></span><span><b>${esc(String(x.titulo).slice(0,70))}</b><small>${esc(x.motivo)} · na vitrine de ${x.vitrine||0} criador(es)</small></span></div>`).join('')}</details>`:''}
+  </div>`;
+  el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><div><h3 style="margin:0">Afiliados do TikTok — todas as lojas</h3><div class="lj-sub">últimos 30 dias · lojas com problema primeiro</div></div><button class="btn btn-ghost btn-sm" onclick="window.__afPainelLer()">Atualizar</button></div>
+    <div class="summary-grid" style="margin-top:14px"><div class="summary-card"><div class="sc-label">Vendas por afiliados</div><div class="sc-value">${fmtR(tot.v)}</div><div class="sc-foot">${tot.p} pedido(s)</div></div><div class="summary-card"><div class="sc-label">Comissão paga</div><div class="sc-value">${fmtR(tot.c)}</div><div class="sc-foot">${L.length} loja(s) conectada(s)</div></div><div class="summary-card"><div class="sc-label">Criadores sem resposta</div><div class="sc-value">${tot.m}</div><div class="sc-foot">aba Mensagens</div></div><div class="summary-card"><div class="sc-label">Produtos com problema no plano</div><div class="sc-value">${tot.x}</div><div class="sc-foot">excluídos ou sem estoque</div></div></div>
+    ${L.map(linha).join('')||'<div class="empty-state" style="padding:20px">Nenhuma loja com afiliados conectados.</div>'}
+    ${(P.semConexao||[]).length?`<details class="cm-grupo" style="margin-top:16px"><summary><span>Lojas TikTok sem afiliados conectados</span><span class="cm-grupo-qtd">${P.semConexao.length}</span></summary><div class="cm-grupo-itens">${P.semConexao.map(c=>`<div class="cm-item"><span class="nome" style="flex:1">${esc(c.nome)}</span><button class="btn btn-ghost btn-sm cm-conectar" onclick="window.__ttAfConectar('${c.clienteId}')">${CM_ICO.conectar} Conectar Afiliados</button></div>`).join('')}</div></details>`:''}`;}
+window.__afPainelLer=async()=>{af.carregando=true;af.erro=null;afPainelRender();try{af.painel=await afApi({acao:'painel'});}catch(e){af.erro=e.message;}af.carregando=false;afPainelRender();};
+function afLojasConectadas(){return (clientesCache||[]).filter(c=>c.ativo!==false&&c.tiktokAfShopCipher).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));}
+function afMsgRender(){const el=document.getElementById('afMsgRoot');if(!el)return;const M=af.msg,lojas=afLojasConectadas();
+  if(!M.loja&&lojas[0])M.loja=lojas[0].id;
+  if(M.loja&&!M.lista&&!M.carregando&&!M.erro){window.__afMsgLer();return;}
+  const opt=lojas.map(c=>`<option value="${c.id}" ${c.id===M.loja?'selected':''}>${esc(c.nome)}</option>`).join('');
+  const filtros=[['UNREPLIED','Sem resposta'],['UNREAD','Não lidas'],['ALL','Todas']].map(([k,t])=>`<button class="btn btn-sm ${M.status===k?'btn-gold':'btn-ghost'}" onclick="window.__afMsgStatus('${k}')">${t}</button>`).join('');
+  const lista=M.carregando&&!M.lista?'<div class="empty-state" style="padding:20px">Lendo conversas…</div>':M.erro?`<div class="empty-state" style="padding:20px">${esc(M.erro)}</div>`:(M.lista||[]).map(x=>`<div class="cm-item" style="cursor:pointer;${M.conv?.id===x.id?'background:var(--ds-surface-2)':''}" onclick="window.__afMsgAbrir('${x.id}')"><span class="nome" style="flex:1">@${esc(x.criador||'criador')}</span>${x.naoLidas?`<span class="cadastro-doc-pill">${x.naoLidas} nova(s)</span>`:''}</div>`).join('')||'<div class="empty-state" style="padding:20px">Nenhuma conversa nesse filtro.</div>';
+  const C=M.conv;
+  const conversa=!C?'<div class="empty-state" style="padding:24px">Escolha uma conversa.</div>':`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>@${esc(C.criador)}</b><button class="btn btn-ghost btn-sm" onclick="window.__afMsgLida()">Marcar como lida</button></div>
+    <div id="afMsgLinhas" style="max-height:420px;overflow:auto;margin:10px 0;display:flex;flex-direction:column;gap:8px">${M.msgs==null?'<div class="lj-sub">Carregando…</div>':M.msgs.map(m=>`<div style="align-self:${m.daLoja?'flex-end':'flex-start'};max-width:80%;padding:8px 12px;border-radius:10px;border:1px solid var(--ds-border);background:${m.daLoja?'var(--ds-accent-soft)':'var(--ds-surface)'}"><div style="white-space:pre-wrap">${esc(m.texto)}</div><div class="lj-sub" style="font-size:11px;margin-top:4px">${m.daLoja?'Loja':'Criador'} · ${m.quando?new Date(m.quando*1000).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</div></div>`).join('')||'<div class="lj-sub">Sem mensagens.</div>'}</div>
+    <textarea id="afMsgTexto" rows="3" maxlength="2000" placeholder="Escreva a resposta (pode pedir pra IA sugerir)" style="width:100%"></textarea>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="window.__afMsgSugerir()">✨ Sugerir resposta</button><button class="btn btn-gold btn-sm" onclick="window.__afMsgEnviar()">Enviar pela TikTok</button><span class="lj-sub" style="align-self:center">Sem WhatsApp, e-mail ou link de fora (a TikTok proíbe).</span></div>`;
+  el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:space-between"><div><h3 style="margin:0">Mensagens de criadores</h3><div class="lj-sub">conversas da caixa de afiliados do TikTok</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select onchange="window.__afMsgLoja(this.value)">${opt||'<option>Nenhuma loja conectada</option>'}</select>${filtros}<button class="btn btn-ghost btn-sm" onclick="window.__afMsgLer()">Atualizar</button></div></div>
+    <div style="display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:14px;margin-top:14px" class="af-msg-grid"><div class="panel" style="padding:8px;max-height:560px;overflow:auto">${lista}</div><div class="panel" style="padding:14px">${conversa}</div></div>
+    <style>@media(max-width:760px){.af-msg-grid{grid-template-columns:minmax(0,1fr)!important}}</style>`;
+  const ln=document.getElementById('afMsgLinhas');if(ln)ln.scrollTop=ln.scrollHeight;}
+window.__afMsgLer=async()=>{const M=af.msg;if(!M.loja)return afMsgRender();M.carregando=true;M.erro=null;afMsgRender();
+  try{const r=await afApi({acao:'conversas',clienteId:M.loja,status:M.status});M.lista=r.conversas;}catch(e){M.erro=e.message;M.lista=[];}M.carregando=false;afMsgRender();};
+window.__afMsgLoja=id=>{Object.assign(af.msg,{loja:id,lista:null,conv:null,msgs:null,erro:null});afMsgRender();};
+window.__afMsgStatus=s=>{Object.assign(af.msg,{status:s,lista:null,erro:null});afMsgRender();};
+window.__afAbrirMsgs=id=>{Object.assign(af.msg,{loja:id,status:'UNREPLIED',lista:null,conv:null,msgs:null,erro:null});window.__tiktokSubTab('afmsg');};
+window.__afMsgAbrir=async id=>{const M=af.msg;M.conv=(M.lista||[]).find(x=>x.id===id)||null;M.msgs=null;afMsgRender();
+  try{const r=await afApi({acao:'mensagens',clienteId:M.loja,conversa:id,criadorImId:M.conv?.criadorImId});if(M.conv?.id===id){M.msgs=r.mensagens;afMsgRender();}}catch(e){showToast('Erro: '+e.message);}};
+window.__afMsgSugerir=async()=>{const M=af.msg;if(!M.conv||!M.msgs?.length)return;const t=document.getElementById('afMsgTexto');const pedido=t.value;t.value='Pensando…';
+  try{const r=await afApi({acao:'sugerir',clienteId:M.loja,criador:M.conv.criador,mensagens:M.msgs,pedido});t.value=r.texto;}catch(e){t.value=pedido;showToast('Erro: '+e.message);}};
+window.__afMsgEnviar=async()=>{const M=af.msg;const texto=String(document.getElementById('afMsgTexto')?.value||'').trim();if(!M.conv||!texto)return;
+  try{await afApi({acao:'responder',clienteId:M.loja,conversa:M.conv.id,criador:M.conv.criador,texto});
+    if(!await lbConfirmar(`Mandar pra @${M.conv.criador} pela TikTok?\n\n${texto}`,{okTxt:'Enviar'}))return;
+    await afApi({acao:'responder',clienteId:M.loja,conversa:M.conv.id,criador:M.conv.criador,texto,executar:1});showToast('Mensagem enviada.');window.__afMsgAbrir(M.conv.id);}catch(e){lbAvisar('Não deu certo: '+e.message);}};
+window.__afMsgLida=async()=>{const M=af.msg;if(!M.conv)return;try{await afApi({acao:'marcar_lida',clienteId:M.loja,conversa:M.conv.id});showToast('Marcada como lida.');}catch(e){showToast('Erro: '+e.message);}};
 /* conexão do app de afiliados fica na lista de conexão do TikTok (Central de Marketing → TikTok → Conexão), igual ERP/Ads da Shopee (27/11/2026) */
 window.__ttAfConectar=async(id)=>{const c=(clientesCache||[]).find(x=>x.id===id);if(!c)return;
   try{const r=await (await fetch(`${LJ_AF_API}?acao=link&clienteId=${encodeURIComponent(c.id)}`,{headers:await authHeaders()})).json();if(!r.ok)throw new Error(r.erro);
@@ -8165,6 +8224,8 @@ window.__tiktokSubTab=(nome)=>{
     p.style.display=p.dataset.tiktoksubpanel===nome?'':'none';
   });
   if(nome==='promocoes')ttpRender();
+  if(nome==='afpainel')afPainelRender();
+  if(nome==='afmsg')afMsgRender();
 };
 
 // Card SHEIN na Central de Marketing: lojas com "shein" nos marketplaces ou já conectadas
