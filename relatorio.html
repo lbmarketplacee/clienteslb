@@ -70,6 +70,7 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
   let d;
   try{const r=await fetch(`${API}?r=${encodeURIComponent(codigo)}`);const j=await r.json();if(!j.ok)return erro(j.erro||'Relatório não encontrado.');d=j.dados;}
   catch(e){return erro('Não foi possível carregar o relatório agora. Tente de novo em instantes.');}
+  if(d.tipo==='semanal')return renderSemanal(d);
   document.title=`${d.cliente} · Relatório de ${d.mesNome} · LB Marketplace`;
   const mps=Object.entries(d.porMarketplace||{}).sort((a,b)=>b[1].gmv-a[1].gmv);
   const a=d.automacao||{};const fora=Object.entries(a.produtosForaPorMotivo||{});
@@ -111,6 +112,40 @@ function erro(msg){document.getElementById('conteudo').innerHTML=`<div class="es
       options:{maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:t=>`Dia ${t[0].label}`,label:t=>brl(t.raw)}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'R$ '+Number(v).toLocaleString('pt-BR')},grid:{color:'#eee7d6'}}}}});
   }
 })();
+// Relatório SEMANAL (27/11/2026): veredito primeiro, números × semana anterior, o que a equipe fez, o que depende do cliente, próxima semana.
+function renderSemanal(d){
+  document.title=`${d.cliente} · Relatório da semana ${d.semanaRotulo} · LB Marketplace`;
+  const mps=Object.entries(d.porMarketplace||{}).sort((a,b)=>b[1].gmv-a[1].gmv);
+  const an=d.analise||{};const ads=d.ads&&d.ads.investido>0?d.ads:null;
+  const tacos=ads&&d.total>0?Math.round(ads.investido/d.total*1000)/10:null;
+  const lista=(t,arr,cls='')=>arr&&arr.length?`<div class="bloco ${cls}"><b>${t}</b><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:'';
+  document.getElementById('conteudo').innerHTML=`
+    <style>.bloco{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:16px 18px;margin-top:12px}.bloco b{display:block;margin-bottom:6px}.bloco ul{margin:0;padding-left:20px;line-height:1.6}
+      .bloco.cliente{border-left:4px solid var(--vermelho)}.bloco.prox{border-left:4px solid var(--ouro)}.reg li small{color:var(--suave)}
+      .assina{margin-top:22px;font-size:14px;color:var(--suave)}.assina b{color:var(--texto)}</style>
+    <div class="titulo"><small>Relatório semanal${d.emAndamento?' · parcial':''}</small><h1>${esc(d.cliente)}</h1><p>Semana de ${esc(d.semanaRotulo)}</p></div>
+    ${an.resumo?`<div class="resumo">${esc(an.resumo)}</div>`:''}
+    ${d.incompleto?`<div class="aviso">Este relatório ainda está sendo atualizado — alguns números podem mudar.</div>`:''}
+    <div class="kpis">
+      <div class="kpi"><label>Vendido na semana</label><b>${brl(d.total)}</b>${d.variacao!=null?`<i>${pct(d.variacao)} vs semana anterior</i>`:''}</div>
+      <div class="kpi"><label>Pedidos</label><b>${num(d.pedidos)}</b></div>
+      <div class="kpi"><label>Ticket médio</label><b>${brl(d.ticketMedio)}</b></div>
+      <div class="kpi"><label>Semana anterior</label><b>${d.totalAnterior!=null?brl(d.totalAnterior):'—'}</b><i>mesmo período de dias</i></div>
+    </div>
+    ${mps.length?`<section><h2>Vendas por marketplace</h2><div class="painel"><table><thead><tr><th>Marketplace</th><th class="n">Vendido</th><th class="n">Pedidos</th><th class="n">Semana anterior</th><th class="n">Variação</th></tr></thead><tbody>${mps.map(([n,m])=>`<tr><td><b>${esc(n)}</b></td><td class="n">${brl(m.gmv)}</td><td class="n">${num(m.pedidos)}</td><td class="n">${m.anterior?brl(m.anterior.gmv):'—'}</td><td class="n">${pct(m.variacao)||'—'}</td></tr>`).join('')}</tbody></table></div></section>`:''}
+    ${ads?`<section><h2>Anúncios da semana</h2><div class="kpis">
+      <div class="kpi"><label>Investido</label><b>${brl(ads.investido)}</b></div>
+      <div class="kpi"><label>Vendas atribuídas aos anúncios</label><b>${brl(ads.vendasAnuncios)}</b></div>
+      <div class="kpi"><label>Retorno (ROAS)</label><b>${ads.roas?ads.roas.toLocaleString('pt-BR')+'x':'—'}</b>${ads.roas?`<i>cada R$ 1 virou ${brl(ads.roas)}</i>`:''}</div>
+      <div class="kpi"><label>Peso do anúncio</label><b>${tacos!=null?tacos.toLocaleString('pt-BR')+'%':'—'}</b><i>do total vendido foi gasto em anúncio</i></div></div></section>`:''}
+    ${(d.trabalho||[]).length?`<section><h2>O que a Equipe LB fez na sua loja nesta semana</h2><div class="feito">${d.trabalho.map(x=>`<div><b>${num(x.n)}</b><span>${esc(x.rotulo)}</span></div>`).join('')}</div></section>`:''}
+    ${(d.registro||[]).length?`<section><h2>Registro da equipe</h2><div class="bloco reg"><ul>${d.registro.map(r=>`<li>${esc(r.acao)}${r.detalhe?` — <small>${esc(r.detalhe)}</small>`:''} <small>(${new Date(r.quando).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})})</small></li>`).join('')}</ul></div></section>`:''}
+    ${d.saude?`<section><h2>Saúde da loja (Shopee)</h2><div class="kpis"><div class="kpi"><label>Avaliação da loja</label><b>${esc(d.saude.nota||'—')}</b></div><div class="kpi"><label>Métricas fora da meta</label><b>${(d.saude.foraDaMeta||[]).length}</b>${(d.saude.foraDaMeta||[]).length?`<i>${esc(d.saude.foraDaMeta.join(', '))}</i>`:'<i>tudo dentro da meta</i>'}</div><div class="kpi"><label>Pedidos atrasados</label><b class="${d.saude.pedidosAtrasados?'desce':''}">${num(d.saude.pedidosAtrasados)}</b></div></div></section>`:''}
+    <section>${lista('O que foi bem',an.destaques)}${lista('Pontos de atenção',an.atencao)}${lista('O que depende de você',d.pendencias,'cliente')}${lista('O que a equipe vai fazer na próxima semana',an.proximaSemana,'prox')}</section>
+    <div class="assina">Acompanhamento da sua loja${d.responsavel?`: <b>${esc(d.responsavel)}</b>,`:''} Equipe LB Marketplace. Qualquer dúvida, é só responder no grupo do WhatsApp.</div>`;
+  document.getElementById('rodape').textContent=`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} · LB Marketplace Assessoria · Vendas consideram apenas pedidos válidos (cancelados e não pagos ficam de fora). "Vendas atribuídas aos anúncios" é o número informado pela plataforma de anúncios.`;
+  document.getElementById('btnPdf').hidden=false;
+}
 </script>
 </body>
 </html>
