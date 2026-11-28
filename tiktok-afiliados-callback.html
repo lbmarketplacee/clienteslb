@@ -24,7 +24,7 @@ a.botao{display:inline-block;background:var(--gold);color:#181712;text-decoratio
 firebase.initializeApp({apiKey:"AIzaSyD7kPODN3ZHzM8SuRlB_vdYC276YOzzXPE",authDomain:"lb-gestao-clientes.firebaseapp.com",projectId:"lb-gestao-clientes",storageBucket:"lb-gestao-clientes.firebasestorage.app",messagingSenderId:"344033285587",appId:"1:344033285587:web:fbdae7d44eaf5bac760b26"});
 const card=document.getElementById('card');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fim=(ok,titulo,texto)=>{card.innerHTML=`<h1 class="${ok?'ok':'erro'}">${esc(titulo)}</h1><p>${esc(texto)}</p><a class="botao" href="https://sistema.lbmarketplace.com.br/#loja">Voltar ao sistema</a>`;};
+const fim=(ok,titulo,texto)=>{card.innerHTML=`<h1 class="${ok?'ok':'erro'}">${esc(titulo)}</h1><p>${esc(texto)}</p><a class="botao" href="https://sistema.lbmarketplace.com.br/#marketing">Voltar ao sistema</a>`;};
 const q=new URLSearchParams(location.search);const code=q.get('code'),clienteId=q.get('state');
 if(!code||!clienteId)fim(false,'Não deu pra conectar','O TikTok não devolveu o código de autorização. Tente de novo pelo sistema.');
 else firebase.auth().onAuthStateChanged(async u=>{
